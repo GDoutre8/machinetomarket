@@ -29,6 +29,7 @@ from mtm_service import (
 )
 from mtm_scorer import score as _score_listing, build_fix_my_listing
 from listing_pack_builder import build_listing_pack
+from dealer_input import DealerInput  # noqa: F401 — imported here for API layer access
 
 app = FastAPI(title="Machine-to-Market: Fix My Listing", docs_url=None, redoc_url=None)
 
