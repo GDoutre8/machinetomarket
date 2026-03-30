@@ -1,0 +1,1808 @@
+{
+  "_registry_meta": {
+    "registry_id": "mtm_wheel_loader_registry_v1",
+    "equipment_type": "wheel_loader",
+    "category": "wheel_loader",
+    "version": "1.0.3",
+    "status": "locked",
+    "record_count": 25,
+    "created": "2026-03-18",
+    "schema_version": "mtm_registry_schema_v1",
+    "notes": [
+      "Top 25 models by MachineryTrader listing frequency — 78.1% marketplace coverage.",
+      "8 FAMILY/SERIES records (manual_review, no auto-fill). 17 EXACT model records (locked specs where available).",
+      "Family models: John Deere 624, CAT 966, Volvo L70, Volvo L90, Volvo L60, Komatsu WA320, Komatsu WA380, Case 721.",
+      "Bucket capacity marked manual_review across all records due to multi-config variation.",
+      "Source: marketplace listing aggregation + OEM spec sheets. Verify against serial decode before listing.",
+      "v1.0.2 (2026-03-19): Full validation pass. 6 records patched: caterpillar_950m, volvo_l70h, case_621g, volvo_l60h, hyundai_hl940, komatsu_wa320_8, komatsu_wa380_8. Major issues: cross-model contamination (521G specs in 621G, D4D/wrong HP in L60H, WA320 bucket in WA380-8), wrong HP/OW values (950M, HL940, WA320-8), wrong transmission type (WA320-8 HST not Powershift), wrong engine (L60H/L70H D4D/D4J vs D6J). All incorrect locked values either corrected or demoted to manual_review.",
+      "v1.0.3 (2026-03-19): Final pre-lock pass on 3 records: volvo_l70h, case_621g, komatsu_wa380_8. volvo_l70h: HP locked at 170 (OEM PDF confirmed gross=net=170), OW corrected to 30,880 lb, bucket corrected 2.1m3→2.75yd3, fuel/hydraulic flow corrected from OEM. case_621g: CRITICAL — net_power_hp corrected 172→151 (172 is gross, not net), gross_power_hp=172 now locked, bucket restored to 2.75 yd3, secondary specs restored from OEM source. komatsu_wa380_8: net_power_hp corrected 190→191 (exact OEM), OW corrected to 40,532 lb (OEM base), bucket_capacity_cy restored to 4.3 yd3 (OEM standard GP), non-OEM-confirmed secondary specs nulled."
+    ],
+    "locked_date": "2026-03-19",
+    "final_lock_notes": [
+      "case_621g engine suffix retained MEDIUM/manual_review",
+      "komatsu_wa380_8 secondary specs intentionally null pending deeper OEM spec extraction"
+    ]
+  },
+  "records": [
+    {
+      "model_slug": "john_deere_624",
+      "manufacturer": "John Deere",
+      "model": "624",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 34700,
+        "bucket_capacity_cy": 2.7,
+        "gross_power_hp": null,
+        "net_power_hp": 162,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "JD 624K (most common 624-family variant) — 162 hp SAE net; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JD 624K operating weight ~34,700 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JD 624K standard bucket ~2.7 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — '624' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_966",
+      "manufacturer": "Caterpillar",
+      "model": "966",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 51560,
+        "bucket_capacity_cy": 4.25,
+        "gross_power_hp": null,
+        "net_power_hp": 265,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "CAT 966GC (common 966-family variant) — 265 hp SAE net; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT 966GC operating weight ~51,560 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT 966GC standard bucket ~4.25 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — '966' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "volvo_l70",
+      "manufacturer": "Volvo",
+      "model": "L70",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 27400,
+        "bucket_capacity_cy": 2.75,
+        "gross_power_hp": null,
+        "net_power_hp": 161,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "Volvo L70G (representative L70-family variant) — 161 hp; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L70G operating weight ~27,400 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L70G standard bucket ~2.75 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — 'L70' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_950m",
+      "manufacturer": "Caterpillar",
+      "model": "950M",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 42357,
+        "bucket_capacity_cy": 3.5,
+        "gross_power_hp": null,
+        "net_power_hp": 230,
+        "breakout_force_lbf": 36300,
+        "tipping_load_straight_lb": 25800,
+        "hinge_pin_height_ft": 14.6,
+        "travel_speed_mph": 24.9,
+        "hydraulic_flow_gpm": 76,
+        "fuel_capacity_gal": 88,
+        "transmission_type": "Automatic Powershift",
+        "engine_model": "Cat C7.1 ACERT",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 4250
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Cat 950M spec sheet (AEHQ6570)",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "RitchieSpecs CAT 950M (implement max 4250 psi / pump 76 gal/min @ 2150 rpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Bucket capacity varies by configuration (GP, rock, light material). Default 3.5 CY GP bucket.",
+        "Production years ~2013–2019. Succeeded by 950 GC / 950 MC.",
+        "950M XE variant has modified hydraulic and load ratings — do not auto-fill tipping_load_straight_lb or hydraulic_flow_gpm on XE-designated units.",
+        "gross_power_hp nulled - 213hp was incorrect (Cat 950M net is 230hp per OEM). Lock gross_power_hp only when OEM gross figure is confirmed."
+      ]
+    },
+    {
+      "model_slug": "volvo_l70h",
+      "manufacturer": "Volvo",
+      "model": "L70H",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 30880,
+        "bucket_capacity_cy": 2.75,
+        "gross_power_hp": 170,
+        "net_power_hp": 170,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": 22.2,
+        "hydraulic_flow_gpm": 40.7,
+        "fuel_capacity_gal": 58.6,
+        "transmission_type": "Volvo Automatic Power Shift (APS)",
+        "engine_model": "Volvo D6J",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 3046
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "MEDIUM",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Volvo CE OEM product guide PDF: product_guide_l70h_t4f_en_22_20062175_a.pdf (volvoce.com)",
+        "Volvo CE US product page: volvoce.com/united-states/en-us/products/wheel-loaders/l70h/",
+        "LECTURA Specs: Volvo L70H (2014-2018, 2019-2025)",
+        "VeriTread: Volvo L70H OW reference",
+        {
+          "ref": "RitchieSpecs / search (CLSS implement working pressure 3046 psi / max flow 40.7 gpm); manual_review recommended",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "Volvo L70H (Stage V) max speed ~35.7 km/h = 22.2 mph (4-speed powershift); RitchieSpecs/Volvo range",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "H-series production ~2014 onward. Current production as of 2025.",
+        "Source: Volvo CE OEM product guide PDF (volvoce.com, product_guide_l70h_t4f_en_22_20062175_a.pdf, ref PV776-88049476).",
+        "HP normalization: Volvo D6J ISO 14396 gross = ISO 9249 net = 127 kW / 170 hp. Gross and net are identical for this engine at this rating. No derating. Both gross_power_hp and net_power_hp locked at 170.",
+        "operating_weight_lb = 30,880 lb (14.0 t per OEM header). Set to manual_review: LECTURA shows 13.7t (2016-2018) vs 13.96t (2019+); AllMachines cites 32,154 lb for fully equipped configs. Use 30,880 as base config floor.",
+        "bucket_capacity_cy = 2.75 yd3 (= 2.1 m3, base standard bucket per LECTURA consistent 2014-2025). Note: Volvo CE product page also references 2.3 m3 (3.0 yd3) STE P BOE config. Wide config range possible. manual_review required.",
+        "fuel_capacity_gal = 58.6 (222 L per OEM). Replaces prior unconfirmed 50 gal.",
+        "hydraulic_flow_gpm = 40.7 (154 L/min per OEM). Replaces prior unconfirmed 60 gpm.",
+        "transmission_type aligned to OEM label: 'Volvo Automatic Power Shift (APS) gear shifting system with fully automatic shifting 1-4 and mode selector'.",
+        "breakout_force_lbf, hinge_pin_height_ft, travel_speed_mph, tipping_load_straight_lb: nulled to manual_review. Not confirmed from OEM product guide; prior values were from contaminated spec set."
+      ]
+    },
+    {
+      "model_slug": "john_deere_544_p_tier",
+      "manufacturer": "John Deere",
+      "model": "544 P-TIER",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 35900,
+        "bucket_capacity_cy": 2.7,
+        "gross_power_hp": 168,
+        "net_power_hp": 162,
+        "breakout_force_lbf": 30100,
+        "tipping_load_straight_lb": 18400,
+        "hinge_pin_height_ft": 13.8,
+        "travel_speed_mph": 24.5,
+        "hydraulic_flow_gpm": 58,
+        "fuel_capacity_gal": 67,
+        "transmission_type": "Powershift",
+        "engine_model": "JD 6068H",
+        "emissions_tier": "Final Tier 4",
+        "hydraulic_pressure_psi": 3650
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "John Deere 544 P-TIER spec sheet OMLT399200",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "JD 544 P-Tier search specs (3650 psi / 58 gpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "P-TIER launched 2022. Current production model as of 2024.",
+        "Bucket capacity varies by application: 2.5–3.0 CY GP range."
+      ]
+    },
+    {
+      "model_slug": "volvo_l90",
+      "manufacturer": "Volvo",
+      "model": "L90",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 38200,
+        "bucket_capacity_cy": 3.5,
+        "gross_power_hp": null,
+        "net_power_hp": 228,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "Volvo L90H (representative L90-family variant) — 228 hp; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L90H operating weight ~38,200 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L90H standard bucket ~3.5 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — 'L90' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_950gc",
+      "manufacturer": "Caterpillar",
+      "model": "950GC",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 39900,
+        "bucket_capacity_cy": 3.0,
+        "gross_power_hp": 178,
+        "net_power_hp": 172,
+        "breakout_force_lbf": 33100,
+        "tipping_load_straight_lb": 20800,
+        "hinge_pin_height_ft": 14.2,
+        "travel_speed_mph": 24.9,
+        "hydraulic_flow_gpm": 68,
+        "fuel_capacity_gal": 88,
+        "transmission_type": "Automatic Powershift",
+        "engine_model": "Cat C7.1 ACERT",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 4047
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Cat 950 GC spec sheet AEHQ8017-01",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "RitchieSpecs CAT 950 GC (implement max 4047 psi / pump 68 gal/min @ 2390 rpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "950GC is the value/work-ready variant vs 950M performance variant. Same engine platform, lower standard payload rating.",
+        "Production ~2016–2021.",
+        "Operating weight of 39,900 lb may reflect base/stripped config. Standard-equipped units with counterweight run ~42,000–43,000 lb. Verify against window sticker or OEM config sheet."
+      ]
+    },
+    {
+      "model_slug": "komatsu_wa320",
+      "manufacturer": "Komatsu",
+      "model": "WA320",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 30200,
+        "bucket_capacity_cy": 2.4,
+        "gross_power_hp": null,
+        "net_power_hp": 152,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "Komatsu WA320-6 (representative WA320-family) — 152 hp; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Komatsu WA320-6 operating weight ~30,200 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Komatsu WA320-6 standard bucket ~2.4 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — 'WA320' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "john_deere_524_p_tier",
+      "manufacturer": "John Deere",
+      "model": "524 P-TIER",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 26700,
+        "bucket_capacity_cy": 1.9,
+        "gross_power_hp": 130,
+        "net_power_hp": 124,
+        "breakout_force_lbf": 21800,
+        "tipping_load_straight_lb": 13500,
+        "hinge_pin_height_ft": 12.7,
+        "travel_speed_mph": 24.2,
+        "hydraulic_flow_gpm": 47,
+        "fuel_capacity_gal": 45,
+        "transmission_type": "Powershift",
+        "engine_model": "JD 4045H",
+        "emissions_tier": "Final Tier 4",
+        "hydraulic_pressure_psi": 3625
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "John Deere 524 P-TIER spec sheet OMLT399199",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "JD 524 P-Tier search specs (3625 psi / 47 gpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "P-TIER launched 2022. Compact wheel loader class.",
+        "Bucket capacity varies 1.75–2.1 CY by config."
+      ]
+    },
+    {
+      "model_slug": "john_deere_544k",
+      "manufacturer": "John Deere",
+      "model": "544K",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 34700,
+        "bucket_capacity_cy": 2.7,
+        "gross_power_hp": 168,
+        "net_power_hp": 162,
+        "breakout_force_lbf": 29200,
+        "tipping_load_straight_lb": 18000,
+        "hinge_pin_height_ft": 13.6,
+        "travel_speed_mph": 24.2,
+        "hydraulic_flow_gpm": 50,
+        "fuel_capacity_gal": 67,
+        "transmission_type": "Powershift",
+        "engine_model": "JD 6068H PowerTech",
+        "emissions_tier": "Tier 3 / Interim Tier 4",
+        "hydraulic_pressure_psi": 3650
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "manual_review",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "John Deere 544K spec sheet OMTCXXX-K",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "skidsteerloaderspecs.com JD 544K (3650 psi / 252 bar / 50 gal/min)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Production ~2011–2017. Succeeded by 544L.",
+        "iT4 emissions — verify compliance status for certain state resales. Early production units (~2011–2013) are Tier 3. Confirm year before emissions entry."
+      ]
+    },
+    {
+      "model_slug": "volvo_l60",
+      "manufacturer": "Volvo",
+      "model": "L60",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 25900,
+        "bucket_capacity_cy": 2.1,
+        "gross_power_hp": null,
+        "net_power_hp": 150,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "Volvo L60G (representative L60-family variant) — 150 hp; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L60G operating weight ~25,900 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L60G standard bucket ~2.1 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — 'L60' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "komatsu_wa380",
+      "manufacturer": "Komatsu",
+      "model": "WA380",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 39700,
+        "bucket_capacity_cy": 2.9,
+        "gross_power_hp": null,
+        "net_power_hp": 218,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "Komatsu WA380-6 (representative WA380-family) — 218 hp; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Komatsu WA380-6 operating weight ~39,700 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Komatsu WA380-6 standard bucket ~2.9 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — 'WA380' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "case_621g",
+      "manufacturer": "Case",
+      "model": "621G",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 28159,
+        "bucket_capacity_cy": 2.75,
+        "gross_power_hp": 172,
+        "net_power_hp": 151,
+        "breakout_force_lbf": 25471,
+        "tipping_load_straight_lb": 21189,
+        "hinge_pin_height_ft": 12.58,
+        "travel_speed_mph": 24,
+        "hydraulic_flow_gpm": 45.2,
+        "fuel_capacity_gal": 65,
+        "transmission_type": "Powershift",
+        "engine_model": "FPT F4HFE613W",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 3625
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "MEDIUM",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "manual_review",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "heavy-spec.com Case 621G structured spec data (FPT F4HFE613W, Tier 4 Final)",
+        "CaseCE dealer spec pages (172 hp gross confirmed)",
+        "MachineryTrader listing aggregation (OW, HP cross-reference)",
+        {
+          "ref": "RitchieSpecs Case 621G (max system 3625 psi / pump 45.2 gal/min)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "G-series introduced ~2016. Current production as of 2025.",
+        "Source: heavy-spec.com (structured OEM spec data, FPT F4HFE613W, Tier 4 Final).",
+        "CRITICAL HP NOTE: gross_power_hp = 172 hp (128.3 kW). net_power_hp = 151 hp (112.7 kW). These are distinct. The figure '172 hp' appearing in dealer listings and marketing refers to GROSS, not net. Both are now correctly locked.",
+        "operating_weight_lb = 28,159 lb (12,773 kg). OEM confirmed. Config variations exist with optional counterweight; 28,159 is the standard equipped base weight.",
+        "bucket_capacity_cy = 2.75 yd3 (2.1 m3) is the standard GP bucket. Config range runs from ~1.75 yd3 (light material) to ~3.5+ yd3 (rehandling). manual_review required.",
+        "engine_model = FPT F4HFE613W. Suffix 'W' denotes Tier 4 Final SCR variant. Prior bad record used 'B' suffix (different emissions variant). MEDIUM confidence — verify suffix via serial decode before locking further.",
+        "tipping_load_straight_lb = 21,189 lb listed as 'Tipping Load' in source without straight/full-turn qualifier. Set MEDIUM / manual_review until qualification confirmed.",
+        "breakout_force_lbf = 25,471 lb (113.3 kN). OEM confirmed. Note: some dealer specs cite 24,942 lbf — minor config variation likely. 25,471 from structured OEM source preferred."
+      ]
+    },
+    {
+      "model_slug": "volvo_l60h",
+      "manufacturer": "Volvo",
+      "model": "L60H",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 29980,
+        "bucket_capacity_cy": 1.75,
+        "gross_power_hp": null,
+        "net_power_hp": 164,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": 22.4,
+        "hydraulic_flow_gpm": 50.3,
+        "fuel_capacity_gal": null,
+        "transmission_type": "Powershift",
+        "engine_model": "Volvo D6J",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 3046
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "MEDIUM",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "MEDIUM",
+      "source_refs": [
+        "Volvo L60H spec sheet PV776-88049474",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "Volvo L60H CLSS combined pump flow estimate (~50 gpm @ working pressure); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L60H CLSS working pressure (same as L70H at 3046 psi); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Volvo L60H max speed ~36.0 km/h = 22.4 mph (4-speed powershift)",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "H-series ~2013–2017. Compact wheel loader class.",
+        "Bucket capacity 1.6–2.0 CY by config.",
+        "PATCH 2026-03-19: Engine corrected to D6J (was D4D). net_power_hp corrected to 164hp (was 114hp). OW corrected to 29,980 lb (was 24,600 lb). Majority of secondary specs nulled to manual_review due to contamination from wrong spec set. Verify breakout force, tipping load, and ancillary specs against Volvo spec sheet PV776-88049474."
+      ]
+    },
+    {
+      "model_slug": "komatsu_wa320_8",
+      "manufacturer": "Komatsu",
+      "model": "WA320-8",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 34200,
+        "bucket_capacity_cy": 2.4,
+        "gross_power_hp": null,
+        "net_power_hp": 165,
+        "breakout_force_lbf": 27100,
+        "tipping_load_straight_lb": 16900,
+        "hinge_pin_height_ft": 13.7,
+        "travel_speed_mph": 22.7,
+        "hydraulic_flow_gpm": 47.6,
+        "fuel_capacity_gal": 71,
+        "transmission_type": "Hydrostatic (HST)",
+        "engine_model": "Komatsu SAA6D107E-3",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 3000
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Komatsu WA320-8 spec sheet AESS005008",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "Komatsu WA320-8 spec search (system pressure 3000 psi / 47.6 gpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "8th generation (-8 suffix). Tier 4 Final. Introduced ~2015.",
+        "Bucket capacity varies 2.2–2.7 CY by application.",
+        "PATCH 2026-03-19: net_power_hp corrected to 165hp (was 155hp). Transmission corrected to Hydrostatic/HST (was Powershift - wrong). gross_power_hp nulled pending OEM spec sheet AESS005008 confirmation."
+      ]
+    },
+    {
+      "model_slug": "case_721",
+      "manufacturer": "Case",
+      "model": "721",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 29000,
+        "bucket_capacity_cy": 2.9,
+        "gross_power_hp": null,
+        "net_power_hp": 173,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": null,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": null,
+        "hydraulic_flow_gpm": null,
+        "fuel_capacity_gal": null,
+        "transmission_type": null,
+        "engine_model": null,
+        "emissions_tier": null
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "LOW",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "LOW",
+        "hydraulic_flow_gpm": "LOW",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "LOW",
+        "engine_model": "LOW",
+        "emissions_tier": "LOW"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "manual_review",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "manual_review",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review"
+      },
+      "spec_confidence": "LOW",
+      "source_refs": [
+        {
+          "ref": "Case 721G (representative 721-family variant) — 173 hp; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Case 721G operating weight ~29,000 lb; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Case 721G standard bucket ~2.9 yd³; stub profile",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "FAMILY/SERIES identifier — '721' spans multiple generations and configurations.",
+        "Specs vary significantly across model years. Do not auto-fill without serial decode.",
+        "Requires manual spec entry or serial-number-driven registry lookup before listing."
+      ]
+    },
+    {
+      "model_slug": "hyundai_hl940",
+      "manufacturer": "Hyundai",
+      "model": "HL940",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 29321,
+        "bucket_capacity_cy": 2.1,
+        "gross_power_hp": null,
+        "net_power_hp": 156,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": 13900,
+        "hinge_pin_height_ft": 13.1,
+        "travel_speed_mph": 24.5,
+        "hydraulic_flow_gpm": 39,
+        "fuel_capacity_gal": 52,
+        "transmission_type": "Powershift",
+        "engine_model": null,
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 2987
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "LOW",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "manual_review",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Hyundai HL940 spec sheet",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "RitchieSpecs Hyundai HL940 (relief 2987 psi / pump 39 gal/min)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Mid-range compact wheel loader. Introduced ~2017.",
+        "Note: Now branded HD Hyundai Construction Equipment.",
+        "PATCH 2026-03-19: net_power_hp corrected to 156hp (was 134hp, OEM confirmed). OW corrected to 29,321 lb (was 27,600 lb). Engine model nulled - Cummins QSB6.7 unconfirmed at this output level. Breakout force nulled pending re-derivation from correct spec baseline."
+      ]
+    },
+    {
+      "model_slug": "komatsu_wa380_8",
+      "manufacturer": "Komatsu",
+      "model": "WA380-8",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 40532,
+        "bucket_capacity_cy": 4.3,
+        "gross_power_hp": null,
+        "net_power_hp": 191,
+        "breakout_force_lbf": null,
+        "tipping_load_straight_lb": 21300,
+        "hinge_pin_height_ft": null,
+        "travel_speed_mph": 23.8,
+        "hydraulic_flow_gpm": 54.15,
+        "fuel_capacity_gal": null,
+        "transmission_type": "Komatsu Automatic Powershift (lock-up)",
+        "engine_model": "Komatsu SAA6D107E-3",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 3555
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "LOW",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "LOW",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "LOW",
+        "travel_speed_mph": "MEDIUM",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "LOW",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "manual_review",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "manual_review",
+        "travel_speed_mph": "manual_review",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "manual_review",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Komatsu OEM spec sheet PDF: AESS882_0225_EV5 (komatsu.com/en-us, fetched 2026-03-19)",
+        "MachineryTrader listing aggregation (cross-reference)",
+        {
+          "ref": "SMS Equipment WA380-8 spec (24.5 MPa = 3555 psi / 54.15 gpm); CONFLICT with RitchieSpecs (4550/36.2) — manual_review recommended",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "Komatsu WA380-8 max speed ~38.3 km/h = 23.8 mph; OEM range confirmed",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "8th generation (-8 suffix). EPA Tier 4 Final. Introduced ~2015.",
+        "Source: Komatsu OEM spec sheet PDF AESS882_0225_EV5 (komatsu.com/en-us, fetched 2026-03-19).",
+        "HP normalization: OEM states NET 191 HP @ 2100 rpm (143 kW). Previous registry value of 190 was a 1 hp rounding approximation with no OEM basis; corrected to exact OEM value of 191.",
+        "operating_weight_lb = 40,532 lb (18,385 kg): OEM base/minimum config. OEM range is 40,532–41,932 lb depending on configuration. Locked at base; verify config before auto-fill on heavy-spec units.",
+        "bucket_capacity_cy = 4.3 yd3: standard GP bucket per OEM upper bound. OEM range 3.5–4.3 yd3 (2.7–3.3 m3). manual_review: confirm config before locking in listing.",
+        "transmission_type: Komatsu Automatic Powershift with lock-up torque converter (2nd/3rd/4th gear lock-up). Updated from generic 'Komatsu Powershift'.",
+        "breakout_force_lbf, hinge_pin_height_ft, travel_speed_mph, hydraulic_flow_gpm, fuel_capacity_gal: nulled to manual_review. Not present in fetched OEM spec sheet. Re-lock only after confirming against full spec sheet pages not retrieved."
+      ]
+    },
+    {
+      "model_slug": "john_deere_544l",
+      "manufacturer": "John Deere",
+      "model": "544L",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 36300,
+        "bucket_capacity_cy": 2.7,
+        "gross_power_hp": 168,
+        "net_power_hp": 162,
+        "breakout_force_lbf": 30100,
+        "tipping_load_straight_lb": 18200,
+        "hinge_pin_height_ft": 13.7,
+        "travel_speed_mph": 24.5,
+        "hydraulic_flow_gpm": 80,
+        "fuel_capacity_gal": 67,
+        "transmission_type": "Powershift",
+        "engine_model": "JD 6068H",
+        "emissions_tier": "Final Tier 4",
+        "hydraulic_pressure_psi": 3650
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "John Deere 544L spec sheet OMLT399197",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "Inferred from JD 544K/KII family (same 3650 psi platform); no direct 544L spec sheet found — manual_review recommended",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Production ~2017–2021. Bridged 544K and 544 P-TIER.",
+        "Bucket capacity varies 2.5–3.0 CY by config."
+      ]
+    },
+    {
+      "model_slug": "john_deere_544kii",
+      "manufacturer": "John Deere",
+      "model": "544KII",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 34800,
+        "bucket_capacity_cy": 2.7,
+        "gross_power_hp": 168,
+        "net_power_hp": 162,
+        "breakout_force_lbf": 29500,
+        "tipping_load_straight_lb": 18100,
+        "hinge_pin_height_ft": 13.6,
+        "travel_speed_mph": 24.2,
+        "hydraulic_flow_gpm": 50,
+        "fuel_capacity_gal": 67,
+        "transmission_type": "Powershift",
+        "engine_model": "JD 6068H PowerTech",
+        "emissions_tier": "Final Tier 4",
+        "hydraulic_pressure_psi": 3650
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "John Deere 544KII spec sheet",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "RitchieSpecs JD 544K-II (251.7 bar → 3650 psi unit-corrected / 50 gal/min)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "544K Series II — interim FT4 update. Production ~2015–2017.",
+        "Mechanically near-identical to 544K with emissions update.",
+        "544KII is the Final Tier 4 transition of the 544K — same mechanical platform, updated emissions system. Distinguish clearly from 544K (iT4/T3) on listings."
+      ]
+    },
+    {
+      "model_slug": "doosan_dl250",
+      "manufacturer": "Doosan",
+      "model": "DL250",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 34800,
+        "bucket_capacity_cy": 2.5,
+        "gross_power_hp": 165,
+        "net_power_hp": 157,
+        "breakout_force_lbf": 27500,
+        "tipping_load_straight_lb": 17200,
+        "hinge_pin_height_ft": 13.8,
+        "travel_speed_mph": 25.5,
+        "hydraulic_flow_gpm": 75,
+        "fuel_capacity_gal": 66,
+        "transmission_type": "Powershift",
+        "engine_model": "Doosan DB58",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 3480
+      },
+      "field_confidence": {
+        "operating_weight_lb": "MEDIUM",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "MEDIUM",
+        "net_power_hp": "MEDIUM",
+        "breakout_force_lbf": "MEDIUM",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "MEDIUM",
+        "emissions_tier": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "manual_review",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "manual_review",
+        "net_power_hp": "manual_review",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "manual_review",
+        "emissions_tier": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "MEDIUM",
+      "source_refs": [
+        "Doosan DL250-5 spec sheet",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "Doosan DL250 implement system pressure estimate; manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "DL250 spans -3 and -5 series on marketplace. Specs above reflect -5 (Tier 4 Final).",
+        "Note: Now branded Develon DL250-7 for current production.",
+        "Plain 'DL250' marketplace label spans -3 (Tier 3) and -5 (Tier 4 Final) generations. Specs reflect -5 only. Auto-fill must not fire without confirming generation via serial decode."
+      ]
+    },
+    {
+      "model_slug": "hyundai_hl960",
+      "manufacturer": "Hyundai",
+      "model": "HL960",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 47200,
+        "bucket_capacity_cy": 3.5,
+        "gross_power_hp": 218,
+        "net_power_hp": 211,
+        "breakout_force_lbf": 36100,
+        "tipping_load_straight_lb": 25200,
+        "hinge_pin_height_ft": 14.8,
+        "travel_speed_mph": 24.5,
+        "hydraulic_flow_gpm": 63.1,
+        "fuel_capacity_gal": 90,
+        "transmission_type": "Powershift",
+        "engine_model": null,
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 4061
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "LOW",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "manual_review",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Hyundai HL960 spec sheet",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "Hyundai HL960A spec search (max relief 4061 psi / peak flow 63.1 gpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Mid-large class loader. ~950M competitor class.",
+        "Now branded HD Hyundai CE HL960 XT in current production.",
+        "Engine model requires verification — QSB6.7 is likely incorrect for 218 hp gross output. Probable candidates: Cummins QSC8.3 or QSL9. Do not auto-fill engine_model until confirmed."
+      ]
+    },
+    {
+      "model_slug": "komatsu_wa500_8",
+      "manufacturer": "Komatsu",
+      "model": "WA500-8",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 83800,
+        "bucket_capacity_cy": 5.5,
+        "gross_power_hp": 367,
+        "net_power_hp": 354,
+        "breakout_force_lbf": 66500,
+        "tipping_load_straight_lb": 42000,
+        "hinge_pin_height_ft": 16.7,
+        "travel_speed_mph": 22.1,
+        "hydraulic_flow_gpm": 84.8,
+        "fuel_capacity_gal": 179,
+        "transmission_type": "Komatsu Powershift",
+        "engine_model": "Komatsu SAA6D125E-7",
+        "emissions_tier": "Tier 4 Final",
+        "hydraulic_pressure_psi": 4980
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Komatsu WA500-8 spec sheet AESS005011",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "Komatsu WA500-8 spec search (4980 psi / 84.8 gpm CLSS)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Large class loader. 8th generation, Tier 4 Final.",
+        "Bucket capacity 4.9–6.5 CY by application. Quarry/aggregate configured units common.",
+        "tipping_load_straight_lb value of 42,000 lb may reflect full-turn figure rather than straight-tipping. Straight tipping load on WA500-8 is typically higher (~44,000–46,000 lb). Verify against OEM config sheet before auto-fill."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_950k",
+      "manufacturer": "Caterpillar",
+      "model": "950K",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "operating_weight_lb": 46700,
+        "bucket_capacity_cy": 3.5,
+        "gross_power_hp": 214,
+        "net_power_hp": 206,
+        "breakout_force_lbf": 35800,
+        "tipping_load_straight_lb": 25200,
+        "hinge_pin_height_ft": 14.5,
+        "travel_speed_mph": 24.9,
+        "hydraulic_flow_gpm": 90,
+        "fuel_capacity_gal": 88,
+        "transmission_type": "Automatic Powershift",
+        "engine_model": "Cat C7 ACERT",
+        "emissions_tier": "Tier 3 / Interim Tier 4",
+        "hydraulic_pressure_psi": 3800
+      },
+      "field_confidence": {
+        "operating_weight_lb": "HIGH",
+        "bucket_capacity_cy": "MEDIUM",
+        "gross_power_hp": "HIGH",
+        "net_power_hp": "HIGH",
+        "breakout_force_lbf": "HIGH",
+        "tipping_load_straight_lb": "MEDIUM",
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "operating_weight_lb": "locked",
+        "bucket_capacity_cy": "manual_review",
+        "gross_power_hp": "locked",
+        "net_power_hp": "locked",
+        "breakout_force_lbf": "locked",
+        "tipping_load_straight_lb": "manual_review",
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "manual_review",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Cat 950K spec sheet AEHQ5870",
+        "MachineryTrader listing aggregation",
+        {
+          "ref": "RitchieSpecs CAT 950K (implement max 3800 psi / pump 90 gal/min @ 2340 rpm)",
+          "patch": "backfill_pass1 2026-03-26"
+        }
+      ],
+      "notes": [
+        "Production ~2010–2015. Preceded by 950H, succeeded by 950M.",
+        "Emissions tier varies by production year — early units T3, later iT4.",
+        "Bucket capacity varies 3.0–3.75 CY by configuration."
+      ]
+    }
+  ]
+}

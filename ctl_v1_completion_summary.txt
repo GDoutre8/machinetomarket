@@ -1,0 +1,253 @@
+CTL V1 Completion Summary
+============================================================
+Generated:  2026-03-30
+Registry:   mtm_ctl_registry_v1_6.json  (203 total records)
+
+V1 Core Fields (8 required):
+  horsepower_hp                              [performance]
+  rated_operating_capacity_lbs               [performance]
+  tipping_load_lbs                           [performance]
+  operating_weight_lbs                       [performance]
+  aux_flow_standard_gpm                      [performance]
+  travel_speed_high_mph                      [performance]
+  width_over_tires_in                        [dimensional]
+  bucket_hinge_pin_height_in                 [dimensional]
+
+BUCKET SUMMARY
+--------------------------------------------------
+Bucket                Count  Pct of Total
+--------------------------------------------------
+COMPLETE                 13          6.4%
+MISSING_1                 5          2.5%
+MISSING_2                68         33.5%
+MISSING_3_PLUS            0          0.0%
+STUB                    117         57.6%
+--------------------------------------------------
+TOTAL                   203        100.0%
+
+Non-stub records (have at least 1 V1 field):  86
+
+COMPLETE RECORDS
+--------------------------------------------------
+  ASV            RT-75             [asv_rt75]  (production)
+  ASV            VT-70             [asv_vt70]  (production)
+  Case           TR270             [case_tr270]  (production)
+  Takeuchi       TL10              [takeuchi_tl10]  (production)
+  Takeuchi       TL10V2            [takeuchi_tl10v2]  (production)
+  Takeuchi       TL11R3            [takeuchi_tl11r3]  (production)
+  Takeuchi       TL12              [takeuchi_tl12]  (production)
+  Takeuchi       TL12R2            [takeuchi_tl12r2]  (production)
+  Takeuchi       TL12V2            [takeuchi_tl12v2]  (production)
+  Takeuchi       TL150             [takeuchi_tl150]  (production)
+  Takeuchi       TL6R              [takeuchi_tl6r]  (production)
+  Takeuchi       TL8               [takeuchi_tl8]  (production)
+  Takeuchi       TL8R2             [takeuchi_tl8r2]  (production)
+
+MISSING 1 FIELD
+--------------------------------------------------
+  Bobcat         T190              missing: ['bucket_hinge_pin_height_in']
+  Bobcat         T66               missing: ['bucket_hinge_pin_height_in']
+  Bobcat         T750              missing: ['bucket_hinge_pin_height_in']
+  Bobcat         T76               missing: ['bucket_hinge_pin_height_in']
+  Bobcat         T770              missing: ['bucket_hinge_pin_height_in']
+
+MISSING 2 FIELDS
+--------------------------------------------------
+  ASV            RT-110            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  ASV            RT-120            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  ASV            RT-40             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  ASV            RT-50             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  ASV            RT-65             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T300              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T320              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T450              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T550              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T590              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T595              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T650              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T740              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T86               missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Bobcat         T870              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TR270B            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TR310             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TR310B            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TR320             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TR340             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TR340B            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TV370B            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TV380             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TV450             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Case           TV450B            missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    239D3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    249D3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    259B3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    259D              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    259D3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    277C              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    279D              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    279D3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    287C              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    289D              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    289D3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    299D              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Caterpillar    299D3             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  JCB            270T              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  JCB            320T              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     317G              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     319G              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     323E              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     325G              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     329E              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     329G              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     331 P-Tier        missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     331G              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     333 P-Tier        missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     333E              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  John Deere     333G              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL65             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL65-2           missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL75             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL75-2           missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL75-3           missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL90             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL95-2S          missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Kubota         SVL97-2           missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  New Holland    C227              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  New Holland    C232              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  New Holland    C238              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  New Holland    C245              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  New Holland    C332              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  New Holland    C337              missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Takeuchi       TL230             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Takeuchi       TL240             missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+  Takeuchi       TL6               missing: ['width_over_tires_in', 'bucket_hinge_pin_height_in']
+
+MISSING 3+ FIELDS
+--------------------------------------------------
+
+STUB RECORDS (117 coverage stubs — no V1 specs populated)
+--------------------------------------------------
+  Bobcat         T110              [bobcat_t110]
+  Bobcat         T140              [bobcat_t140]
+  Bobcat         T180              [bobcat_t180]
+  Bobcat         T200              [bobcat_t200]
+  Bobcat         T250              [bobcat_t250]
+  Bobcat         T630              [bobcat_t630]
+  Bobcat         T64               [bobcat_t64]
+  Case           445CT             [case_445ct]
+  Case           450CT             [case_450ct]
+  Case           DL550             [case_dl550]
+  Case           TV370             [case_tv370]
+  Case           TV620B            [case_tv620b]
+  Caterpillar    239D              [cat_239d]
+  Caterpillar    247               [cat_247]
+  Caterpillar    247B              [cat_247b]
+  Caterpillar    247B2             [cat_247b2]
+  Caterpillar    247B3             [cat_247b3]
+  Caterpillar    249D              [cat_249d]
+  Caterpillar    255               [cat_255]
+  Caterpillar    257B              [cat_257b]
+  Caterpillar    257B2             [cat_257b2]
+  Caterpillar    257B3             [cat_257b3]
+  Caterpillar    257D              [cat_257d]
+  Caterpillar    257D3             [cat_257d3]
+  Caterpillar    259B              [cat_259b]
+  Caterpillar    265               [cat_265]
+  Caterpillar    267B              [cat_267b]
+  Caterpillar    275               [cat_275]
+  Caterpillar    275 XE            [cat_275_xe]
+  Caterpillar    277               [cat_277]
+  Caterpillar    277B              [cat_277b]
+  Caterpillar    277C2             [cat_277c2]
+  Caterpillar    277D              [cat_277d]
+  Caterpillar    279C              [cat_279c]
+  Caterpillar    279C2             [cat_279c2]
+  Caterpillar    285 XE            [cat_285_xe]
+  Caterpillar    287               [cat_287]
+  Caterpillar    287B              [cat_287b]
+  Caterpillar    287C2             [cat_287c2]
+  Caterpillar    287D              [cat_287d]
+  Caterpillar    289C              [cat_289c]
+  Caterpillar    289C2             [cat_289c2]
+  Caterpillar    297C              [cat_297c]
+  Caterpillar    297D              [cat_297d]
+  Caterpillar    297D2 XHP         [cat_297d2_xhp]
+  Caterpillar    299C              [cat_299c]
+  Caterpillar    299D XHP          [cat_299d_xhp]
+  Caterpillar    299D2             [cat_299d2]
+  Caterpillar    299D2 XHP         [cat_299d2_xhp]
+  Caterpillar    299D3 XE          [cat_299d3_xe]
+  Caterpillar    299D3 XE LAND MANAGEMENT  [cat_299d3_xe_land_management]
+  Gehl           RT195             [gehl_rt195]
+  Gehl           RT210             [gehl_rt210]
+  Gehl           RT215             [gehl_rt215]
+  Gehl           RT250             [gehl_rt250]
+  Gehl           RT255             [gehl_rt255]
+  Gehl           V210              [gehl_v210]
+  Gehl           V230              [gehl_v230]
+  Gehl           V270              [gehl_v270]
+  Gehl           V275              [gehl_v275]
+  Gehl           V330              [gehl_v330]
+  Gehl           V335              [gehl_v335]
+  Gehl           V360              [gehl_v360]
+  Gehl           V420              [gehl_v420]
+  Gehl           VT210             [gehl_vt210]
+  Gehl           VT230             [gehl_vt230]
+  Gehl           VT275             [gehl_vt275]
+  Gehl           VT320             [gehl_vt320]
+  Gehl           VT335             [gehl_vt335]
+  Gehl           VT360             [gehl_vt360]
+  JCB            180T              [jcb_180t]
+  JCB            190T              [jcb_190t]
+  JCB            215T              [jcb_215t]
+  JCB            225T              [jcb_225t]
+  JCB            260T              [jcb_260t]
+  JCB            2TS-7T            [jcb_2ts_7t]
+  JCB            300T              [jcb_300t]
+  JCB            3TS-8T            [jcb_3ts_8t]
+  JCB            3TS-8W            [jcb_3ts_8w]
+  JCB            4TS-8T            [jcb_4ts_8t]
+  JCB            ROBOT 1110T       [jcb_robot_1110t]
+  John Deere     317 P-TIER        [jd_317_p_tier]
+  John Deere     322D              [jd_322d]
+  John Deere     333D              [jd_333d]
+  John Deere     335 P-TIER        [jd_335_p_tier]
+  John Deere     335G              [jd_335g]
+  Kubota         SVL110-3          [kubota_svl110_3]
+  Kubota         SVL65-2S          [kubota_svl65_2s]
+  Kubota         SVL90-2           [kubota_svl90_2]
+  Kubota         SVL95-2           [kubota_svl95_2]
+  Kubota         SVL97-3           [kubota_svl97_3]
+  New Holland    C362              [nh_c362]
+  Takeuchi       TL120             [takeuchi_tl120]
+  Takeuchi       TL130             [takeuchi_tl130]
+  Takeuchi       TL230-2           [takeuchi_tl230_2]
+  Takeuchi       TL250             [takeuchi_tl250]
+  Takeuchi       TL26              [takeuchi_tl26]
+  Takeuchi       TL8R              [takeuchi_tl8r]
+  Toro           DINGO 323         [toro_dingo_323]
+  Toro           DINGO 950P        [toro_dingo_950p]
+  Toro           DINGO TX1000N     [toro_dingo_tx1000n]
+  Toro           DINGO TX1000N TURBO  [toro_dingo_tx1000n_turbo]
+  Toro           DINGO TX1000W     [toro_dingo_tx1000w]
+  Toro           DINGO TX1000W TURBO  [toro_dingo_tx1000w_turbo]
+  Toro           DINGO TX1300      [toro_dingo_tx1300]
+  Toro           DINGO TX413       [toro_dingo_tx413]
+  Toro           DINGO TX420       [toro_dingo_tx420]
+  Toro           DINGO TX427N      [toro_dingo_tx427n]
+  Toro           DINGO TX427W      [toro_dingo_tx427w]
+  Toro           DINGO TX525N      [toro_dingo_tx525n]
+  Toro           DINGO TX525W      [toro_dingo_tx525w]
+  Toro           DINGO TX700       [toro_dingo_tx700]
+  Toro           DINGO TX700N      [toro_dingo_tx700n]
+  Toro           DINGO TX700W      [toro_dingo_tx700w]
+  Toro           DINGO TXL2000     [toro_dingo_txl2000]
+  Toro           DINGO TXL2000T    [toro_dingo_txl2000t]
+  Toro           E-DINGO 500       [toro_e_dingo_500]
+
+============================================================
+RESEARCH PRIORITY BREAKDOWN (non-stub records with gaps)
+--------------------------------------------------
+  Priority 1 (Only dimensional fields missing (width/hinge pin)): 73 records
+  Priority 2 (Missing 1 performance field (+/- dimensional)): 0 records
+  Priority 3 (Missing 2+ performance fields): 0 records

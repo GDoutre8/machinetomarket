@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.zip
+*backup*.py
+venv/
+.venv/
+outputs/
+inputs/
+*.xlsx
+*.xls
+.claude/

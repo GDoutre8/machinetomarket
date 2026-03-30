@@ -1,0 +1,199 @@
+{
+  "_manifest_meta": {
+    "manifest_name": "MTM Equipment Registry Manifest",
+    "version": "2.0",
+    "last_updated": "2026-03-29T00:00:00Z",
+    "description": "Master index of all MTM equipment registry files. Update this manifest when a registry file is promoted, locked, or replaced.",
+    "update_notes": "v2.0 (2026-03-29): Full rescan of /registry directory. 9 new registries added (ctl, skid_steer, wheel_loader, excavator, telehandler, backhoe_loader, dozer, scissor_lift, boom_lift). mini_excavator promoted to v2. All 4 original pending_registries promoted to active. pending_registries section cleared."
+  },
+  "registries": [
+    {
+      "registry_id": "mini_excavator",
+      "display_name": "Mini Excavator Registry",
+      "current_file": "mtm_mini_ex_registry_v2.json",
+      "version": "v2_migration",
+      "status": "MIGRATION_COMPLETE_UNLOCKED",
+      "record_count": 63,
+      "registry_hash": "a9def637b9f24668",
+      "registry_hash_note": "Hash inherited from v1_final baseline — not yet recomputed for v2 migration additions.",
+      "last_updated": "2026-03-29T20:54:14Z",
+      "equipment_type": "mini_excavator",
+      "phase": "Phase 2 — migration complete, unlocked for expansion",
+      "notes": "v2 migration added 15 records to the locked v1_final baseline (48 records). Total 63 records. Status MIGRATION_COMPLETE_UNLOCKED means open for further expansion without explicit unlock.",
+      "history": [
+        {
+          "file": "mtm_mini_ex_registry_v1.json",
+          "version": "v1.0",
+          "records": 39,
+          "status": "superseded"
+        },
+        {
+          "file": "mtm_mini_ex_registry_v1_1.json",
+          "version": "v1.1",
+          "records": 40,
+          "status": "superseded"
+        },
+        {
+          "file": "mtm_mini_ex_registry_v1_2.json",
+          "version": "v1.2",
+          "records": 48,
+          "status": "superseded"
+        },
+        {
+          "file": "mtm_mini_ex_registry_v1.json",
+          "version": "v1_final",
+          "records": 48,
+          "status": "superseded",
+          "note": "Field-order normalized. Was Phase 1 source of truth. Superseded by v2_migration."
+        },
+        {
+          "file": "mtm_mini_ex_registry_v2.json",
+          "version": "v2_migration",
+          "records": 63,
+          "status": "CURRENT"
+        }
+      ]
+    },
+    {
+      "registry_id": "compact_track_loader",
+      "display_name": "CTL (Compact Track Loader) Registry",
+      "current_file": "mtm_ctl_registry_v1_6.json",
+      "version": "v1.6",
+      "status": "ACTIVE",
+      "record_count": 203,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-29",
+      "equipment_type": "compact_track_loader",
+      "phase": "unknown",
+      "notes": "203 total records: ~71 production, ~6 production_candidate, ~122 coverage_stub (see registry meta). Includes Gehl and Toro from Batch 7 expansion. Takeuchi CTL Batch 2 OEM upgrade completed 2026-03-29. Post-dedup: 3 CTL slug duplicates removed. 1 cross-registry conflict fixed (JD 323G confirmed SSL).",
+      "history": []
+    },
+    {
+      "registry_id": "skid_steer",
+      "display_name": "Skid Steer (Wheel) Registry",
+      "current_file": "mtm_skid_steer_registry_v1_5.json",
+      "version": "1.5",
+      "status": "active",
+      "record_count": 253,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-25",
+      "equipment_type": "skid_steer",
+      "phase": "unknown",
+      "notes": "253 total records. validation_status: PASS_CLEAN as of 2026-03-25. Was listed as 'in_progress' in original manifest pending_registries; now promoted to active registry.",
+      "history": []
+    },
+    {
+      "registry_id": "wheel_loader",
+      "display_name": "Wheel Loader Registry",
+      "current_file": "mtm_wheel_loader_registry_v1_final.json",
+      "version": "1.0.3",
+      "status": "locked",
+      "record_count": 25,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-19",
+      "equipment_type": "wheel_loader",
+      "phase": "Phase 1 — locked",
+      "notes": "25 records. 8 FAMILY/SERIES records (manual_review, no auto-fill). 17 EXACT model records. Top 25 by MachineryTrader frequency = 78.1% marketplace coverage. v1.0.3 final lock 2026-03-19. Was 'not_started' in original manifest pending_registries; now promoted.",
+      "history": []
+    },
+    {
+      "registry_id": "excavator",
+      "display_name": "Full-Size Excavator Registry",
+      "current_file": "mtm_excavator_registry_v2.json",
+      "version": "v1_phase_1a_patch1",
+      "status": "locked_phase_1a",
+      "record_count": 14,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-25",
+      "equipment_type": "excavator",
+      "phase": "Phase 1A — locked (patch2 applied 2026-03-25)",
+      "notes": "File is named v2 but internal registry_id is 'mtm_excavator_registry_v1' — naming discrepancy noted. 14 records: full-size crawler excavators >= 18 metric tons + 1 scope exception (cat_308_cr, 8-tonne midi). Record count_verified=13 at Phase 1A lock; patch1 added cat_308_cr (14 total). patch2 (2026-03-25) locked cat_308_cr OEM specs. Was 'not_started' in original manifest pending_registries; now promoted.",
+      "history": []
+    },
+    {
+      "registry_id": "telehandler",
+      "display_name": "Telehandler Registry",
+      "current_file": "mtm_telehandler_registry_v2.json",
+      "version": "unknown",
+      "status": "ACTIVE",
+      "record_count": 17,
+      "registry_hash": "unknown",
+      "last_updated": "unknown",
+      "equipment_type": "telehandler",
+      "phase": "unknown",
+      "notes": "File uses 'new_records' array key (not 'records') and _registry_meta at end of file — non-standard structure vs other registries. record_count: 17 per _registry_meta. Last promotions: skytrak_10054 and skytrak_8042 promoted 2026-03-24; genie_gth_844 OEM-locked and promoted 2026-03-25. Was 'not_started' in original manifest pending_registries; now promoted.",
+      "history": []
+    },
+    {
+      "registry_id": "backhoe_loader",
+      "display_name": "Backhoe Loader Registry",
+      "current_file": "mtm_backhoe_loader_registry_v1.json",
+      "version": "v1.0",
+      "status": "ACTIVE",
+      "record_count": 8,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-27",
+      "equipment_type": "backhoe_loader",
+      "phase": "Phase 1 — initial build",
+      "notes": "8 records: Case 580N, JD 310SL, Cat 420F2, Cat 430F2, Case 590SN, JD 410L, JCB 3CX, Kubota M62. Top-volume North American used-market models. Not present in original manifest — newly discovered in scan.",
+      "history": []
+    },
+    {
+      "registry_id": "dozer",
+      "display_name": "Dozer Registry",
+      "current_file": "mtm_dozer_registry_v1.json",
+      "version": "v1.0",
+      "status": "ACTIVE",
+      "record_count": 6,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-27",
+      "equipment_type": "dozer",
+      "phase": "Phase 1 — initial build",
+      "notes": "6 records: Cat D3, Cat D4, Cat D5, Cat D6T, JD 650K, JD 700K S-II. Top-volume North American used-market crawler dozers. Blade specs vary by configuration — MEDIUM confidence unless OEM-confirmed. Not present in original manifest — newly discovered in scan.",
+      "history": []
+    },
+    {
+      "registry_id": "scissor_lift",
+      "display_name": "Scissor Lift Registry",
+      "current_file": "mtm_scissor_lift_registry_v1.json",
+      "version": "v1.0",
+      "status": "ACTIVE",
+      "record_count": 9,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-27",
+      "equipment_type": "scissor_lift",
+      "phase": "Phase 1 — initial build",
+      "notes": "9 records: Genie GS-1930, GS-2632, GS-3232 (series rep), GRT3246 (RT rep); JLG 1930ES, 2630ES (series rep), 3246R (RT rep); Skyjack SJIII 3219, SJIII 3226 (series rep). Covers electric slab and diesel rough-terrain. Not present in original manifest — newly discovered in scan.",
+      "history": []
+    },
+    {
+      "registry_id": "boom_lift",
+      "display_name": "Boom Lift Registry",
+      "current_file": "mtm_boom_lift_registry_v1.json",
+      "version": "v1.0",
+      "status": "ACTIVE",
+      "record_count": 8,
+      "registry_hash": "unknown",
+      "last_updated": "2026-03-27",
+      "equipment_type": "boom_lift",
+      "phase": "Phase 1 — initial build",
+      "notes": "8 records: Genie S-65 (series rep), S-85, Z-62/40 (series rep), Z-80/60; JLG 600S (series rep), 600AJ (series rep), 860SJ; Skyjack SJ60T. Covers telescopic and articulating diesel/dual-fuel boom lifts. Not present in original manifest — newly discovered in scan.",
+      "history": []
+    }
+  ],
+  "supplementary_files": [
+    {
+      "file": "mtm_top_models_index_v1.json",
+      "type": "control_index",
+      "description": "Top 50 equipment control layer and launch prioritization index. Tracks production_status per slot against live registries and spec injection guard. 52 entries: 32 ready, 6 staged_needs_lock, 14 missing as of 2026-03-24.",
+      "is_registry": false
+    },
+    {
+      "file": "new_records_batch_gap_fill.json",
+      "type": "staging_batch",
+      "description": "Gap-fill staging batch for Top50 machines missing or incorrectly mapped. Originally 6 records; 4 promoted (skytrak_10054, skytrak_8042, genie_gth_844, jcb_330t remapped). 2 remain in staging: cat_938 (wheel_loader, LOW conf, series_record=true) and cat_336 (excavator, LOW conf, series_record=true).",
+      "is_registry": false
+    }
+  ],
+  "pending_registries": []
+}

@@ -1,0 +1,336 @@
+{
+  "_meta": {
+    "version": "2.2",
+    "description": "MTM spec display profiles — presentation-layer only. Registry source data is never modified. Profiles define the ordered fields shown in dealer-facing listing views.",
+    "default_profile": "standard",
+    "profiles": ["essential", "standard", "technical"],
+    "notes": [
+      "Three display tiers: essential / standard / technical. Field counts vary by equipment type.",
+      "'full' profile removed in v2.0. Registry stores ~28–31 fields internally; profiles control what is surfaced.",
+      "Null or missing field values are always skipped — no blank labels ever rendered.",
+      "Field order within each profile is intentional and must be preserved by the resolver.",
+      "tail_swing_type: skid_steer/CTL use short keys (radial/zero/reduced). Mini excavator and excavator use descriptive keys (zero_tail_swing, conventional_tail_swing, reduced_tail_swing).",
+      "breakout_force_lbf not in current skid_steer/CTL canonical schema — omitted from those profiles.",
+      "mini_excavator profile uses aux_flow_primary_gpm (canonical registry field name, not aux_flow_standard_gpm).",
+      "wheel_loader / excavator / telehandler use canonical display-layer names (horsepower_hp, operating_weight_lbs, travel_speed_mph). Registry source fields that differ must be mapped at ingest — not in profiles.",
+      "operating_weight_lb (no s) in telehandler/wheel_loader registries maps to canonical operating_weight_lbs.",
+      "engine_hp / net_power_hp / gross_power_hp in source registries map to canonical horsepower_hp.",
+      "bucket_capacity_cy in source registries maps to canonical bucket_capacity_yd3."
+    ]
+  },
+
+  "skid_steer": {
+    "essential": {
+      "description": "Headline spec card — eight key buyer-decision fields.",
+      "field_count": 8,
+      "fields": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "horsepower_hp",
+        "aux_flow_standard_gpm",
+        "width_over_tires_in",
+        "lift_path",
+        "bucket_hinge_pin_height_in",
+        "travel_speed_high_mph"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — twelve fields covering the specs most buyers compare.",
+      "field_count": 12,
+      "fields": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "horsepower_hp",
+        "aux_flow_standard_gpm",
+        "width_over_tires_in",
+        "lift_path",
+        "bucket_hinge_pin_height_in",
+        "travel_speed_high_mph",
+        "emissions_tier",
+        "aux_flow_high_gpm",
+        "tipping_load_lbs",
+        "hydraulic_pressure_standard_psi"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — fifteen fields for technically-oriented buyers.",
+      "field_count": 15,
+      "fields": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "horsepower_hp",
+        "aux_flow_standard_gpm",
+        "width_over_tires_in",
+        "lift_path",
+        "bucket_hinge_pin_height_in",
+        "travel_speed_high_mph",
+        "emissions_tier",
+        "aux_flow_high_gpm",
+        "tipping_load_lbs",
+        "dump_height_in",
+        "hydraulic_pressure_standard_psi",
+        "hydraulic_pressure_high_psi",
+        "fuel_capacity_gal"
+      ]
+    }
+  },
+
+  "compact_track_loader": {
+    "essential": {
+      "description": "Headline spec card — eight key buyer-decision fields.",
+      "field_count": 8,
+      "fields": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "horsepower_hp",
+        "aux_flow_standard_gpm",
+        "width_over_tires_in",
+        "lift_path",
+        "bucket_hinge_pin_height_in",
+        "travel_speed_high_mph"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — twelve fields covering the specs most buyers compare.",
+      "field_count": 12,
+      "fields": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "horsepower_hp",
+        "aux_flow_standard_gpm",
+        "width_over_tires_in",
+        "lift_path",
+        "bucket_hinge_pin_height_in",
+        "travel_speed_high_mph",
+        "emissions_tier",
+        "aux_flow_high_gpm",
+        "tipping_load_lbs",
+        "hydraulic_pressure_standard_psi"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — fifteen fields for technically-oriented buyers.",
+      "field_count": 15,
+      "fields": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "horsepower_hp",
+        "aux_flow_standard_gpm",
+        "width_over_tires_in",
+        "lift_path",
+        "bucket_hinge_pin_height_in",
+        "travel_speed_high_mph",
+        "emissions_tier",
+        "aux_flow_high_gpm",
+        "tipping_load_lbs",
+        "dump_height_in",
+        "hydraulic_pressure_standard_psi",
+        "hydraulic_pressure_high_psi",
+        "fuel_capacity_gal"
+      ]
+    }
+  },
+
+  "mini_excavator": {
+    "essential": {
+      "description": "Headline spec card — eight key buyer-decision fields for mini excavators.",
+      "field_count": 8,
+      "fields": [
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "max_reach_ft",
+        "width_in",
+        "tail_swing_type",
+        "horsepower_hp",
+        "bucket_breakout_force_lbs",
+        "travel_speed_high_mph"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — twelve fields covering the specs most mini excavator buyers compare.",
+      "field_count": 12,
+      "fields": [
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "max_reach_ft",
+        "width_in",
+        "tail_swing_type",
+        "horsepower_hp",
+        "bucket_breakout_force_lbs",
+        "travel_speed_high_mph",
+        "max_dump_height_ft",
+        "aux_flow_primary_gpm",
+        "arm_digging_force_lbs",
+        "emissions_tier"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — fifteen fields for technically-oriented mini excavator buyers.",
+      "field_count": 15,
+      "fields": [
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "max_reach_ft",
+        "width_in",
+        "tail_swing_type",
+        "horsepower_hp",
+        "bucket_breakout_force_lbs",
+        "travel_speed_high_mph",
+        "max_dump_height_ft",
+        "aux_flow_primary_gpm",
+        "arm_digging_force_lbs",
+        "emissions_tier",
+        "hydraulic_pressure_psi",
+        "fuel_capacity_gal",
+        "height_overall_in"
+      ]
+    }
+  },
+
+  "wheel_loader": {
+    "essential": {
+      "description": "Headline spec card — five key buyer-decision fields for wheel loaders.",
+      "field_count": 5,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "bucket_capacity_yd3",
+        "breakout_force_lbs",
+        "travel_speed_mph"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — nine fields covering the specs most wheel loader buyers compare.",
+      "field_count": 9,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "bucket_capacity_yd3",
+        "breakout_force_lbs",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "fuel_type",
+        "dump_clearance_ft",
+        "reach_at_dump_ft"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — thirteen fields for technically-oriented wheel loader buyers.",
+      "field_count": 13,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "bucket_capacity_yd3",
+        "breakout_force_lbs",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "hydraulic_pressure_psi",
+        "fuel_type",
+        "dump_clearance_ft",
+        "reach_at_dump_ft",
+        "wheelbase_in",
+        "overall_length_ft",
+        "overall_width_ft"
+      ]
+    }
+  },
+
+  "excavator": {
+    "essential": {
+      "description": "Headline spec card — five key buyer-decision fields for excavators.",
+      "field_count": 5,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "bucket_breakout_force_lbs",
+        "travel_speed_mph"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — nine fields covering the specs most excavator buyers compare.",
+      "field_count": 9,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "bucket_breakout_force_lbs",
+        "bucket_capacity_yd3",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "fuel_type",
+        "tail_swing_type"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — fourteen fields for technically-oriented excavator buyers.",
+      "field_count": 14,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "bucket_breakout_force_lbs",
+        "bucket_capacity_yd3",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "hydraulic_pressure_psi",
+        "fuel_type",
+        "tail_swing_type",
+        "arm_digging_force_lbs",
+        "max_reach_ft",
+        "track_width_in",
+        "ground_pressure_psi"
+      ]
+    }
+  },
+
+  "telehandler": {
+    "essential": {
+      "description": "Headline spec card — five key buyer-decision fields for telehandlers.",
+      "field_count": 5,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_lift_capacity_lbs",
+        "lift_height_ft",
+        "forward_reach_ft"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — eight fields covering the specs most telehandler buyers compare.",
+      "field_count": 8,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_lift_capacity_lbs",
+        "lift_height_ft",
+        "forward_reach_ft",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "fuel_type"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — fourteen fields for technically-oriented telehandler buyers.",
+      "field_count": 14,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_lift_capacity_lbs",
+        "lift_height_ft",
+        "forward_reach_ft",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "hydraulic_pressure_psi",
+        "fuel_type",
+        "overall_length_ft",
+        "overall_width_ft",
+        "overall_height_ft",
+        "wheelbase_in",
+        "ground_clearance_in"
+      ]
+    }
+  },
+
+  "_future_equipment_types": {}
+}

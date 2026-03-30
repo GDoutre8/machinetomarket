@@ -1,0 +1,74 @@
+priority_level,manufacturer,model,slug,registry_tier,n_missing,missing_fields
+1,ASV,RT-110,asv_rt110,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,ASV,RT-120,asv_rt120,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,ASV,RT-40,asv_rt40,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,ASV,RT-50,asv_rt50,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,ASV,RT-65,asv_rt65,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T190,bobcat_t190,production,1,bucket_hinge_pin_height_in
+1,Bobcat,T300,bobcat_t300,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T320,bobcat_t320,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T450,bobcat_t450,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T550,bobcat_t550,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T590,bobcat_t590,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T595,bobcat_t595,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T650,bobcat_t650,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T66,bobcat_t66,production,1,bucket_hinge_pin_height_in
+1,Bobcat,T740,bobcat_t740,production_candidate,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T750,bobcat_t750,production,1,bucket_hinge_pin_height_in
+1,Bobcat,T76,bobcat_t76,production,1,bucket_hinge_pin_height_in
+1,Bobcat,T770,bobcat_t770,production,1,bucket_hinge_pin_height_in
+1,Bobcat,T86,bobcat_t86,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Bobcat,T870,bobcat_t870,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TR270B,case_tr270b,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TR310,case_tr310,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TR310B,case_tr310b,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TR320,case_tr320,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TR340,case_tr340,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TR340B,case_tr340b,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TV370B,case_tv370b,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TV380,case_tv380,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TV450,case_tv450,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Case,TV450B,case_tv450b,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,239D3,cat_239d3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,249D3,cat_249d3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,259B3,cat_259b3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,259D,caterpillar_259d,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,259D3,cat_259d3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,277C,cat_277c,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,279D,cat_279d,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,279D3,cat_279d3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,287C,cat_287c,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,289D,caterpillar_289d,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,289D3,cat_289d3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,299D,cat_299d,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Caterpillar,299D3,cat_299d3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,JCB,270T,jcb_270t,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,JCB,320T,jcb_320t,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,317G,jd_317g,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,319G,jd_319g,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,323E,jd_323e,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,325G,jd_325g,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,329E,jd_329e,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,329G,jd_329g,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,331 P-Tier,jd_331_ptier,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,331G,jd_331g,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,333 P-Tier,jd_333_ptier,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,333E,jd_333e,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,John Deere,333G,jd_333g,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL65,kubota_svl65_orig,production_candidate,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL65-2,kubota_svl65,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL75,kubota_svl75_orig,production_candidate,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL75-2,kubota_svl75,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL75-3,kubota_svl75_3,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL90,kubota_svl90,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL95-2S,kubota_svl95,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Kubota,SVL97-2,kubota_svl97,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,New Holland,C227,nh_c227,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,New Holland,C232,nh_c232,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,New Holland,C238,nh_c238,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,New Holland,C245,nh_c245,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,New Holland,C332,new_holland_c332,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,New Holland,C337,new_holland_c337,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Takeuchi,TL230,takeuchi_tl230,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Takeuchi,TL240,takeuchi_tl240,production,2,width_over_tires_in; bucket_hinge_pin_height_in
+1,Takeuchi,TL6,takeuchi_tl6,production,2,width_over_tires_in; bucket_hinge_pin_height_in

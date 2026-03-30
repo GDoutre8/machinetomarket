@@ -1,0 +1,52 @@
+"""
+field_resolvers/tipping_load.py
+Resolves tipping_load_lb.
+"""
+
+from __future__ import annotations
+from typing import Optional
+
+from ..types import FieldSource
+from ..confidence_policy import evaluate_injection, InjectionDecision
+from ..field_rules import get_field_behavior
+from ._base import ResolutionContext, FieldResolution, build_resolution
+
+FIELD = "tipping_load_lb"
+
+
+def resolve(ctx: ResolutionContext) -> Optional[FieldResolution]:
+    if not ctx.can_attempt:
+        return None
+
+    entry    = ctx.registry_entry
+    behavior = get_field_behavior(FIELD, ctx.parsed_category, entry.field_behaviors)
+
+    registry_val = entry.specs.get(FIELD)
+    family_range = entry.family_ranges.get(FIELD) if ctx.is_family else None
+
+    if ctx.is_exact and registry_val is not None:
+        value, source = registry_val, FieldSource.REGISTRY_EXACT
+    elif ctx.is_family and family_range:
+        value, source = family_range, FieldSource.REGISTRY_FAMILY
+    elif ctx.is_family and registry_val is not None:
+        value, source = registry_val, FieldSource.REGISTRY_FAMILY
+    else:
+        value, source = None, FieldSource.UNRESOLVED
+
+    decision = evaluate_injection(
+        field_name=FIELD,
+        behavior=behavior,
+        match_type=ctx.match_type,
+        registry_confidence=ctx.registry_confidence,
+    )
+    if value is None:
+        decision = InjectionDecision(
+            should_inject=False, require_confirm=True,
+            reason=f"Unresolved — no {FIELD} in registry.",
+        )
+
+    return build_resolution(
+        ctx=ctx, value=value, source=source,
+        behavior=behavior, decision=decision,
+        registry_value=registry_val,
+    )

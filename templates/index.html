@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Machine-to-Market — Fix My Listing | Yellow Iron Yard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles_v2.css" />
+  <style>
+    /* ── Options bar ──────────────────────────────────────────── */
+    .options-bar {
+      display: flex; align-items: flex-start; flex-wrap: wrap;
+      gap: 24px; padding: 14px 20px;
+      border-top: 1px solid var(--navy-border);
+      background: var(--navy-panel);
+    }
+    .options-col { display: flex; flex-direction: column; gap: 7px; }
+    .options-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    /* Spec level radio pills */
+    .spec-level-group { display: flex; gap: 5px; }
+    .spec-level-btn { cursor: pointer; }
+    .spec-level-btn input[type="radio"] { display: none; }
+    .spec-level-btn span {
+      display: inline-block; padding: 4px 13px;
+      border: 1px solid var(--navy-border); border-radius: var(--radius);
+      font-size: 12px; font-weight: 500; color: var(--white-dim);
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .spec-level-btn input[type="radio"]:checked + span {
+      background: var(--yiy-yellow); border-color: var(--yiy-yellow);
+      color: var(--navy); font-weight: 700;
+    }
+    /* Generate checkboxes */
+    .toggle-group { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    .toggle-item {
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer; font-size: 13px; color: var(--white-dim);
+      user-select: none; transition: opacity 0.15s;
+    }
+    .toggle-item input[type="checkbox"] {
+      accent-color: var(--yiy-yellow); width: 14px; height: 14px; cursor: pointer;
+    }
+    .toggle-item.disabled { opacity: 0.3; pointer-events: none; }
+
+    /* ── Photo upload + dealer pack bar ──────────────────────── */
+    .pack-bar {
+      display: flex; align-items: flex-start; flex-wrap: wrap;
+      gap: 24px; padding: 14px 20px;
+      border-top: 1px solid var(--navy-border);
+      background: var(--navy-panel);
+    }
+    .pack-col { display: flex; flex-direction: column; gap: 6px; }
+    .pack-col-wide { flex: 1; min-width: 220px; }
+    .pack-badge {
+      display: inline-block; background: var(--yiy-yellow); color: var(--navy);
+      font-size: 10px; font-weight: 700; border-radius: 3px;
+      padding: 1px 5px; vertical-align: middle; margin-left: 4px;
+    }
+    .photo-drop {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 46px; padding: 8px 14px;
+      border: 1.5px dashed var(--navy-border); border-radius: var(--radius);
+      font-size: 12px; color: var(--muted);
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+      background: transparent;
+    }
+    .photo-drop:hover, .photo-drop.drag-over {
+      border-color: var(--yiy-yellow); color: var(--white-dim);
+    }
+    .photo-drop.has-files {
+      border-color: var(--yiy-yellow); border-style: solid; color: var(--white-dim);
+    }
+    .dealer-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .dealer-input {
+      background: var(--navy); border: 1px solid var(--navy-border);
+      border-radius: var(--radius); padding: 5px 9px;
+      font-size: 12px; color: var(--white-dim);
+      font-family: var(--sans); outline: none;
+      transition: border-color 0.15s;
+    }
+    .dealer-input:focus { border-color: var(--yiy-yellow); }
+    .dealer-input::placeholder { color: var(--muted); }
+
+    /* ── Pack result card ──────────────────────────────────────── */
+    .pack-card {
+      background: var(--navy-panel); border: 1px solid var(--navy-border);
+      border-radius: var(--radius); padding: 20px 22px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .pack-card-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .pack-card-machine {
+      font-size: 20px; font-weight: 700; color: var(--yiy-yellow);
+      font-family: var(--sans); letter-spacing: 0.01em;
+    }
+    .pack-status-badge {
+      background: #1a7a3a; color: #6ddf8a;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; border-radius: 3px; padding: 3px 8px;
+    }
+    .pack-status-badge.pack-status-badge-warn {
+      background: rgba(255,179,0,0.12); color: var(--yiy-yellow);
+    }
+    .pack-card-stats { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    .pack-manifest { display: flex; flex-direction: column; gap: 6px; }
+    .manifest-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .manifest-icon {
+      width: 18px; text-align: center; font-weight: 700;
+      font-family: var(--mono); flex-shrink: 0;
+    }
+    .manifest-icon.mi-ok   { color: #6ddf8a; }
+    .manifest-icon.mi-skip { color: var(--muted); }
+    .manifest-icon.mi-fail { color: #e07a30; }
+    .manifest-label  { color: var(--white-dim); flex: 1; }
+    .manifest-status { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+    .manifest-link   { font-size: 11px; color: var(--yiy-yellow); text-decoration: none; font-family: var(--mono); }
+    .manifest-link:hover { text-decoration: underline; }
+    .pack-warnings-box {
+      background: rgba(224,122,48,0.08); border: 1px solid rgba(224,122,48,0.25);
+      border-radius: var(--radius); padding: 10px 14px;
+    }
+    .pack-warnings-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; color: #e07a30; margin-bottom: 6px;
+    }
+    .pack-warnings-list {
+      margin: 0; padding: 0 0 0 14px; list-style: disc;
+      font-size: 11px; color: var(--muted); font-family: var(--mono);
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .pack-cta-row {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      padding-top: 4px; border-top: 1px solid var(--navy-border);
+    }
+    .btn-pack-download {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 22px; border-radius: var(--radius);
+      background: var(--yiy-yellow); color: var(--navy);
+      font-size: 14px; font-weight: 700; text-decoration: none;
+      border: none; cursor: pointer; font-family: var(--sans);
+      transition: opacity 0.15s; flex-shrink: 0;
+    }
+    .btn-pack-download:hover { opacity: 0.88; }
+    .btn-pack-download[disabled] { opacity: 0.4; pointer-events: none; }
+    .pack-cta-note { font-size: 11px; color: var(--muted); }
+
+    /* ── Output files panel ───────────────────────────────────── */
+    .outputs-wrap {
+      max-width: var(--max); margin: 0 auto 28px; width: 100%; padding: 0 32px;
+    }
+    .outputs-head {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--navy-border);
+      margin-bottom: 14px;
+    }
+    .outputs-level {
+      margin-left: auto; font-size: 11px; font-family: var(--mono);
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .outputs-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
+    }
+    .output-item {
+      background: var(--navy-panel); border: 1px solid var(--navy-border);
+      border-radius: var(--radius); padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .output-item-label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); font-weight: 600;
+    }
+    .output-item-link {
+      font-size: 12px; color: var(--yiy-yellow); text-decoration: none;
+      font-family: var(--mono); word-break: break-all;
+    }
+    .output-item-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="13" width="16" height="3" rx="1" fill="#0f1115"/>
+            <rect x="5" y="8" width="10" height="5" rx="1" fill="#0f1115"/>
+            <rect x="8" y="4" width="4" height="4" rx="1" fill="#0f1115"/>
+            <rect x="1" y="16" width="3" height="3" rx="1" fill="#0f1115"/>
+            <rect x="16" y="16" width="3" height="3" rx="1" fill="#0f1115"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-name">Machine-to-Market™ Tools</span>
+          <span class="logo-sub">by Yellow Iron Yard</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="header-badge">Fix My Listing · Beta</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-eyebrow">Dealer Tools</div>
+        <h1>Fix Your Equipment<br>Listing in Seconds.</h1>
+        <p class="sub">Paste your listing. We clean it up, structure it properly, and automatically add OEM specs.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val">139</span>
+          <span class="hero-stat-label">Machines in Registry</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">3</span>
+          <span class="hero-stat-label">Equipment Categories</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">30 sec</span>
+          <span class="hero-stat-label">Avg Listing Fix</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="tool">
+
+      <!-- ── INPUT ─────────────────────────────────────────────── -->
+      <div class="panel" id="input-panel">
+        <div class="panel-header">
+          <span class="step">01</span>
+          <span class="panel-title">Paste Your Raw Listing</span>
+          <button class="btn-example" onclick="tryExample()">Try Example</button>
+        </div>
+        <textarea
+          id="raw-input"
+          placeholder="e.g. 2023 John Deere 317g skid steer 1032 hrs. 78 inch construction bucket, tooth forks. Extended warranty. Like new condition. 49k obo. Located Tulsa OK. Call 918-555-0192"
+          spellcheck="false"
+          autofocus
+        ></textarea>
+
+        <!-- ── Output options ──────────────────────────────── -->
+        <div class="options-bar">
+          <div class="options-col">
+            <div class="options-label">Spec Level</div>
+            <div class="spec-level-group">
+              <label class="spec-level-btn">
+                <input type="radio" name="spec_level" value="quick" checked>
+                <span>Quick Specs</span>
+              </label>
+              <label class="spec-level-btn">
+                <input type="radio" name="spec_level" value="dealer">
+                <span>Dealer Specs</span>
+              </label>
+              <label class="spec-level-btn">
+                <input type="radio" name="spec_level" value="full">
+                <span>Full Specs</span>
+              </label>
+            </div>
+          </div>
+          <div class="options-col">
+            <div class="options-label">Generate</div>
+            <div class="toggle-group">
+              <label class="toggle-item" id="wrap-spec-sheet">
+                <input type="checkbox" id="toggle-spec-sheet" checked>
+                <span>Spec Sheet</span>
+              </label>
+              <label class="toggle-item" id="wrap-variants">
+                <input type="checkbox" id="toggle-variants" checked>
+                <span>Variants</span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="toggle-package" checked>
+                <span>ZIP Package</span>
+              </label>
+              <label class="toggle-item" id="wrap-walkaround">
+                <input type="checkbox" id="toggle-walkaround">
+                <span>Walkaround Video</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Photo upload + dealer info ──────────────────── -->
+        <div class="pack-bar" id="pack-bar">
+
+          <!-- Photo drop zone -->
+          <div class="pack-col pack-col-wide">
+            <div class="options-label">Machine Photos  <span class="pack-badge" id="photo-badge" style="display:none"></span></div>
+            <div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()">
+              <span id="photo-drop-label">Drop photos here or click to upload</span>
+              <input type="file" id="photo-input" multiple accept="image/*,.heic,.heif" style="display:none">
+            </div>
+          </div>
+
+          <!-- Dealer info (collapsible) -->
+          <div class="pack-col">
+            <div class="options-label" style="cursor:pointer" onclick="toggleDealer()">
+              Dealer Info  <span id="dealer-arrow" style="font-size:10px">&#9660;</span>
+            </div>
+            <div id="dealer-fields" style="display:none; margin-top:6px">
+              <div class="dealer-grid">
+                <input class="dealer-input" id="dealer-name"     placeholder="Dealer name" />
+                <input class="dealer-input" id="dealer-phone"    placeholder="Phone" />
+                <input class="dealer-input" id="dealer-email"    placeholder="Email" />
+                <input class="dealer-input" id="dealer-location" placeholder="City, State" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="input-foot">
+          <span class="char-count" id="char-count">0 chars</span>
+          <button class="btn-primary" id="fix-btn" onclick="fixListing()">
+            <span class="btn-text">Fix My Listing</span><span class="arrow">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── OUTPUT ────────────────────────────────────────────── -->
+      <div class="panel" id="output-panel">
+        <div class="panel-header">
+          <span class="step">02</span>
+          <span class="panel-title">Ready-to-Post Listing</span>
+          <button class="btn-copy" id="copy-btn" onclick="copyListing()" style="display:none">
+            Copy ↗
+          </button>
+          <button class="btn-copy btn-fb" id="fb-btn" onclick="copyFacebookPost()" style="display:none">
+            Copy Facebook Post
+          </button>
+        </div>
+
+        <div class="output-idle" id="state-idle">
+          <div class="idle-icon">⚙</div>
+          <p>Your cleaned listing will appear here.</p>
+          <p class="hint">Supports: Skid Steers · CTLs · Mini Excavators</p>
+        </div>
+
+        <div class="output-loading" id="state-loading" style="display:none">
+          <div class="loader"><div class="loader-bar"></div></div>
+          <p class="loading-label">Processing…</p>
+        </div>
+
+        <div class="output-error" id="state-error" style="display:none">
+          <span class="err-icon">⚠</span>
+          <span id="error-msg"></span>
+        </div>
+
+        <pre class="listing-out" id="listing-out" style="display:none"></pre>
+      </div>
+
+    </div><!-- /tool -->
+
+    <!-- ── SPECS PANEL ────────────────────────────────────────── -->
+    <div class="specs-wrap" id="specs-wrap" style="display:none">
+      <div class="specs-head">
+        <span class="specs-badge">Auto-Added</span>
+        <span class="specs-title">Specs from MTM Registry</span>
+        <span class="specs-note" id="confidence-note"></span>
+      </div>
+      <div class="specs-grid" id="specs-grid"></div>
+    </div>
+
+    <!-- ── LISTING PACK DOWNLOAD ─────────────────────────────── -->
+    <div class="outputs-wrap" id="pack-ready-wrap" style="display:none">
+      <div class="pack-card">
+        <div class="pack-card-head">
+          <div class="pack-card-machine" id="pack-card-machine"></div>
+          <div class="pack-status-badge" id="pack-status-badge">Pack Ready</div>
+        </div>
+        <div class="pack-card-stats" id="pack-card-stats"></div>
+        <div class="pack-manifest" id="pack-manifest"></div>
+        <div class="pack-warnings-box" id="pack-warnings-box" style="display:none">
+          <div class="pack-warnings-title">Warnings</div>
+          <ul class="pack-warnings-list" id="pack-warnings-list"></ul>
+        </div>
+        <div class="pack-cta-row">
+          <a class="btn-pack-download" id="pack-download-btn" href="#">&#8595; Download ZIP Pack</a>
+          <div class="pack-cta-note">Ready for Facebook Marketplace, dealer sites, and auction listings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OUTPUT FILES ──────────────────────────────────────── -->
+    <div class="outputs-wrap" id="outputs-wrap" style="display:none">
+      <div class="outputs-head">
+        <span class="specs-badge">Generated</span>
+        <span class="specs-title">Output Files</span>
+        <span class="outputs-level" id="outputs-level"></span>
+      </div>
+      <div class="outputs-grid" id="outputs-grid"></div>
+    </div>
+
+    <!-- ── PARSED DATA ────────────────────────────────────────── -->
+    <details class="parsed-wrap" id="parsed-wrap" style="display:none">
+      <summary>What we extracted from your listing</summary>
+      <div class="parsed-grid" id="parsed-grid"></div>
+    </details>
+
+  </main>
+
+  <footer>
+    <div class="footer-left">
+      <span class="footer-logo">Yellow Iron Yard</span>
+      <span class="sep">·</span>
+      <span>Machine-to-Market™ Dealer Tools</span>
+      <span class="sep">·</span>
+      <span>Beta</span>
+    </div>
+    <div class="footer-right">
+      <a href="https://yellowironyard.com" target="_blank">yellowironyard.com</a>
+    </div>
+  </footer>
+
+  <script src="/static/app_v2.js"></script>
+</body>
+</html>

@@ -1,0 +1,1378 @@
+{
+  "new_records": [
+    {
+      "model_slug": "jcb_509_42",
+      "manufacturer": "JCB",
+      "model": "509-42",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 9000,
+        "max_lift_height_ft": 42.0,
+        "max_forward_reach_ft": 25.9,
+        "engine_brand": "JCB",
+        "engine_hp": 109,
+        "operating_weight_lb": 25350,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 15.5,
+        "drive_type": "4WD (epicyclic hub reduction, Max-Trac torque-proportioning differentials)",
+        "transmission_type": "Powershift (stalk-controlled, forward/reverse shuttle)",
+        "steering_modes": "3-mode: front wheel, all-wheel, crab (in-cab lever selection)",
+        "hydraulic_flow_gpm": 29.1,
+        "hydraulic_pressure_psi": 3770,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "medium",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "package_dependent",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JCB Loadall 509-42 OEM spec sheet — jcb.com product page",
+        "LECTURA Specs (11.5t = 25,353 lb confirmed)",
+        "AllMachines",
+        "MachineryTrader listings (9,000 lb capacity confirmed)",
+        {
+          "ref": "JCB LOADALL 509-42 spec sheet (260 bar main relief / 110 lpm pump flow); companywrench.com",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All JCB LOADALL telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "engine_hp SOFT: JCB EcoMAX available in 74hp (55kW) and 109hp (81kW) configs. 109hp is primary NA-market config. Registry pins to 109hp.",
+        "fuel_capacity SOFT: JCB Loadall mid-range platform documented at ~132L (34.9 gal). Registry rounds to 35 gal; pending OEM PDF confirmation.",
+        "operating_weight 25,350 lb confirmed from LECTURA (11.5t = 25,353 lb) and AllMachines.",
+        "PLATFORM: Shares Loadall chassis architecture with 510-56 and 512-56; shorter boom distinguishes 509-42."
+      ]
+    },
+    {
+      "model_slug": "genie_gth_636",
+      "manufacturer": "Genie",
+      "model": "GTH-636",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 6000,
+        "max_lift_height_ft": 35.8,
+        "max_forward_reach_ft": 23.3,
+        "engine_brand": "Deutz",
+        "engine_hp": 74,
+        "operating_weight_lb": 16975,
+        "fuel_capacity_gal": 26.4,
+        "travel_speed_mph": 15.0,
+        "drive_type": "4WD full-time (planetary)",
+        "transmission_type": "3-speed powershift",
+        "steering_modes": "3-mode: front, 4-wheel, crab (operator selectable)",
+        "hydraulic_flow_gpm": 15,
+        "hydraulic_pressure_psi": 3200,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Genie OEM spec sheet — genielift.com GTH-636 product page",
+        "VeriTread (16,975 lb confirmed)",
+        "LECTURA Specs (7.7t = 16,975 lb confirmed)",
+        "MAK Equipment",
+        "AllMachines",
+        {
+          "ref": "Genie GTH-636 product spec 2020 (genielift.com); aux max 15 gpm / primary manifold 3200 psi (221 bar)",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All Genie telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "fuel_capacity: 26.4 gal (100L) confirmed from Genie OEM spec sheet.",
+        "Engine: Deutz TCD 2.9L T4 Final.",
+        "operating_weight 16,975 lb consistent across VeriTread, LECTURA (7.7t), and MAK Equipment.",
+        "max_lift_height NOTE: Some dealer listings state 36 ft; OEM spec sheet confirms 10.91m = 35.8 ft. Registry uses OEM exact."
+      ]
+    },
+    {
+      "model_slug": "skytrak_10042",
+      "manufacturer": "SkyTrak",
+      "model": "10042",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 10000,
+        "max_lift_height_ft": 42.2,
+        "max_forward_reach_ft": 28.5,
+        "engine_brand": "Cummins",
+        "engine_hp": 74,
+        "operating_weight_lb": 27150,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 19.0,
+        "drive_type": "4WD full-time",
+        "transmission_type": "Hydrostatic",
+        "steering_modes": "3-mode: front, 4-wheel, crab",
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "medium",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "package_dependent",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JLG/SkyTrak OEM spec sheet — macallisterrentals.com/files/SkyTrak-10042-Spec-Sheet.pdf",
+        "MJ Equipment skytrak.com/EquipmentModels/10042",
+        "VeriTread",
+        "Carleton Equipment",
+        {
+          "ref": "SkyTrak 10042 uses Deutz diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: 10042 shares core drivetrain (Cummins QSF3.8 hydrostatic) with 8042 and 10054. Shorter boom distinguishes from 10054.",
+        "engine_hp SOFT: 74hp standard (DEF-free Cummins QSF3.8); 110hp available on 10042L variant. Registry pins to 74hp standard.",
+        "operating_weight SOFT: Range 27,000–27,200 lb across model years. Registry uses 27,150 lb midpoint; pending OEM PDF confirmation.",
+        "fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)."
+      ]
+    },
+    {
+      "model_slug": "jlg_g5_18a",
+      "manufacturer": "JLG",
+      "model": "G5-18A",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 5000,
+        "max_lift_height_ft": 18.0,
+        "max_forward_reach_ft": 10.0,
+        "engine_brand": "Kubota",
+        "engine_hp": 24.8,
+        "operating_weight_lb": 6988,
+        "fuel_capacity_gal": 6.6,
+        "travel_speed_mph": 6.2,
+        "drive_type": "4WD (hydrostatic)",
+        "transmission_type": "Hydrostatic",
+        "steering_modes": "2-mode: 4-wheel, crab",
+        "hydraulic_flow_gpm": 19.1,
+        "hydraulic_pressure_psi": 3496,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JLG G5-18A OEM spec sheet — jlg.com product page",
+        "LECTURA Specs (3.17t = 6,988 lb confirmed)",
+        "AllMachines",
+        "MachineryTrader listings",
+        {
+          "ref": "RitchieSpecs JLG G5-18A (pump flow 19.1 gal/min, relief 3495.5 psi)",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All JLG G-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "COMPACT CLASS: G5-18A is a compact/mini telehandler. Operating weight, fuel capacity, engine, and travel speed are not comparable to full-size registry entries.",
+        "Engine: Kubota D1105 diesel 24.8hp.",
+        "steering_modes NOTE: 2-mode (4-wheel + crab) only — no front-wheel-only mode.",
+        "fuel_capacity 6.6 gal (25L) confirmed from OEM spec sheet.",
+        "travel_speed 6.2 mph confirmed from OEM spec sheet."
+      ]
+    },
+    {
+      "model_slug": "gehl_rs5_19",
+      "manufacturer": "Gehl",
+      "model": "RS5-19",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 5500,
+        "max_lift_height_ft": 18.7,
+        "max_forward_reach_ft": 11.3,
+        "engine_brand": "Deutz",
+        "engine_hp": 50,
+        "operating_weight_lb": 11200,
+        "fuel_capacity_gal": 15.9,
+        "travel_speed_mph": 12.4,
+        "drive_type": "4WD (hydrostatic)",
+        "transmission_type": "Hydrostatic",
+        "steering_modes": "4-wheel steer constant (all 4 wheels always active)",
+        "hydraulic_flow_gpm": 22,
+        "hydraulic_pressure_psi": 3350,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl RS5-19 OEM spec sheet — gehl.com product page",
+        "LECTURA Specs (5.08t = 11,200 lb confirmed)",
+        "AllMachines",
+        "MachineryTrader listings",
+        {
+          "ref": "RitchieSpecs Gehl RS5-19 (pump flow 22 gal/min, relief 3350 psi)",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All Gehl RS-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "COMPACT CLASS: RS5-19 is a compact telehandler. Specs not comparable to full-size registry entries.",
+        "Engine: Deutz D2011 L03i diesel 50hp.",
+        "steering_modes NOTE: Constant 4WS — all 4 wheels always steer simultaneously. Same architecture as Genie GTH-5519 in existing registry.",
+        "fuel_capacity 15.9 gal (60L) confirmed from OEM spec sheet.",
+        "PLATFORM: Manitou-sourced compact platform — related to Manitou MLT 526 series."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_tl642",
+      "manufacturer": "Caterpillar",
+      "model": "TL642",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 6000,
+        "max_lift_height_ft": 42.0,
+        "max_forward_reach_ft": 27.9,
+        "engine_brand": "Caterpillar",
+        "engine_hp": 97,
+        "operating_weight_lb": 21000,
+        "fuel_capacity_gal": 28.0,
+        "travel_speed_mph": 17.0,
+        "drive_type": "4WD (planetary axles)",
+        "transmission_type": "Powershift 3F/3R",
+        "steering_modes": "3-mode: 2-wheel front, 4-wheel, crab",
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 24.0,
+        "hydraulic_pressure_psi": 3480
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "medium",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "medium",
+        "drive_type": "high",
+        "transmission_type": "medium",
+        "steering_modes": "high",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "generation_dependent",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "generation_dependent",
+        "travel_speed_mph": "range",
+        "transmission_type": "generation_dependent",
+        "steering_modes": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "medium",
+      "source_refs": [
+        "CAT TL642 OEM spec sheet — earlier C-series generation (macallisterrentals.com)",
+        "VeriTread",
+        "LECTURA Specs",
+        "MachineryTrader listings (6,000 lb confirmed)",
+        {
+          "ref": "CAT TL642 uses Cat C3.4B diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT TL642 spec estimate (Merlo-sourced platform, C3.4B engine); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT implement system pressure estimate; manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "GENERATION: TL642 is the C-series predecessor to the TL642D. This record covers C-series (non-D) only.",
+        "engine_hp SOFT: CAT C-series 3054C or 3054E; 97hp most commonly documented but varies by production year.",
+        "operating_weight SOFT: LECTURA and VeriTread show range of 19,800–21,200 lb across C-series years. Registry uses 21,000 lb midpoint.",
+        "fuel_capacity SOFT: ~28 gal documented across multiple sources; confirm from OEM PDF for production year.",
+        "TL642D (D-series) is a separate entry in this registry."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_tl943",
+      "manufacturer": "Caterpillar",
+      "model": "TL943",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 9000,
+        "max_lift_height_ft": 43.0,
+        "max_forward_reach_ft": 28.0,
+        "engine_brand": "Caterpillar",
+        "engine_hp": 97,
+        "operating_weight_lb": 24200,
+        "fuel_capacity_gal": 28.0,
+        "travel_speed_mph": 17.0,
+        "drive_type": "4WD (planetary axles)",
+        "transmission_type": "Powershift 3F/3R",
+        "steering_modes": "3-mode: 2-wheel front, 4-wheel, crab",
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 27.3,
+        "hydraulic_pressure_psi": 3480
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "medium",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "medium",
+        "drive_type": "high",
+        "transmission_type": "medium",
+        "steering_modes": "high",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "generation_dependent",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "generation_dependent",
+        "travel_speed_mph": "range",
+        "transmission_type": "generation_dependent",
+        "steering_modes": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "medium",
+      "source_refs": [
+        "CAT TL943 OEM spec sheet — macallisterrentals.com",
+        "VeriTread",
+        "LECTURA Specs",
+        "MachineryTrader listings (9,000 lb confirmed)",
+        {
+          "ref": "CAT TL943 uses Cat C3.4B diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT TL943 spec estimate (Merlo-sourced platform); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT implement system pressure estimate; manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: TL943 shares C-series CAT chassis architecture with TL642; 9,000 lb capacity vs 6,000 lb. Same engine family.",
+        "engine_hp SOFT: CAT C-series 3054C/3054E; 97hp most commonly documented. Treat as generation_dependent until OEM PDF confirms.",
+        "operating_weight SOFT: Sources show range of 23,500–24,600 lb across years. Registry uses 24,200 lb midpoint.",
+        "fuel_capacity SOFT: 28 gal documented across multiple sources; pending OEM PDF confirmation.",
+        "max_lift_height NOTE: Some sources state 42.9 ft; registry uses 43.0 ft pending OEM PDF exact."
+      ]
+    },
+    {
+      "model_slug": "jlg_g10_55a",
+      "manufacturer": "JLG",
+      "model": "G10-55A",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 10000,
+        "max_lift_height_ft": 54.8,
+        "max_forward_reach_ft": 40.8,
+        "engine_brand": "Cummins",
+        "engine_hp": 100,
+        "operating_weight_lb": 28600,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 18.0,
+        "drive_type": "4WD (planetary axles)",
+        "transmission_type": "Powershift 4F/3R",
+        "steering_modes": "3-mode: 4-wheel circle, 4-wheel crab, 2-wheel front",
+        "hydraulic_pressure_psi": 3625,
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 36.8
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JLG G10-55A OEM spec sheet — jlg.com product page",
+        "LECTURA Specs (12.97t = 28,600 lb confirmed)",
+        "AllMachines",
+        "MachineryTrader listings",
+        {
+          "ref": "allmachines.com JLG G10-55A product page (aux max operating pressure 3625 psi); pump flow unconfirmed",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All JLG G-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JLG G10-55A flow estimate (100 hp, 10k/55ft class); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "GENERATION NOTE: G10-55A is G-Series branding; distinct from numeric JLG 1055 in existing registry. Core capacity and reach specs consistent.",
+        "Engine: Cummins QSF3.8 100hp T4F.",
+        "fuel_capacity SOFT: 35 gal estimated from G-Series platform; confirm from OEM PDF.",
+        "operating_weight 28,600 lb (12.97t) confirmed from LECTURA.",
+        "max_lift_height NOTE: OEM spec sheet confirms 54.8 ft; marketed as 55 ft by most dealers. Registry uses OEM exact."
+      ]
+    },
+    {
+      "model_slug": "jlg_g12_55a",
+      "manufacturer": "JLG",
+      "model": "G12-55A",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 12000,
+        "max_lift_height_ft": 54.8,
+        "max_forward_reach_ft": 40.8,
+        "engine_brand": "Cummins",
+        "engine_hp": 130,
+        "operating_weight_lb": 32200,
+        "fuel_capacity_gal": 38.3,
+        "travel_speed_mph": 18.0,
+        "drive_type": "4WD (planetary axles)",
+        "transmission_type": "Powershift 4F/3R with SmartShift",
+        "steering_modes": "3-mode: 4-wheel circle, 4-wheel crab, 2-wheel front",
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 43.5,
+        "hydraulic_pressure_psi": 3625
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "medium",
+      "source_refs": [
+        "JLG G12-55A OEM spec sheet — jlg.com product page",
+        "LECTURA Specs",
+        "AllMachines",
+        "MachineryTrader listings",
+        {
+          "ref": "All JLG G-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JLG G12-55A flow estimate (130 hp, 12k/55ft class); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JLG G12-55A pressure estimate (standard JLG aux operating pressure); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: G12-55A shares engine family (Cummins QSF3.8L 130hp) and transmission with JLG 1255 in existing registry.",
+        "operating_weight SOFT: 32,200 lb estimated from G-Series platform; confirm from OEM PDF.",
+        "fuel_capacity SOFT: 38.3 gal inferred from shared JLG 1255 platform; confirm from OEM spec sheet.",
+        "SmartShift auto-shift confirmed standard on 12K JLG platform per existing registry 1255 record."
+      ]
+    },
+    {
+      "model_slug": "gehl_rs10_55",
+      "manufacturer": "Gehl",
+      "model": "RS10-55",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 10000,
+        "max_lift_height_ft": 55.0,
+        "max_forward_reach_ft": 40.1,
+        "engine_brand": "Deutz",
+        "engine_hp": 116,
+        "operating_weight_lb": 30865,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 18.6,
+        "drive_type": "4WD (Manitou axles, limited slip)",
+        "transmission_type": "Powershift 4F/4R",
+        "steering_modes": "3-mode: front, 4-wheel, crab",
+        "hydraulic_flow_gpm": 39.9,
+        "hydraulic_pressure_psi": 3000,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl RS10-55 OEM spec sheet — gehl.com product page",
+        "LECTURA Specs (14.0t = 30,865 lb confirmed)",
+        "AllMachines",
+        "MachineryTrader listings",
+        {
+          "ref": "RitchieSpecs Gehl RS10-55 (pump flow 39.9 gal/min, relief 3000 psi)",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All Gehl RS-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: Manitou-sourced platform — related to Manitou MLT 1035/1040 series.",
+        "Engine: Deutz TCD 3.6L T4F 116hp.",
+        "operating_weight 30,865 lb (14.0t) confirmed from LECTURA.",
+        "fuel_capacity SOFT: 35 gal estimated from Manitou MLT platform; confirm from OEM PDF.",
+        "max_lift_height NOTE: Sources vary 54.8–55.1 ft; registry uses 55.0 ft pending OEM PDF exact."
+      ]
+    },
+    {
+      "model_slug": "jlg_g6_42a",
+      "manufacturer": "JLG",
+      "model": "G6-42A",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 6000,
+        "max_lift_height_ft": 42.0,
+        "max_forward_reach_ft": 28.3,
+        "engine_brand": "Cummins",
+        "engine_hp": 74,
+        "operating_weight_lb": 19700,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 19.0,
+        "drive_type": "4WD (planetary axles)",
+        "transmission_type": "Hydrostatic",
+        "steering_modes": "3-mode: 4-wheel circle, 4-wheel crab, 2-wheel front",
+        "hydraulic_pressure_psi": 4000,
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 24.5
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "hydraulic_pressure_psi": "MEDIUM",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JLG G6-42A OEM spec sheet — jlg.com product page",
+        "LECTURA Specs (8.94t = 19,710 lb confirmed)",
+        "AllMachines",
+        "MachineryTrader listings",
+        {
+          "ref": "allmachines.com JLG G6-42A product page (aux max operating pressure 4000 psi); pump flow unconfirmed",
+          "patch": "backfill_pass1 2026-03-26"
+        },
+        {
+          "ref": "All JLG G-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JLG G6-42A flow estimate (74 hp engine, 6k/42ft class); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "Engine: Cummins QSF3.8 74hp DEF-free T4F.",
+        "operating_weight 19,700 lb confirmed from LECTURA (8.94t = 19,710 lb).",
+        "fuel_capacity SOFT: 35 gal estimated from JLG G-Series platform; confirm from OEM spec sheet.",
+        "PLATFORM NOTE: G6-42A uses hydrostatic transmission; G9-43A and G10-55A use powershift. Transmission type differs within G-Series by capacity class."
+      ]
+    },
+    {
+      "model_slug": "jlg_g9_43a",
+      "manufacturer": "JLG",
+      "model": "G9-43A",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 9000,
+        "max_lift_height_ft": 43.3,
+        "max_forward_reach_ft": 29.0,
+        "engine_brand": "Cummins",
+        "engine_hp": 100,
+        "operating_weight_lb": 24500,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 18.0,
+        "drive_type": "4WD (planetary axles)",
+        "transmission_type": "Powershift 4F/3R",
+        "steering_modes": "3-mode: 4-wheel circle, 4-wheel crab, 2-wheel front",
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 29.1,
+        "hydraulic_pressure_psi": 3625
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JLG G9-43A OEM spec sheet — jlg.com product page",
+        "LECTURA Specs",
+        "AllMachines",
+        "MachineryTrader listings (9,000 lb confirmed)",
+        {
+          "ref": "All JLG G-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JLG G9-43A flow estimate (100 hp, 9k class); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "JLG G9-43A pressure estimate (standard JLG aux operating pressure); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "Engine: Cummins QSF3.8 100hp T4F.",
+        "operating_weight SOFT: LECTURA and MachineryTrader show range of 24,000–25,000 lb. Registry uses 24,500 lb midpoint; confirm from OEM PDF.",
+        "fuel_capacity SOFT: 35 gal estimated from JLG G-Series platform; confirm from OEM spec sheet.",
+        "PLATFORM NOTE: G9-43A uses powershift — differs from G6-42A (hydrostatic) within G-Series."
+      ]
+    },
+    {
+      "model_slug": "skytrak_12054",
+      "manufacturer": "SkyTrak",
+      "model": "12054",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 12000,
+        "max_lift_height_ft": 54.1,
+        "max_forward_reach_ft": 42.0,
+        "engine_brand": "Cummins",
+        "engine_hp": 110,
+        "operating_weight_lb": 35300,
+        "fuel_capacity_gal": 44.0,
+        "travel_speed_mph": 20.0,
+        "drive_type": "4WD (trunnion-mounted planetary axles)",
+        "transmission_type": "Powershift 4F/3R",
+        "steering_modes": "3-mode: front, 4-wheel, crab",
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "JLG/SkyTrak OEM spec sheet — macallisterrentals.com/files/SkyTrak-12054-Spec-Sheet.pdf",
+        "MJ Equipment skytrak.com/EquipmentModels/12054",
+        "VeriTread (35,300 lb confirmed)",
+        "Carleton Equipment",
+        {
+          "ref": "SkyTrak 12054 uses Deutz diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM NOTE: 12054 is a distinct platform from the hydrostatic 8042/10054 family. Uses powershift transmission and Cummins 110hp.",
+        "Engine: Cummins QSF3.8 110hp T4F.",
+        "operating_weight 35,300 lb confirmed from VeriTread and MJ Equipment.",
+        "fuel_capacity 44 gal confirmed from OEM spec sheet.",
+        "max_lift_height NOTE: OEM spec sheet confirms 54.1 ft; marketed as 54 ft by most dealers. Registry uses OEM exact."
+      ]
+    },
+    {
+      "model_slug": "gehl_dl12_55",
+      "manufacturer": "Gehl",
+      "model": "DL12-55",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 12000,
+        "max_lift_height_ft": 55.0,
+        "max_forward_reach_ft": 40.7,
+        "engine_brand": "Deutz",
+        "engine_hp": 116,
+        "operating_weight_lb": 34500,
+        "fuel_capacity_gal": 37.0,
+        "travel_speed_mph": 18.6,
+        "drive_type": "4WD (Manitou axles, limited slip)",
+        "transmission_type": "Powershift 4F/4R",
+        "steering_modes": "3-mode: front, 4-wheel, crab",
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 39.9,
+        "hydraulic_pressure_psi": 3000
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "medium",
+      "source_refs": [
+        "Gehl DL12-55 OEM spec sheet — gehl.com product page",
+        "LECTURA Specs",
+        "AllMachines",
+        "MachineryTrader listings (12,000 lb confirmed)",
+        {
+          "ref": "All Gehl DL-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Gehl DL12-55 = Manitou MT12355 platform (same as RS10-55); flow=39.9 gpm",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "Gehl DL12-55 = Manitou MT12355 platform (same as RS10-55); psi=3000",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: Manitou-sourced platform — related to Manitou MLT 1240 series.",
+        "Engine: Deutz TCD 3.6L T4F 116hp (same engine as Gehl RS10-55).",
+        "operating_weight SOFT: Sources indicate 34,000–35,000 lb range. Registry uses 34,500 lb midpoint; confirm from OEM PDF.",
+        "fuel_capacity SOFT: 37 gal estimated from Manitou MLT 1240 platform; confirm from OEM spec sheet."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_tl642d",
+      "manufacturer": "Caterpillar",
+      "model": "TL642D",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 6000,
+        "max_lift_height_ft": 42.0,
+        "max_forward_reach_ft": 27.9,
+        "engine_brand": "Caterpillar",
+        "engine_hp": 107,
+        "operating_weight_lb": 20500,
+        "fuel_capacity_gal": 30.0,
+        "travel_speed_mph": 19.0,
+        "drive_type": "4WD (trunnion-mounted planetary axles, limited slip front)",
+        "transmission_type": "Powershift 4F/3R",
+        "steering_modes": "3-mode: 2-wheel front, 4-wheel, crab",
+        "fuel_type": "diesel",
+        "hydraulic_flow_gpm": 24.0,
+        "hydraulic_pressure_psi": 3480
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "engine_brand": "high",
+        "engine_hp": "high",
+        "operating_weight_lb": "medium",
+        "fuel_capacity_gal": "medium",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "transmission_type": "high",
+        "steering_modes": "high",
+        "fuel_type": "HIGH",
+        "hydraulic_flow_gpm": "MEDIUM",
+        "hydraulic_pressure_psi": "MEDIUM"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "engine_hp": "locked",
+        "operating_weight_lb": "range",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked",
+        "hydraulic_flow_gpm": "manual_review",
+        "hydraulic_pressure_psi": "manual_review"
+      },
+      "spec_confidence": "medium",
+      "source_refs": [
+        "CAT D-Series OEM spec sheet PDF — petersoncat.com/sites/cat/files/products/documents/1502812694-32106.pdf (same source as TL1055D/TL1255D)",
+        "MachineryTrader D-series listings",
+        "LECTURA Specs",
+        "VeriTread",
+        {
+          "ref": "CAT TL642D uses Cat C3.4B diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT TL642D spec estimate (TL642 platform, 107 hp); manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        },
+        {
+          "ref": "CAT implement system pressure estimate; manual_review recommended",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "GENERATION: TL642D is the D-series refresh of the TL642 (C-series). D-series uses CAT C3.3B ACERT 107hp vs C-series 97hp.",
+        "engine_hp: CAT C3.3B ACERT 107hp confirmed for D-series from CAT D-Series OEM spec sheet family.",
+        "operating_weight SOFT: D-series frame reduction relative to C-series documented on TL1055D/TL1055C. Registry uses 20,500 lb; confirm from OEM PDF.",
+        "fuel_capacity SOFT: 30 gal estimated; confirm from OEM spec sheet.",
+        "TL642 (C-series, non-D) is a separate entry in this registry."
+      ]
+    },
+    {
+      "model_slug": "skytrak_10054",
+      "manufacturer": "SkyTrak",
+      "model": "10054",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 10000,
+        "max_lift_height_ft": 54.0,
+        "max_forward_reach_ft": null,
+        "engine_brand": "Cummins",
+        "engine_hp": 74,
+        "operating_weight_lb": null,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 19.0,
+        "drive_type": "4WD full-time",
+        "transmission_type": "Hydrostatic",
+        "steering_modes": "3-mode: front, 4-wheel, crab",
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "HIGH",
+        "max_lift_height_ft": "HIGH",
+        "max_forward_reach_ft": "LOW",
+        "engine_brand": "HIGH",
+        "engine_hp": "MEDIUM",
+        "operating_weight_lb": "LOW",
+        "fuel_capacity_gal": "HIGH",
+        "travel_speed_mph": "MEDIUM",
+        "drive_type": "HIGH",
+        "transmission_type": "HIGH",
+        "steering_modes": "HIGH",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "manual_review",
+        "engine_hp": "package_dependent",
+        "operating_weight_lb": "manual_review",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "MEDIUM",
+      "source_refs": [
+        "SkyTrak shared platform â€” fuel_capacity 35 gal confirmed on 10054 OEM sheet per skytrak_10042 registry notes",
+        "JLG/SkyTrak drivetrain cross-reference: Cummins QSF3.8 hydrostatic shared with 10042 and 8042 per mtm_telehandler_registry_v2.json",
+        "MTM Top 50 LOCKED v1 â€” Category: Telehandlers, Slot 1",
+        {
+          "ref": "SkyTrak 10054 uses Deutz diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: 10054 shares core drivetrain (Cummins QSF3.8, hydrostatic) with 10042 and 8042. Longer boom distinguishes 10054 from 10042 (42 ft vs 54 ft lift height).",
+        "lift_capacity_lb: 10,000 lb â€” confirmed by shared platform and model designation. HIGH.",
+        "max_lift_height_ft: 54 ft â€” encoded in model number. HIGH. Verify exact figure (may be 54.0 or 54.2 ft) against OEM spec sheet.",
+        "fuel_capacity_gal: 35 gal â€” explicitly confirmed on 10054 OEM sheet per skytrak_10042 registry notes: 'fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)'. HIGH.",
+        "engine_hp SOFT: 74 hp (DEF-free Cummins QSF3.8) is standard NA-market config, same as 10042. 10054L variant available with 110 hp. Registry pins to 74 hp standard; package_dependent.",
+        "max_forward_reach_ft null: 10054 has longer boom than 10042 (28.5 ft); estimated ~37 ft based on geometry but not confirmed from OEM sheet. Set null / manual_review.",
+        "operating_weight_lb null: Expected higher than 10042 (27,150 lb) due to longer boom. Not confirmed from OEM sheet. Set null / manual_review.",
+        "travel_speed_mph: 19.0 mph consistent with shared SkyTrak platform. MEDIUM â€” confirm against OEM sheet.",
+        "REGISTRY ORIGIN: New record â€” 10054 was previously mapped to skytrak_10042. Distinct machine: longer boom, same capacity, different geometry."
+      ]
+    },
+    {
+      "model_slug": "skytrak_8042",
+      "manufacturer": "SkyTrak",
+      "model": "8042",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lb": 8000,
+        "max_lift_height_ft": 42.2,
+        "max_forward_reach_ft": null,
+        "engine_brand": "Cummins",
+        "engine_hp": 74,
+        "operating_weight_lb": null,
+        "fuel_capacity_gal": 35.0,
+        "travel_speed_mph": 19.0,
+        "drive_type": "4WD full-time",
+        "transmission_type": "Hydrostatic",
+        "steering_modes": "3-mode: front, 4-wheel, crab",
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "HIGH",
+        "max_lift_height_ft": "MEDIUM",
+        "max_forward_reach_ft": "LOW",
+        "engine_brand": "HIGH",
+        "engine_hp": "MEDIUM",
+        "operating_weight_lb": "LOW",
+        "fuel_capacity_gal": "HIGH",
+        "travel_speed_mph": "MEDIUM",
+        "drive_type": "HIGH",
+        "transmission_type": "HIGH",
+        "steering_modes": "HIGH",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "manual_review",
+        "engine_hp": "package_dependent",
+        "operating_weight_lb": "manual_review",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "MEDIUM",
+      "source_refs": [
+        "SkyTrak shared platform â€” fuel_capacity 35 gal confirmed on 8042 OEM sheet per skytrak_10042 registry notes",
+        "JLG/SkyTrak drivetrain cross-reference: Cummins QSF3.8 hydrostatic shared with 10042 and 10054 per mtm_telehandler_registry_v2.json",
+        "MTM Top 50 LOCKED v1 â€” Category: Telehandlers, Slot 2",
+        {
+          "ref": "SkyTrak 8042 uses Deutz diesel engine",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "PLATFORM: 8042 shares core drivetrain (Cummins QSF3.8, hydrostatic) with 10042 and 10054. Lower lift capacity (8,000 vs 10,000 lb) and different boom geometry distinguish from 10042.",
+        "lift_capacity_lb: 8,000 lb â€” encoded in model number. HIGH.",
+        "max_lift_height_ft: 42.2 ft â€” MEDIUM confidence based on model number and platform geometry. Verify exact figure against OEM spec sheet; 10042 is documented at 42.2 ft, 8042 may match.",
+        "fuel_capacity_gal: 35 gal â€” explicitly confirmed on 8042 OEM sheet per skytrak_10042 registry notes: 'fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)'. HIGH.",
+        "engine_hp SOFT: 74 hp (DEF-free Cummins QSF3.8) is the standard NA config, same as 10042. Package_dependent â€” confirm variant.",
+        "max_forward_reach_ft null: Similar to 10042 (~28.5 ft) but must be confirmed from OEM sheet before lock.",
+        "operating_weight_lb null: Expected at or below 10042 (27,150 lb) given lower capacity. Not confirmed from OEM sheet.",
+        "REGISTRY ORIGIN: New record â€” 8042 was previously mapped to skytrak_10042. Distinct machine: lower rated capacity (8,000 vs 10,000 lb), different boom profile."
+      ]
+    },
+    {
+      "model_slug": "genie_gth_844",
+      "manufacturer": "Genie",
+      "model": "GTH-844",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "years_supported": {
+        "start": 2015,
+        "end": null
+      },
+      "status": "active_used_market",
+      "registry_tier": "production",
+      "specs": {
+        "lift_capacity_lb": 8000,
+        "lift_capacity_at_max_height_lb": 6000,
+        "lift_capacity_at_max_reach_lb": 2000,
+        "max_lift_height_ft": 43.83,
+        "max_forward_reach_ft": 28.17,
+        "reach_at_max_height_ft": 2.08,
+        "engine_brand": "Deutz",
+        "engine_model": "TCD 3.6",
+        "engine_hp": 74,
+        "engine_tier": "Tier 4 Final",
+        "operating_weight_lb": 22600,
+        "fuel_capacity_gal": 32,
+        "travel_speed_mph": 15,
+        "hydraulic_flow_gpm": 15,
+        "hydraulic_pressure_psi": 3000,
+        "drive_type": "4WD",
+        "transmission_type": "Powershift 3-speed",
+        "steering_modes": "3-mode: 2WS, 4WS coordinated, crab",
+        "drawbar_pull_lb": 21000,
+        "frame_leveling_deg": 10,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "HIGH",
+        "lift_capacity_at_max_height_lb": "HIGH",
+        "lift_capacity_at_max_reach_lb": "HIGH",
+        "max_lift_height_ft": "HIGH",
+        "max_forward_reach_ft": "HIGH",
+        "reach_at_max_height_ft": "HIGH",
+        "engine_brand": "HIGH",
+        "engine_model": "HIGH",
+        "engine_hp": "MEDIUM",
+        "engine_tier": "HIGH",
+        "operating_weight_lb": "HIGH",
+        "fuel_capacity_gal": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "hydraulic_flow_gpm": "HIGH",
+        "hydraulic_pressure_psi": "HIGH",
+        "drive_type": "HIGH",
+        "transmission_type": "HIGH",
+        "steering_modes": "HIGH",
+        "drawbar_pull_lb": "HIGH",
+        "frame_leveling_deg": "HIGH",
+        "fuel_type": "HIGH"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "reach_at_max_height_ft": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "engine_hp": "manual_review",
+        "engine_tier": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked",
+        "drive_type": "locked",
+        "transmission_type": "locked",
+        "steering_modes": "locked",
+        "drawbar_pull_lb": "locked",
+        "frame_leveling_deg": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Official Genie GTH-844 Product Specifications — 2023 (Terex Corporation), ANSI A92.20 / CSA B354.6",
+        "Max lift height 43 ft 10 in = 43.83 ft. Max forward reach 28 ft 2 in = 28.17 ft.",
+        "engine_hp=74 listed as Deutz TCD 3.6 T4F — net vs gross unspecified. MEDIUM / manual_review.",
+        "Hydraulic flow: auxiliary range 2-15 gpm; 15 gpm max standard used.",
+        "OW note: varies by options/country. Base figure 22,600 lb from OEM sheet.",
+        {
+          "ref": "All Genie GTH-series telehandlers are diesel",
+          "patch": "pass2_b1b2 2026-03-27"
+        }
+      ],
+      "notes": [
+        "Promoted from staging 2026-03-25 with full 2023 Genie spec sheet.",
+        "max_lift_height corrected: staging had 44.0 ft (model-name inferred). OEM = 43 ft 10 in = 43.83 ft.",
+        "max_forward_reach unlocked: staging was null/LOW. OEM = 28 ft 2 in = 28.17 ft.",
+        "Lift capacity, height, reach are NOT simultaneously achievable at max — load chart governs.",
+        "engine_hp MEDIUM: Deutz TCD 3.6 T4F lists 74 hp without net/gross breakdown. Pull Deutz spec to confirm."
+      ]
+    }
+  ],
+  "_registry_meta": {
+    "merge_notes": [
+      "2026-03-24: Promoted from staging — skytrak_10054, skytrak_8042. Both records are spec_confidence=MEDIUM with HIGH-confidence core fields (lift_capacity_lb, max_lift_height_ft, fuel_capacity_gal confirmed from OEM sheets). Guard passes. operating_weight_lb and max_forward_reach_ft still null — manual_review required before lock.",
+      "OEM lock 2026-03-25: genie_gth_844 promoted from staging. Full 2023 Genie spec sheet. max_lift_height corrected 44.0->43.83 ft. max_forward_reach locked 28.17 ft. spec_confidence->HIGH."
+    ],
+    "record_count": 17
+  }
+}

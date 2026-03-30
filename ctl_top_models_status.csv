@@ -1,0 +1,12 @@
+priority,manufacturer,model_family,slug,registry_tier,v1_status,missing_fields
+1,John Deere,Deere 333 Series,jd_333_ptier,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+2,Kubota,Kubota SVL75 Series,kubota_svl75,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+3,Caterpillar,Cat 259 Series,cat_259d3,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+4,Caterpillar,Cat 299 Series,cat_299d3,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+5,Bobcat,Bobcat T770,bobcat_t770,production,MISSING_1,bucket_hinge_pin_height_in
+6,Kubota,Kubota SVL95 Series,kubota_svl95,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+7,Bobcat,Bobcat T650,bobcat_t650,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+7,JCB,JCB 330T,jcb_330t,N/A,NOT_IN_REGISTRY,all
+8,Caterpillar,Cat 289 Series,cat_289d3,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+9,Bobcat,Bobcat T450,bobcat_t450,production,MISSING_2,width_over_tires_in; bucket_hinge_pin_height_in
+10,Takeuchi,Takeuchi TL12 Series,takeuchi_tl12,production,COMPLETE,

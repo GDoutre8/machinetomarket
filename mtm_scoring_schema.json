@@ -1,0 +1,45 @@
+{
+  "_comment": "MTM Scoring Schema v1.0 — defines grade bands, weights, and per-type field sets",
+  "version": "1.0",
+
+  "grade_bands": [
+    {"grade": "A+", "name": "Ready to Post",   "min": 90, "max": 100},
+    {"grade": "A",  "name": "Strong Listing",  "min": 80, "max": 89},
+    {"grade": "B+", "name": "Good Listing",    "min": 70, "max": 79},
+    {"grade": "B",  "name": "Solid Start",     "min": 60, "max": 69},
+    {"grade": "C+", "name": "Needs Work",      "min": 50, "max": 59},
+    {"grade": "C",  "name": "Light Listing",   "min": 40, "max": 49},
+    {"grade": "D",  "name": "Minimal",         "min": 25, "max": 39},
+    {"grade": "F",  "name": "Not Ready",       "min": 0,  "max": 24}
+  ],
+
+  "weights": {
+    "spec_completeness":    0.40,
+    "condition_coverage":   0.20,
+    "listing_quality":      0.20,
+    "commercial_readiness": 0.20
+  },
+
+  "critical_fields": {
+    "_comment": "Fields a buyer needs to make a purchase decision for each type.",
+    "skid_steer":           ["net_hp", "roc_lb", "operating_weight_lb", "tipping_load_lb", "hydraulic_flow_gpm", "travel_speed_high_mph"],
+    "compact_track_loader": ["net_hp", "roc_lb", "operating_weight_lb", "tipping_load_lb", "hydraulic_flow_gpm", "travel_speed_high_mph"],
+    "mini_excavator":       ["net_hp", "operating_weight_lb", "max_dig_depth", "tail_swing_type"],
+    "excavator":            ["net_hp", "operating_weight_lb", "max_dig_depth", "bucket_breakout_lb"],
+    "wheel_loader":         ["net_hp", "operating_weight_lb", "travel_speed_mph"],
+    "telehandler":          ["net_hp", "lift_capacity_lb", "max_lift_height_ft", "max_forward_reach_ft"],
+    "backhoe_loader":       ["net_hp", "operating_weight_lb", "max_dig_depth", "travel_speed_mph"],
+    "dozer":                ["net_hp", "operating_weight_lb", "travel_speed_high_mph"],
+    "crawler_dozer":        ["net_hp", "operating_weight_lb", "travel_speed_high_mph"],
+    "_default":             ["net_hp", "operating_weight_lb"]
+  },
+
+  "commercial_signals": ["price_value", "location", "contact", "hours"],
+
+  "penalties": {
+    "_comment": "Point deductions applied to spec_completeness score",
+    "requires_confirm_per_field": 8,
+    "requires_confirm_max":       20,
+    "unsafe_injection":           10
+  }
+}
