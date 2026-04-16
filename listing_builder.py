@@ -156,10 +156,10 @@ def _title_feature_tokens(
     if has_two_speed:
         tokens.append("2-Speed")
 
-    if dealer_input.hours < 1200 and not tokens:
+    if dealer_input.hours < 500 and not tokens:
         tokens.append("Low Hours")
 
-    return tokens or ["Jobsite Ready"]
+    return tokens or []
 
 
 def build_headline(dealer_input: DealerInput, use_case_payload: "dict | None" = None) -> str:
@@ -173,7 +173,7 @@ def build_headline(dealer_input: DealerInput, use_case_payload: "dict | None" = 
     """
     base = f"{dealer_input.year} {dealer_input.make.upper()} {dealer_input.model}"
     tokens = _title_feature_tokens(dealer_input, use_case_payload)
-    return f"{base} \u2014 {', '.join(tokens)}"
+    return f"{base} \u2014 {', '.join(tokens)}" if tokens else base
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -634,9 +634,9 @@ def _build_mini_ex_listing(
 
     # 8. CTA
     if dealer_input.asking_price:
-        sections.append("Call or text for availability.")
+        sections.append("Call or text to schedule a look.")
     else:
-        sections.append("Call or text for availability. Message for pricing.")
+        sections.append("Call or text for pricing and availability.")
 
     return _compact_listing("\n\n".join(sections))
 
@@ -1005,8 +1005,8 @@ def _build_features_block(dealer_input: DealerInput) -> str:
 def _build_p4_close(dealer_input: DealerInput) -> str:
     """Para 4 — simple close. No repeated features. No marketing language."""
     if dealer_input.asking_price:
-        return "Call or text for availability. Inspection welcome."
-    return "Message for price or to schedule an inspection."
+        return "Call or text to schedule a look."
+    return "Call or text for pricing and availability."
 
 
 def _build_key_details(

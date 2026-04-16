@@ -26,12 +26,12 @@ SHEET_W      = 1200
 SHEET_H      = 1200
 MARGIN       = 60          # outer left/right margin
 COL_GAP      = 48          # gap between left and right grid columns
-GRID_ROW_GAP = 40          # gap between top and bottom grid rows
-ROW_H        = 68          # height per spec data row
+GRID_ROW_GAP = 22          # gap between top and bottom grid rows
+ROW_H        = 56          # height per spec data row
 HEAD_H       = 44          # section heading block height
 CELL_PAD_X   = 20          # inner horizontal padding per cell
-CELL_PAD_TOP = 26          # vertical padding above section heading
-CELL_PAD_BOT = 22          # vertical padding below last row
+CELL_PAD_TOP = 16          # vertical padding above section heading
+CELL_PAD_BOT = 12          # vertical padding below last row
 
 # Legacy aliases kept for _draw_features_strip and _render_column
 SECT_GAP     = GRID_ROW_GAP
@@ -1247,7 +1247,7 @@ II_Y0 = IF_Y0 + IF_BORDER   # = 24
 II_W  = IF_W - IF_BORDER * 2   # = 782
 II_H  = IF_H - IF_BORDER * 2   # = 612
 
-OVERLAY_H  = 90    # bottom overlay bar height
+OVERLAY_H  = 72    # bottom overlay bar height
 
 # Right info rail
 RAIL_X0  = IF_X0 + IF_W + 22   # = 830
@@ -1363,7 +1363,6 @@ def _render_panel1(
     machine_image_path: str | None,
     dealer_logo_path: str | None,
     dealer_info: dict,
-    format_label: str = "FACEBOOK POST\nOPTIMIZED\n1200 x 1500",
 ) -> Image.Image:
     """Render the top marketing panel (machine photo + dark info rail)."""
     img = Image.new("RGB", (BROCHURE_W, P1_H), P1_BG)
@@ -1388,21 +1387,11 @@ def _render_panel1(
     ov_y1 = II_Y0 + II_H
     draw.rectangle((II_X0, ov_y0, II_X0 + II_W - 1, ov_y1 - 1), fill=P1_BG)
 
-    # Left badge: format label
-    badge_font_b = _font(10, bold=True)
-    badge_font   = _font(10, bold=False)
-    by = ov_y0 + 10
-    for line in format_label.split("\n"):
-        is_last = (line == format_label.split("\n")[-1])
-        f = badge_font if is_last else badge_font_b
-        draw.text((II_X0 + 12, by), line, font=f, fill=C_WHITE if not is_last else C_MUTED)
-        by += _line_h(draw, f) + 3
-
-    # Logo box: white rect ~185×64
-    logo_box_x = II_X0 + 140
-    logo_box_y = ov_y0 + 10
-    logo_box_w = 188
-    logo_box_h = OVERLAY_H - 18
+    # Logo box: white rect, anchored to left edge of overlay
+    logo_box_x = II_X0 + 12
+    logo_box_y = ov_y0 + 8
+    logo_box_w = 160
+    logo_box_h = OVERLAY_H - 16
     draw.rectangle(
         (logo_box_x, logo_box_y, logo_box_x + logo_box_w, logo_box_y + logo_box_h),
         fill=C_WHITE,
@@ -1435,8 +1424,8 @@ def _render_panel1(
             ty += _line_h(draw, mtm_font) + 2
 
     # Contact info (right of logo box)
-    contact_x = logo_box_x + logo_box_w + 14
-    contact_y = ov_y0 + 16
+    contact_x = logo_box_x + logo_box_w + 16
+    contact_y = ov_y0 + 12
     dealer_name = dealer_info.get("dealer_name") or dealer_info.get("contact_name") or ""
     dealer_phone = dealer_info.get("phone") or dealer_info.get("contact_phone") or ""
     if dealer_name:

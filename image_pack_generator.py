@@ -180,8 +180,8 @@ def _smart_crop(img: Image.Image, target_w: int, target_h: int) -> Image.Image:
     crop_top_center = (scaled_h - target_h) / 2.0
     vertical_overage = scaled_h - target_h
     if vertical_overage > 0:
-        # Shift crop window upward by 20% of the overage — keeps cab/boom in frame
-        bias = vertical_overage * 0.20
+        # Shift crop window upward by 38% of the overage — keeps cab/top of machine in frame
+        bias = vertical_overage * 0.38
         crop_top_scaled = max(0.0, crop_top_center - bias)
     else:
         crop_top_scaled = crop_top_center
