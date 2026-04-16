@@ -1,0 +1,17 @@
+Current status:
+- spec_resolver package structure fixed
+- imports working
+- pytest passing: 57/57
+
+Next task:
+Wire spec_resolver into mtm_service.py flow.
+
+Target integration:
+mtm_listing_parser_* -> mtm_registry_lookup -> spec_resolver.resolve() -> SpecDisplay / ListingSpecSection
+
+First thing tomorrow:
+1. inspect mtm_service.py
+2. find current spec generation path
+3. replace direct spec injection logic with spec_resolver output
+4. pass resolved_specs, requires_confirm, ui_hints, warnings into UI layer
+5. rerun tests

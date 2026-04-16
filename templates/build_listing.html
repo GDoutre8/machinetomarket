@@ -1,0 +1,801 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build My Listing - Machine-to-Market</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&family=Oswald:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles_v2.css" />
+  <style>
+    :root {
+      --bg:#0a0b0d;--bg-2:#101216;--panel:#171a1f;--panel-2:#12151a;--panel-3:#1d2229;--panel-4:#222831;
+      --line:rgba(255,255,255,.14);--line-soft:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.2);
+      --text:#f4f1e8;--muted:#b4bac0;--dim:#858b92;--shadow:0 28px 72px rgba(0,0,0,.42);--glow:0 0 0 1px rgba(232,169,32,.16),0 30px 68px rgba(0,0,0,.38);
+      --radius:8px;--radius-sm:4px;--max:1240px;
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{position:relative;background:
+      radial-gradient(circle at top,rgba(232,169,32,.14),transparent 22%),
+      radial-gradient(circle at 82% 18%,rgba(232,169,32,.06),transparent 18%),
+      radial-gradient(circle at 20% 14%,rgba(255,255,255,.03),transparent 20%),
+      linear-gradient(180deg,#15181d 0%,#0e1014 14%,#0a0b0d 42%,#0d1014 76%,#090a0c 100%);
+      color:var(--text);min-height:100vh;font-family:var(--body)}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.32;background:
+      linear-gradient(180deg,transparent 0%,rgba(255,255,255,.022) 49%,transparent 50%,transparent 100%);
+      background-size:100% 160px}
+    body::after{content:"";position:fixed;inset:0;pointer-events:none;background:
+      radial-gradient(circle at center,transparent 36%,rgba(0,0,0,.24) 100%);
+      opacity:.7}
+    header{background:rgba(10,12,15,.84);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);box-shadow:0 10px 24px rgba(0,0,0,.22)}
+    main{max-width:none;margin:0;padding:0 0 88px;width:100%}.build-shell{width:min(100%,var(--max));margin:0 auto;padding:0 28px}
+    .site-mark{font-family:var(--cond);font-size:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text);text-decoration:none}.site-mark span{color:var(--mtm-yellow)}
+    .header-link{font-size:11px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03)}.header-link:hover{color:var(--text);border-color:rgba(232,169,32,.5);background:rgba(232,169,32,.08)}
+    .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line-soft);background:linear-gradient(115deg,rgba(7,8,10,.96) 8%,rgba(10,12,15,.8) 48%,rgba(8,9,11,.96) 100%)}
+    .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:180px;pointer-events:none;background:linear-gradient(180deg,transparent 0%,rgba(10,11,13,.88) 65%,rgba(10,11,13,1) 100%)}
+    .hero-media,.hero-media video,.hero-overlay{position:absolute;inset:0}.hero-media{z-index:0;background:linear-gradient(90deg,rgba(10,11,13,.98),rgba(10,11,13,.74))}.hero-media video{width:100%;height:100%;object-fit:cover;opacity:.42;filter:saturate(.78) contrast(1.08) brightness(.52)}
+    .hero-overlay{z-index:1;background:
+      linear-gradient(90deg,rgba(7,8,10,.985) 0%,rgba(7,8,10,.92) 30%,rgba(7,8,10,.58) 62%,rgba(7,8,10,.92) 100%),
+      linear-gradient(180deg,rgba(7,8,10,.16) 0%,rgba(7,8,10,.82) 100%),
+      radial-gradient(circle at 18% 34%,rgba(232,169,32,.14),transparent 28%)}
+    .hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,.92fr) minmax(500px,600px);gap:42px;align-items:center;min-height:760px;padding:74px 0 64px}
+    .eyebrow,.card-kicker,.section-kicker,.micro{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mtm-yellow)} .eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}.eyebrow::before{content:"";width:32px;height:2px;background:var(--mtm-yellow)}
+    .hero-copy h1,.marketing-copy h2{font-family:var(--cond);font-weight:600;line-height:.9;letter-spacing:.03em;text-transform:uppercase;color:var(--text)} .hero-copy h1{font-size:clamp(58px,7vw,104px);margin:0 0 18px;max-width:720px}.marketing-copy h2{font-size:clamp(34px,4vw,52px);margin:8px 0 12px}
+    .hero-copy p,.marketing-copy p,.support-card p,.process-card p,.preview-card p,.hero-form-card p,.section-note,.status-msg,.photo-count,.match-type,.uc-preview-machine,.uc-att-sentence,.uc-limit-sentence,.uc-no-match,.no-match-notice{color:var(--muted)}
+    .hero-copy{position:relative;padding:12px 22px 12px 0}
+    .hero-copy::after{content:"";position:absolute;inset:0 14% 0 -40px;z-index:-1;background:linear-gradient(90deg,rgba(9,10,12,.7),rgba(9,10,12,.18) 72%,transparent 100%);filter:blur(8px)}
+    .hero-copy p{max-width:600px;font-size:20px;line-height:1.62;margin:0 0 22px;color:#c7ccd1}.hero-bullets{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:8px 16px;max-width:660px;margin-bottom:0}.hero-bullet{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:15px;color:#d8dce0}.hero-bullet::before{content:"";width:10px;height:10px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}.hero-value-callout{max-width:500px;margin:4px 0 0;padding:2px 0 2px 14px;border-left:2px solid rgba(232,169,32,.55);font-size:18px;font-weight:600;line-height:1.3;letter-spacing:.01em;color:#dfddd6;text-transform:none;text-wrap:balance}.hero-value-callout span{display:block}
+    .hero-form-wrap{display:flex;justify-content:flex-end}.hero-form-card,.workspace-card,.support-card,.marketing-card,.process-card,.preview-card{border-radius:var(--radius);border:1px solid var(--line);background:linear-gradient(180deg,rgba(28,32,39,.96),rgba(17,20,25,.98));box-shadow:var(--shadow);position:relative} .hero-form-card{width:min(100%,590px);padding:42px 42px 38px;position:relative;overflow:hidden;background:
+      linear-gradient(180deg,rgba(32,37,45,.98),rgba(18,21,26,.99)),
+      linear-gradient(135deg,rgba(232,169,32,.05),transparent 34%);border-color:rgba(232,169,32,.24);box-shadow:0 0 0 1px rgba(255,255,255,.03),0 0 0 1px rgba(232,169,32,.1),0 26px 60px rgba(0,0,0,.44)} .hero-form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,rgba(232,169,32,.95),rgba(232,169,32,.14))}.hero-form-card::after{content:"";position:absolute;inset:auto -40px -60px auto;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(232,169,32,.12) 0%,rgba(232,169,32,0) 70%);pointer-events:none}.hero-form-card h2{font-family:var(--cond);font-size:34px;font-weight:600;line-height:.96;letter-spacing:.03em;text-transform:uppercase;color:var(--text);margin:12px 0 10px}
+    .form-card,.uc-preview-card{background:linear-gradient(180deg,rgba(23,26,31,.99),rgba(15,17,21,.99));border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:0 18px 48px rgba(0,0,0,.22)}
+    .step-header-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}.step-badge{width:32px;height:32px;border-radius:6px;border:1px solid rgba(232,169,32,.4);background:rgba(232,169,32,.1);color:var(--mtm-yellow);font-family:var(--cond);font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .step-title,.section-label,.uc-preview-label{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text)} .section-label{display:inline-flex;align-items:center;gap:10px;margin-bottom:14px}.section-label::after{content:"";width:42px;height:1px;background:rgba(232,169,32,.35)}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}.field-row.single{grid-template-columns:1fr}.field-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}.field{display:flex;flex-direction:column;gap:8px}.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.field label .req{color:var(--mtm-yellow)}
+    .field input[type="text"],.field input[type="number"],.field textarea{width:100%;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.035));color:var(--text);font-family:var(--body);font-size:16px;padding:15px 15px;min-height:56px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.field input::placeholder,.field textarea::placeholder{color:rgba(183,188,193,.58)}.field input:focus,.field textarea:focus{outline:none;border-color:rgba(232,169,32,.6);box-shadow:0 0 0 3px rgba(232,169,32,.12), inset 0 1px 0 rgba(255,255,255,.05);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05))}.field textarea{min-height:108px;resize:vertical}
+    .submit-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}.btn-generate,.btn-change{border-radius:4px;font-family:var(--cond);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn-generate{border:1px solid var(--mtm-yellow);background:linear-gradient(180deg,#f0b02d,#d79512);color:#111;font-size:22px;font-weight:600;padding:20px 26px;min-height:70px;box-shadow:0 18px 38px rgba(232,169,32,.18)}.btn-generate:hover{transform:translateY(-1px);box-shadow:0 22px 44px rgba(232,169,32,.24)}.btn-generate:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}.btn-change{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--muted);font-size:14px;font-weight:500;padding:10px 14px}.btn-change:hover{border-color:rgba(232,169,32,.4);color:var(--text);background:rgba(232,169,32,.08)}
+    .cta-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:14px;width:100%}
+    .cta-wrap .btn-generate{width:100%;justify-content:center}
+    .cta-note{font-size:13px;line-height:1.55;color:#cfcfc8;letter-spacing:.01em}
+    .status-msg{font-size:13px;min-height:18px}.status-msg.error{color:#ff8d8d}.status-msg.success{color:#5cc58a}.spinner{display:inline-block;width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:var(--mtm-yellow);animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}@keyframes spin{to{transform:rotate(360deg)}}.hidden{display:none!important}
+    .feature-strip,.workspace,.marketing-section,.process-section{position:relative}
+    .feature-strip,.marketing-section,.process-section{border-top:1px solid rgba(255,255,255,.06)}
+    .feature-strip::before,.marketing-section::before,.process-section::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(232,169,32,.14) 18%,rgba(255,255,255,.06) 50%,rgba(232,169,32,.14) 82%,transparent 100%)}
+    .feature-strip{padding:34px 0 8px;position:relative;margin-top:-44px;z-index:3;background:linear-gradient(180deg,rgba(16,18,22,.76),rgba(13,15,19,.94))}.feature-strip-grid,.process-grid,.preview-grid{display:grid;gap:18px}.feature-strip-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.support-card{padding:20px 18px 16px;min-height:132px;background:linear-gradient(180deg,rgba(24,28,34,.98),rgba(16,18,22,.98));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.support-card:hover,.preview-card:hover,.process-card:hover{transform:translateY(-2px);border-color:rgba(232,169,32,.24);box-shadow:0 24px 54px rgba(0,0,0,.28)}.support-index{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:4px;background:rgba(232,169,32,.12);border:1px solid rgba(232,169,32,.34);color:var(--mtm-yellow);font-family:var(--mono);font-size:11px;margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.support-card h3,.process-card h3,.preview-card h3{font-family:var(--cond);font-size:24px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--text);margin-bottom:8px}
+    .workspace{padding:0;background:none}
+    .workspace-card{padding:0;border:none;background:none;box-shadow:none}
+    .match-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.03))}.match-banner-left{display:flex;align-items:center;gap:12px;min-width:0}.match-icon{width:34px;height:34px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);flex-shrink:0}.match-icon.match-found{color:#7be29d;border-color:rgba(123,226,157,.35);background:rgba(123,226,157,.08)}.match-icon.match-unknown{color:var(--muted)}.match-label{font-size:15px;font-weight:600;color:var(--text);word-break:break-word}
+    .match-warning-card,.no-match-notice{padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:18px;font-size:13px;line-height:1.6}.match-warning-card{border:1px solid rgba(232,169,32,.5);background:rgba(232,169,32,.1);color:#f4d483}.no-match-notice{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04)}
+    .spec-preview-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}.spec-pill{min-width:104px;padding:12px 16px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025))}.spec-pill-val{font-family:var(--body);font-size:20px;font-weight:600;letter-spacing:0;color:var(--text);white-space:nowrap}.spec-pill-lbl{margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+    .toggles-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.toggle-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));color:var(--text);font-size:14px;cursor:pointer}.toggle-check:hover{border-color:rgba(232,169,32,.34);background:rgba(232,169,32,.06)}.toggle-check input[type="checkbox"]{width:16px;height:16px;accent-color:var(--mtm-yellow);flex-shrink:0}.toggle-check.checked{border-color:rgba(232,169,32,.45);background:linear-gradient(180deg,rgba(232,169,32,.13),rgba(232,169,32,.08))}
+    .photo-drop{border:1px dashed rgba(255,255,255,.22);border-radius:4px;padding:24px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));cursor:pointer}.photo-drop:hover,.photo-drop.drag-over,.photo-drop.has-files{border-color:rgba(232,169,32,.5);background:linear-gradient(180deg,rgba(232,169,32,.11),rgba(255,255,255,.035))}.photo-drop-label{color:var(--muted);font-size:13px;line-height:1.65;pointer-events:none}.photo-drop-label strong{color:var(--text)}#photo-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.photo-thumb{width:76px;height:76px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,.12)}
+    .uc-preview-card.has-content{border-color:rgba(232,169,32,.4);box-shadow:0 18px 48px rgba(232,169,32,.08)}.uc-preview-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.1)}.uc-best-for-list{list-style:none;padding:0;margin:0 0 10px}.uc-best-for-list li{position:relative;padding:4px 0 4px 18px;color:var(--text);font-size:14px}.uc-best-for-list li::before{content:"";position:absolute;left:2px;top:12px;width:8px;height:8px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}.uc-limit-sentence{border-left:2px solid rgba(232,169,32,.3);padding-left:12px;margin-top:8px}
+    #step2{padding:28px 0 8px}
+    .marketing-section{padding:34px 0 22px;background:linear-gradient(180deg,rgba(18,21,26,.98),rgba(12,14,18,.98))}.marketing-grid{display:grid;gap:24px}.marketing-copy{max-width:640px}.marketing-copy h2{margin-bottom:10px}.marketing-copy p{font-size:16px;line-height:1.55;max-width:620px}.marketing-points{display:grid;gap:8px;margin-top:14px;max-width:560px}.marketing-point{position:relative;padding-left:14px;font-size:14px;line-height:1.45;color:#c7ccd1}.marketing-point::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}
+    .preview-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:20px;align-items:stretch}
+    .preview-card{padding:0;overflow:hidden;background:
+      linear-gradient(180deg,rgba(23,27,33,.99),rgba(12,15,19,.995)),
+      linear-gradient(135deg,rgba(232,169,32,.05),transparent 42%);
+      border-color:rgba(255,255,255,.1)}
+    .preview-card:hover{transform:none;border-color:rgba(255,255,255,.1);box-shadow:var(--shadow)}
+    .preview-card.primary-preview,.preview-card.secondary-preview{min-height:100%;height:100%}
+    .preview-frame{padding:24px}
+    .preview-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim)}
+    .preview-status{display:inline-flex;align-items:center;gap:8px;color:var(--mtm-yellow)}
+    .preview-status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mtm-yellow);box-shadow:0 0 12px rgba(232,169,32,.3)}
+    .preview-stack{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:20px;height:100%}
+    .listing-card{display:grid;grid-template-rows:minmax(360px,73%) auto;gap:18px;min-height:100%}
+    .listing-image-wrap{position:relative;min-height:360px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#0e1116;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+    .listing-image-wrap::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;background:linear-gradient(180deg,transparent 0%,rgba(7,8,10,.14) 35%,rgba(7,8,10,.66) 100%);pointer-events:none}
+    .listing-image-wrap > img{width:100%;height:100%;display:block;object-fit:cover;object-position:center center}
+    .dealer-overlay{position:absolute;bottom:-36px;left:-24px;z-index:3;display:inline-flex;align-items:center;gap:10px;padding:0;background:none;pointer-events:none}
+    .dealer-overlay-logo{height:156px;width:auto;object-fit:contain;flex-shrink:0}
+    .dealer-overlay-contact{display:flex;flex-direction:column;gap:0px;justify-content:center}
+    .dealer-overlay-name{font-family:'Bebas Neue','Oswald',sans-serif;font-size:28px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:#ffffff;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.7)}
+    .dealer-overlay-phone{font-family:'Bebas Neue','Oswald',sans-serif;font-size:20px;font-weight:400;letter-spacing:1px;color:#D1D5DB;line-height:1;margin-top:2px;text-shadow:0 1px 2px rgba(0,0,0,0.6)}
+    .listing-copy{display:grid;gap:12px}
+    .listing-copy h3,.secondary-preview h3{margin:0;font-family:var(--cond);font-size:30px;font-weight:600;letter-spacing:.03em;color:var(--text);text-transform:uppercase}
+    .package-price{font-family:var(--cond);font-size:34px;font-weight:600;line-height:1;color:var(--mtm-yellow);margin:0}
+    .listing-lines{display:grid;gap:6px}
+    .listing-lines div{font-size:14px;line-height:1.5;color:#d6dbe0}
+    .meta-row{display:flex;flex-wrap:wrap;gap:8px}
+    .meta-chip{padding:8px 10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#d7dce1}
+    .listing-note{font-size:12px;line-height:1.45;color:var(--dim)}
+    .spec-sheet{display:grid;gap:10px}
+    .spec-sheet-head{padding:0 0 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .spec-sheet-head strong{display:block;font-family:var(--cond);font-size:24px;font-weight:600;letter-spacing:.03em;color:var(--text);text-transform:uppercase}
+    .spec-sheet-head span{display:block;margin-top:4px;font-size:13px;line-height:1.45;color:#c2c7cc}
+    .spec-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;color:#dbe0e4}
+    .spec-row:last-child{border-bottom:none}
+    .spec-row span:first-child{color:#bcc2c8}
+    .spec-row span:last-child{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--text);text-align:right}
+    .spec-footer{padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--dim)}
+    .brand-visual{display:grid;grid-template-rows:minmax(220px,1fr) auto auto;gap:14px;height:100%}
+    .brand-canvas{position:relative;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:
+      radial-gradient(circle at top right,rgba(232,169,32,.1),transparent 24%),
+      linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015)),
+      linear-gradient(135deg,#1d2128 0%,#12151a 100%);
+      overflow:hidden;padding:16px;min-height:220px}
+    .brand-overlay-tag{position:absolute;left:16px;top:16px;z-index:3;padding:7px 10px;border:1px solid rgba(232,169,32,.32);border-radius:999px;background:rgba(10,12,15,.82);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:#f0d68e}
+    .media-stack{position:relative;height:100%;min-height:188px}
+    .media-format-card{position:absolute;overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 34px rgba(0,0,0,.34);background:#0f1217}
+    .media-format-card img{width:100%;height:100%;display:block;object-fit:cover}
+    .media-format-card span{position:absolute;left:10px;bottom:10px;padding:5px 8px;border-radius:999px;background:rgba(8,10,13,.84);border:1px solid rgba(255,255,255,.12);font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#ece6d7}
+    .media-square{width:38%;aspect-ratio:1 / 1;left:0;bottom:2%;z-index:1}
+    .media-square img{object-position:50% 50%}
+    .media-portrait{width:44%;aspect-ratio:4 / 5;left:28%;top:8%;z-index:2}
+    .media-portrait img{object-position:52% 50%}
+    .media-vertical{width:32%;aspect-ratio:9 / 16;right:0;bottom:0;z-index:3}
+    .media-vertical img{object-position:56% 50%}
+    .brand-bar{padding-top:4px;font-size:13px;color:#c6ccd1}
+    .brand-bar strong{font-weight:600;color:var(--text)}
+    .brand-subline{font-size:12px;color:var(--dim)}
+    .process-section{display:none}
+    @media (max-width:1100px){.hero-inner,.marketing-grid,.preview-grid,.preview-layout{grid-template-columns:1fr}.feature-strip-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-stack{grid-template-columns:1fr 1fr;grid-template-rows:none}}
+    @media (max-width:860px){.build-shell{padding:0 18px}.hero-inner{min-height:auto;gap:26px;padding:64px 0 56px;grid-template-columns:1fr}.hero-form-wrap{justify-content:stretch}.hero-form-card{width:100%;padding:32px 32px 30px}.hero-bullets,.feature-strip-grid,.process-grid,.field-row.three,.toggles-grid,.preview-stack{grid-template-columns:1fr}.field-row{grid-template-columns:1fr}.preview-frame{padding:22px}.listing-card{grid-template-rows:minmax(280px,62vw) auto}.brand-visual{grid-template-rows:minmax(200px,58vw) auto auto}#step2{padding:22px 0 8px}}
+    @media (max-width:560px){.site-mark{font-size:17px}.header-link{padding:7px 10px;font-size:10px}.hero-copy h1{font-size:46px}.hero-copy p{font-size:17px}.hero-value-callout{font-size:17px;max-width:100%;padding-left:12px}.hero-form-card,.form-card,.uc-preview-card,.preview-frame{padding:20px}.support-card,.process-card,.preview-card{min-height:auto}.field input[type="text"],.field input[type="number"],.field textarea{min-height:52px;font-size:15px}.btn-generate{font-size:18px;min-height:62px;padding:17px 20px}.listing-copy h3,.secondary-preview h3{font-size:24px}.package-price{font-size:28px}.cta-note{font-size:12px}.preview-topline{align-items:flex-start;flex-direction:column}.media-square{width:42%}.media-portrait{width:46%;left:24%}.media-vertical{width:34%}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;max-width:1240px;margin:0 auto;padding:0 28px;height:62px;">
+    <a href="/" class="logo">
+      <img src="/static/assets/logo_mtm.webp" alt="Machine to Market" />
+    </a>
+    <a href="/fix-listing" class="header-link">Fix My Listing</a>
+  </div>
+</header>
+<main class="build-page">
+  <form id="build-form" novalidate>
+    <section class="hero">
+      <div class="hero-media"><video autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/static/build-listing-hero.mp4" type="video/mp4"></video></div>
+      <div class="hero-overlay"></div>
+      <div class="build-shell hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow">Dealer Build Workflow</div>
+          <h1>Build. Download. Post.</h1>
+          <p>Turn basic machine details into a complete, dealer-ready listing package — no formatting, no guesswork.</p>
+          <div class="hero-bullets">
+            <div class="hero-bullet">Post-ready listing copy for every channel</div><div class="hero-bullet">Photos sized for every platform</div><div class="hero-bullet">Clean spec sheets for buyer review</div><div class="hero-bullet">Build once — post everywhere</div>
+          </div>
+        </div>
+        <div class="hero-form-wrap">
+          <div class="hero-form-card" id="step1-card">
+            <div class="card-kicker">Start the Package</div>
+            <h2>Machine Intake</h2>
+            <p>Load machine details first. We’ll pull the right spec context and open the full build workspace below.</p>
+            <div id="step1-edit">
+              <div class="field-row three">
+                <div class="field"><label for="s1-year">Year <span class="req">*</span></label><input type="number" id="s1-year" placeholder="2019" min="1970" max="2030"></div>
+                <div class="field"><label for="s1-make">Make <span class="req">*</span></label><input type="text" id="s1-make" placeholder="Bobcat"></div>
+                <div class="field"><label for="s1-model">Model <span class="req">*</span></label><input type="text" id="s1-model" placeholder="T770"></div>
+              </div>
+              <div class="field-row single"><div class="field"><label for="s1-price">Asking Price <span style="font-weight:400;color:var(--dim);font-size:11px;">Optional</span></label><input type="text" id="s1-price" placeholder="$49,500" inputmode="numeric"></div></div>
+              <div class="submit-row"><div class="cta-wrap"><button type="button" id="identify-btn" class="btn-generate">Build My Listing</button><div class="hero-value-callout"><span>Stop pulling your top reps off real deals.</span><span>Enter Year, Make, Model — everything else is handled.</span></div><div class="cta-note">No login required. Start building immediately.</div></div><span class="status-msg hidden" id="step1-status"></span></div>
+            </div>
+            <div id="step1-done" class="hidden"><div class="match-banner"><div class="match-banner-left"><span class="match-icon" id="match-icon"></span><div><div class="match-label" id="match-label"></div><div class="match-type" id="match-type"></div></div></div><button type="button" id="change-btn" class="btn-change">Change Machine</button></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="feature-strip"><div class="build-shell"><div class="feature-strip-grid"><article class="support-card"><div class="support-index">01</div><h3>Listing Copy</h3><p>Dealer-ready text built for marketplace posts, inventory pages, and fast handoff to sales teams.</p></article><article class="support-card"><div class="support-index">02</div><h3>Spec Sheet</h3><p>Clean machine details organized into a pack that feels ready to send without extra formatting.</p></article><article class="support-card"><div class="support-index">03</div><h3>Image Pack</h3><p>Prepared image outputs designed to move across channels without another design pass.</p></article><article class="support-card"><div class="support-index">04</div><h3>Walkaround Video</h3><p>Video output support keeps the listing package feeling complete and ready for modern channels.</p></article><article class="support-card"><div class="support-index">05</div><h3>ZIP Download</h3><p>Everything bundled into one downloadable package that is easy to review, post, and share.</p></article></div></div></section>
+    <section class="workspace"><div class="build-shell"><div class="workspace-card">
+      <div id="step2" class="hidden">
+        <div id="match-warning" class="match-warning-card hidden"><strong>Weak registry match</strong> - OEM specs shown may not be exact for this model. Verify before publishing.</div>
+        <div id="no-match-notice" class="no-match-notice hidden">Machine not found in registry - listing will be generated without OEM specs. Fill in the details below and we’ll build the copy from your inputs.</div>
+        <div class="form-card hidden" id="spec-preview-card"><div class="section-label">OEM Specs <span style="font-size:10px;opacity:.7;font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400;color:var(--dim);">from registry</span></div><div class="spec-preview-grid" id="spec-preview-grid"></div></div>
+        <div class="form-card"><div class="step-header-row" style="margin-bottom:14px;"><span class="step-badge">2</span><div><div class="step-title">Features &amp; Options</div><div class="step-sub" id="features-sub">Check all that apply</div></div></div><div class="toggles-grid" id="features-container"></div></div>
+        <div class="form-card"><div class="section-label">Hours &amp; Condition</div><div class="field-row" style="grid-template-columns:160px 1fr 1fr;"><div class="field"><label for="hours">Hours <span class="req">*</span></label><input type="number" id="hours" name="hours" placeholder="1450" min="0"></div><div class="field"><label for="condition_field" id="condition-pct-label">Track Condition</label><select id="condition_field" name="condition_field"><option value="">-- Select --</option><option value="New">New</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="Worn">Worn</option></select></div><div class="field"><label for="serial_number">Serial Number</label><input type="text" id="serial_number" name="serial_number" placeholder="CAT0259D3XXXXX"></div></div></div>
+        <div class="form-card"><div class="section-label">Attachments</div><div class="field-row single"><div class="field"><label for="attachments_included">Attachments Included</label><input type="text" id="attachments_included" name="attachments_included" placeholder="Bucket, pallet forks, auger"></div></div></div>
+        <div class="form-card"><div class="section-label">Photos</div><div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()"><div class="photo-drop-label"><strong>Click to upload</strong> or drag &amp; drop photos here<br><span style="font-size:11px;">JPG, PNG, WEBP - multiple files supported</span></div></div><div id="photo-preview"></div><div id="photo-count" class="photo-count hidden"></div></div>
+        <div class="form-card" id="branding-card"><div class="section-label">Branding / Contact Overlay <span style="font-size:10px;font-weight:500;color:var(--dim);margin-left:6px;text-transform:none;letter-spacing:0;">Optional</span></div><div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Add your logo and contact info to generated listing images.</div><div class="field-row single" style="margin-bottom:10px;"><div class="field"><label for="overlay-logo-input">Company Logo</label><div class="photo-drop" id="overlay-logo-drop" style="min-height:38px;padding:8px 12px;" onclick="document.getElementById('overlay-logo-input').click()"><div id="overlay-logo-label" class="photo-drop-label"><strong>Click to upload logo</strong> &nbsp;-&nbsp; PNG with transparency recommended</div></div><input type="file" id="overlay-logo-input" accept="image/*" style="display:none"></div></div><div class="field-row"><div class="field"><label for="overlay-contact-name">Contact Name</label><input type="text" id="overlay-contact-name" placeholder="John Smith"></div><div class="field"><label for="overlay-contact-phone">Contact Phone</label><input type="text" id="overlay-contact-phone" placeholder="555-123-4567"></div></div></div>
+        <div class="uc-preview-card hidden" id="uc-preview-card"><div class="uc-preview-header"><span class="uc-preview-label">What This Machine Is Best For</span><span class="uc-preview-machine" id="uc-preview-machine"></span></div><div id="uc-preview-body"></div></div>
+        <div class="submit-row"><div><button type="submit" class="btn-generate" id="submit-btn">Next: Review Listing</button><div style="margin-top:7px;font-size:12px;color:var(--dim);">You'll review and refine before posting</div></div><span class="status-msg hidden" id="status-msg"></span></div>
+      </div></div></div></section>
+    <section class="marketing-section"><div class="build-shell"><div class="marketing-grid"><div class="marketing-copy"><div class="section-kicker">Output Proof</div><h2>Formatted for every channel.</h2><p>Build once, then deliver a full listing, buyer-ready specs, and machine photos already formatted for the places you post.</p><div class="marketing-points"><div class="marketing-point">Full listing presentation with real machine imagery</div><div class="marketing-point">Exact machine specs organized for buyer review</div><div class="marketing-point">Finished media outputs ready for marketplace, website, and social</div></div></div><div class="preview-layout"><article class="preview-card primary-preview"><div class="preview-frame"><div class="preview-topline"><span class="preview-status">Listing Sample</span><span>Primary output</span></div><div class="listing-card"><div class="listing-image-wrap"><img src="/images/299d3/hero.jpg" alt="2024 CAT 299D3 listing preview" /><div class="dealer-overlay"><img class="dealer-overlay-logo" src="/static/assets/yellow_iron_yard_logo.png?v=5" alt="Yellow Iron Yard" /><div class="dealer-overlay-contact"><span class="dealer-overlay-name">John Smith</span><span class="dealer-overlay-phone">555-555-5555</span></div></div></div><div class="listing-copy"><h3>2024 CAT 299D3</h3><div class="package-price">$84,999</div><div class="listing-lines"><div>Clean, late-model machine ready for work</div><div>Enclosed cab with heat &amp; AC</div></div><div class="meta-row"><div class="meta-chip">Enclosed Cab</div><div class="meta-chip">High Flow</div><div class="meta-chip">2-Speed</div></div><div class="listing-note">6 photos included</div></div></div></div></article><div class="preview-stack"><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Spec Sheet Preview</span><span>Buyer-ready</span></div><h3>Machine Details</h3><div class="spec-sheet"><div class="spec-sheet-head"><strong>Buyer-ready spec summary</strong><span>Clean rows for quick review and fast handoff.</span></div><div class="spec-row"><span>Operating Weight</span><span>11,451 LB</span></div><div class="spec-row"><span>Rated Capacity</span><span>3,480 LB</span></div><div class="spec-row"><span>Tipping Load</span><span>9,945 LB</span></div><div class="spec-row"><span>Engine Power</span><span>74.3 HP</span></div><div class="spec-row"><span>Auxiliary Flow</span><span>23 GPM</span></div><div class="spec-row"><span>Travel Speed</span><span>8.4 MPH</span></div><div class="spec-row"><span>Width</span><span>72.9 IN</span></div><div class="spec-row"><span>Hinge Pin Height</span><span>10.8 FT</span></div><div class="spec-footer">Full spec sheet included</div></div></div></article><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Finished Media Output</span><span>Export-ready</span></div><h3>Finished Media Output</h3><div class="brand-visual"><div class="brand-canvas"><div class="brand-overlay-tag">Dealer Overlay Active</div><div class="media-stack"><div class="media-format-card media-square"><img src="/images/299d3/side.jpg" alt="Square 1:1 crop preview of CAT 299D3" /><span>1:1 Square</span></div><div class="media-format-card media-portrait"><img src="/images/299d3/alt.jpg" alt="Portrait 4:5 crop preview of CAT 299D3" /><span>4:5 Portrait</span></div><div class="media-format-card media-vertical"><img src="/images/299d3/side.jpg" alt="Vertical 9:16 crop preview of CAT 299D3" /><span>9:16 Vertical</span></div></div></div><div class="brand-bar"><strong>Ready for: Marketplace • Website • Social</strong></div><div class="brand-subline">Multiple formats generated automatically</div></div></div></article></div></div></div></div></section>
+    <input type="hidden" name="year" id="h-year"><input type="hidden" name="make" id="h-make"><input type="hidden" name="model" id="h-model"><input type="hidden" name="asking_price" id="h-asking-price"><input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none">
+  </form>
+</main>
+<script>
+(function () {
+
+  // â”€â”€ All boolean feature field names (superset of all equipment types) â”€â”€â”€â”€â”€â”€â”€
+  const BUILD_DRAFT_KEY = 'mtm_build_listing_draft_v1';
+  const ALL_FEATURE_NAMES = [
+    'enclosed_cab', 'heat', 'ac', 'high_flow', 'two_speed', 'ride_control',
+    'backup_camera', 'radio', 'joystick_controls', 'one_owner',
+    'thumb', 'aux_hydraulics', 'blade', 'zero_tail_swing', 'rubber_tracks',
+    'four_wheel_drive',
+    // 'quick_attach' removed: backend param is Optional[str]=None (not "false"); the rendered
+    // checkbox uses name="coupler_type" which is not in this list. Sending "false" caused
+    // coupler_type="false" to pass validator — a validation crash on every CTL/SSL submission.
+  ];
+
+  // â”€â”€ Element refs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const form       = document.getElementById('build-form');
+  const submitBtn  = document.getElementById('submit-btn');
+  const statusMsg  = document.getElementById('status-msg');
+  const photoInput = document.getElementById('photo-input');
+  const photoPreview = document.getElementById('photo-preview');
+  const photoCount = document.getElementById('photo-count');
+  const photoDrop  = document.getElementById('photo-drop');
+
+  const step1Edit   = document.getElementById('step1-edit');
+  const step1Done   = document.getElementById('step1-done');
+  const step1Status = document.getElementById('step1-status');
+  const identifyBtn = document.getElementById('identify-btn');
+  const changeBtn   = document.getElementById('change-btn');
+
+  const step2            = document.getElementById('step2');
+  const matchWarning     = document.getElementById('match-warning');
+  const noMatchNotice    = document.getElementById('no-match-notice');
+  const specPreviewCard  = document.getElementById('spec-preview-card');
+  const specPreviewGrid  = document.getElementById('spec-preview-grid');
+  const featuresContainer = document.getElementById('features-container');
+  const matchIcon        = document.getElementById('match-icon');
+  const matchLabel       = document.getElementById('match-label');
+  const matchType        = document.getElementById('match-type');
+  const condPctLabel     = document.getElementById('condition-pct-label');
+  const featuresSub      = document.getElementById('features-sub');
+  let currentEquipmentType = '';
+
+  const ucCard    = document.getElementById('uc-preview-card');
+  const ucMachine = document.getElementById('uc-preview-machine');
+  const ucBody    = document.getElementById('uc-preview-body');
+  let currentIdentifyData = null;
+
+  function collectDraftFields() {
+    const fields = {};
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+      if (!el || !el.type || el.type === 'file') return;
+      const key = el.id || el.name;
+      if (!key) return;
+      if (el.type === 'radio') {
+        if (el.checked) fields[key] = el.value;
+        return;
+      }
+      if (el.type === 'checkbox') {
+        fields[key] = !!el.checked;
+        return;
+      }
+      fields[key] = el.value;
+    });
+    return fields;
+  }
+
+  function applyDraftFields(fields) {
+    if (!fields || typeof fields !== 'object') return;
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+      if (!el || !el.type || el.type === 'file') return;
+      const key = el.id || el.name;
+      if (!key || !(key in fields)) return;
+      const value = fields[key];
+      if (el.type === 'radio') {
+        el.checked = String(el.value) === String(value);
+        return;
+      }
+      if (el.type === 'checkbox') {
+        el.checked = !!value;
+        const lbl = el.closest('.toggle-check');
+        if (lbl) lbl.classList.toggle('checked', el.checked);
+        return;
+      }
+      el.value = value == null ? '' : String(value);
+    });
+  }
+
+  function cloneIdentifyDraft(data) {
+    if (!data || typeof data !== 'object') return null;
+    return {
+      match_found: !!data.match_found,
+      match_quality: data.match_quality || '',
+      machine_label: data.machine_label || '',
+      year: data.year ? String(data.year) : '',
+      make: data.make || '',
+      model: data.model || '',
+      eq_type_label: data.eq_type_label || '',
+      equipment_type: data.equipment_type || '',
+      condition_pct_label: data.condition_pct_label || '',
+      spec_preview: Array.isArray(data.spec_preview) ? data.spec_preview : [],
+      features: Array.isArray(data.features) ? data.features : [],
+    };
+  }
+
+  function currentDraftStep() {
+    return step1Edit.classList.contains('hidden') ? 'step2' : 'step1';
+  }
+
+  function saveBuildListingDraft(overrides = {}) {
+    try {
+      const draft = {
+        step: overrides.step || currentDraftStep(),
+        fields: collectDraftFields(),
+        identifyData: overrides.identifyData === undefined
+          ? cloneIdentifyDraft(currentIdentifyData)
+          : cloneIdentifyDraft(overrides.identifyData),
+      };
+      window.localStorage.setItem(BUILD_DRAFT_KEY, JSON.stringify(draft));
+    } catch (_) {}
+  }
+
+  function loadBuildListingDraft() {
+    try {
+      const raw = window.localStorage.getItem(BUILD_DRAFT_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function clearBuildListingDraft() {
+    try {
+      window.localStorage.removeItem(BUILD_DRAFT_KEY);
+    } catch (_) {}
+  }
+
+  function showStep1Only() {
+    step1Edit.classList.remove('hidden');
+    step1Done.classList.add('hidden');
+    step2.classList.add('hidden');
+    specPreviewCard.classList.add('hidden');
+    matchWarning.classList.add('hidden');
+    noMatchNotice.classList.add('hidden');
+    ucCard.classList.add('hidden');
+    statusMsg.classList.add('hidden');
+  }
+
+  function applyDraftToForm(draft) {
+    if (!draft || typeof draft !== 'object') return;
+    applyDraftFields(draft.fields);
+    if (draft.identifyData) {
+      populateStep2(draft.identifyData, { shouldScroll: false, saveDraft: false });
+      applyDraftFields(draft.fields);
+      if (draft.step === 'step1') {
+        showStep1Only();
+      } else {
+        const hours = document.getElementById('hours').value.trim();
+        if (hours) schedulePreview();
+      }
+    }
+  }
+
+  form.addEventListener('input', function (e) {
+    if (e.target && e.target.type === 'file') return;
+    saveBuildListingDraft();
+  }, true);
+
+  form.addEventListener('change', function (e) {
+    if (e.target && e.target.type === 'file') return;
+    saveBuildListingDraft();
+  }, true);
+
+  // â”€â”€ Step 1: identify machine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  identifyBtn.addEventListener('click', async function () {
+    const year  = document.getElementById('s1-year').value.trim();
+    const make  = document.getElementById('s1-make').value.trim();
+    const model = document.getElementById('s1-model').value.trim();
+
+    if (!year || !make || !model) {
+      showStep1Status('Year, Make, and Model are required.', 'error');
+      return;
+    }
+
+    identifyBtn.disabled = true;
+    showStep1Status('<span class="spinner"></span>Looking up machineâ€¦', '');
+
+    const fd = new FormData();
+    fd.append('year', year);
+    fd.append('make', make);
+    fd.append('model', model);
+
+    try {
+      const resp = await fetch('/build-listing/identify', { method: 'POST', body: fd });
+      if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+      const data = await resp.json();
+      populateStep2(data);
+    } catch (err) {
+      showStep1Status('Error: ' + err.message, 'error');
+      identifyBtn.disabled = false;
+    }
+  });
+
+  // Step 1 field listeners: Enter triggers identify; any edit while at step 1
+  // invalidates stale machine data so it can't be restored on refresh.
+  ['s1-year', 's1-make', 's1-model'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); identifyBtn.click(); }
+    });
+    el.addEventListener('input', function () {
+      // Only clear when user is actually editing at step 1 (not during restore,
+      // because programmatic .value assignment never fires 'input').
+      if (currentDraftStep() === 'step1') {
+        currentIdentifyData = null;
+        document.getElementById('h-year').value  = '';
+        document.getElementById('h-make').value  = '';
+        document.getElementById('h-model').value = '';
+        // Draft will auto-save via the bubbling form 'input' listener,
+        // now carrying identifyData: null and empty h-* fields.
+      }
+    });
+  });
+
+  function populateStep2(data, options) {
+    const opts = options || {};
+    // Copy identity values to hidden form inputs.
+    // Prefer values from the identify response (reliable during draft restore);
+    // fall back to s1 visible inputs for the live-identify path where response
+    // may not yet carry year/make/model (old cached response shape).
+    const yearVal  = data.year  || document.getElementById('s1-year').value.trim();
+    const makeVal  = data.make  || document.getElementById('s1-make').value.trim();
+    const modelVal = data.model || document.getElementById('s1-model').value.trim();
+    document.getElementById('h-year').value          = yearVal;
+    document.getElementById('h-make').value          = makeVal;
+    document.getElementById('h-model').value         = modelVal;
+    document.getElementById('h-asking-price').value  = document.getElementById('s1-price').value.trim();
+    // Also sync s1 visible inputs so the "Change Machine" state is consistent
+    if (yearVal  && !document.getElementById('s1-year').value)  document.getElementById('s1-year').value  = yearVal;
+    if (makeVal  && !document.getElementById('s1-make').value)  document.getElementById('s1-make').value  = makeVal;
+    if (modelVal && !document.getElementById('s1-model').value) document.getElementById('s1-model').value = modelVal;
+    currentIdentifyData = cloneIdentifyDraft(data);
+
+    // Transform step 1 card to "done" display
+    step1Edit.classList.add('hidden');
+    step1Done.classList.remove('hidden');
+    step1Status.classList.add('hidden');
+
+    matchLabel.textContent = data.machine_label || '';
+    matchType.textContent  = data.eq_type_label  || '';
+
+    if (data.match_found) {
+      matchIcon.textContent  = 'âœ“';
+      matchIcon.className    = 'match-icon match-found';
+    } else {
+      matchIcon.textContent  = '?';
+      matchIcon.className    = 'match-icon match-unknown';
+    }
+
+    // Match quality banners
+    matchWarning.classList.add('hidden');
+    noMatchNotice.classList.add('hidden');
+    if (!data.match_found) {
+      noMatchNotice.classList.remove('hidden');
+    } else if (data.match_quality === 'weak' || data.match_quality === 'moderate') {
+      matchWarning.classList.remove('hidden');
+    }
+
+    // OEM Spec Preview pills
+    if (data.spec_preview && data.spec_preview.length > 0) {
+      specPreviewGrid.innerHTML = data.spec_preview.map(s =>
+        `<div class="spec-pill">` +
+        `<div class="spec-pill-val">${escHtml(s.value)}</div>` +
+        `<div class="spec-pill-lbl">${escHtml(s.label)}</div>` +
+        `</div>`
+      ).join('');
+      specPreviewCard.classList.remove('hidden');
+    } else {
+      specPreviewCard.classList.add('hidden');
+    }
+
+    // Equipment-type-specific feature checkboxes
+    featuresContainer.innerHTML = '';
+    const features = data.features || [];
+    features.forEach(feat => {
+      const lbl = document.createElement('label');
+      lbl.className = 'toggle-check';
+      lbl.id = `lbl-${feat.name}`;
+      lbl.innerHTML = `<input type="checkbox" name="${escAttr(feat.name)}" value="true"> ${escHtml(feat.label)}`;
+      lbl.querySelector('input').addEventListener('change', e => {
+        lbl.classList.toggle('checked', e.target.checked);
+        schedulePreview();
+      });
+      featuresContainer.appendChild(lbl);
+    });
+
+    if (features.length === 0) {
+      featuresContainer.innerHTML = '<p style="font-size:13px;color:var(--mtm-text-muted);margin:0;">No feature options available for this equipment type.</p>';
+    }
+
+    // Update condition % label and track equipment type for field routing
+    condPctLabel.textContent = data.condition_pct_label || 'Condition %';
+    currentEquipmentType = data.equipment_type || '';
+
+    // Show step 2 and scroll to it
+    step2.classList.remove('hidden');
+    identifyBtn.disabled = false;
+    if (opts.saveDraft !== false) saveBuildListingDraft({ step: 'step2' });
+    if (opts.shouldScroll !== false) {
+      setTimeout(() => {
+        step2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
+  }
+
+  // â”€â”€ Change machine â€” go back to step 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  changeBtn.addEventListener('click', function () {
+    // Invalidate cached machine data immediately so the draft saved below
+    // (and any drafts saved from subsequent keystrokes in the s1 fields)
+    // do not carry the old identifyData or the old hidden submission values.
+    currentIdentifyData = null;
+    document.getElementById('h-year').value  = '';
+    document.getElementById('h-make').value  = '';
+    document.getElementById('h-model').value = '';
+    showStep1Only();
+    saveBuildListingDraft({ step: 'step1' });
+    document.getElementById('s1-year').focus();
+  });
+
+  // â”€â”€ Photo upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  function updatePhotoPreview(files) {
+    photoPreview.innerHTML = '';
+    Array.from(files).slice(0, 12).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const img = document.createElement('img');
+      img.className = 'photo-thumb';
+      img.src = URL.createObjectURL(file);
+      photoPreview.appendChild(img);
+    });
+    photoCount.textContent = files.length > 0
+      ? `${files.length} photo${files.length !== 1 ? 's' : ''} selected`
+      : '';
+    photoCount.classList.toggle('hidden', files.length === 0);
+  }
+
+  photoInput.addEventListener('change', () => updatePhotoPreview(photoInput.files));
+
+  photoDrop.addEventListener('dragover',  e => { e.preventDefault(); photoDrop.classList.add('drag-over'); });
+  photoDrop.addEventListener('dragleave', () => photoDrop.classList.remove('drag-over'));
+  photoDrop.addEventListener('drop', e => {
+    e.preventDefault();
+    photoDrop.classList.remove('drag-over');
+    const dt = new DataTransfer();
+    Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+    photoInput.files = dt.files;
+    updatePhotoPreview(dt.files);
+  });
+
+  // â”€â”€ Overlay logo file feedback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  document.getElementById('overlay-logo-input').addEventListener('change', function () {
+    const drop  = document.getElementById('overlay-logo-drop');
+    const label = document.getElementById('overlay-logo-label');
+    if (this.files && this.files.length > 0) {
+      drop.classList.add('has-files');
+      label.innerHTML = '<strong>' + escHtml(this.files[0].name) + '</strong> &mdash; logo ready';
+    } else {
+      drop.classList.remove('has-files');
+      label.innerHTML = '<strong>Click to upload logo</strong> &nbsp;&mdash;&nbsp; PNG with transparency recommended';
+    }
+  });
+
+  // â”€â”€ Use-case preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  let ucTimer = null;
+
+  function schedulePreview() {
+    clearTimeout(ucTimer);
+    ucTimer = setTimeout(fetchPreview, 480);
+  }
+
+  async function fetchPreview() {
+    const year  = document.getElementById('h-year').value;
+    const make  = document.getElementById('h-make').value;
+    const model = document.getElementById('h-model').value;
+    const hours = document.getElementById('hours').value.trim();
+    if (!year || !make || !model || !hours) return;
+
+    ucCard.classList.remove('hidden');
+    ucCard.classList.remove('has-content');
+    ucMachine.textContent = '';
+    ucBody.innerHTML = '<div class="uc-spinner-row"><span class="spinner"></span> Analyzingâ€¦</div>';
+
+    const fd = new FormData();
+    fd.append('year',  year);
+    fd.append('make',  make);
+    fd.append('model', model);
+    fd.append('hours', hours);
+
+    const condVal = document.getElementById('condition_field').value;
+    if (condVal) {
+      const WHEELED_TYPES = ['skid_steer', 'wheel_loader', 'backhoe_loader', 'telehandler', 'boom_lift', 'scissor_lift'];
+      const condKey = WHEELED_TYPES.includes(currentEquipmentType) ? 'tire_condition' : 'track_condition';
+      fd.append(condKey, condVal);
+    }
+    const serialNum = document.getElementById('serial_number').value.trim();
+    if (serialNum) fd.append('serial_number', serialNum);
+    const attachments = document.getElementById('attachments_included').value.trim();
+    if (attachments) fd.append('attachments_included', attachments);
+    const askingPrice = document.getElementById('h-asking-price').value.trim();
+    if (askingPrice) fd.append('asking_price', askingPrice);
+
+    const TRISTATE_FEATURE_NAMES = ['high_flow', 'two_speed'];
+    const BINARY_FEATURE_NAMES   = ALL_FEATURE_NAMES.filter(n => !TRISTATE_FEATURE_NAMES.includes(n));
+    BINARY_FEATURE_NAMES.forEach(name => {
+      const cb = document.querySelector(`input[name="${name}"]`);
+      fd.append(name, cb && cb.checked ? 'true' : 'false');
+    });
+    TRISTATE_FEATURE_NAMES.forEach(name => {
+      const cb = document.querySelector(`input[name="${name}"]`);
+      // Send '' for unchecked — _tribool('') → None → unknown state preserved
+      fd.append(name, cb && cb.checked ? 'true' : '');
+    });
+    // coupler_type: Optional[str] enum — send 'hydraulic' when checked, '' when not.
+    // Must not send 'false' (fails DealerInput validator). Not in ALL_FEATURE_NAMES for this reason.
+    const couplerEl = document.querySelector('input[name="coupler_type"]');
+    if (couplerEl !== null) fd.append('coupler_type', couplerEl.checked ? 'hydraulic' : '');
+
+    try {
+      const resp = await fetch('/build-listing/preview', { method: 'POST', body: fd });
+      if (!resp.ok) { ucCard.classList.add('hidden'); return; }
+      const data = await resp.json();
+      renderUcPreview(data);
+    } catch (_) {
+      ucCard.classList.add('hidden');
+    }
+  }
+
+  function renderUcPreview(data) {
+    if (!data.ok) { ucCard.classList.add('hidden'); return; }
+    ucCard.classList.remove('hidden');
+    ucCard.classList.remove('has-content');
+
+    if (!data.spec_found || !data.payload) {
+      ucMachine.textContent = data.machine_match || '';
+      ucBody.innerHTML = '<p class="uc-no-match">Model not found â€” listing will be generated without OEM spec sheet.</p>';
+      return;
+    }
+
+    const { best_for, attachment_sentence, limitation_sentence } = data.payload;
+    if (!best_for || !best_for.length) {
+      ucMachine.textContent = data.machine_match || '';
+      ucBody.innerHTML = '<p class="uc-no-match">Registry match found â€” use case data not available for this model.</p>';
+      return;
+    }
+
+    ucCard.classList.add('has-content');
+    ucMachine.textContent = data.machine_match || '';
+    let html = '<ul class="uc-best-for-list">';
+    best_for.forEach(uc => { html += `<li>${escHtml(uc)}</li>`; });
+    html += '</ul>';
+    if (attachment_sentence) html += `<p class="uc-att-sentence">${escHtml(attachment_sentence)}</p>`;
+    if (limitation_sentence) html += `<p class="uc-limit-sentence"><strong>Note:</strong> ${escHtml(limitation_sentence)}</p>`;
+    ucBody.innerHTML = html;
+  }
+
+  // Trigger use-case preview when hours is entered
+  document.getElementById('hours').addEventListener('blur', schedulePreview);
+
+  // â”€â”€ Form submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    // Defensive re-sync: if hidden fields lost their value (edge case), recover from
+    // currentIdentifyData or s1 visible inputs before failing validation.
+    if (!document.getElementById('h-year').value && currentIdentifyData) {
+      if (currentIdentifyData.year)  document.getElementById('h-year').value  = currentIdentifyData.year;
+      if (currentIdentifyData.make)  document.getElementById('h-make').value  = currentIdentifyData.make;
+      if (currentIdentifyData.model) document.getElementById('h-model').value = currentIdentifyData.model;
+    }
+
+    const year  = document.getElementById('h-year').value;
+    const make  = document.getElementById('h-make').value;
+    const model = document.getElementById('h-model').value;
+    const hours = document.getElementById('hours').value.trim();
+
+    if (!year || !make || !model) {
+      showStatus('Please identify your machine first (complete Step 1).', 'error');
+      return;
+    }
+    if (!hours) {
+      showStatus('Hours is required.', 'error');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('year',  year);
+    fd.append('make',  make);
+    fd.append('model', model);
+    fd.append('hours', hours);
+
+    const condValFinal = document.getElementById('condition_field').value;
+    if (condValFinal) {
+      const WHEELED_TYPES = ['skid_steer', 'wheel_loader', 'backhoe_loader', 'telehandler', 'boom_lift', 'scissor_lift'];
+      const condKeyFinal = WHEELED_TYPES.includes(currentEquipmentType) ? 'tire_condition' : 'track_condition';
+      fd.append(condKeyFinal, condValFinal);
+    }
+    const serialNum = document.getElementById('serial_number').value.trim();
+    if (serialNum) fd.append('serial_number', serialNum);
+
+    const attachments = document.getElementById('attachments_included').value.trim();
+    if (attachments) fd.append('attachments_included', attachments);
+
+    const askingPrice = document.getElementById('h-asking-price').value.trim();
+    if (askingPrice) fd.append('asking_price', askingPrice);
+
+    // Send every possible boolean feature — default false if not rendered.
+    // high_flow and two_speed are tri-state: send '' (not 'false') when unchecked
+    // so _tribool('') → None, preserving the unknown/unconfirmed state.
+    const TRISTATE_FEATURE_NAMES = ['high_flow', 'two_speed'];
+    const BINARY_FEATURE_NAMES   = ALL_FEATURE_NAMES.filter(n => !TRISTATE_FEATURE_NAMES.includes(n));
+    BINARY_FEATURE_NAMES.forEach(name => {
+      const cb = document.querySelector(`input[name="${name}"]`);
+      fd.append(name, cb && cb.checked ? 'true' : 'false');
+    });
+    TRISTATE_FEATURE_NAMES.forEach(name => {
+      const cb = document.querySelector(`input[name="${name}"]`);
+      // Send '' for unchecked — _tribool('') → None → unknown state preserved
+      fd.append(name, cb && cb.checked ? 'true' : '');
+    });
+    // coupler_type: Optional[str] enum — send 'hydraulic' when checked, '' when not.
+    // Must not send 'false' (fails DealerInput validator). Not in ALL_FEATURE_NAMES for this reason.
+    const couplerElFinal = document.querySelector('input[name="coupler_type"]');
+    if (couplerElFinal !== null) fd.append('coupler_type', couplerElFinal.checked ? 'hydraulic' : '');
+
+    Array.from(photoInput.files).forEach(f => fd.append('photos', f));
+
+    // Branding overlay fields
+    const overlayName  = document.getElementById('overlay-contact-name').value.trim();
+    const overlayPhone = document.getElementById('overlay-contact-phone').value.trim();
+    if (overlayName)  fd.append('overlay_contact_name',  overlayName);
+    if (overlayPhone) fd.append('overlay_contact_phone', overlayPhone);
+    const overlayLogoFiles = document.getElementById('overlay-logo-input').files;
+    if (overlayLogoFiles.length > 0) fd.append('overlay_logo', overlayLogoFiles[0]);
+
+    submitBtn.disabled = true;
+    showStatus('<span class="spinner"></span>Generating your listing packâ€¦', '');
+
+    try {
+      const resp = await fetch('/build-listing', { method: 'POST', body: fd });
+      if (!resp.ok) {
+        let detail = `Server error ${resp.status}`;
+        try { const j = await resp.json(); detail = j.detail || detail; } catch (_) {}
+        showStatus('Error: ' + detail, 'error');
+        submitBtn.disabled = false;
+        return;
+      }
+      const data = await resp.json();
+      if (data.result_url) {
+        clearBuildListingDraft();
+        window.location.href = data.result_url;
+      } else {
+        showStatus('Pack generated but no result URL returned.', 'error');
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      showStatus('Network error: ' + err.message, 'error');
+      submitBtn.disabled = false;
+    }
+  });
+
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  function showStep1Status(html, type) {
+    step1Status.innerHTML  = html;
+    step1Status.className  = 'status-msg' + (type ? ' ' + type : '');
+    step1Status.classList.remove('hidden');
+  }
+
+  function showStatus(html, type) {
+    statusMsg.innerHTML  = html;
+    statusMsg.className  = 'status-msg' + (type ? ' ' + type : '');
+    statusMsg.classList.remove('hidden');
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escAttr(s) {
+    return String(s).replace(/[^a-zA-Z0-9_-]/g, '');
+  }
+
+  applyDraftToForm(loadBuildListingDraft());
+
+})();
+</script>
+</body>
+</html>
+

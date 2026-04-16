@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "Cat 305 CR \u2014 Mini Excavator Class C",
+    "equipment_type": "mini_excavator",
+    "make": "Caterpillar",
+    "model": "305 CR",
+    "year": 2022,
+    "hours": 890,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Excavation & Digging",
+      "Utility Trenching"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": null
+  }
+}

@@ -21,6 +21,7 @@ Integration checklist for real modules:
 """
 
 from __future__ import annotations
+import json
 import os
 import re
 import uuid
@@ -285,6 +286,8 @@ _SPEC_KEY_MAP: dict[str, str] = {
     # Telehandler: lookup_machine renames these before they reach full_record;
     # map them back to the spec_resolver / display canonical names.
     "max_lift_capacity_lbs":        "lift_capacity_lb",
+    # Telehandler canonical registry name (post v3.5 standardization) → internal display name
+    "lift_capacity_lbs":            "lift_capacity_lb",
     "lift_height_ft":               "max_lift_height_ft",
     "forward_reach_ft":             "max_forward_reach_ft",
     # Dig depth: registry key → resolver canonical name used by dig_depth.resolve
@@ -311,106 +314,254 @@ _SPEC_FT_TO_IN_FIELDS: frozenset[str] = frozenset({"max_dig_depth_ft"})
 #   Dealer →  6–7  (listing)
 #   Full   →  9–12 (spec sheet / credibility)
 
-# SSL and CTL share identical field sets for now.
-# Defined once here; both keys reference the same dict so future divergence
-# only requires updating one entry.
-_SSL_CTL_FIELDS: dict[str, list[str]] = {
+# ── Skid Steer (SSL) — LOCKED standard 2026-04-10 ────────────────────────────
+# Core output (always shown when resolved or injected from DealerInput):
+#   hours — DealerInput (always present)
+#   net_hp, roc_lb, operating_weight_lb, hydraulic_flow_gpm, lift_path,
+#   high_flow (status: yes/no/optional), two_speed (status: yes/no/optional) — DealerInput injection
+# Conditional-core (shown when known): width_over_tires_in, bucket_hinge_pin_height_in
+# Excluded from core: hydraulic_pressure, travel_speed_*, engine_model,
+#   engine_manufacturer, dump_height, dump_reach, frame_size, fuel_type
+# high_flow and two_speed are buyer-facing STATUS FIELDS (yes/no/optional), NOT soft features.
+# They are injected from DealerInput into resolved_specs before display.
+_SSL_FIELDS: dict[str, list[str]] = {
     "essential": [
+        "hours",                        # core: DealerInput (always present)
         "net_hp",
         "roc_lb",
         "hydraulic_flow_gpm",
     ],
     "standard": [
+        "hours",                        # core: DealerInput (always present)
         "net_hp",
         "roc_lb",
-        "tipping_load_lb",
         "operating_weight_lb",
         "hydraulic_flow_gpm",
-        "travel_speed_high_mph",
-        "width_over_tires_in",
-        "bucket_hinge_pin_height_in",
         "lift_path",
+        "high_flow",
+        "two_speed",
+        "width_over_tires_in",          # conditional-core: only shows when resolved
+        "bucket_hinge_pin_height_in",   # conditional-core: only shows when resolved
     ],
     "technical": [
+        "hours",                        # core: DealerInput (always present)
         "net_hp",
         "roc_lb",
         "tipping_load_lb",
         "operating_weight_lb",
         "hydraulic_flow_gpm",
-        "hydraulic_pressure_standard_psi",
-        "travel_speed_high_mph",
-        "travel_speed_low_mph",
+        "lift_path",
+        "high_flow",
+        "two_speed",
+        "width_over_tires_in",          # conditional-core: only shows when resolved
+        "bucket_hinge_pin_height_in",   # conditional-core: only shows when resolved
+    ],
+}
+
+# ── Compact Track Loader (CTL) — LOCKED standard 2026-04-10 ──────────────────
+# Core output (always shown when resolved or injected from DealerInput):
+#   hours — DealerInput (always present)
+#   net_hp, roc_lb — OEM registry (spec resolver)
+#   cab_type, high_flow, two_speed, quick_attach, ac — DealerInput injection (listing_pack_builder)
+#   track_condition, serial_number  — DealerInput injection (listing_pack_builder)
+#   quick_attach: dealer_input.coupler_type mapped to key "quick_attach" in listing_pack_builder
+# Conditional-core (shown when resolved from registry):
+#   hydraulic_flow_gpm, lift_path, width_over_tires_in, bucket_hinge_pin_height_in
+# Excluded: tipping_load_lb (internal only), operating_weight_lb, travel_speed_*,
+#   hydraulic_pressure_standard_psi, fuel_type, frame_size,
+#   engine_model, engine_manufacturer
+# high_flow and two_speed are buyer-facing STATUS FIELDS (yes/no/optional), NOT soft features.
+# They are injected from DealerInput into resolved_specs before display.
+_CTL_FIELDS: dict[str, list[str]] = {
+    "essential": [
+        "hours",                        # core: DealerInput (always present)
+        "net_hp",
+        "roc_lb",
+        "hydraulic_flow_gpm",           # conditional-core: omits if not resolved
+    ],
+    "standard": [
+        "hours",                        # core: DealerInput (always present)
+        "net_hp",
+        "roc_lb",
+        "cab_type",                     # core: DealerInput injection
+        "high_flow",                    # core: unit-level config, confirm-required, DealerInput injection
+        "two_speed",                    # core: unit-level config, confirm-required, DealerInput injection
+        "quick_attach",                 # core: DealerInput injection (coupler_type → quick_attach)
+        "ac",                           # core: DealerInput injection
+        "track_condition",              # core — CRITICAL: DealerInput injection (free text)
+        "serial_number",                # core: DealerInput injection
+        "hydraulic_flow_gpm",           # conditional-core: only shows when resolved
+        "lift_path",                    # conditional-core: only shows when resolved
+        "width_over_tires_in",          # conditional-core: only shows when resolved
+        "bucket_hinge_pin_height_in",   # conditional-core: only shows when resolved
+    ],
+    "technical": [
+        "hours",                        # core: DealerInput (always present)
+        "net_hp",
+        "roc_lb",
+        "cab_type",
+        "high_flow",
+        "two_speed",
+        "quick_attach",                 # core: DealerInput injection (coupler_type → quick_attach)
+        "ac",
+        "track_condition",
+        "serial_number",
+        "hydraulic_flow_gpm",
+        "lift_path",
         "width_over_tires_in",
         "bucket_hinge_pin_height_in",
-        "lift_path",
+    ],
+}
+
+# ── Mini Excavator — LOCKED standard 2026-04-10 ──────────────────────────────
+# Core output (always shown when resolved or injected from DealerInput):
+#   hours — DealerInput (always present)
+#   net_hp — OEM registry (spec resolver; mapped from horsepower_hp)
+#   cab_type, ac, heater, aux_hydraulics — DealerInput injection
+#   coupler_type, thumb_type, blade_type, serial_number — DealerInput injection
+# Conditional-core (shown when resolved from registry):
+#   max_dig_depth, hydraulic_flow_gpm, bucket_breakout_lb, tail_swing_type, width_in
+# Excluded from output: engine_make, emissions_tier, telematics, raw arm ft/in values
+# aux_hydraulics is injected from DealerInput (mapped from registry "auxiliary_hydraulics")
+_MINI_EX_FIELDS: dict[str, list[str]] = {
+    "essential": [
+        "hours",
+        "net_hp",
+        "max_dig_depth",
+    ],
+    "standard": [
+        "hours",
+        "net_hp",
+        "cab_type",               # core: DealerInput injection
+        "ac",                     # core: DealerInput injection
+        "heater",                 # core: DealerInput injection
+        "aux_hydraulics",         # core: DealerInput injection (mapped from auxiliary_hydraulics)
+        "coupler_type",           # core: DealerInput injection
+        "thumb_type",             # core: DealerInput injection
+        "blade_type",             # core: DealerInput injection
+        "serial_number",          # core: DealerInput injection
+        "max_dig_depth",          # conditional: only shows when resolved
+        "hydraulic_flow_gpm",     # conditional: only shows when resolved
+        "bucket_breakout_lb",     # conditional: only shows when resolved
+        "tail_swing_type",        # conditional: only shows when resolved
+    ],
+    "technical": [
+        "hours",
+        "net_hp",
+        "cab_type",
+        "ac",
+        "heater",
+        "aux_hydraulics",
+        "coupler_type",
+        "thumb_type",
+        "blade_type",
+        "serial_number",
+        "max_dig_depth",
+        "max_dump_height_ft",
+        "max_reach_ft",
+        "hydraulic_flow_gpm",
+        "bucket_breakout_lb",
+        "hydraulic_pressure_standard_psi",
+        "travel_speed_high_mph",
+        "tail_swing_type",
+        "width_in",
+        "operating_weight_lb",
         "fuel_type",
-        "frame_size",
+    ],
+}
+
+# ── Large Excavator — LOCKED standard 2026-04-10 ─────────────────────────────
+# Core output (always shown when injected from DealerInput or known):
+#   hours — DealerInput (always present)
+#   ac, heater — DealerInput injection
+#   aux_hydraulics_type — DealerInput injection (typed, not boolean)
+#   coupler_type — DealerInput injection (typed: hydraulic/manual/pin)
+#   rear_camera — DealerInput injection
+#   stick_arm_length_ft, track_shoe_width_in — DealerInput injection
+#   undercarriage_condition_pct — DealerInput injection (free text)
+#   serial_number — DealerInput injection
+# Conditional core (shown when known): operating_weight_lb, boom_length_ft
+# Features: bucket_size_included, grade_control_type, thumb_type, hammer_plumbing,
+#   track_type, pattern_changer, heated_seat, air_ride_seat, radio, warranty_status
+# Banned from buyer-facing output: engine_manufacturer, engine_model, emissions_tier,
+#   cab_type, boolean aux_hydraulics
+_LARGE_EX_FIELDS: dict[str, list[str]] = {
+    "essential": [
+        "hours",                         # core: DealerInput (always present)
+        "net_hp",
+        "operating_weight_lb",           # conditional core: only shows when resolved
+        "max_dig_depth",                 # conditional core: only shows when resolved
+    ],
+    "standard": [
+        "hours",                         # core: DealerInput (always present)
+        "ac",                            # core: DealerInput injection
+        "heater",                        # core: DealerInput injection
+        "net_hp",
+        "operating_weight_lb",           # conditional core: only shows when resolved
+        "max_dig_depth",                 # conditional core: only shows when resolved
+        "serial_number",                 # core: DealerInput injection
+        "aux_hydraulics_type",           # core: DealerInput injection (typed)
+        "coupler_type",                  # core: DealerInput injection
+        "rear_camera",                   # core: DealerInput injection
+        "stick_arm_length_ft",           # core: DealerInput injection
+        "track_shoe_width_in",           # core: DealerInput injection
+        "undercarriage_condition_pct",   # core: DealerInput injection (free text)
+        "boom_length_ft",                # conditional core: DealerInput injection
+        "hydraulic_flow_gpm",            # conditional: only shows when resolved
+        "tail_swing_type",               # conditional: only shows when resolved
+        "bucket_size_included",          # feature: DealerInput
+        "grade_control_type",            # feature: DealerInput
+        "thumb_type",                    # feature: DealerInput
+        "hammer_plumbing",               # feature: DealerInput
+        "track_type",                    # feature: DealerInput / registry
+        "pattern_changer",               # feature: DealerInput
+        "heated_seat",                   # feature: DealerInput
+        "air_ride_seat",                 # feature: DealerInput
+        "radio",                         # feature: DealerInput
+        "warranty_status",               # feature: DealerInput
+    ],
+    "technical": [
+        "hours",
+        "ac",
+        "heater",
+        "net_hp",
+        "operating_weight_lb",
+        "max_dig_depth",
+        "serial_number",
+        "aux_hydraulics_type",
+        "coupler_type",
+        "rear_camera",
+        "stick_arm_length_ft",
+        "track_shoe_width_in",
+        "undercarriage_condition_pct",
+        "boom_length_ft",
+        "hydraulic_flow_gpm",
+        "hydraulic_pressure_standard_psi",
+        "bucket_capacity_yd3",
+        "bucket_breakout_lb",
+        "tail_swing_type",
+        "travel_speed_high_mph",
+        "travel_speed_low_mph",
+        "fuel_type",
+        "bucket_size_included",
+        "grade_control_type",
+        "thumb_type",
+        "hammer_plumbing",
+        "track_type",
+        "pattern_changer",
+        "heated_seat",
+        "air_ride_seat",
+        "radio",
+        "warranty_status",
     ],
 }
 
 SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
-    "skid_steer_loader":    _SSL_CTL_FIELDS,
-    "compact_track_loader": _SSL_CTL_FIELDS,
-    "mini_excavator": {
-        "essential": [
-            "net_hp",
-            "operating_weight_lb",
-            "max_dig_depth",
-        ],
-        "standard": [
-            "net_hp",
-            "operating_weight_lb",
-            "max_dig_depth",
-            "max_reach_ground_in",
-            "hydraulic_flow_gpm",
-            "tail_swing_type",
-        ],
-        "technical": [
-            "net_hp",
-            "operating_weight_lb",
-            "max_dig_depth",
-            "max_reach_ground_in",
-            "hydraulic_flow_gpm",
-            "hydraulic_pressure_standard_psi",
-            "travel_speed_high_mph",
-            "tail_swing_type",
-            "fuel_type",
-        ],
-    },
-    # ── New equipment types ───────────────────────────────────────────────────
-    # Fields limited to what the spec resolver actually emits for each category.
-    # Dig depth and breakout force are noted gaps (see _SPEC_KEY_MAP comments).
-    "excavator": {
-        "essential": [
-            "net_hp",
-            "operating_weight_lb",
-            "max_dig_depth",
-        ],
-        "standard": [
-            "net_hp",
-            "operating_weight_lb",
-            "max_dig_depth",
-            "bucket_capacity_yd3",
-            "bucket_breakout_lb",
-            "travel_speed_high_mph",
-            "travel_speed_low_mph",
-            "hydraulic_flow_gpm",
-            "tail_swing_type",
-            "fuel_type",
-        ],
-        "technical": [
-            "net_hp",
-            "operating_weight_lb",
-            "max_dig_depth",
-            "bucket_capacity_yd3",
-            "bucket_breakout_lb",
-            "travel_speed_high_mph",
-            "travel_speed_low_mph",
-            "hydraulic_flow_gpm",
-            "tail_swing_type",
-            "fuel_type",
-        ],
-    },
+    "skid_steer_loader":    _SSL_FIELDS,    # SSL locked standard 2026-04-10
+    "compact_track_loader": _CTL_FIELDS,   # CTL locked standard 2026-04-10
+    "mini_excavator":       _MINI_EX_FIELDS,  # Mini ex locked standard 2026-04-10
+    # ── Large Excavator — LOCKED standard 2026-04-10 ─────────────────────────
+    "excavator": _LARGE_EX_FIELDS,
     "wheel_loader": {
         "essential": [
             "net_hp",
@@ -435,30 +586,46 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "fuel_type",
         ],
     },
+    # Telehandler — LOCKED standard 2026-04-13.
+    # lift_capacity_at_full_height_lbs promoted to standard buyer-facing tier.
+    # cab_type and has_stabilizers added as listing/config fields (DealerInput injection).
+    # hours injected from DealerInput (listing_pack_builder telehandler block).
+    # Suppression: lift_capacity_at_full_height_lbs suppressed when null; cab_type
+    # and has_stabilizers suppressed when null/unknown (standard null-skip behavior).
     "telehandler": {
         "essential": [
-            "net_hp",
             "lift_capacity_lb",
             "max_lift_height_ft",
+            "max_forward_reach_ft",
+            "lift_capacity_at_full_height_lbs",
+            "drive_type",
         ],
         "standard": [
-            "net_hp",
-            "operating_weight_lb",
+            "hours",
             "lift_capacity_lb",
             "max_lift_height_ft",
             "max_forward_reach_ft",
-            "travel_speed_mph",
+            "lift_capacity_at_full_height_lbs",
             "drive_type",
-            "hydraulic_flow_gpm",
+            "cab_type",
+            "net_hp",
+            "transmission_type",
+            "operating_weight_lb",
+            "has_stabilizers",
         ],
         "technical": [
-            "net_hp",
-            "operating_weight_lb",
+            "hours",
             "lift_capacity_lb",
             "max_lift_height_ft",
             "max_forward_reach_ft",
-            "travel_speed_mph",
+            "lift_capacity_at_full_height_lbs",
             "drive_type",
+            "cab_type",
+            "net_hp",
+            "transmission_type",
+            "operating_weight_lb",
+            "has_stabilizers",
+            "travel_speed_mph",
             "hydraulic_flow_gpm",
             "fuel_type",
         ],
@@ -501,6 +668,7 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "net_hp",
             "operating_weight_lb",
             "blade_capacity_yd3",
+            "blade_width_ft",           # added: core buyer-decision spec for dozer sizing
             "travel_speed_high_mph",
             "travel_speed_low_mph",
             "ground_pressure_psi",
@@ -511,11 +679,75 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "net_hp",
             "operating_weight_lb",
             "blade_capacity_yd3",
+            "blade_width_ft",
             "travel_speed_high_mph",
             "travel_speed_low_mph",
             "ground_pressure_psi",
             "hydraulic_flow_gpm",
             "fuel_type",
+        ],
+    },
+    # ── Boom Lift ─────────────────────────────────────────────────────────────
+    # Core buyer-decision specs for boom lifts (telescopic and articulating).
+    # platform_height_ft, platform_capacity_lbs, horizontal_reach_ft, boom_type:
+    #   passthrough fields — direct registry values (no resolver computation needed).
+    # operating_weight_lb: emitted by weight.resolve() (canonical, no 's').
+    # power_source: passthrough string (diesel/electric/dual).
+    # drive_speed_stowed_mph: passthrough — useful for jobsite mobility context.
+    "boom_lift": {
+        "essential": [
+            "platform_height_ft",
+            "platform_capacity_lbs",
+            "horizontal_reach_ft",
+            "boom_type",
+        ],
+        "standard": [
+            "platform_height_ft",
+            "platform_capacity_lbs",
+            "horizontal_reach_ft",
+            "boom_type",
+            "operating_weight_lb",
+            "power_source",
+        ],
+        "technical": [
+            "platform_height_ft",
+            "platform_capacity_lbs",
+            "horizontal_reach_ft",
+            "boom_type",
+            "operating_weight_lb",
+            "power_source",
+            "drive_speed_stowed_mph",
+        ],
+    },
+    # ── Scissor Lift ──────────────────────────────────────────────────────────
+    # Core buyer-decision specs for scissor lifts.
+    # platform_height_ft, platform_capacity_lbs, platform_length_ft,
+    # platform_width_ft, power_source: passthrough fields — direct registry values.
+    # operating_weight_lb: emitted by weight.resolve() (canonical, no 's').
+    "scissor_lift": {
+        "essential": [
+            "platform_height_ft",
+            "platform_capacity_lbs",
+            "platform_length_ft",
+            "platform_width_ft",
+            "power_source",
+        ],
+        "standard": [
+            "platform_height_ft",
+            "platform_capacity_lbs",
+            "platform_length_ft",
+            "platform_width_ft",
+            "power_source",
+            "operating_weight_lb",
+        ],
+        "technical": [
+            "platform_height_ft",
+            "platform_capacity_lbs",
+            "platform_length_ft",
+            "platform_width_ft",
+            "power_source",
+            "operating_weight_lb",
+            "drive_speed_stowed_mph",
         ],
     },
 }
@@ -531,6 +763,8 @@ _EQ_TYPE_TO_SPEC_KEY: dict[str, str] = {
     "backhoe_loader":       "backhoe_loader",
     "dozer":                "crawler_dozer",
     "crawler_dozer":        "crawler_dozer",
+    "boom_lift":            "boom_lift",
+    "scissor_lift":         "scissor_lift",
 }
 _DEFAULT_SPEC_TYPE = "skid_steer_loader"   # fallback for unknown types
 
@@ -582,6 +816,7 @@ def _fmt_num(v: Any) -> str:
 # Fields NOT in this table get a generic title-cased label with no unit.
 
 _SPEC_DISPLAY_META: dict[str, dict] = {
+    "hours":                           {"label": "Hours",                     "unit": "hrs"},
     "net_hp":                          {"label": "Engine",                    "unit": "hp"},
     "roc_lb":                          {"label": "Rated operating capacity",  "unit": "lbs"},
     "tipping_load_lb":                 {"label": "Tipping load",              "unit": "lbs"},
@@ -597,7 +832,10 @@ _SPEC_DISPLAY_META: dict[str, dict] = {
     "frame_size":                      {"label": "Frame size",                "unit": ""},
     "max_dig_depth_in":                {"label": "Max dig depth",             "unit": "ft"},   # legacy key — no longer in SPEC_LEVEL_FIELDS
     "max_dig_depth":                   {"label": "Max dig depth",             "unit": ""},     # resolver output: pre-formatted "X ft Y in" string
-    "max_reach_ground_in":             {"label": "Max reach",                 "unit": "ft"},
+    "max_reach_ground_in":             {"label": "Max reach",                 "unit": "ft"},   # legacy key
+    "max_dump_height_ft":              {"label": "Max dump height",           "unit": "ft"},
+    "max_reach_ft":                    {"label": "Max reach",                 "unit": "ft"},
+    "width_in":                        {"label": "Width",                     "unit": "in"},
     "tail_swing_type":                 {"label": "Tail swing",                "unit": ""},
     # Excavator / backhoe breakout force
     "bucket_breakout_lb":              {"label": "Bucket breakout force",     "unit": "lbs"},
@@ -605,6 +843,10 @@ _SPEC_DISPLAY_META: dict[str, dict] = {
     "lift_capacity_lb":                {"label": "Max lift capacity",         "unit": "lbs"},
     "max_lift_height_ft":              {"label": "Max lift height",           "unit": "ft"},
     "max_forward_reach_ft":            {"label": "Max forward reach",         "unit": "ft"},
+    "lift_capacity_at_full_height_lbs":{"label": "Capacity at full height",  "unit": "lbs"},
+    # Telehandler listing/config fields (DealerInput injection)
+    "has_stabilizers":                 {"label": "Stabilizers",               "unit": ""},
+    "transmission_type":               {"label": "Transmission",              "unit": ""},
     # Capacity fields — excavator/wheel_loader bucket, backhoe loader bucket, dozer blade
     "bucket_capacity_yd3":             {"label": "Bucket capacity",           "unit": "yd3"},
     "loader_bucket_capacity_yd3":      {"label": "Loader bucket",             "unit": "yd3"},
@@ -612,9 +854,51 @@ _SPEC_DISPLAY_META: dict[str, dict] = {
     # CTL/SSL dimensional specs
     "width_over_tires_in":             {"label": "Width over tires",          "unit": "in"},
     "bucket_hinge_pin_height_in":      {"label": "Hinge pin height",          "unit": "in"},
-    # Dozer site-suitability and telehandler drivetrain
+    # CTL/SSL buyer-facing status fields (yes/no/optional — core output)
+    "high_flow":                       {"label": "High flow",                 "unit": ""},
+    "two_speed":                       {"label": "2-Speed",                   "unit": ""},
+    "quick_attach":                    {"label": "Quick attach",              "unit": ""},
+    # CTL / mini ex dealer-input core output fields (injected from DealerInput for spec sheet)
+    "cab_type":                        {"label": "Cab type",                  "unit": ""},
+    "ac":                              {"label": "A/C",                       "unit": ""},
+    "heater":                          {"label": "Heater",                    "unit": ""},
+    "aux_hydraulics":                  {"label": "Aux Hydraulics",            "unit": ""},
+    "coupler_type":                    {"label": "Coupler",                   "unit": ""},
+    "thumb_type":                      {"label": "Thumb",                     "unit": ""},
+    "blade_type":                      {"label": "Blade",                     "unit": ""},
+    "arm_length":                      {"label": "Arm Length",                "unit": ""},
+    "pattern_changer":                 {"label": "Pattern Changer",           "unit": ""},
+    "two_speed_travel":                {"label": "2-Speed Travel",            "unit": ""},
+    "track_condition":                 {"label": "Track condition",            "unit": ""},
+    "serial_number":                   {"label": "Serial number",             "unit": ""},
+    # Dozer site-suitability, blade dimensions, and telehandler drivetrain
     "ground_pressure_psi":             {"label": "Ground pressure",           "unit": "psi"},
+    "blade_width_ft":                  {"label": "Blade width",               "unit": "ft"},
     "drive_type":                      {"label": "Drive type",                "unit": ""},
+    # Boom lift and scissor lift specs
+    "platform_height_ft":              {"label": "Platform height",           "unit": "ft"},
+    "platform_capacity_lbs":           {"label": "Platform capacity",         "unit": "lbs"},
+    "horizontal_reach_ft":             {"label": "Horizontal reach",          "unit": "ft"},
+    "boom_type":                       {"label": "Boom type",                 "unit": ""},
+    "power_source":                    {"label": "Power source",              "unit": ""},
+    "drive_speed_stowed_mph":          {"label": "Drive speed (stowed)",      "unit": "mph"},
+    "platform_length_ft":              {"label": "Platform length",           "unit": "ft"},
+    "platform_width_ft":               {"label": "Platform width",            "unit": "ft"},
+    # Large excavator locked standard 2026-04-10 — dealer-input and registry fields
+    "aux_hydraulics_type":             {"label": "Aux Hydraulics",            "unit": ""},
+    "undercarriage_condition_pct":     {"label": "Undercarriage Condition",   "unit": ""},
+    "stick_arm_length_ft":             {"label": "Stick/Arm Length",          "unit": "ft"},
+    "track_shoe_width_in":             {"label": "Track Shoe Width",          "unit": "in"},
+    "boom_length_ft":                  {"label": "Boom Length",               "unit": "ft"},
+    "rear_camera":                     {"label": "Rear Camera",               "unit": ""},
+    "grade_control_type":              {"label": "Grade Control",             "unit": ""},
+    "hammer_plumbing":                 {"label": "Hammer Plumbing",           "unit": ""},
+    "heated_seat":                     {"label": "Heated Seat",               "unit": ""},
+    "track_type":                      {"label": "Track Type",                "unit": ""},
+    "air_ride_seat":                   {"label": "Air Ride Seat",             "unit": ""},
+    "radio":                           {"label": "Radio",                     "unit": ""},
+    "warranty_status":                 {"label": "Warranty",                  "unit": ""},
+    "bucket_size_included":            {"label": "Bucket Included",           "unit": ""},
 }
 
 
@@ -643,6 +927,11 @@ def _build_display_specs(
     fields  = eq_sets.get(spec_level, eq_sets.get("essential", []))
 
     hi_flow_active = ui_hints.get("_displayHiFlow", False)
+    # For skid steer and CTL: always show std flow — never switch to hi-flow mode via text
+    # inference. high_flow config is unit-level (DealerInput only); _displayHiFlow is not a
+    # valid signal. aux_flow_standard_gpm is the only hydraulic flow eligible for CTL core output.
+    if eq_key in ("skid_steer_loader", "compact_track_loader"):
+        hi_flow_active = False
     items: list[dict] = []
 
     for field in fields:
@@ -689,8 +978,21 @@ def _build_display_specs(
                                "value": f"{_fmt_num(val)} in"})
             continue
 
+        # ── Status fields (high_flow, two_speed): yes/no/optional ───────────
+        # Also handles legacy bool values (True→"Yes", False→"No").
+        if field in ("high_flow", "two_speed"):
+            _STATUS_DISPLAY = {"yes": "Yes", "no": "No", "optional": "Optional"}
+            if isinstance(val, bool):
+                display_val = "Yes" if val else "No"
+            else:
+                display_val = _STATUS_DISPLAY.get(str(val).lower(), str(val).title())
+
+        # ── Other boolean fields ──────────────────────────────────────────
+        elif isinstance(val, bool):
+            display_val = "Yes" if val else "No"
+
         # ── Generic numeric / string field ────────────────────────────────
-        if isinstance(val, (int, float)):
+        elif isinstance(val, (int, float)):
             display_val = f"{_fmt_num(val)} {unit}".strip() if unit else _fmt_num(val)
         else:
             display_val = str(val)
@@ -699,9 +1001,19 @@ def _build_display_specs(
             # (e.g. "zero_tail_swing", "conventional_tail_swing") so needs title-case
             # with underscore→space substitution rather than simple capitalize().
             if field == "tail_swing_type":
-                display_val = display_val.replace("_", " ").title()
+                _TAIL_SWING_LABELS = {
+                    "zero":         "Zero Tail Swing",
+                    "reduced":      "Reduced Tail Swing",
+                    "conventional": "Conventional Tail Swing",
+                }
+                display_val = _TAIL_SWING_LABELS.get(
+                    display_val.lower(),
+                    display_val.replace("_", " ").title(),
+                )
             elif field in ("fuel_type", "lift_path", "frame_size"):
                 display_val = display_val.capitalize()
+            elif field == "cab_type":
+                display_val = display_val.replace("_", " ").title()
 
         items.append({"key": field, "label": label, "value": display_val})
 
@@ -1202,6 +1514,9 @@ def _run_spec_resolver(
     parsed: dict,
     registry_result: dict,
     confidence: float,
+    parsed_year: int | None = None,
+    detected_modifiers: list[str] | set[str] | tuple[str, ...] | None = None,
+    extracted_numeric_claims: dict | None = None,
 ) -> dict | None:
     """
     Call spec_resolver.resolve() immediately after safe_lookup_machine succeeds.
@@ -1241,12 +1556,14 @@ def _run_spec_resolver(
             parsed_manufacturer       = parsed.get("make") or "",
             parsed_model              = parsed.get("model") or "",
             parsed_category           = category,
-            detected_modifiers        = [],
-            extracted_numeric_claims  = {},
+            detected_modifiers        = sorted(set(detected_modifiers or [])),
+            extracted_numeric_claims  = dict(extracted_numeric_claims or {}),
             registry_match            = normalized,
             registry_match_confidence = confidence,
             match_type                = _match_method_to_type(method),
         )
+        if parsed_year and not raw_text:
+            inp.raw_listing_text = str(parsed_year)
         out = _spec_resolve(inp)
     except Exception as exc:
         import traceback as _tb
@@ -1587,6 +1904,14 @@ def safe_lookup_machine(parsed: dict) -> tuple[dict | None, float]:
     if method not in ("exact", "slug_match") or conf < 0.9:
         return None, 0.0
 
+    # For skid steer: strip legacy tiered_specs / spec_sheet from the returned dict.
+    # mtm_service.py (spec resolver path) is the ONLY output authority for SSL specs.
+    # These keys include high_flow_available / two_speed_available which must not
+    # surface as buyer-facing output.
+    if result.get("equipment_type") == "skid_steer":
+        result = {k: v for k, v in result.items()
+                  if k not in ("tiered_specs", "spec_sheet")}
+
     return result, conf
 
 
@@ -1667,6 +1992,29 @@ def build_spec_sheet_entries(
         equipment_type = equipment_type,
     )
     return [(item["label"], item["value"]) for item in items]
+
+
+def build_tiered_specs(
+    resolved_specs: dict,
+    ui_hints: dict,
+    equipment_type: str = "",
+) -> dict:
+    """
+    Return display-ready spec items for all three tiers.
+
+    Keys: "essential", "standard", "technical".
+    Each value is a list of {"key", "label", "value"} dicts, ordered for display.
+    Used by the result-page tier toggle — pure presentation, no resolver logic.
+    """
+    return {
+        tier: _build_display_specs(
+            resolved_specs=resolved_specs,
+            ui_hints=ui_hints,
+            spec_level=tier,
+            equipment_type=equipment_type,
+        )
+        for tier in ("essential", "standard", "technical")
+    }
 
 
 # ── Confirm-required field metadata ───────────────────────────────────────────
@@ -2083,7 +2431,13 @@ def fix_listing_service(
         pct    = int(confidence * 100)
         method = specs.get("match_method", "")
         # ── spec_resolver replaces direct spec injection ──────────────────────
-        added_specs = _run_spec_resolver(raw_text, parsed, specs, confidence)
+        added_specs = _run_spec_resolver(
+            raw_text,
+            parsed,
+            specs,
+            confidence,
+            parsed_year=parsed.get("year"),
+        )
         confidence_note = (
             f"OEM specs from MTM registry — "
             f"{specs.get('manufacturer')} {specs.get('model')} "
@@ -2275,3 +2629,268 @@ def fix_listing_service(
         confirm_required=confirm_required,
         rewritten_listing=rewritten_listing,
     )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# WEB-ASSISTED FALLBACK
+# Fires when safe_lookup_machine() finds no registry match.
+# Uses DuckDuckGo Instant Answer API (stdlib-only, no API key required).
+# Falls back to model-string heuristics if the network call fails.
+# Always returns a dict — never blocks listing generation.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Maps keyword substrings → canonical equipment_type.
+# Ordered most-specific to least-specific so "mini excavator" wins over bare "excavator".
+_WEB_EQ_KEYWORD_MAP: list[tuple[list[str], str]] = [
+    (["compact track loader", "track loader", " ctl "],         "compact_track_loader"),
+    (["skid steer", "skid-steer", " ssl "],                     "skid_steer"),
+    (["mini excavator", "mini ex", "mini-ex"],                  "mini_excavator"),
+    (["excavator"],                                              "mini_excavator"),
+    (["telehandler", "telescopic handler", "telescopic boom"],  "telehandler"),
+    (["backhoe loader", "backhoe"],                             "backhoe_loader"),
+    (["dozer", "bulldozer", "crawler dozer"],                   "dozer"),
+    (["scissor lift", "scissorlift"],                           "scissor_lift"),
+    (["boom lift", "boomlift", "aerial lift", "manlift"],       "boom_lift"),
+    (["wheel loader"],                                          "wheel_loader"),
+]
+
+
+# Manufacturer-specific model-prefix patterns for when the web abstract
+# returns nothing useful.  Each entry: (make_key, compiled_regex, eq_type).
+# make_key is matched against the normalized (lowercase, stripped) make string.
+# Only add patterns that are unambiguous — do not guess when the prefix appears
+# in both CTL and SSL lines for the same manufacturer.
+_MFR_MODEL_PATTERNS: list[tuple[str, re.Pattern, str]] = [
+    # Caterpillar — CTL models: 239D3, 249D3, 259D3, 279D3, 289D3, 299D3
+    # Third digit of the 3-digit number is always 9 for D-series CTL.
+    (
+        "caterpillar",
+        re.compile(r"^2[3-9]9[A-Z]", re.I),    # 239D3, 249D3 … 299D3
+        "compact_track_loader",
+    ),
+    # Caterpillar — SSL models: 216D3, 226D3, 232D3, 236D3, 242D3, 246D3, 262D3, 272D3
+    # Third digit is NOT 9 for D-series SSL.
+    (
+        "caterpillar",
+        re.compile(r"^2[0-9][0-8][A-Z]", re.I),  # 216D3, 226D3 … 272D3
+        "skid_steer",
+    ),
+    # Caterpillar — mini excavator (3xx series: 301, 302, 303, 305, 308, 314…)
+    (
+        "caterpillar",
+        re.compile(r"^3\d\d", re.I),
+        "mini_excavator",
+    ),
+    # Bobcat — T-prefix → compact track loader
+    (
+        "bobcat",
+        re.compile(r"^T\d{2,3}", re.I),
+        "compact_track_loader",
+    ),
+    # Bobcat — S-prefix → skid steer
+    (
+        "bobcat",
+        re.compile(r"^S\d{2,3}", re.I),
+        "skid_steer",
+    ),
+    # Bobcat — E-prefix → mini excavator
+    (
+        "bobcat",
+        re.compile(r"^E\d{1,3}", re.I),
+        "mini_excavator",
+    ),
+    # John Deere — G-series CTL (317G, 319G, 323G, 325G, 329G, 331G, 333G)
+    # Second digit is 1, 2, or 3 (covers 310–339G range).
+    (
+        "john deere",
+        re.compile(r"^3[123]\dG", re.I),
+        "compact_track_loader",
+    ),
+    # John Deere — mini ex (17G, 26G, 35G, 50G, 60G, 85G)
+    (
+        "john deere",
+        re.compile(r"^[12345678]\d?G$", re.I),
+        "mini_excavator",
+    ),
+    # Kubota — SVL prefix → compact track loader
+    (
+        "kubota",
+        re.compile(r"^SVL", re.I),
+        "compact_track_loader",
+    ),
+    # Kubota — KX/U prefix → mini excavator
+    (
+        "kubota",
+        re.compile(r"^(KX|U\d)", re.I),
+        "mini_excavator",
+    ),
+    # Takeuchi — TL prefix → compact track loader
+    (
+        "takeuchi",
+        re.compile(r"^TL", re.I),
+        "compact_track_loader",
+    ),
+    # Takeuchi — TB prefix → mini excavator
+    (
+        "takeuchi",
+        re.compile(r"^TB", re.I),
+        "mini_excavator",
+    ),
+    # Case — TR/TV prefix → compact track loader
+    (
+        "case",
+        re.compile(r"^T[RV]\d", re.I),
+        "compact_track_loader",
+    ),
+    # New Holland — C-prefix CTL (C227, C232, C238, C245, C327…)
+    (
+        "new holland",
+        re.compile(r"^C\d{3}", re.I),
+        "compact_track_loader",
+    ),
+    # ASV — RT/VT prefix → compact track loader
+    (
+        "asv",
+        re.compile(r"^(RT|VT)-?\d", re.I),
+        "compact_track_loader",
+    ),
+    # JLG — S/E prefix → boom lift; 4069/600S etc. → boom lift
+    (
+        "jlg",
+        re.compile(r"^[0-9]", re.I),
+        "boom_lift",
+    ),
+    # Genie — S/Z prefix → boom lift; GS prefix → scissor lift
+    (
+        "genie",
+        re.compile(r"^GS", re.I),
+        "scissor_lift",
+    ),
+    (
+        "genie",
+        re.compile(r"^[SZT]-?\d", re.I),   # S-60, Z-80, T-50 etc.
+        "boom_lift",
+    ),
+]
+
+_MFR_ALIASES_WEB: dict[str, str] = {
+    "cat": "caterpillar",
+    "caterpillar": "caterpillar",
+    "jd": "john deere",
+    "john deere": "john deere",
+    "deere": "john deere",
+    "bobcat": "bobcat",
+    "kubota": "kubota",
+    "takeuchi": "takeuchi",
+    "case": "case",
+    "new holland": "new holland",
+    "nh": "new holland",
+    "asv": "asv",
+    "jlg": "jlg",
+    "genie": "genie",
+}
+
+
+def _infer_eq_type_from_model_pattern(make: str, model: str) -> str | None:
+    """
+    Apply manufacturer-specific model prefix patterns when keyword search fails.
+    Returns canonical equipment_type or None.
+    """
+    mfr_key = _MFR_ALIASES_WEB.get(make.lower().strip())
+    if not mfr_key:
+        return None
+    model_stripped = model.strip()
+    for pattern_mfr, regex, eq_type in _MFR_MODEL_PATTERNS:
+        if pattern_mfr == mfr_key and regex.match(model_stripped):
+            return eq_type
+    return None
+
+
+def _infer_eq_type_from_text(text: str) -> str | None:
+    """
+    Infer canonical equipment_type from free text (web abstract, model string, etc.).
+    Pads with spaces so short keywords like 'ctl' don't match inside longer words.
+    Returns None when no keyword matches.
+    """
+    padded = (" " + text.lower() + " ").replace("-", " ")
+    for keywords, eq_type in _WEB_EQ_KEYWORD_MAP:
+        if any(kw in padded for kw in keywords):
+            return eq_type
+    return None
+
+
+def web_match_fallback(make: str, model: str, year: int | None = None) -> dict:
+    """
+    Lightweight web-assisted fallback when the registry finds no match.
+
+    Steps
+    -----
+    1. Query the DuckDuckGo Instant Answer API (no key, stdlib HTTP, 5 s timeout).
+    2. Scan the returned abstract text for equipment-type keywords.
+    3. If the web call fails or returns nothing useful, scan the make+model string
+       directly (handles common patterns such as "track loader", "excavator", etc.).
+    4. Return a minimal resolved_machine-compatible dict so all downstream
+       callers can proceed without branching.
+
+    The returned dict always has safe_for_listing_injection=False — no OEM
+    numeric specs are injected.  Only equipment_type (when detectable) is used
+    to pick the correct listing template and feature checklist.
+    """
+    import urllib.request
+    import urllib.parse
+
+    # ── 1. DuckDuckGo Instant Answer query ────────────────────────────────────
+    abstract = ""
+    try:
+        params = urllib.parse.urlencode({
+            "q":             f"{make} {model} heavy equipment type",
+            "format":        "json",
+            "no_redirect":   "1",
+            "no_html":       "1",
+            "skip_disambig": "1",
+        })
+        req = urllib.request.Request(
+            f"https://api.duckduckgo.com/?{params}",
+            headers={"User-Agent": "MTM-Lookup/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+
+        abstract = (data.get("AbstractText") or data.get("Abstract") or "").strip()
+
+        # Fallback: pull from first RelatedTopic if AbstractText is empty
+        if not abstract:
+            for topic in (data.get("RelatedTopics") or []):
+                if isinstance(topic, dict) and topic.get("Text"):
+                    abstract = topic["Text"]
+                    break
+
+    except Exception as _web_exc:
+        print(f"[MTM] web_match_fallback: web call skipped — {_web_exc}")
+
+    # ── 2. Infer equipment type ───────────────────────────────────────────────
+    # Tier A: keyword scan of web abstract + make + model string.
+    candidate_text = " ".join(filter(None, [abstract, make, model]))
+    eq_type = _infer_eq_type_from_text(candidate_text)
+
+    # Tier B: manufacturer + model-prefix pattern table (fires when Tier A gives nothing).
+    if eq_type is None:
+        eq_type = _infer_eq_type_from_model_pattern(make, model)
+
+    # ── 3. Build result ───────────────────────────────────────────────────────
+    return {
+        # Shape mirrors _run_spec_resolver() output so callers need no branching.
+        "equipment_type":             eq_type,
+        "manufacturer":               make,
+        "model":                      model,
+        "resolved_specs":             {},
+        "requires_confirm":           [],
+        "ui_hints":                   {},
+        "warnings":                   [],
+        "overall_resolution_status":  "web_fallback",
+        "safe_for_listing_injection": False,
+        # Extra keys used by app.py to adjust UX messaging.
+        "web_assisted":               True,
+        "confidence":                 0.4 if eq_type else 0.2,
+        "match_method":               "web_fallback",
+    }

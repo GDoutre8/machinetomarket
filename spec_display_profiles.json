@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "version": "2.2",
+    "version": "2.3",
     "description": "MTM spec display profiles — presentation-layer only. Registry source data is never modified. Profiles define the ordered fields shown in dealer-facing listing views.",
     "default_profile": "standard",
     "profiles": ["essential", "standard", "technical"],
@@ -15,118 +15,111 @@
       "wheel_loader / excavator / telehandler use canonical display-layer names (horsepower_hp, operating_weight_lbs, travel_speed_mph). Registry source fields that differ must be mapped at ingest — not in profiles.",
       "operating_weight_lb (no s) in telehandler/wheel_loader registries maps to canonical operating_weight_lbs.",
       "engine_hp / net_power_hp / gross_power_hp in source registries map to canonical horsepower_hp.",
-      "bucket_capacity_cy in source registries maps to canonical bucket_capacity_yd3."
+      "bucket_capacity_cy in source registries maps to canonical bucket_capacity_yd3.",
+      "skid_steer locked standard 2026-04-10: excluded fields are travel_speed_high_mph, hydraulic_pressure_standard_psi, hydraulic_pressure_high_psi, dump_height_in, dump_reach_in, engine_model, engine_manufacturer. width_over_tires_in and bucket_hinge_pin_height_in are conditional-core (standard+ only, shown when present). high_flow and two_speed unit config comes from DealerInput (Python pipeline) — not present in registry record.specs; render_feature_flags suppresses high_flow_available/two_speed_available for skid_steer."
     ]
   },
 
   "skid_steer": {
     "essential": {
-      "description": "Headline spec card — eight key buyer-decision fields.",
+      "description": "Headline spec card — eight core buyer-decision fields. Locked standard 2026-04-10: travel_speed, hydraulic_pressure, dump_height excluded. width_over_tires and hinge_pin are conditional-core (standard+ only).",
       "field_count": 8,
       "fields": [
         "rated_operating_capacity_lbs",
         "operating_weight_lbs",
         "horsepower_hp",
         "aux_flow_standard_gpm",
-        "width_over_tires_in",
         "lift_path",
-        "bucket_hinge_pin_height_in",
-        "travel_speed_high_mph"
+        "aux_flow_high_gpm",
+        "tipping_load_lbs",
+        "emissions_tier"
       ]
     },
     "standard": {
-      "description": "Default listing view — twelve fields covering the specs most buyers compare.",
-      "field_count": 12,
+      "description": "Default listing view — ten fields. Locked standard 2026-04-10: travel_speed and hydraulic_pressure removed. width_over_tires and hinge_pin are conditional-core (shown only when present in record).",
+      "field_count": 10,
       "fields": [
         "rated_operating_capacity_lbs",
         "operating_weight_lbs",
         "horsepower_hp",
         "aux_flow_standard_gpm",
-        "width_over_tires_in",
         "lift_path",
-        "bucket_hinge_pin_height_in",
-        "travel_speed_high_mph",
-        "emissions_tier",
         "aux_flow_high_gpm",
         "tipping_load_lbs",
-        "hydraulic_pressure_standard_psi"
+        "emissions_tier",
+        "width_over_tires_in",
+        "bucket_hinge_pin_height_in"
       ]
     },
     "technical": {
-      "description": "Detail page view — fifteen fields for technically-oriented buyers.",
-      "field_count": 15,
+      "description": "Detail page view — eleven fields. Locked standard 2026-04-10: travel_speed, dump_height, hydraulic_pressure_standard, hydraulic_pressure_high removed as excluded fields.",
+      "field_count": 11,
       "fields": [
         "rated_operating_capacity_lbs",
         "operating_weight_lbs",
         "horsepower_hp",
         "aux_flow_standard_gpm",
-        "width_over_tires_in",
         "lift_path",
-        "bucket_hinge_pin_height_in",
-        "travel_speed_high_mph",
-        "emissions_tier",
         "aux_flow_high_gpm",
         "tipping_load_lbs",
-        "dump_height_in",
-        "hydraulic_pressure_standard_psi",
-        "hydraulic_pressure_high_psi",
+        "emissions_tier",
+        "width_over_tires_in",
+        "bucket_hinge_pin_height_in",
         "fuel_capacity_gal"
       ]
     }
   },
 
   "compact_track_loader": {
+    "_lock_note": "LOCKED standard 2026-04-10. Runtime authority is mtm_service.py _CTL_FIELDS. Banned from buyer-facing output: operating_weight_lbs, travel_speed_high_mph, emissions_tier, aux_flow_high_gpm, tipping_load_lbs, hydraulic_pressure_standard_psi, hydraulic_pressure_high_psi, dump_height_in, fuel_capacity_gal. high_flow and two_speed are confirm-required unit booleans from DealerInput — not inferred from high_flow_available / two_speed_available registry flags.",
     "essential": {
-      "description": "Headline spec card — eight key buyer-decision fields.",
-      "field_count": 8,
+      "description": "Headline spec card — core buyer-decision fields. Locked standard 2026-04-10.",
+      "field_count": 4,
       "fields": [
-        "rated_operating_capacity_lbs",
-        "operating_weight_lbs",
+        "hours",
         "horsepower_hp",
-        "aux_flow_standard_gpm",
-        "width_over_tires_in",
-        "lift_path",
-        "bucket_hinge_pin_height_in",
-        "travel_speed_high_mph"
+        "rated_operating_capacity_lbs",
+        "aux_flow_standard_gpm"
       ]
     },
     "standard": {
-      "description": "Default listing view — twelve fields covering the specs most buyers compare.",
-      "field_count": 12,
+      "description": "Default listing view — core + conditional-core fields per locked CTL standard 2026-04-10.",
+      "field_count": 14,
       "fields": [
-        "rated_operating_capacity_lbs",
-        "operating_weight_lbs",
+        "hours",
         "horsepower_hp",
+        "rated_operating_capacity_lbs",
+        "cab_type",
+        "high_flow",
+        "two_speed",
+        "quick_attach",
+        "ac",
+        "track_condition",
+        "serial_number",
         "aux_flow_standard_gpm",
-        "width_over_tires_in",
         "lift_path",
-        "bucket_hinge_pin_height_in",
-        "travel_speed_high_mph",
-        "emissions_tier",
-        "aux_flow_high_gpm",
-        "tipping_load_lbs",
-        "hydraulic_pressure_standard_psi"
+        "width_over_tires_in",
+        "bucket_hinge_pin_height_in"
       ]
     },
     "technical": {
-      "description": "Detail page view — fifteen fields for technically-oriented buyers.",
-      "field_count": 15,
+      "description": "Detail page view — all standard fields for technically-oriented buyers. Locked CTL standard 2026-04-10.",
+      "field_count": 14,
       "fields": [
-        "rated_operating_capacity_lbs",
-        "operating_weight_lbs",
+        "hours",
         "horsepower_hp",
+        "rated_operating_capacity_lbs",
+        "cab_type",
+        "high_flow",
+        "two_speed",
+        "quick_attach",
+        "ac",
+        "track_condition",
+        "serial_number",
         "aux_flow_standard_gpm",
-        "width_over_tires_in",
         "lift_path",
-        "bucket_hinge_pin_height_in",
-        "travel_speed_high_mph",
-        "emissions_tier",
-        "aux_flow_high_gpm",
-        "tipping_load_lbs",
-        "dump_height_in",
-        "hydraulic_pressure_standard_psi",
-        "hydraulic_pressure_high_psi",
-        "fuel_capacity_gal"
+        "width_over_tires_in",
+        "bucket_hinge_pin_height_in"
       ]
     }
   },
@@ -236,98 +229,297 @@
   },
 
   "excavator": {
+    "_lock_note": "LOCKED standard 2026-04-10. Runtime authority is mtm_service.py _LARGE_EX_FIELDS. Banned from buyer-facing output: engine_manufacturer, engine_model, emissions_tier, cab_type, boolean aux_hydraulics.",
     "essential": {
-      "description": "Headline spec card — five key buyer-decision fields for excavators.",
-      "field_count": 5,
+      "description": "Headline spec card — four key buyer-decision fields for large excavators.",
+      "field_count": 4,
       "fields": [
+        "hours",
         "horsepower_hp",
         "operating_weight_lbs",
-        "max_dig_depth_ft",
-        "bucket_breakout_force_lbs",
-        "travel_speed_mph"
+        "max_dig_depth_ft"
       ]
     },
     "standard": {
-      "description": "Default listing view — nine fields covering the specs most excavator buyers compare.",
-      "field_count": 9,
+      "description": "Default listing view — core and conditional-core fields per locked large excavator standard.",
       "fields": [
+        "hours",
+        "ac",
+        "heater",
         "horsepower_hp",
         "operating_weight_lbs",
         "max_dig_depth_ft",
-        "bucket_breakout_force_lbs",
-        "bucket_capacity_yd3",
-        "travel_speed_mph",
+        "serial_number",
+        "aux_hydraulics_type",
+        "coupler_type",
+        "rear_camera",
+        "stick_arm_length_ft",
+        "track_shoe_width_in",
+        "undercarriage_condition_pct",
+        "boom_length_ft",
         "hydraulic_flow_gpm",
-        "fuel_type",
-        "tail_swing_type"
+        "tail_swing_type",
+        "bucket_size_included",
+        "grade_control_type",
+        "thumb_type",
+        "hammer_plumbing",
+        "track_type",
+        "pattern_changer",
+        "heated_seat",
+        "air_ride_seat",
+        "radio",
+        "warranty_status"
       ]
     },
     "technical": {
-      "description": "Detail page view — fourteen fields for technically-oriented excavator buyers.",
-      "field_count": 14,
+      "description": "Detail page view — all standard fields plus additional OEM specs for large excavators.",
       "fields": [
+        "hours",
+        "ac",
+        "heater",
         "horsepower_hp",
         "operating_weight_lbs",
         "max_dig_depth_ft",
-        "bucket_breakout_force_lbs",
-        "bucket_capacity_yd3",
-        "travel_speed_mph",
+        "serial_number",
+        "aux_hydraulics_type",
+        "coupler_type",
+        "rear_camera",
+        "stick_arm_length_ft",
+        "track_shoe_width_in",
+        "undercarriage_condition_pct",
+        "boom_length_ft",
         "hydraulic_flow_gpm",
         "hydraulic_pressure_psi",
-        "fuel_type",
+        "bucket_capacity_yd3",
+        "bucket_breakout_force_lbs",
         "tail_swing_type",
-        "arm_digging_force_lbs",
-        "max_reach_ft",
-        "track_width_in",
-        "ground_pressure_psi"
+        "travel_speed_mph",
+        "fuel_type",
+        "bucket_size_included",
+        "grade_control_type",
+        "thumb_type",
+        "hammer_plumbing",
+        "track_type",
+        "pattern_changer",
+        "heated_seat",
+        "air_ride_seat",
+        "radio",
+        "warranty_status"
       ]
     }
   },
 
   "telehandler": {
+    "_lock_note": "LOCKED standard 2026-04-13. lift_capacity_at_full_height_lbs promoted to standard buyer-facing tier. cab_type and has_stabilizers added as listing/config fields (DealerInput injection). Runtime authority is mtm_service.py _SPEC_DISPLAY_LEVELS. Null/unknown fields suppressed at render.",
     "essential": {
-      "description": "Headline spec card — five key buyer-decision fields for telehandlers.",
+      "description": "Headline spec card — five primary buyer-decision fields for telehandlers.",
+      "field_count": 5,
+      "fields": [
+        "lift_capacity_lbs",
+        "max_lift_height_ft",
+        "max_forward_reach_ft",
+        "lift_capacity_at_full_height_lbs",
+        "drive_type"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — eleven fields. Locked standard 2026-04-13: lift_capacity_at_full_height_lbs promoted from technical-only. cab_type suppressed when null. has_stabilizers suppressed when null.",
+      "field_count": 11,
+      "fields": [
+        "hours",
+        "lift_capacity_lbs",
+        "max_lift_height_ft",
+        "max_forward_reach_ft",
+        "lift_capacity_at_full_height_lbs",
+        "drive_type",
+        "cab_type",
+        "horsepower_hp",
+        "transmission_type",
+        "operating_weight_lbs",
+        "has_stabilizers"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — fifteen fields for technically-oriented telehandler buyers.",
+      "field_count": 15,
+      "fields": [
+        "hours",
+        "lift_capacity_lbs",
+        "max_lift_height_ft",
+        "max_forward_reach_ft",
+        "lift_capacity_at_full_height_lbs",
+        "drive_type",
+        "cab_type",
+        "horsepower_hp",
+        "transmission_type",
+        "operating_weight_lbs",
+        "has_stabilizers",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "hydraulic_pressure_psi",
+        "fuel_type"
+      ]
+    }
+  },
+
+  "backhoe_loader": {
+    "_lock_note": "Added 2026-04-15. Runtime authority is mtm_service.py SPEC_LEVEL_FIELDS backhoe_loader block. Field names here are raw registry keys (JS renderer reads registry record.specs directly). backhoe_bucket_force_lbf and loader_bucket_capacity_yd3 are registry-canonical for backhoe breakout/bucket.",
+    "essential": {
+      "description": "Headline spec card — five core buyer-decision fields for backhoe loaders.",
       "field_count": 5,
       "fields": [
         "horsepower_hp",
         "operating_weight_lbs",
-        "max_lift_capacity_lbs",
-        "lift_height_ft",
-        "forward_reach_ft"
+        "max_dig_depth_ft",
+        "loader_bucket_capacity_yd3",
+        "backhoe_bucket_force_lbf"
       ]
     },
     "standard": {
-      "description": "Default listing view — eight fields covering the specs most telehandler buyers compare.",
+      "description": "Default listing view — seven fields covering the specs most backhoe buyers compare.",
+      "field_count": 7,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "loader_bucket_capacity_yd3",
+        "backhoe_bucket_force_lbf",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — nine fields for technically-oriented backhoe buyers.",
+      "field_count": 9,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "max_dig_depth_ft",
+        "loader_bucket_capacity_yd3",
+        "backhoe_bucket_force_lbf",
+        "loader_breakout_force_lbf",
+        "travel_speed_mph",
+        "hydraulic_flow_gpm",
+        "fuel_capacity_gal"
+      ]
+    }
+  },
+
+  "dozer": {
+    "_lock_note": "Added 2026-04-15. Runtime authority is mtm_service.py SPEC_LEVEL_FIELDS crawler_dozer block. Equipment_type=dozer maps to crawler_dozer in Python pipeline. Field names here are raw registry keys.",
+    "essential": {
+      "description": "Headline spec card — four core buyer-decision fields for crawler dozers.",
+      "field_count": 4,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "blade_capacity_yd3",
+        "travel_speed_high_mph"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — six fields covering the specs most dozer buyers compare.",
+      "field_count": 6,
+      "fields": [
+        "horsepower_hp",
+        "operating_weight_lbs",
+        "blade_capacity_yd3",
+        "blade_width_ft",
+        "travel_speed_high_mph",
+        "ground_pressure_psi"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — eight fields for technically-oriented dozer buyers.",
       "field_count": 8,
       "fields": [
         "horsepower_hp",
         "operating_weight_lbs",
-        "max_lift_capacity_lbs",
-        "lift_height_ft",
-        "forward_reach_ft",
-        "travel_speed_mph",
-        "hydraulic_flow_gpm",
-        "fuel_type"
+        "blade_capacity_yd3",
+        "blade_width_ft",
+        "travel_speed_high_mph",
+        "travel_speed_low_mph",
+        "ground_pressure_psi",
+        "hydraulic_flow_gpm"
+      ]
+    }
+  },
+
+  "boom_lift": {
+    "_lock_note": "Added 2026-04-15. Runtime authority is mtm_service.py SPEC_LEVEL_FIELDS boom_lift block. Field names here are raw registry keys (JS renderer reads registry record.specs directly). operating_weight_lbs uses registry spelling (with s) for JS path; Python path uses operating_weight_lb (remapped by _SPEC_KEY_MAP).",
+    "essential": {
+      "description": "Headline spec card — four primary buyer-decision fields for boom lifts.",
+      "field_count": 4,
+      "fields": [
+        "platform_height_ft",
+        "platform_capacity_lbs",
+        "horizontal_reach_ft",
+        "boom_type"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — six fields covering the specs most boom lift buyers compare.",
+      "field_count": 6,
+      "fields": [
+        "platform_height_ft",
+        "platform_capacity_lbs",
+        "horizontal_reach_ft",
+        "boom_type",
+        "operating_weight_lbs",
+        "power_source"
       ]
     },
     "technical": {
-      "description": "Detail page view — fourteen fields for technically-oriented telehandler buyers.",
-      "field_count": 14,
+      "description": "Detail page view — seven fields for technically-oriented boom lift buyers.",
+      "field_count": 7,
       "fields": [
-        "horsepower_hp",
+        "platform_height_ft",
+        "platform_capacity_lbs",
+        "horizontal_reach_ft",
+        "boom_type",
         "operating_weight_lbs",
-        "max_lift_capacity_lbs",
-        "lift_height_ft",
-        "forward_reach_ft",
-        "travel_speed_mph",
-        "hydraulic_flow_gpm",
-        "hydraulic_pressure_psi",
-        "fuel_type",
-        "overall_length_ft",
-        "overall_width_ft",
-        "overall_height_ft",
-        "wheelbase_in",
-        "ground_clearance_in"
+        "power_source",
+        "drive_speed_stowed_mph"
+      ]
+    }
+  },
+
+  "scissor_lift": {
+    "_lock_note": "Added 2026-04-15. Runtime authority is mtm_service.py SPEC_LEVEL_FIELDS scissor_lift block. Field names here are raw registry keys. operating_weight_lbs uses registry spelling (with s) for JS path.",
+    "essential": {
+      "description": "Headline spec card — five primary buyer-decision fields for scissor lifts.",
+      "field_count": 5,
+      "fields": [
+        "platform_height_ft",
+        "platform_capacity_lbs",
+        "platform_length_ft",
+        "platform_width_ft",
+        "power_source"
+      ]
+    },
+    "standard": {
+      "description": "Default listing view — six fields covering the specs most scissor lift buyers compare.",
+      "field_count": 6,
+      "fields": [
+        "platform_height_ft",
+        "platform_capacity_lbs",
+        "platform_length_ft",
+        "platform_width_ft",
+        "power_source",
+        "operating_weight_lbs"
+      ]
+    },
+    "technical": {
+      "description": "Detail page view — seven fields for technically-oriented scissor lift buyers.",
+      "field_count": 7,
+      "fields": [
+        "platform_height_ft",
+        "platform_capacity_lbs",
+        "platform_length_ft",
+        "platform_width_ft",
+        "power_source",
+        "operating_weight_lbs",
+        "drive_speed_stowed_mph"
       ]
     }
   },

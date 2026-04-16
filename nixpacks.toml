@@ -1,0 +1,7 @@
+[phases.setup]
+aptPkgs = [
+  "ffmpeg",
+  "fonts-dejavu-core",
+  "fonts-liberation",
+  "libheif1",
+]

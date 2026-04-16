@@ -1,0 +1,145 @@
+{
+  "_meta": {
+    "file": "backhoe_class_use_case_adjustments.json",
+    "version": "1.0.0",
+    "created": "2026-04-04",
+    "purpose": "Class-based score multipliers applied AFTER base use case scoring. Encodes practical market knowledge about what each machine class is actually used for and sold into.",
+    "classes": {
+      "full_size_backhoe": "Operating weight >13,000 lbs, HP >70. Core utility/construction machines. Case 580/590, Cat 416/420/430, JCB 3CX, JD 310SG through 320 P-Tier, NH B95C.",
+      "compact_tlb": "Operating weight 4,000–13,000 lbs. Tractor-loader-backhoe. Kubota M62, L47, B26; JCB 3CX14, 3DX; Case 580K (vintage). Multi-purpose farm/property/light utility machines.",
+      "sub_compact_tlb": "Operating weight <4,000 lbs. Kubota BX23S class. Property and estate machines, not commercial.",
+      "compact_tracked_backhoe": "Rubber track drive. JCB 1CXT class. Urban access, tight sites, landscaping in confined spaces."
+    },
+    "application": "Multiply base score (0–100) by the class multiplier, then cap at 100. A multiplier of 1.0 = no adjustment. Values above 1.0 reward natural fit. Values below 1.0 penalize poor fit. The class_bonus field in use_case_rules.json (0–15 pts) is the maximum additive bonus; multipliers operate on the combined spec+feature score before that bonus is added."
+  },
+
+  "class_multipliers": {
+
+    "full_size_backhoe": {
+      "_notes": "Natural home for heavy utility, commercial construction, and infrastructure work. Penalized for property/estate use where size is a liability.",
+      "trenching":            { "multiplier": 1.15, "class_bonus": 12, "rationale": "Purpose-built for production trenching; full breakout force and dig depth" },
+      "water_line_install":   { "multiplier": 1.15, "class_bonus": 12, "rationale": "Deep utility work is the bread-and-butter market for full-size backhoes" },
+      "sewer_line_install":   { "multiplier": 1.15, "class_bonus": 13, "rationale": "Depth and breakout force requirements favor full-size; stable platform for grade work" },
+      "septic_install":       { "multiplier": 1.10, "class_bonus": 11, "rationale": "High demand job; full-size handles tank excavation and absorption field trenching" },
+      "foundation_digging":   { "multiplier": 1.10, "class_bonus": 12, "rationale": "Weight and breakout force suited for hardpan, clay, rocky soil" },
+      "general_construction": { "multiplier": 1.10, "class_bonus": 11, "rationale": "Core market application; most commercial construction sites" },
+      "loading_trucks":       { "multiplier": 1.10, "class_bonus": 10, "rationale": "Loader capacity and travel speed suit production truck-loading cycles" },
+      "material_handling":    { "multiplier": 1.05, "class_bonus": 8,  "rationale": "Capable but wheel loaders often preferred for high-volume handling" },
+      "pallet_handling":      { "multiplier": 0.90, "class_bonus": 4,  "rationale": "Oversized for most pallet work; forks are an add-on use case not primary" },
+      "demolition_light":     { "multiplier": 1.10, "class_bonus": 11, "rationale": "Weight and breakout force appropriate; hammer attachment critical" },
+      "utility_work":         { "multiplier": 1.15, "class_bonus": 13, "rationale": "Full-size backhoe is the #1 machine in the underground utility market" },
+      "road_work":            { "multiplier": 1.05, "class_bonus": 8,  "rationale": "Good road machine, but graders/dozers preferred for production grading" },
+      "landscaping":          { "multiplier": 0.85, "class_bonus": 4,  "rationale": "Full-size can be too large and damaging for finished landscaping sites" },
+      "farm_use":             { "multiplier": 0.90, "class_bonus": 5,  "rationale": "Works but TLBs are more popular on farms due to versatility and maneuverability" },
+      "property_maintenance": { "multiplier": 0.75, "class_bonus": 2,  "rationale": "Oversized for most property maintenance; site access and ground pressure concerns" },
+      "drainage_work":        { "multiplier": 1.10, "class_bonus": 10, "rationale": "Dig depth and stability well-suited for drainage and culvert work" },
+      "snow_removal":         { "multiplier": 1.05, "class_bonus": 7,  "rationale": "Capable snow pusher; enclosed cab and power preferred; wheel loaders more common" }
+    },
+
+    "compact_tlb": {
+      "_notes": "The Swiss Army knife class. Broad use case fit but rarely best-in-class for heavy commercial work. Farm, property, and light utility sweet spot.",
+      "trenching":            { "multiplier": 0.90, "class_bonus": 6,  "rationale": "Adequate for shallow/medium trenching; dig depth and breakout limit heavy production" },
+      "water_line_install":   { "multiplier": 0.90, "class_bonus": 6,  "rationale": "Short-run residential water service work; not suitable for deep main runs" },
+      "sewer_line_install":   { "multiplier": 0.80, "class_bonus": 4,  "rationale": "Depth limitations; residential laterals only" },
+      "septic_install":       { "multiplier": 1.00, "class_bonus": 9,  "rationale": "Popular for residential septic; M62 and L47 class well-matched to tank excavation" },
+      "foundation_digging":   { "multiplier": 0.75, "class_bonus": 3,  "rationale": "Force and reach not adequate for commercial foundations; residential crawl space only" },
+      "general_construction": { "multiplier": 0.90, "class_bonus": 6,  "rationale": "Light commercial and residential jobsites; weight limits usefulness in heavy soil" },
+      "loading_trucks":       { "multiplier": 0.85, "class_bonus": 5,  "rationale": "Bucket capacity limits productivity; suitable for small dump trucks and trailers" },
+      "material_handling":    { "multiplier": 1.05, "class_bonus": 9,  "rationale": "Strong niche — skid steer quick attach + forks combination is highly versatile" },
+      "pallet_handling":      { "multiplier": 1.10, "class_bonus": 11, "rationale": "Compact TLBs with quick attach shine at pallet/material handling on farms and properties" },
+      "demolition_light":     { "multiplier": 0.80, "class_bonus": 4,  "rationale": "Limited by reach, breakout force, and attachment hydraulic flow" },
+      "utility_work":         { "multiplier": 0.85, "class_bonus": 5,  "rationale": "Light utility work only; depth and force constraints limit commercial utility use" },
+      "road_work":            { "multiplier": 0.80, "class_bonus": 4,  "rationale": "Too light for production road work; grading small driveways only" },
+      "landscaping":          { "multiplier": 1.15, "class_bonus": 13, "rationale": "Excellent class fit — maneuverable, light ground pressure, versatile attachments" },
+      "farm_use":             { "multiplier": 1.20, "class_bonus": 15, "rationale": "The primary farm market machine; post holes, drainage, feed handling, property tasks" },
+      "property_maintenance": { "multiplier": 1.20, "class_bonus": 14, "rationale": "Ideal size for estate and property work; tight access, minimal ground damage" },
+      "drainage_work":        { "multiplier": 0.95, "class_bonus": 7,  "rationale": "Adequate for residential drainage; medium channel work; not commercial storm systems" },
+      "snow_removal":         { "multiplier": 1.00, "class_bonus": 7,  "rationale": "Good residential snow pusher; smaller bucket limits production; popular on farms" }
+    },
+
+    "sub_compact_tlb": {
+      "_notes": "Property and estate machines. Not commercial tools. Valued for size, maneuverability, and multi-task capability on large residential lots.",
+      "trenching":            { "multiplier": 0.65, "class_bonus": 2,  "rationale": "Very limited dig depth and force; narrow residential applications only" },
+      "water_line_install":   { "multiplier": 0.60, "class_bonus": 2,  "rationale": "Barely adequate for shallow residential service lines" },
+      "sewer_line_install":   { "multiplier": 0.45, "class_bonus": 1,  "rationale": "Insufficient depth for most sewer work" },
+      "septic_install":       { "multiplier": 0.65, "class_bonus": 3,  "rationale": "Marginal; shallow tank excavation possible but field trenching is slow" },
+      "foundation_digging":   { "multiplier": 0.30, "class_bonus": 0,  "rationale": "Not suitable; force, depth, and stability all insufficient" },
+      "general_construction": { "multiplier": 0.55, "class_bonus": 2,  "rationale": "Occasional light tasks only; not a production construction machine" },
+      "loading_trucks":       { "multiplier": 0.50, "class_bonus": 1,  "rationale": "Bucket capacity too small for truck loading efficiency" },
+      "material_handling":    { "multiplier": 0.90, "class_bonus": 6,  "rationale": "Surprisingly capable with quick attach forks; moving modest loads around property" },
+      "pallet_handling":      { "multiplier": 0.95, "class_bonus": 7,  "rationale": "Good for light pallet work with quick attach; garden supply, nursery use" },
+      "demolition_light":     { "multiplier": 0.40, "class_bonus": 1,  "rationale": "Not adequate for any meaningful demolition" },
+      "utility_work":         { "multiplier": 0.45, "class_bonus": 1,  "rationale": "Not a utility machine; residential irrigation and shallow service only" },
+      "road_work":            { "multiplier": 0.35, "class_bonus": 0,  "rationale": "Not suited for road work" },
+      "landscaping":          { "multiplier": 1.25, "class_bonus": 15, "rationale": "Excellent class fit — maneuverable, low ground pressure, easy to transport" },
+      "farm_use":             { "multiplier": 1.15, "class_bonus": 12, "rationale": "Strong hobby farm and small property machine; PTO, loader, and backhoe in one" },
+      "property_maintenance": { "multiplier": 1.30, "class_bonus": 15, "rationale": "Best-in-class for large residential lot work; the reason this machine exists" },
+      "drainage_work":        { "multiplier": 0.70, "class_bonus": 3,  "rationale": "Shallow residential swales only" },
+      "snow_removal":         { "multiplier": 0.85, "class_bonus": 6,  "rationale": "Good residential snow tool; small bucket but maneuverable; popular with hobby farms" }
+    },
+
+    "compact_tracked_backhoe": {
+      "_notes": "Urban and confined-access niche. Track drive enables soft ground and slope work. JCB 1CXT class. Valued where wheeled machines can't go.",
+      "trenching":            { "multiplier": 1.10, "class_bonus": 9,  "rationale": "Excellent for urban trenching — low ground pressure, soft ground, tight access" },
+      "water_line_install":   { "multiplier": 1.05, "class_bonus": 8,  "rationale": "Good for service line work in soft or wet conditions" },
+      "sewer_line_install":   { "multiplier": 1.00, "class_bonus": 7,  "rationale": "Adequate depth for lateral work; preferred in confined or soft-ground sites" },
+      "septic_install":       { "multiplier": 0.90, "class_bonus": 5,  "rationale": "Capable in soft ground; weight limits may help on saturated sites" },
+      "foundation_digging":   { "multiplier": 0.70, "class_bonus": 2,  "rationale": "Limited by bucket force and reach; confined site access is the only advantage" },
+      "general_construction": { "multiplier": 0.85, "class_bonus": 5,  "rationale": "Niche use; valuable where wheeled equipment can't access" },
+      "loading_trucks":       { "multiplier": 0.70, "class_bonus": 2,  "rationale": "Bucket capacity and reach limit truck loading efficiency" },
+      "material_handling":    { "multiplier": 0.85, "class_bonus": 5,  "rationale": "Tracks allow access to soft ground for material moving" },
+      "pallet_handling":      { "multiplier": 0.75, "class_bonus": 3,  "rationale": "Not a primary use case; quick coupler helps but capacity limited" },
+      "demolition_light":     { "multiplier": 1.00, "class_bonus": 7,  "rationale": "Urban demo niche — low ground pressure, indoor access possible, hammer attachment" },
+      "utility_work":         { "multiplier": 1.10, "class_bonus": 9,  "rationale": "Excellent urban utility niche — fits in tight utility corridors and soft ground" },
+      "road_work":            { "multiplier": 0.75, "class_bonus": 3,  "rationale": "Tracks limit speed; useful for shoulder trench work in soft ground" },
+      "landscaping":          { "multiplier": 1.15, "class_bonus": 12, "rationale": "Tracks protect turf; excellent for soft ground, slopes, and tight spaces" },
+      "farm_use":             { "multiplier": 0.80, "class_bonus": 4,  "rationale": "Low ground pressure valuable in wet fields; limited loader capacity" },
+      "property_maintenance": { "multiplier": 1.05, "class_bonus": 8,  "rationale": "Tracks prevent rutting on lawns and soft ground — strong fit" },
+      "drainage_work":        { "multiplier": 1.10, "class_bonus": 9,  "rationale": "Low ground pressure ideal for wet drainage sites; good trench access" },
+      "snow_removal":         { "multiplier": 0.65, "class_bonus": 2,  "rationale": "Tracks not ideal for pavement snow; limited speed and bucket capacity" }
+    }
+  },
+
+  "class_assignment_rules": {
+    "description": "How to assign a machine to a class based on registry specs",
+    "rules": [
+      {
+        "class": "sub_compact_tlb",
+        "condition": "operating_weight_lbs < 4000 OR (horsepower_hp <= 25 AND model_family includes 'BX')"
+      },
+      {
+        "class": "compact_tracked_backhoe",
+        "condition": "drive == 'Track'"
+      },
+      {
+        "class": "compact_tlb",
+        "condition": "operating_weight_lbs >= 4000 AND operating_weight_lbs < 13000 AND drive != 'Track'"
+      },
+      {
+        "class": "full_size_backhoe",
+        "condition": "operating_weight_lbs >= 13000 AND drive != 'Track'"
+      }
+    ],
+    "registry_class_map": {
+      "full_size_backhoe": [
+        "case_580n", "case_580n_ep", "case_580sn", "case_580sn_wt", "case_580sv", "case_590sn",
+        "cat_416", "cat_420", "cat_420f", "cat_420f2", "cat_420f2_it", "cat_424", "cat_430f",
+        "jcb_3cx", "jcb_3dx",
+        "jd_310d", "jd_310e", "jd_310g", "jd_310l", "jd_310l_ep", "jd_310sg", "jd_310sj",
+        "jd_310sk", "jd_310sl", "jd_320p", "jd_410j", "jd_410l",
+        "nh_b75d", "nh_b95c"
+      ],
+      "compact_tlb": [
+        "case_580k",
+        "jcb_3cx14",
+        "kubota_b26", "kubota_l47", "kubota_m62"
+      ],
+      "sub_compact_tlb": [
+        "kubota_bx23s"
+      ],
+      "compact_tracked_backhoe": [
+        "jcb_1cxt"
+      ]
+    }
+  }
+}

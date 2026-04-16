@@ -1,0 +1,1072 @@
+{
+  "_meta": {
+    "file": "backhoe_use_case_rules.json",
+    "version": "1.0.0",
+    "created": "2026-04-04",
+    "purpose": "Use case scoring rules for backhoe loaders. Drives MTM autofill 'What is this machine good for?' and listing language selection.",
+    "scoring_notes": "Each use case scores 0–100. Score = spec_score (0–50) + feature_score (0–35) + class_bonus (0–15). Class multipliers applied after base score."
+  },
+
+  "scoring_engine": {
+    "total_max": 100,
+    "components": {
+      "spec_score": {
+        "max": 50,
+        "description": "Score based on how well the machine's OEM specs match the use case requirements"
+      },
+      "feature_score": {
+        "max": 35,
+        "description": "Score based on presence of desirable features for this use case"
+      },
+      "class_bonus": {
+        "max": 15,
+        "description": "Machine class fit bonus — see backhoe_class_use_case_adjustments.json"
+      }
+    },
+    "thresholds": {
+      "excellent": 80,
+      "good": 60,
+      "capable": 40,
+      "marginal": 25,
+      "not_recommended": 0
+    }
+  },
+
+  "use_cases": {
+
+    "trenching": {
+      "label": "Trenching",
+      "description": "Digging continuous trenches for utilities, drainage, irrigation",
+      "typical_customers": ["utility contractors", "plumbers", "irrigation installers", "landscapers"],
+      "spec_scoring": {
+        "max_dig_depth_ft": {
+          "weight": 20,
+          "tiers": [
+            {"min": 18, "score": 20, "label": "Deep trenching capable"},
+            {"min": 15, "score": 15, "label": "Standard depth"},
+            {"min": 13, "score": 10, "label": "Adequate"},
+            {"min": 0, "score": 5, "label": "Shallow — compact class"}
+          ]
+        },
+        "backhoe_bucket_force_lbf": {
+          "weight": 15,
+          "tiers": [
+            {"min": 14000, "score": 15, "label": "Excellent breakout"},
+            {"min": 11000, "score": 11, "label": "Good breakout"},
+            {"min": 8000, "score": 7, "label": "Adequate"},
+            {"min": 0, "score": 3, "label": "Marginal"}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 10,
+          "tiers": [
+            {"min": 16000, "score": 10, "label": "Full-size — stable"},
+            {"min": 10000, "score": 7, "label": "Mid-size"},
+            {"min": 5000, "score": 4, "label": "Compact"},
+            {"min": 0, "score": 1, "label": "Sub-compact"}
+          ]
+        },
+        "hydraulic_flow_gpm": {
+          "weight": 5,
+          "tiers": [
+            {"min": 35, "score": 5, "label": "High flow — fast cycles"},
+            {"min": 25, "score": 3, "label": "Adequate"},
+            {"min": 0, "score": 1, "label": "Low flow"}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["extendahoe", "rear_aux_hydraulics", "4wd"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["pilot_controls", "powershift_transmission", "quick_coupler_rear"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "hydraulic_thumb"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "water_line_install": {
+      "label": "Water Line Installation",
+      "description": "Installing potable water mains, service lines, hydrants",
+      "typical_customers": ["utility contractors", "municipalities", "plumbers"],
+      "spec_scoring": {
+        "max_dig_depth_ft": {
+          "weight": 18,
+          "tiers": [
+            {"min": 17, "score": 18},
+            {"min": 14, "score": 13},
+            {"min": 11, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "backhoe_bucket_force_lbf": {
+          "weight": 14,
+          "tiers": [
+            {"min": 12000, "score": 14},
+            {"min": 9000, "score": 10},
+            {"min": 6000, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 10,
+          "tiers": [
+            {"min": 15000, "score": 10},
+            {"min": 9000, "score": 7},
+            {"min": 5000, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "hydraulic_flow_gpm": {
+          "weight": 8,
+          "tiers": [
+            {"min": 30, "score": 8},
+            {"min": 20, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["extendahoe", "4wd", "rear_aux_hydraulics"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["quick_coupler_rear", "pilot_controls", "powershift_transmission"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "ac"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "sewer_line_install": {
+      "label": "Sewer Line Installation",
+      "description": "Installing sanitary sewer mains and laterals, often requiring precise grade control",
+      "typical_customers": ["utility contractors", "municipalities", "civil contractors"],
+      "spec_scoring": {
+        "max_dig_depth_ft": {
+          "weight": 20,
+          "tiers": [
+            {"min": 18, "score": 20},
+            {"min": 15, "score": 14},
+            {"min": 12, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "backhoe_bucket_force_lbf": {
+          "weight": 14,
+          "tiers": [
+            {"min": 13000, "score": 14},
+            {"min": 10000, "score": 10},
+            {"min": 7000, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 10,
+          "tiers": [
+            {"min": 16000, "score": 10},
+            {"min": 10000, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "hydraulic_flow_gpm": {
+          "weight": 6,
+          "tiers": [
+            {"min": 30, "score": 6},
+            {"min": 20, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["extendahoe", "4wd", "rear_aux_hydraulics"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["pilot_controls", "quick_coupler_rear", "powershift_transmission"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "limited_slip"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "septic_install": {
+      "label": "Septic System Installation",
+      "description": "Excavating for septic tanks, drain fields, distribution boxes",
+      "typical_customers": ["septic contractors", "rural contractors", "small excavating companies"],
+      "spec_scoring": {
+        "max_dig_depth_ft": {
+          "weight": 16,
+          "tiers": [
+            {"min": 15, "score": 16},
+            {"min": 12, "score": 11},
+            {"min": 9, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 12,
+          "tiers": [
+            {"min": 15000, "score": 12},
+            {"min": 9000, "score": 8},
+            {"min": 5000, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "backhoe_bucket_force_lbf": {
+          "weight": 12,
+          "tiers": [
+            {"min": 11000, "score": 12},
+            {"min": 8000, "score": 8},
+            {"min": 5000, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "loader_breakout_force_lbf": {
+          "weight": 10,
+          "tiers": [
+            {"min": 11000, "score": 10},
+            {"min": 8000, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "extendahoe", "4in1_bucket"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["quick_coupler_rear", "pilot_controls", "hydraulic_thumb"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "powershift_transmission"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "foundation_digging": {
+      "label": "Foundation Excavation",
+      "description": "Digging out basement footings, crawl spaces, building pads",
+      "typical_customers": ["general contractors", "home builders", "concrete contractors"],
+      "spec_scoring": {
+        "backhoe_bucket_force_lbf": {
+          "weight": 18,
+          "tiers": [
+            {"min": 14000, "score": 18},
+            {"min": 11000, "score": 13},
+            {"min": 8000, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 16,
+          "tiers": [
+            {"min": 18000, "score": 16},
+            {"min": 14000, "score": 11},
+            {"min": 9000, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "loader_breakout_force_lbf": {
+          "weight": 10,
+          "tiers": [
+            {"min": 12000, "score": 10},
+            {"min": 9000, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "max_dig_depth_ft": {
+          "weight": 6,
+          "tiers": [
+            {"min": 14, "score": 6},
+            {"min": 11, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "pilot_controls", "powershift_transmission"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["extendahoe", "4in1_bucket", "ride_control"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "ac"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "general_construction": {
+      "label": "General Construction",
+      "description": "Mixed jobsite work — digging, backfilling, grading, material moving",
+      "typical_customers": ["general contractors", "site development", "small excavation companies"],
+      "spec_scoring": {
+        "horsepower_hp": {
+          "weight": 12,
+          "tiers": [
+            {"min": 95, "score": 12},
+            {"min": 80, "score": 9},
+            {"min": 65, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 12,
+          "tiers": [
+            {"min": 16000, "score": 12},
+            {"min": 12000, "score": 9},
+            {"min": 7000, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "loader_breakout_force_lbf": {
+          "weight": 14,
+          "tiers": [
+            {"min": 11000, "score": 14},
+            {"min": 8000, "score": 10},
+            {"min": 5000, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "max_dig_depth_ft": {
+          "weight": 12,
+          "tiers": [
+            {"min": 15, "score": 12},
+            {"min": 12, "score": 8},
+            {"min": 8, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "powershift_transmission", "pilot_controls"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["extendahoe", "quick_coupler_rear", "ride_control"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "ac"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "loading_trucks": {
+      "label": "Loading Trucks",
+      "description": "Using the front loader to fill dump trucks, haul material",
+      "typical_customers": ["excavation contractors", "landscapers", "aggregate/material handlers"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 18,
+          "tiers": [
+            {"min": 13000, "score": 18},
+            {"min": 10000, "score": 13},
+            {"min": 7000, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "loader_bucket_capacity_yd3": {
+          "weight": 14,
+          "tiers": [
+            {"min": 1.3, "score": 14},
+            {"min": 1.0, "score": 10},
+            {"min": 0.7, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 10,
+          "tiers": [
+            {"min": 90, "score": 10},
+            {"min": 70, "score": 7},
+            {"min": 50, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 8,
+          "tiers": [
+            {"min": 23, "score": 8},
+            {"min": 18, "score": 6},
+            {"min": 12, "score": 3},
+            {"min": 0, "score": 1}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["powershift_transmission", "ride_control", "4wd"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["4in1_bucket", "self_leveling", "enclosed_cab"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["ac", "pilot_controls"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "material_handling": {
+      "label": "Material Handling",
+      "description": "Moving bulk materials, debris, aggregate, soil stockpiles",
+      "typical_customers": ["landscapers", "general contractors", "demo contractors", "site developers"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 15,
+          "tiers": [
+            {"min": 12000, "score": 15},
+            {"min": 9000, "score": 11},
+            {"min": 5000, "score": 7},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "loader_bucket_capacity_yd3": {
+          "weight": 15,
+          "tiers": [
+            {"min": 1.2, "score": 15},
+            {"min": 0.9, "score": 11},
+            {"min": 0.5, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 10,
+          "tiers": [
+            {"min": 85, "score": 10},
+            {"min": 65, "score": 7},
+            {"min": 40, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 10,
+          "tiers": [
+            {"min": 20, "score": 10},
+            {"min": 15, "score": 7},
+            {"min": 8, "score": 3},
+            {"min": 0, "score": 1}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4in1_bucket", "hydraulic_thumb", "powershift_transmission"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["ride_control", "self_leveling", "quick_coupler_front"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "4wd"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "pallet_handling": {
+      "label": "Pallet / Material Fork Handling",
+      "description": "Using forks to handle palletized materials, pipes, blocks",
+      "typical_customers": ["contractors", "farmers", "property owners", "fence/block contractors"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 20,
+          "tiers": [
+            {"min": 10000, "score": 20},
+            {"min": 7000, "score": 15},
+            {"min": 4000, "score": 8},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "loader_bucket_capacity_yd3": {
+          "weight": 10,
+          "tiers": [
+            {"min": 1.0, "score": 10},
+            {"min": 0.7, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 10,
+          "tiers": [
+            {"min": 70, "score": 10},
+            {"min": 45, "score": 7},
+            {"min": 25, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 10,
+          "tiers": [
+            {"min": 15, "score": 10},
+            {"min": 10, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["pallet_forks", "quick_coupler_front", "self_leveling"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["4in1_bucket", "powershift_transmission", "4wd"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "radio"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "demolition_light": {
+      "label": "Light Demolition",
+      "description": "Breaking concrete, removing structures, clearing rubble",
+      "typical_customers": ["demo contractors", "remodeling contractors", "site developers"],
+      "spec_scoring": {
+        "backhoe_bucket_force_lbf": {
+          "weight": 18,
+          "tiers": [
+            {"min": 14000, "score": 18},
+            {"min": 11000, "score": 13},
+            {"min": 8000, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 14,
+          "tiers": [
+            {"min": 17000, "score": 14},
+            {"min": 13000, "score": 10},
+            {"min": 8000, "score": 6},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 10,
+          "tiers": [
+            {"min": 90, "score": 10},
+            {"min": 70, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "loader_breakout_force_lbf": {
+          "weight": 8,
+          "tiers": [
+            {"min": 11000, "score": 8},
+            {"min": 8000, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["breaker_hammer", "hydraulic_thumb", "rear_aux_hydraulics"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["4in1_bucket", "4wd", "quick_coupler_rear"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["pilot_controls", "enclosed_cab"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "utility_work": {
+      "label": "Utility / Underground Work",
+      "description": "General underground utility installation and maintenance — power, gas, telecom, water",
+      "typical_customers": ["utility contractors", "municipalities", "electric/gas companies"],
+      "spec_scoring": {
+        "max_dig_depth_ft": {
+          "weight": 16,
+          "tiers": [
+            {"min": 17, "score": 16},
+            {"min": 14, "score": 11},
+            {"min": 11, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "backhoe_bucket_force_lbf": {
+          "weight": 14,
+          "tiers": [
+            {"min": 12000, "score": 14},
+            {"min": 9000, "score": 10},
+            {"min": 0, "score": 4}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 10,
+          "tiers": [
+            {"min": 15000, "score": 10},
+            {"min": 10000, "score": 7},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "hydraulic_flow_gpm": {
+          "weight": 10,
+          "tiers": [
+            {"min": 30, "score": 10},
+            {"min": 20, "score": 7},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["extendahoe", "rear_aux_hydraulics", "4wd"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["pilot_controls", "quick_coupler_rear", "powershift_transmission"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "hydraulic_thumb"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "road_work": {
+      "label": "Road Work / Grading",
+      "description": "Cutting road shoulders, grading surfaces, patching, culvert work",
+      "typical_customers": ["municipalities", "road contractors", "DOT subcontractors"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 14,
+          "tiers": [
+            {"min": 12000, "score": 14},
+            {"min": 9000, "score": 10},
+            {"min": 0, "score": 4}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 14,
+          "tiers": [
+            {"min": 90, "score": 14},
+            {"min": 70, "score": 10},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 12,
+          "tiers": [
+            {"min": 22, "score": 12},
+            {"min": 16, "score": 8},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 10,
+          "tiers": [
+            {"min": 15000, "score": 10},
+            {"min": 10000, "score": 7},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "powershift_transmission", "4in1_bucket"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["ride_control", "enclosed_cab", "pilot_controls"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["ac", "limited_slip"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "landscaping": {
+      "label": "Landscaping",
+      "description": "Grading, planting, excavating pools and beds, moving soil and materials",
+      "typical_customers": ["landscapers", "lawn care companies", "property developers", "homeowners"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 12,
+          "tiers": [
+            {"min": 8000, "score": 12},
+            {"min": 5000, "score": 8},
+            {"min": 2000, "score": 5},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "loader_bucket_capacity_yd3": {
+          "weight": 12,
+          "tiers": [
+            {"min": 1.0, "score": 12},
+            {"min": 0.7, "score": 8},
+            {"min": 0.3, "score": 5},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "max_dig_depth_ft": {
+          "weight": 10,
+          "tiers": [
+            {"min": 12, "score": 10},
+            {"min": 8, "score": 7},
+            {"min": 5, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 8,
+          "tiers": [
+            {"min": 10000, "score": 8},
+            {"min": 5000, "score": 6},
+            {"min": 2000, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 8,
+          "tiers": [
+            {"min": 12, "score": 8},
+            {"min": 7, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "4in1_bucket", "quick_coupler_rear"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["hydraulic_thumb", "auger", "self_leveling"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["ride_control", "enclosed_cab"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "farm_use": {
+      "label": "Farm / Agricultural Use",
+      "description": "Post holes, drainage, moving materials, general farm tasks",
+      "typical_customers": ["farmers", "ranchers", "rural property owners"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 12,
+          "tiers": [
+            {"min": 8000, "score": 12},
+            {"min": 5000, "score": 9},
+            {"min": 2000, "score": 5},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 12,
+          "tiers": [
+            {"min": 60, "score": 12},
+            {"min": 40, "score": 9},
+            {"min": 20, "score": 5},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "loader_bucket_capacity_yd3": {
+          "weight": 10,
+          "tiers": [
+            {"min": 0.9, "score": 10},
+            {"min": 0.5, "score": 7},
+            {"min": 0.2, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 8,
+          "tiers": [
+            {"min": 12, "score": 8},
+            {"min": 8, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "max_dig_depth_ft": {
+          "weight": 8,
+          "tiers": [
+            {"min": 10, "score": 8},
+            {"min": 7, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "pallet_forks", "auger"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["4in1_bucket", "quick_coupler_rear", "rear_aux_hydraulics"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "hydraulic_thumb"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "property_maintenance": {
+      "label": "Property / Estate Maintenance",
+      "description": "Light digging, grading, material moving for residential/commercial properties",
+      "typical_customers": ["property owners", "estate managers", "small contractors", "HOAs"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 10,
+          "tiers": [
+            {"min": 5000, "score": 10},
+            {"min": 2000, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 10,
+          "tiers": [
+            {"min": 45, "score": 10},
+            {"min": 25, "score": 7},
+            {"min": 15, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 10,
+          "tiers": [
+            {"min": 5000, "score": 10},
+            {"min": 2000, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "max_dig_depth_ft": {
+          "weight": 10,
+          "tiers": [
+            {"min": 8, "score": 10},
+            {"min": 5, "score": 7},
+            {"min": 3, "score": 4},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 10,
+          "tiers": [
+            {"min": 8, "score": 10},
+            {"min": 5, "score": 7},
+            {"min": 0, "score": 3}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["4wd", "quick_coupler_front", "self_leveling"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["4in1_bucket", "pallet_forks", "auger"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "radio"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "drainage_work": {
+      "label": "Drainage Work",
+      "description": "Installing culverts, drainage pipes, swales, detention basins",
+      "typical_customers": ["civil contractors", "landscapers", "municipalities"],
+      "spec_scoring": {
+        "max_dig_depth_ft": {
+          "weight": 14,
+          "tiers": [
+            {"min": 15, "score": 14},
+            {"min": 11, "score": 9},
+            {"min": 7, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        },
+        "backhoe_bucket_force_lbf": {
+          "weight": 12,
+          "tiers": [
+            {"min": 10000, "score": 12},
+            {"min": 7000, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "loader_breakout_force_lbf": {
+          "weight": 12,
+          "tiers": [
+            {"min": 10000, "score": 12},
+            {"min": 7000, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 12,
+          "tiers": [
+            {"min": 14000, "score": 12},
+            {"min": 8000, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["extendahoe", "4wd", "4in1_bucket"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["quick_coupler_rear", "hydraulic_thumb", "pilot_controls"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["enclosed_cab", "ride_control"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    },
+
+    "snow_removal": {
+      "label": "Snow Removal",
+      "description": "Plowing, pushing, and moving snow with front loader or blade",
+      "typical_customers": ["municipalities", "property managers", "landscaping companies", "contractors"],
+      "spec_scoring": {
+        "loader_breakout_force_lbf": {
+          "weight": 16,
+          "tiers": [
+            {"min": 10000, "score": 16},
+            {"min": 6000, "score": 11},
+            {"min": 2000, "score": 6},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "horsepower_hp": {
+          "weight": 14,
+          "tiers": [
+            {"min": 85, "score": 14},
+            {"min": 60, "score": 10},
+            {"min": 35, "score": 6},
+            {"min": 0, "score": 1}
+          ]
+        },
+        "travel_speed_mph": {
+          "weight": 12,
+          "tiers": [
+            {"min": 20, "score": 12},
+            {"min": 14, "score": 8},
+            {"min": 0, "score": 3}
+          ]
+        },
+        "operating_weight_lbs": {
+          "weight": 8,
+          "tiers": [
+            {"min": 14000, "score": 8},
+            {"min": 7000, "score": 5},
+            {"min": 0, "score": 2}
+          ]
+        }
+      },
+      "feature_scoring": {
+        "primary": {
+          "features": ["enclosed_cab", "ac", "4wd"],
+          "points_each": 7,
+          "max": 21
+        },
+        "secondary": {
+          "features": ["powershift_transmission", "heat", "ride_control"],
+          "points_each": 4,
+          "max": 12
+        },
+        "bonus": {
+          "features": ["limited_slip", "4in1_bucket"],
+          "points_each": 1,
+          "max": 2
+        }
+      }
+    }
+  }
+}

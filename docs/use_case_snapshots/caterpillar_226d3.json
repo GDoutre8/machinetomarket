@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "label": "Cat 226D3 \u2014 SSL Class A",
+    "equipment_type": "skid_steer",
+    "make": "Caterpillar",
+    "model": "226D3",
+    "year": 2022,
+    "hours": 680,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Grading & Site Prep"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": null
+  }
+}

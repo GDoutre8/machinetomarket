@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "Bobcat T650 \u2014 CTL Class B/C",
+    "equipment_type": "compact_track_loader",
+    "make": "Bobcat",
+    "model": "T650",
+    "year": 2020,
+    "hours": 2200,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Grading & Site Prep",
+      "Land Clearing"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": null
+  }
+}

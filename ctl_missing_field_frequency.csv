@@ -1,9 +1,0 @@
-field,field_type,missing_count,pct_of_non_stub
-horsepower_hp,performance,0,0.0
-rated_operating_capacity_lbs,performance,0,0.0
-tipping_load_lbs,performance,0,0.0
-operating_weight_lbs,performance,0,0.0
-aux_flow_standard_gpm,performance,0,0.0
-travel_speed_high_mph,performance,0,0.0
-width_over_tires_in,dimensional,68,79.1
-bucket_hinge_pin_height_in,dimensional,73,84.9

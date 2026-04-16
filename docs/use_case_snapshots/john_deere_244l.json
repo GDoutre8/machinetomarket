@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "label": "JD 244L \u2014 Compact Wheel Loader (Ag Channel)",
+    "equipment_type": "wheel_loader",
+    "make": "John Deere",
+    "model": "244L",
+    "year": 2022,
+    "hours": 950,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Material Handling & Yard Work",
+      "Pallet Handling & Loading",
+      "Farm & Property Work"
+    ],
+    "attachment_sentence": "Skid steer coupler compatible \u2014 accepts standard SSL attachments.",
+    "limitation_sentence": null
+  }
+}

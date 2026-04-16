@@ -1,0 +1,403 @@
+{
+  "_meta": {
+    "file": "backhoe_listing_language_map.json",
+    "version": "1.0.0",
+    "created": "2026-04-04",
+    "purpose": "Phrase templates for MTM autofill listing language generation. Driven by use case scores and feature flags. Designed to match how dealers actually write backhoe listings.",
+    "usage": "Select phrases based on: (1) top-scoring use cases, (2) present feature flags, (3) machine class, (4) score tier. Combine 2–4 phrases into a listing description block."
+  },
+
+  "use_case_phrases": {
+
+    "trenching": {
+      "excellent": [
+        "Built for production trenching — serious dig depth and breakout force",
+        "This machine earns its keep in the trench — [dig_depth] ft of dig depth with real pulling power",
+        "Production trenching machine ready for water lines, sewer work, and utility installs",
+        "Designed for the trench — deep dig depth, strong bucket force, and the hydraulics to back it up"
+      ],
+      "good": [
+        "Solid trenching machine for utility and drainage work",
+        "Handles trenching work well — good depth and digging force for most applications",
+        "Capable trencher for water lines, drain tile, and site utility work"
+      ],
+      "capable": [
+        "Handles light to medium trenching",
+        "Good for shorter trench runs and residential utility work",
+        "Adequate for basic trenching and digging tasks"
+      ]
+    },
+
+    "water_line_install": {
+      "excellent": [
+        "Purpose-built for underground utility work — water mains, service lines, and distribution systems",
+        "Dig depth and force specs line up perfectly for water line installation",
+        "Utility contractors' machine — deep dig, strong arm, ready for water line work"
+      ],
+      "good": [
+        "Well-suited for residential and light commercial water line installs",
+        "Handles service line and water main work at standard depths"
+      ],
+      "capable": [
+        "Capable of water service line work at moderate depths",
+        "Works for residential water line installation"
+      ]
+    },
+
+    "sewer_line_install": {
+      "excellent": [
+        "Depth and breakout force built for serious sewer line installation",
+        "The dig depth and platform stability needed for sewer main and lateral work",
+        "Sewer contractor's machine — deep enough, strong enough, stable enough"
+      ],
+      "good": [
+        "Handles sewer lateral work and moderate-depth main installation",
+        "Good specs for residential sewer line installation"
+      ],
+      "capable": [
+        "Capable for residential sewer lateral work",
+        "Handles shallow sewer installation"
+      ]
+    },
+
+    "septic_install": {
+      "excellent": [
+        "Ideal for septic system installation — tank excavation, field trenching, and backfill all in one machine",
+        "Septic contractors will feel right at home — the reach, depth, and loader capacity to do the whole job",
+        "From tank excavation to absorption field, this machine does it all on septic jobs"
+      ],
+      "good": [
+        "Strong match for septic system installation work",
+        "Handles the full range of septic jobsite tasks well"
+      ],
+      "capable": [
+        "Capable of septic installation work",
+        "Gets the job done on standard septic installs"
+      ]
+    },
+
+    "foundation_digging": {
+      "excellent": [
+        "The weight and breakout force to handle hard soil and rock in foundation work",
+        "Foundation work is where this machine earns its reputation — heavy, strong, and capable in tough ground",
+        "Serious foundation machine — enough breakout force and platform weight to handle hardpan and clay"
+      ],
+      "good": [
+        "Well-suited for residential foundation and footing excavation",
+        "Handles foundation and footing work in typical soil conditions"
+      ],
+      "capable": [
+        "Capable of light foundation and crawl space excavation",
+        "Works for smaller foundation jobs"
+      ]
+    },
+
+    "general_construction": {
+      "excellent": [
+        "Versatile construction machine ready for any jobsite task",
+        "The horsepower, weight, and feature set that commercial contractors demand",
+        "Built for the demands of commercial construction — digs, loads, and moves all day"
+      ],
+      "good": [
+        "A solid all-around construction machine for commercial and residential jobsites",
+        "Handles the full range of jobsite work — digging, backfilling, loading, and grading"
+      ],
+      "capable": [
+        "Capable on general construction jobsites",
+        "Handles most construction tasks effectively"
+      ]
+    },
+
+    "loading_trucks": {
+      "excellent": [
+        "High loader capacity and fast powershift transmission — built for production truck loading",
+        "Load dump trucks efficiently all day with the bucket capacity and cycle speeds to match",
+        "Serious loader — the breakout force and bucket size to keep trucks moving"
+      ],
+      "good": [
+        "Good loader capacity for filling dump trucks and trailers on the jobsite",
+        "Handles truck loading well with efficient cycles and adequate bucket size"
+      ],
+      "capable": [
+        "Capable of loading dump trucks and trailers",
+        "Works for material loading tasks"
+      ]
+    },
+
+    "material_handling": {
+      "excellent": [
+        "Versatile material handler — quick coupler, loader capacity, and reach to move anything on the jobsite",
+        "From bulk material to individual loads, this machine handles it efficiently",
+        "Quick attach versatility makes this a true multi-tasker for material handling"
+      ],
+      "good": [
+        "Good all-around material handling machine",
+        "Handles bulk material and stockpile work effectively"
+      ],
+      "capable": [
+        "Capable material handler for most jobsite tasks",
+        "Works for general material moving"
+      ]
+    },
+
+    "pallet_handling": {
+      "excellent": [
+        "Skid steer quick attach with pallet forks — pallet and material handling as capable as a telehandler",
+        "Forks drop on in seconds — handles pallets, pipe, blocks, and materials all day",
+        "Quick coupler versatility: pallet forks, buckets, and attachments without leaving the seat"
+      ],
+      "good": [
+        "Good pallet handling capability with quick attach forks",
+        "Handles palletized material efficiently"
+      ],
+      "capable": [
+        "Capable of pallet handling with proper forks",
+        "Works for occasional pallet moving"
+      ]
+    },
+
+    "demolition_light": {
+      "excellent": [
+        "Demo-ready with hydraulic breaker circuit — concrete, asphalt, and masonry all day",
+        "The breakout force and hammer circuit to tackle light demolition efficiently",
+        "Breaker attachment ready — this machine is built for light to medium demolition work"
+      ],
+      "good": [
+        "Well-suited for light demolition with auxiliary hydraulics for hammer attachment",
+        "Good demo machine — strong arm and hammer circuit"
+      ],
+      "capable": [
+        "Handles light demolition work",
+        "Capable for basic demo and concrete breaking"
+      ]
+    },
+
+    "utility_work": {
+      "excellent": [
+        "Utility contractor's machine — dig depth, breakout force, and auxiliary hydraulics for the full job",
+        "Built for underground utility work — water, sewer, gas, electric. Does the whole scope.",
+        "From the trench to the valve box, this machine covers every phase of utility installation"
+      ],
+      "good": [
+        "Strong utility machine for underground pipe and cable work",
+        "Well-equipped for utility installation and maintenance"
+      ],
+      "capable": [
+        "Capable for light utility and underground work",
+        "Handles standard utility installation tasks"
+      ]
+    },
+
+    "road_work": {
+      "excellent": [
+        "Fast road speed, strong loader, and the power to handle road shoulder and culvert work all day",
+        "Built for road work — roading speed, loader capacity, and the digging force for shoulder cuts"
+      ],
+      "good": [
+        "Good road work machine — handles culverts, shoulder grading, and patching tasks",
+        "Solid choice for highway and road maintenance work"
+      ],
+      "capable": [
+        "Capable for light road maintenance and grading work",
+        "Handles occasional road and driveway tasks"
+      ]
+    },
+
+    "landscaping": {
+      "excellent": [
+        "Landscaper's dream — maneuverable, light on its feet, and versatile for any property task",
+        "From topsoil to boulders, this machine handles landscaping work without tearing up the job",
+        "The size and agility that landscaping work demands — gets in, gets it done, gets out clean"
+      ],
+      "good": [
+        "Well-matched for landscaping and site prep work",
+        "Handles grading, planting excavation, and material moving on landscaping jobs"
+      ],
+      "capable": [
+        "Capable for landscaping and site cleanup work",
+        "Works well on landscaping projects"
+      ]
+    },
+
+    "farm_use": {
+      "excellent": [
+        "The one machine that does it all on the farm — loader, backhoe, and forks in one package",
+        "Built for farm work: post holes, drainage, moving materials, and field prep — all in a day's work",
+        "Farm-proven machine — the versatility, traction, and attachment compatibility that agricultural work demands"
+      ],
+      "good": [
+        "Strong farm machine — handles the full range of property and agricultural tasks",
+        "Solid choice for farm and ranch work — loader, backhoe, and 4WD traction"
+      ],
+      "capable": [
+        "Capable farm machine for property and light ag tasks",
+        "Works well for farm and rural property applications"
+      ]
+    },
+
+    "property_maintenance": {
+      "excellent": [
+        "The right-sized machine for large property work — does everything without overrunning the site",
+        "Estate and property owners: this is your machine — compact enough to maneuver, capable enough to work",
+        "Handles every property task without calling in a bigger machine or risking the lawn"
+      ],
+      "good": [
+        "Well-suited for estate and large property maintenance",
+        "Good property machine — handles digging, grading, and material work"
+      ],
+      "capable": [
+        "Capable for property and estate maintenance tasks",
+        "Works well for residential and rural property work"
+      ]
+    },
+
+    "drainage_work": {
+      "excellent": [
+        "Built for drainage work — the reach, depth, and stability to handle drain tile, culverts, and detention work",
+        "Gets in and gets drainage systems in right — dig depth, loader capacity, and machine stability"
+      ],
+      "good": [
+        "Well-suited for drainage installation and culvert work",
+        "Handles drain tile, French drains, and culvert work effectively"
+      ],
+      "capable": [
+        "Capable for drainage and grading work",
+        "Handles residential drainage installation"
+      ]
+    },
+
+    "snow_removal": {
+      "excellent": [
+        "Year-round machine — when winter hits, this backhoe becomes a powerful snow pusher with enclosed cab and 4WD",
+        "Enclosed cab, 4WD, and loader capacity to handle commercial snow removal all season long",
+        "Push, pile, and clear snow all winter — enclosed cab, 4WD traction, and loader power"
+      ],
+      "good": [
+        "Good snow removal machine — enclosed cab keeps the operator comfortable all winter",
+        "Handles commercial and municipal snow removal efficiently"
+      ],
+      "capable": [
+        "Capable of snow removal work with proper blade or bucket",
+        "Works for seasonal snow pushing"
+      ]
+    }
+  },
+
+  "feature_phrases": {
+    "_usage": "Append 1–3 feature phrases to the use case phrases. Select based on which high-value features are present.",
+
+    "extendahoe":           "Extendahoe dipperstick adds real dig depth when you need it most",
+    "pilot_controls":       "Pilot controls make long days in the trench easier on the operator",
+    "4wd":                  "4WD traction for wet, muddy, or soft ground conditions",
+    "powershift_transmission": "Powershift transmission for fast, smooth direction changes all day",
+    "hydraulic_thumb":      "Hydraulic thumb handles rocks, pipe, debris, and everything in between",
+    "rear_aux_hydraulics":  "Auxiliary hydraulics ready for hammer, auger, or compactor attachment",
+    "enclosed_cab":         "Fully enclosed cab keeps the operator working in any weather",
+    "ac":                   "Air-conditioned cab for summer comfort on long shifts",
+    "4in1_bucket":          "4-in-1 loader bucket grabs, carries, and grades without changing attachments",
+    "quick_coupler_rear":   "Quick coupler makes bucket changes fast and tool-free",
+    "quick_coupler_front":  "Skid steer-compatible quick attach opens up the full attachment world",
+    "pallet_forks":         "Pallet forks included — ready to handle materials right off the truck",
+    "side_shift":           "Side-shift boom lets you dig right up against walls and structures",
+    "ride_control":         "Ride control smooths out the road between job sites",
+    "breaker_hammer":       "Hammer attachment included — ready to break concrete and asphalt",
+    "new_tires":            "Fresh tires all around — this machine is ready to roll",
+    "tight_pins":           "Tight pins and bushings throughout — no sloppy arm or wobble",
+    "no_leaks":             "Clean machine with no hydraulic leaks",
+    "fleet_maintained":     "Fleet-maintained with service records — you know what you're getting",
+    "low_hours":            "Low hours for the year — this machine has plenty of life left",
+    "one_owner":            "Single-owner machine — consistent care from day one",
+    "ready_to_work":        "Serviced and ready to work — put it on a job tomorrow"
+  },
+
+  "class_opener_phrases": {
+    "_usage": "Use as the opening sentence of a listing description, before use case and feature phrases.",
+
+    "full_size_backhoe": {
+      "high_hour":   "Well-maintained full-size backhoe with the power and capability for commercial work.",
+      "low_hour":    "Low-hour full-size backhoe — the specs and condition to go right to work.",
+      "generic":     "Full-size backhoe loader ready for utility, construction, and excavation work."
+    },
+    "compact_tlb": {
+      "high_hour":   "Compact tractor-loader-backhoe — versatile and capable for farm, property, and light construction.",
+      "low_hour":    "Low-hour compact TLB — handles loader work, digging, and attachments in one machine.",
+      "generic":     "Compact tractor-loader-backhoe — the versatility of a loader, backhoe, and tractor in one."
+    },
+    "sub_compact_tlb": {
+      "high_hour":   "Sub-compact TLB — easy to operate and store, capable enough for property work.",
+      "low_hour":    "Low-hour sub-compact tractor-loader-backhoe — property-ready and attachment-capable.",
+      "generic":     "Sub-compact tractor-loader-backhoe — the right-sized machine for large property and hobby farm work."
+    },
+    "compact_tracked_backhoe": {
+      "high_hour":   "Compact tracked backhoe — goes where wheeled machines can't, without tearing up the ground.",
+      "low_hour":    "Low-hour compact tracked backhoe — the access and traction for tight urban and soft-ground work.",
+      "generic":     "Compact tracked backhoe — urban access, low ground pressure, and versatile digging in a tight package."
+    }
+  },
+
+  "multi_use_case_combo_phrases": {
+    "_usage": "When a machine scores well in 2+ related use cases, use these pre-built combo phrases instead of stacking individual use case phrases.",
+
+    "trenching_utility": [
+      "Great for trenching, water lines, sewer work, and utility installation",
+      "Utility contractor's machine — built for production trenching and underground work",
+      "Does the whole scope of underground utility work: dig, lay pipe, backfill, and move on"
+    ],
+    "septic_drainage": [
+      "Handles septic and drainage work from tank excavation to field trenching",
+      "Septic installs and drainage projects are this machine's bread and butter",
+      "From septic systems to drain tile, the dig depth and reach to get it done"
+    ],
+    "general_loading": [
+      "Digs and loads — the two things a backhoe needs to do, done well",
+      "Handles digging and truck loading on any commercial or residential jobsite",
+      "A strong digger and a capable loader — the versatility contractors rely on"
+    ],
+    "farm_property": [
+      "Does it all on the farm or property — loader, backhoe, and forks in one package",
+      "From fence posts to drainage to moving materials, this machine handles farm and property life",
+      "The machine that replaces three on the farm — loader, backhoe, and attachment versatility"
+    ],
+    "landscaping_property": [
+      "Light on its feet and big on versatility — the landscaping and property work machine",
+      "Maneuverable enough for finished landscaping, capable enough for serious property work",
+      "Does landscaping, property maintenance, and light excavation without skipping a beat"
+    ],
+    "construction_foundation": [
+      "From foundation digging to general site work, this machine handles the heavy lifting",
+      "General construction and foundation work — the weight and force to perform in tough soil",
+      "Commercial jobsite ready: foundation excavation, site prep, and material handling"
+    ],
+    "demolition_utility": [
+      "Demo and utility work in one machine — hammer circuit ready, strong arm, good dig depth",
+      "Breaks concrete, digs trenches, and handles utility work — a do-it-all contractor machine"
+    ],
+    "snow_year_round": [
+      "A year-round machine — utility and construction work all summer, snow removal all winter",
+      "Four seasons of capability: digs in the summer, pushes snow in the winter"
+    ]
+  },
+
+  "score_to_tier": {
+    "_usage": "Map final 0–100 use case score to a phrase tier",
+    "excellent": { "min": 80, "max": 100 },
+    "good":      { "min": 60, "max": 79 },
+    "capable":   { "min": 40, "max": 59 },
+    "marginal":  { "min": 25, "max": 39 },
+    "exclude":   { "min": 0,  "max": 24, "note": "Do not include this use case in listing language" }
+  },
+
+  "listing_assembly_rules": {
+    "max_use_cases_to_mention": 3,
+    "max_feature_phrases": 3,
+    "preferred_order": ["opener", "top_use_case_combo_or_primary", "secondary_use_case", "feature_phrases"],
+    "use_combo_phrase_if": "Two or more use cases from the same combo group both score >= 65",
+    "always_include_features": ["extendahoe", "hydraulic_thumb", "pilot_controls", "enclosed_cab", "new_tires", "tight_pins"],
+    "suppress_marginal_use_cases": true,
+    "hour_thresholds": {
+      "low_hour_full_size": 3000,
+      "low_hour_compact": 1500,
+      "low_hour_sub_compact": 800
+    }
+  }
+}

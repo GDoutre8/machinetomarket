@@ -1,8 +1,10 @@
 {
   "_meta": {
     "file": "mtm_top_models_index_v1.json",
-    "version": "1.0",
+    "version": "1.2",
     "created": "2026-03-24",
+    "last_repaired": "2026-04-15",
+    "repair_notes": "2026-04-15: Source registry links refreshed to v1_24 (CTL), v2_2 (mini ex), v1_18 (SSL). bobcat_s510/s550 promoted to ready — HIGH conf confirmed in v1_18, no guard flags, missing_core_fields reason cleared. All other statuses validated against live registries — no additional promotions or demotions. | 2026-04-12: Source registry links updated to current active files. False missing-state corrected for boom/scissor/dozer/backhoe. jcb_330t demoted to missing. genie_gth_844 and skyjack_sj60t promoted to ready. cat_308_cr guard reason corrected. Telehandler source updated to v3.",
     "purpose": "Control layer and launch prioritization index for the MTM Top 50 equipment registry. Tracks production_status for each Top50 slot against live registries and the spec injection guard. Use this file to determine which slots are ready for autofill, which need a lock pass, and which require new registry builds.",
     "status_definitions": {
       "ready": "Record exists in a live production registry and passes the spec injection guard. Safe for autofill.",
@@ -20,29 +22,34 @@
       "spec_registry": "Top 50 Registry/MTM_SpecRegistry_v1.xlsx",
       "staging_batch": "registry/new_records_batch_gap_fill.json",
       "live_registries": [
-        "mtm_ctl_registry_v1_6.json",
-        "mtm_skid_steer_registry_v1_5.json",
-        "mtm_mini_ex_registry_v1.json",
-        "mtm_wheel_loader_registry_v1_final.json",
-        "mtm_excavator_registry_v2.json",
-        "mtm_telehandler_registry_v2.json"
+        "registry/active/mtm_ctl_registry_v1_24.json",
+        "registry/active/mtm_skid_steer_registry_v1_18.json",
+        "registry/active/mtm_mini_ex_registry_v2_2.json",
+        "registry/active/mtm_wheel_loader_registry_v1_2.json",
+        "registry/mtm_excavator_registry_v2.json",
+        "registry/active/mtm_telehandler_registry_v3.json",
+        "registry/active/mtm_boom_lift_registry_v1.json",
+        "registry/active/mtm_scissor_lift_registry_v1.json",
+        "registry/active/mtm_dozer_registry_v1.json",
+        "registry/active/mtm_backhoe_loader_registry_v1.json"
       ]
     },
     "record_count": 52,
     "status_summary": {
-      "ready": 32,
-      "staged_needs_lock": 6,
-      "missing": 14,
+      "ready": 39,
+      "staged_needs_lock": 12,
+      "missing": 1,
       "total": 52
     },
-    "coverage_pct": 61.5,
+    "coverage_pct": 75.0,
     "key_findings": [
-      "Cat 308 Series (Mini Ex slot 3): absent from all registries. 8-tonne class falls between mini_ex and full excavator registry scopes. Needs dedicated record.",
-      "JCB 330T (SSL slot 7): actually a CTL (tracked). jcb_270t in live CTL registry is wrong model. jcb_330t in staging only.",
-      "All 3 telehandler slots have wrong slug mappings in live registry. All 3 correct records are in staging.",
-      "14 missing slots belong to 4 categories with no JSON registry: scissor_lift (5), boom_lift (5), dozer (2), backhoe_loader (2).",
-      "Cat 938 (WL slot 2) and Cat 336 (EX slot 3): staging records, both flagged series_record=True.",
-      "Wheel loaders: john_deere_544_p_tier covers Deere 544/624 slot. komatsu_wa320_8 covers WA270/WA320 slot."
+      "2026-04-15: Source registry links refreshed to v1_24 (CTL), v2_2 (mini ex), v1_18 (SSL). bobcat_s510/s550 promoted to ready — HIGH conf in v1_18, no guard flags, missing_core_fields reason cleared.",
+      "Cat 308 Series (Mini Ex slot 3): record in mtm_excavator_registry_v2.json as scope exception (equipment_type=excavator). Multiple dimension fields null. Stays staged_needs_lock pending mini-ex-compatible spec pass.",
+      "JCB 330T (SSL slot 7): no record in any live registry or staging. Remains missing/no_record.",
+      "Cat 938 (WL slot 2) and Cat 336 (EX slot 3): gap-fill batch records only, series_record=True, conf=LOW. Remain staged_needs_lock.",
+      "All 4 series-record scissor lift slots and 4 series-record boom lift slots: staged_needs_lock pending serial-decode lock pass.",
+      "Telehandler v3: skytrak_10054, skytrak_8042, genie_gth_844 all ready with HIGH confidence.",
+      "skyjack_sj60t (boom slot 5): specific model, series_record=False, HIGH conf. Ready."
     ]
   },
   "records": [
@@ -55,7 +62,7 @@
       "slug": "jd_333_ptier",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json",
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json",
       "alt_slugs": [
         "jd_333g"
       ],
@@ -70,7 +77,7 @@
       "slug": "kubota_svl75",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json",
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json",
       "alt_slugs": [
         "kubota_svl75_3"
       ],
@@ -85,7 +92,7 @@
       "slug": "cat_259d3",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 4,
@@ -96,7 +103,7 @@
       "slug": "cat_299d3",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 5,
@@ -107,7 +114,7 @@
       "slug": "bobcat_t770",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 6,
@@ -118,7 +125,7 @@
       "slug": "kubota_svl95",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json",
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json",
       "notes": "SVL95-2S in registry"
     },
     {
@@ -130,7 +137,7 @@
       "slug": "bobcat_t650",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 8,
@@ -141,7 +148,7 @@
       "slug": "cat_289d3",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 9,
@@ -152,7 +159,7 @@
       "slug": "bobcat_t450",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 10,
@@ -163,7 +170,7 @@
       "slug": "takeuchi_tl12",
       "equipment_type": "compact_track_loader",
       "production_status": "ready",
-      "source_registry": "mtm_ctl_registry_v1_6.json"
+      "source_registry": "registry/active/mtm_ctl_registry_v1_24.json"
     },
     {
       "priority": 1,
@@ -174,7 +181,7 @@
       "slug": "jd_35g",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json"
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json"
     },
     {
       "priority": 2,
@@ -185,7 +192,7 @@
       "slug": "kubota_kx040_4",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json",
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json",
       "notes": "KX040-4 in registry"
     },
     {
@@ -197,9 +204,9 @@
       "slug": "cat_308_cr",
       "equipment_type": "mini_excavator",
       "production_status": "staged_needs_lock",
-      "source_registry": "mtm_excavator_registry_v2.json",
-      "guard_block_reason": "low_spec_confidence",
-      "notes": "CONFIRMED MISSING: cat_308_cr absent from all registries. 8-tonne class falls between mini_ex (<6t) and full excavator (>18t) registry scopes. Needs dedicated record."
+      "source_registry": "registry/mtm_excavator_registry_v2.json",
+      "guard_block_reason": "missing_core_fields",
+      "notes": "Record exists in excavator registry as Top50 scope exception (equipment_type=excavator per classification note — do not reclassify). Multiple dimension fields null (max_reach_ground_in, max_dump_height_in, max_cutting_height_in, swing_speed_rpm, track/overall dimensions all manual_review). Needs mini-ex slot-compatible spec pass before injection."
     },
     {
       "priority": 4,
@@ -210,7 +217,7 @@
       "slug": "jd_50g",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json"
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json"
     },
     {
       "priority": 5,
@@ -221,7 +228,7 @@
       "slug": "kubota_kx057_6",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json",
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json",
       "notes": "KX057-6 in registry"
     },
     {
@@ -233,7 +240,7 @@
       "slug": "bobcat_e50",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json"
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json"
     },
     {
       "priority": 7,
@@ -244,7 +251,7 @@
       "slug": "cat_306_cr",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json"
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json"
     },
     {
       "priority": 8,
@@ -255,7 +262,7 @@
       "slug": "kubota_u35_4",
       "equipment_type": "mini_excavator",
       "production_status": "ready",
-      "source_registry": "mtm_mini_ex_registry_v1.json",
+      "source_registry": "registry/active/mtm_mini_ex_registry_v2_2.json",
       "alt_slugs": [
         "kubota_u55_5"
       ],
@@ -270,7 +277,7 @@
       "slug": "case_sv280",
       "equipment_type": "skid_steer",
       "production_status": "ready",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json"
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json"
     },
     {
       "priority": 2,
@@ -281,7 +288,7 @@
       "slug": "kubota_ssv75",
       "equipment_type": "skid_steer",
       "production_status": "ready",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json"
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json"
     },
     {
       "priority": 3,
@@ -292,7 +299,7 @@
       "slug": "bobcat_s650",
       "equipment_type": "skid_steer",
       "production_status": "ready",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json",
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json",
       "alt_slugs": [
         "bobcat_s770"
       ],
@@ -307,7 +314,7 @@
       "slug": "cat_262d3",
       "equipment_type": "skid_steer",
       "production_status": "ready",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json"
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json"
     },
     {
       "priority": 5,
@@ -318,7 +325,7 @@
       "slug": "jd_320g",
       "equipment_type": "skid_steer",
       "production_status": "ready",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json",
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json",
       "alt_slugs": [
         "jd_324g"
       ],
@@ -332,13 +339,12 @@
       "model_family": "Bobcat S510/S550 Series",
       "slug": "bobcat_s510",
       "equipment_type": "skid_steer",
-      "production_status": "staged_needs_lock",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json",
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json",
       "alt_slugs": [
         "bobcat_s550"
       ],
-      "guard_block_reason": "missing_core_fields",
-      "notes": "Both S510 and S550 in registry"
+      "notes": "Both S510 and S550 in v1_18 with HIGH confidence, no guard flags. Promoted to ready — missing_core_fields guard reason cleared at v1_18."
     },
     {
       "priority": 7,
@@ -348,10 +354,10 @@
       "model_family": "JCB 330T",
       "slug": "jcb_330t",
       "equipment_type": "compact_track_loader",
-      "production_status": "staged_needs_lock",
-      "source_registry": "new_records_batch_gap_fill.json",
-      "guard_block_reason": "low_spec_confidence",
-      "notes": "CTL (tracked), not wheel SSL. Live CTL registry has jcb_270t (WRONG model). jcb_330t in staging only."
+      "production_status": "missing",
+      "source_registry": null,
+      "guard_block_reason": "no_record",
+      "notes": "jcb_330t not found in any live registry or staging. CTL registry has jcb_270t (different model — wrong slug). No staging record exists. Needs dedicated build."
     },
     {
       "priority": 8,
@@ -362,7 +368,7 @@
       "slug": "nh_l228",
       "equipment_type": "skid_steer",
       "production_status": "ready",
-      "source_registry": "mtm_skid_steer_registry_v1_5.json",
+      "source_registry": "registry/active/mtm_skid_steer_registry_v1_18.json",
       "alt_slugs": [
         "nh_l230"
       ],
@@ -376,9 +382,10 @@
       "model_family": "Genie GS Series (Electric)",
       "slug": "genie_gs_series",
       "equipment_type": "scissor_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No scissor_lift JSON registry exists. Spec data in MTM_SpecRegistry_v1.xlsx."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_scissor_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder (GS-3232 representative). Specific-model records genie_gs_1930 and genie_gs_2632 also in registry."
     },
     {
       "priority": 2,
@@ -388,9 +395,10 @@
       "model_family": "JLG 2630/3246/4046 Series",
       "slug": "jlg_2630_series",
       "equipment_type": "scissor_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No scissor_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_scissor_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Specific-model record jlg_1930es also in registry."
     },
     {
       "priority": 3,
@@ -400,9 +408,10 @@
       "model_family": "Skyjack SJIII Series",
       "slug": "skyjack_sjiii",
       "equipment_type": "scissor_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No scissor_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_scissor_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Specific-model record skyjack_sjiii_3219 also in registry."
     },
     {
       "priority": 4,
@@ -412,9 +421,10 @@
       "model_family": "Genie GRT/SRT Rough Terrain",
       "slug": "genie_grt_series",
       "equipment_type": "scissor_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No scissor_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_scissor_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Rough terrain variant."
     },
     {
       "priority": 5,
@@ -424,9 +434,10 @@
       "model_family": "JLG RT Series Rough Terrain",
       "slug": "jlg_rt_series",
       "equipment_type": "scissor_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No scissor_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_scissor_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Rough terrain variant."
     },
     {
       "priority": 1,
@@ -436,9 +447,10 @@
       "model_family": "Genie S-Series Telescopic",
       "slug": "genie_s_series",
       "equipment_type": "boom_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No boom_lift JSON registry exists. Spec data in MTM_SpecRegistry_v1.xlsx."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_boom_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder (S-65 representative). Specific-model record genie_s_85 also in registry."
     },
     {
       "priority": 2,
@@ -448,9 +460,10 @@
       "model_family": "JLG 400S/600S/800S Series",
       "slug": "jlg_400s_series",
       "equipment_type": "boom_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No boom_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_boom_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Specific-model record jlg_860sj also in registry."
     },
     {
       "priority": 3,
@@ -460,9 +473,10 @@
       "model_family": "Genie Z-Series Articulating",
       "slug": "genie_z_series",
       "equipment_type": "boom_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No boom_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_boom_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Specific-model record genie_z_80 also in registry."
     },
     {
       "priority": 4,
@@ -472,9 +486,10 @@
       "model_family": "JLG 450AJ/600AJ Series",
       "slug": "jlg_450aj_series",
       "equipment_type": "boom_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No boom_lift JSON registry exists."
+      "production_status": "staged_needs_lock",
+      "source_registry": "registry/active/mtm_boom_lift_registry_v1.json",
+      "guard_block_reason": "series_record",
+      "notes": "Series placeholder. Articulating boom lift."
     },
     {
       "priority": 5,
@@ -484,9 +499,9 @@
       "model_family": "Skyjack SJ60T/SJ45T Series",
       "slug": "skyjack_sj60t",
       "equipment_type": "boom_lift",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No boom_lift JSON registry exists."
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_boom_lift_registry_v1.json",
+      "notes": "Specific-model record, series_record=False, spec_confidence=HIGH. Telescopic boom, 60ft platform height."
     },
     {
       "priority": 1,
@@ -497,7 +512,7 @@
       "slug": "caterpillar_950m",
       "equipment_type": "wheel_loader",
       "production_status": "ready",
-      "source_registry": "mtm_wheel_loader_registry_v1_final.json",
+      "source_registry": "registry/active/mtm_wheel_loader_registry_v1_2.json",
       "alt_slugs": [
         "caterpillar_950k"
       ],
@@ -512,9 +527,9 @@
       "slug": "cat_938",
       "equipment_type": "wheel_loader",
       "production_status": "staged_needs_lock",
-      "source_registry": "new_records_batch_gap_fill.json",
+      "source_registry": "registry/new_records_batch_gap_fill.json",
       "guard_block_reason": "series_record",
-      "notes": "Staging only. Previously mapped incorrectly to caterpillar_950k."
+      "notes": "Staging only. series_record=True, conf=LOW. Previously mapped incorrectly to caterpillar_950k."
     },
     {
       "priority": 3,
@@ -525,7 +540,7 @@
       "slug": "john_deere_544_p_tier",
       "equipment_type": "wheel_loader",
       "production_status": "ready",
-      "source_registry": "mtm_wheel_loader_registry_v1_final.json",
+      "source_registry": "registry/active/mtm_wheel_loader_registry_v1_2.json",
       "alt_slugs": [
         "john_deere_544k",
         "john_deere_544l"
@@ -541,7 +556,7 @@
       "slug": "case_621g",
       "equipment_type": "wheel_loader",
       "production_status": "ready",
-      "source_registry": "mtm_wheel_loader_registry_v1_final.json",
+      "source_registry": "registry/active/mtm_wheel_loader_registry_v1_2.json",
       "notes": "621G HIGH conf in registry. case_321f (smaller variant) not present."
     },
     {
@@ -553,7 +568,7 @@
       "slug": "komatsu_wa320_8",
       "equipment_type": "wheel_loader",
       "production_status": "ready",
-      "source_registry": "mtm_wheel_loader_registry_v1_final.json",
+      "source_registry": "registry/active/mtm_wheel_loader_registry_v1_2.json",
       "notes": "WA320-8 HIGH conf. komatsu_wa320 family record is null/LOW."
     },
     {
@@ -565,7 +580,7 @@
       "slug": "cat_320gc",
       "equipment_type": "excavator",
       "production_status": "ready",
-      "source_registry": "mtm_excavator_registry_v2.json",
+      "source_registry": "registry/mtm_excavator_registry_v2.json",
       "alt_slugs": [
         "cat_320el"
       ],
@@ -580,7 +595,7 @@
       "slug": "deere_210_p_tier",
       "equipment_type": "excavator",
       "production_status": "ready",
-      "source_registry": "mtm_excavator_registry_v2.json",
+      "source_registry": "registry/mtm_excavator_registry_v2.json",
       "alt_slugs": [
         "deere_210g_lc"
       ],
@@ -595,9 +610,9 @@
       "slug": "cat_336",
       "equipment_type": "excavator",
       "production_status": "staged_needs_lock",
-      "source_registry": "new_records_batch_gap_fill.json",
+      "source_registry": "registry/new_records_batch_gap_fill.json",
       "guard_block_reason": "series_record",
-      "notes": "Staging only. Was entirely absent from live excavator registry."
+      "notes": "Staging only. series_record=True, conf=LOW. Was entirely absent from live excavator registry."
     },
     {
       "priority": 4,
@@ -608,7 +623,7 @@
       "slug": "komatsu_pc210lc_11",
       "equipment_type": "excavator",
       "production_status": "ready",
-      "source_registry": "mtm_excavator_registry_v2.json",
+      "source_registry": "registry/mtm_excavator_registry_v2.json",
       "notes": "PC210 LC-11 in registry"
     },
     {
@@ -620,8 +635,8 @@
       "slug": "skytrak_10054",
       "equipment_type": "telehandler",
       "production_status": "ready",
-      "source_registry": "mtm_telehandler_registry_v2.json",
-      "notes": "Staging only. Live registry has skytrak_10042 (wrong slug). Partially spec'd — guard passes on MEDIUM conf."
+      "source_registry": "registry/active/mtm_telehandler_registry_v3.json",
+      "notes": "Record in TH v3 registry. series_record=False, spec_confidence=HIGH."
     },
     {
       "priority": 2,
@@ -632,8 +647,8 @@
       "slug": "skytrak_8042",
       "equipment_type": "telehandler",
       "production_status": "ready",
-      "source_registry": "mtm_telehandler_registry_v2.json",
-      "notes": "Staging only. Live registry has skytrak_10042 (wrong slug)."
+      "source_registry": "registry/active/mtm_telehandler_registry_v3.json",
+      "notes": "Record in TH v3 registry. series_record=False, spec_confidence=HIGH."
     },
     {
       "priority": 3,
@@ -643,10 +658,9 @@
       "model_family": "Genie GTH5519/GTH844 Series",
       "slug": "genie_gth_844",
       "equipment_type": "telehandler",
-      "production_status": "staged_needs_lock",
-      "source_registry": "new_records_batch_gap_fill.json",
-      "guard_block_reason": "low_spec_confidence",
-      "notes": "Staging only. Live registry has genie_gth_636 (wrong model, 6k vs 8k lb)."
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_telehandler_registry_v3.json",
+      "notes": "Record in TH v3 registry. series_record=False, spec_confidence=HIGH. Promoted from staged."
     },
     {
       "priority": 1,
@@ -656,9 +670,9 @@
       "model_family": "Cat D6 Series",
       "slug": "cat_d6",
       "equipment_type": "dozer",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No dozer JSON registry exists. Spec data in MTM_SpecRegistry_v1.xlsx."
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_dozer_registry_v1.json",
+      "notes": "series_record=False, spec_confidence=MEDIUM, registry_tier=production."
     },
     {
       "priority": 2,
@@ -668,9 +682,9 @@
       "model_family": "Deere 700K/650K Series",
       "slug": "jd_700k",
       "equipment_type": "dozer",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No dozer JSON registry exists."
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_dozer_registry_v1.json",
+      "notes": "series_record=False, spec_confidence=MEDIUM, registry_tier=production."
     },
     {
       "priority": 1,
@@ -680,9 +694,9 @@
       "model_family": "Case 580 Series",
       "slug": "case_580",
       "equipment_type": "backhoe_loader",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No backhoe_loader JSON registry exists. Spec data in MTM_SpecRegistry_v1.xlsx."
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_backhoe_loader_registry_v1.json",
+      "notes": "series_record=False, spec_confidence=MEDIUM, registry_tier=production."
     },
     {
       "priority": 2,
@@ -692,9 +706,9 @@
       "model_family": "Deere 310/410 Series",
       "slug": "jd_310",
       "equipment_type": "backhoe_loader",
-      "production_status": "missing",
-      "source_registry": null,
-      "notes": "No backhoe_loader JSON registry exists."
+      "production_status": "ready",
+      "source_registry": "registry/active/mtm_backhoe_loader_registry_v1.json",
+      "notes": "series_record=False, spec_confidence=MEDIUM, registry_tier=production."
     }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "label": "Bobcat S650 \u2014 SSL Class B",
+    "equipment_type": "skid_steer",
+    "make": "Bobcat",
+    "model": "S650",
+    "year": 2020,
+    "hours": 2200,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Grading & Site Prep",
+      "Concrete & Flatwork Prep",
+      "Utility Trenching"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": "No high-flow package \u2014 forestry mulching, cold planing, and rotary cutting not supported."
+  }
+}

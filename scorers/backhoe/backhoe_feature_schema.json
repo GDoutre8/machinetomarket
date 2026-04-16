@@ -1,0 +1,296 @@
+{
+  "_meta": {
+    "file": "backhoe_feature_schema.json",
+    "version": "1.0.0",
+    "created": "2026-04-04",
+    "purpose": "Standardized MTM feature flag schema for backhoe loader listings. Maps dealer listing language to canonical flag names. Used for search matching, autofill, and use-case scoring.",
+    "source": "Synthesized from MachineryTrader, TractorHouse, EquipmentTrader, Facebook Marketplace, Ritchie Bros, IronPlanet listing analysis."
+  },
+
+  "feature_categories": {
+
+    "drivetrain": {
+      "4wd": {
+        "label": "4-Wheel Drive",
+        "listing_synonyms": ["4wd", "4x4", "4 wheel drive", "mfwd", "mechanical front wheel drive", "awd", "all wheel drive", "four wheel drive"],
+        "value_impact": "high",
+        "notes": "Standard on most full-size backhoes; increases traction value significantly in wet/muddy applications"
+      },
+      "2wd": {
+        "label": "2-Wheel Drive",
+        "listing_synonyms": ["2wd", "2x2", "two wheel drive", "rwd only"],
+        "value_impact": "neutral",
+        "notes": "Lower acquisition cost; acceptable for road work, paved sites, dry stable ground"
+      },
+      "powershift_transmission": {
+        "label": "Powershift Transmission",
+        "listing_synonyms": ["powershift", "power shift", "ps trans", "full powershift", "autoshift", "auto shift", "6-speed", "5-speed powershift"],
+        "value_impact": "high",
+        "notes": "Highly desirable; faster direction changes, easier to operate, less operator fatigue vs synchromesh"
+      },
+      "ride_control": {
+        "label": "Ride Control",
+        "listing_synonyms": ["ride control", "auto ride control", "loader ride control", "arc", "boom cushion", "suspension ride control"],
+        "value_impact": "medium",
+        "notes": "Popular feature for load-and-carry work; reduces spillage and operator fatigue while roading"
+      },
+      "limited_slip": {
+        "label": "Limited Slip / Differential Lock",
+        "listing_synonyms": ["limited slip", "diff lock", "differential lock", "lsd", "limited slip differential", "diff lck"],
+        "value_impact": "medium",
+        "notes": "Improves traction in soft or uneven terrain"
+      }
+    },
+
+    "controls": {
+      "pilot_controls": {
+        "label": "Pilot Controls",
+        "listing_synonyms": ["pilot controls", "joystick controls", "joystick", "pilot joystick", "iso controls", "excavator controls", "fingertip controls", "pilot operated", "joy stick"],
+        "value_impact": "high",
+        "notes": "Premium feature; reduces operator fatigue, faster cycles, highly preferred by experienced operators and rental companies"
+      },
+      "mechanical_controls": {
+        "label": "Mechanical Controls",
+        "listing_synonyms": ["mechanical controls", "foot swing", "case controls", "2-lever controls", "lever controls", "standard controls"],
+        "value_impact": "neutral",
+        "notes": "Standard on most entry-level and rental-grade machines"
+      },
+      "pattern_select": {
+        "label": "Pattern Select / Dual Pattern",
+        "listing_synonyms": ["pattern select", "dual pattern", "iso/sae switch", "control pattern switch", "backhoe pattern select"],
+        "value_impact": "medium",
+        "notes": "Allows operators to switch between SAE (Case) and ISO (excavator) control patterns"
+      }
+    },
+
+    "backhoe_features": {
+      "extendahoe": {
+        "label": "Extendahoe / Extendable Dipper",
+        "listing_synonyms": ["extendahoe", "ext hoe", "extendable dipper", "extendible dipper", "e-stick", "extendable stick", "telescoping dipper", "ext stick", "extend-a-hoe", "telescopic dipper", "extending dipperstick"],
+        "value_impact": "high",
+        "notes": "Adds 3-4 ft of dig depth; essential for deep utility work. One of the most searched features on listings."
+      },
+      "side_shift": {
+        "label": "Side Shift Boom",
+        "listing_synonyms": ["side shift", "sideshift", "hydraulic side shift", "ss boom", "offset boom"],
+        "value_impact": "medium",
+        "notes": "Allows digging parallel to structures or walls; JCB specialty; popular in utility and construction against buildings"
+      },
+      "quick_coupler_rear": {
+        "label": "Quick Coupler (Backhoe)",
+        "listing_synonyms": ["quick coupler", "quick attach", "quick hitch", "pin grabber", "universal coupler", "dual lock coupler", "mechanical coupler", "hydraulic coupler", "rear quick coupler", "bucket coupler"],
+        "value_impact": "medium",
+        "notes": "Speeds up bucket and attachment changes; nearly universal on late-model machines"
+      },
+      "hydraulic_thumb": {
+        "label": "Hydraulic Thumb",
+        "listing_synonyms": ["hydraulic thumb", "hyd thumb", "hydro thumb", "thumb", "grapple thumb", "backhoe thumb", "hydraulic grapple thumb"],
+        "value_impact": "high",
+        "notes": "Dramatically increases versatility for demo, debris clearing, brush, rock. Strong positive listing signal."
+      },
+      "mechanical_thumb": {
+        "label": "Mechanical Thumb",
+        "listing_synonyms": ["mechanical thumb", "manual thumb", "mech thumb", "thumb attachment"],
+        "value_impact": "medium",
+        "notes": "Less desirable than hydraulic thumb but still adds value for material handling"
+      },
+      "rear_aux_hydraulics": {
+        "label": "Auxiliary Hydraulics (Rear / Backhoe)",
+        "listing_synonyms": ["aux hydraulics", "auxiliary hydraulics", "rear aux", "hammer circuit", "breaker circuit", "hydraulic hammer circuit", "aux hyd", "auxiliary valve", "2-way aux", "1-way aux", "auxiliary backhoe valve"],
+        "value_impact": "high",
+        "notes": "Required for hammer, compactor, auger use. Strong positive signal; most serious utility operators require this."
+      }
+    },
+
+    "loader_features": {
+      "front_aux_hydraulics": {
+        "label": "Front Auxiliary Hydraulics (Loader)",
+        "listing_synonyms": ["front aux", "front auxiliary", "loader aux", "front hydraulics", "third function", "4-in-1 circuit", "loader hydraulic circuit"],
+        "value_impact": "medium",
+        "notes": "Enables powered loader attachments (brooms, blades, forks). Less common than rear aux."
+      },
+      "4in1_bucket": {
+        "label": "4-in-1 / Multi-Purpose Loader Bucket",
+        "listing_synonyms": ["4 in 1", "4-in-1", "4n1", "multipurpose bucket", "mp bucket", "multi-purpose", "clam shell", "clamshell bucket", "combo bucket", "6 in 1", "6-in-1"],
+        "value_impact": "high",
+        "notes": "Adds grab/clam functionality; popular in demo, cleanup, material handling. Frequently listed as premium feature."
+      },
+      "quick_coupler_front": {
+        "label": "Quick Coupler (Loader)",
+        "listing_synonyms": ["loader quick coupler", "skid steer quick attach", "ssl quick attach", "bob-tach", "bobtach", "quick attach loader", "universal quick hitch"],
+        "value_impact": "medium",
+        "notes": "Skid steer-compatible quick attach on compact TLBs (Kubota, JCB 1CXT) is a strong selling point for attachment versatility"
+      },
+      "pallet_forks": {
+        "label": "Pallet Forks",
+        "listing_synonyms": ["pallet forks", "forks", "loader forks", "material handling forks", "skid steer forks", "hay forks", "fork attachment"],
+        "value_impact": "medium",
+        "notes": "Increases versatility; frequently mentioned in listings for farm and yard use machines"
+      },
+      "self_leveling": {
+        "label": "Self-Leveling Loader",
+        "listing_synonyms": ["self leveling", "self-leveling", "return to dig", "auto level", "loader self level"],
+        "value_impact": "medium",
+        "notes": "Standard on most modern machines; worth noting in listings for older or rental-grade machines that lack it"
+      }
+    },
+
+    "backhoe_buckets": {
+      "bucket_12in": {
+        "label": "12\" Backhoe Bucket",
+        "listing_synonyms": ["12\" bucket", "12 inch bucket", "12in bucket", "trenching bucket 12", "12\" hoe bucket"],
+        "value_impact": "low",
+        "notes": "Narrow trenching bucket; utility standard for water/sewer lines"
+      },
+      "bucket_18in": {
+        "label": "18\" Backhoe Bucket",
+        "listing_synonyms": ["18\" bucket", "18 inch bucket", "18in bucket", "standard duty 18"],
+        "value_impact": "low",
+        "notes": "Common all-purpose trenching width"
+      },
+      "bucket_24in": {
+        "label": "24\" Backhoe Bucket",
+        "listing_synonyms": ["24\" bucket", "24 inch bucket", "24in bucket", "standard duty 24"],
+        "value_impact": "low",
+        "notes": "General purpose digging; most machines ship with 24\""
+      },
+      "bucket_36in": {
+        "label": "36\" Backhoe Bucket",
+        "listing_synonyms": ["36\" bucket", "36 inch bucket", "36in bucket", "wide bucket", "cleanup bucket"],
+        "value_impact": "low",
+        "notes": "Grading, cleanup, light material handling"
+      }
+    },
+
+    "attachments": {
+      "breaker_hammer": {
+        "label": "Hydraulic Breaker / Hammer",
+        "listing_synonyms": ["hydraulic breaker", "breaker", "hammer", "hyd hammer", "rock breaker", "demolition hammer", "jackhammer attachment", "concrete breaker"],
+        "value_impact": "high",
+        "notes": "Strong listing feature; signals ready-to-work demo capability. Requires rear aux hydraulics."
+      },
+      "auger": {
+        "label": "Auger",
+        "listing_synonyms": ["auger", "post hole digger", "earth auger", "boring attachment", "auger attachment"],
+        "value_impact": "medium",
+        "notes": "Popular for fence post, sign, utility pole installation"
+      },
+      "compaction_wheel": {
+        "label": "Compaction Wheel / Plate",
+        "listing_synonyms": ["compaction wheel", "trench compactor", "plate compactor attachment", "compactor"],
+        "value_impact": "low",
+        "notes": "Niche but positive for utility contractors"
+      }
+    },
+
+    "cab_operator": {
+      "enclosed_cab": {
+        "label": "Enclosed Cab",
+        "listing_synonyms": ["enclosed cab", "cab", "erops", "heated cab", "ac cab", "climate controlled cab", "full cab", "deluxe cab", "rops cab", "cab with heat and ac"],
+        "value_impact": "high",
+        "notes": "One of the highest-impact listing features for full-size backhoes. Year-round usability. Strong price premium."
+      },
+      "ac": {
+        "label": "Air Conditioning",
+        "listing_synonyms": ["ac", "a/c", "air conditioning", "air conditioned", "climate control", "cold air", "cold a/c"],
+        "value_impact": "high",
+        "notes": "Often listed alongside enclosed cab; critical for summer work and resale value"
+      },
+      "heat": {
+        "label": "Heat / Heater",
+        "listing_synonyms": ["heat", "heater", "cab heat", "front defroster", "heated cab"],
+        "value_impact": "medium",
+        "notes": "Year-round capability signal; especially important in northern markets"
+      },
+      "air_suspension_seat": {
+        "label": "Air Suspension Seat",
+        "listing_synonyms": ["air seat", "air suspension seat", "air ride seat", "suspension seat", "comfort seat"],
+        "value_impact": "medium",
+        "notes": "Operator comfort feature; more common in premium configurations"
+      },
+      "radio": {
+        "label": "Radio / Bluetooth",
+        "listing_synonyms": ["radio", "am/fm", "bluetooth radio", "bluetooth", "stereo", "cd player", "sirius xm"],
+        "value_impact": "low",
+        "notes": "Signals cab comfort; low value impact but positive listing signal"
+      },
+      "backup_camera": {
+        "label": "Backup / Rear Camera",
+        "listing_synonyms": ["backup camera", "rear camera", "reverse camera", "rearview camera", "camera"],
+        "value_impact": "medium",
+        "notes": "Increasingly common on newer machines; safety and awareness feature"
+      },
+      "telematics": {
+        "label": "Telematics / GPS Tracking",
+        "listing_synonyms": ["telematics", "gps", "jdlink", "sitewatch", "product link", "fleet management", "hour tracking", "machine monitor"],
+        "value_impact": "low",
+        "notes": "Fleet management value; more important to commercial buyers than individual operators"
+      }
+    },
+
+    "condition_signals": {
+      "new_tires": {
+        "label": "New Tires",
+        "listing_synonyms": ["new tires", "new rubber", "fresh tires", "good tires", "excellent tires", "new tires all around"],
+        "value_impact": "medium",
+        "notes": "Strong positive signal; backhoe tires are expensive. Frequently mentioned in listings."
+      },
+      "tight_pins": {
+        "label": "Tight Pins / Tight Bushings",
+        "listing_synonyms": ["tight pins", "tight bushings", "no slop", "tight pin", "tight boom", "no play", "solid pins"],
+        "value_impact": "high",
+        "notes": "One of the most important used backhoe signals. Worn pins = expensive rebuild. Sellers who call this out are signaling quality."
+      },
+      "no_leaks": {
+        "label": "No Leaks",
+        "listing_synonyms": ["no leaks", "no hydraulic leaks", "clean machine", "no oil leaks", "clean hydraulics"],
+        "value_impact": "high",
+        "notes": "Critical inspection point on used backhoes; cylinder seal leaks are expensive"
+      },
+      "fleet_maintained": {
+        "label": "Fleet / Dealer Maintained",
+        "listing_synonyms": ["fleet maintained", "dealer maintained", "service records", "maintained", "well maintained", "professionally maintained", "municipal fleet", "utility fleet"],
+        "value_impact": "high",
+        "notes": "Strong positive provenance signal; especially powerful for municipal, utility company, contractor fleet machines"
+      },
+      "one_owner": {
+        "label": "One Owner",
+        "listing_synonyms": ["one owner", "1 owner", "single owner", "original owner", "first owner"],
+        "value_impact": "medium",
+        "notes": "Standard used equipment signal; more relevant when paired with low hours"
+      },
+      "ready_to_work": {
+        "label": "Ready to Work",
+        "listing_synonyms": ["ready to work", "job ready", "work ready", "ready to dig", "rent ready", "ready to go", "just serviced", "freshly serviced"],
+        "value_impact": "medium",
+        "notes": "Strong closing phrase in listings; implies minimal downtime risk"
+      },
+      "low_hours": {
+        "label": "Low Hours",
+        "listing_synonyms": ["low hours", "low hrs", "low hour machine", "only X hours", "X hours only", "lightly used"],
+        "value_impact": "high",
+        "notes": "The single biggest used equipment value driver. Under 2,000 hrs for full-size is considered low."
+      },
+      "good_undercarriage": {
+        "label": "Good Undercarriage (Tracked)",
+        "listing_synonyms": ["good undercarriage", "good tracks", "good rubber tracks", "50% tracks", "80% tracks", "fresh tracks"],
+        "value_impact": "high",
+        "notes": "Specific to JCB 1CXT and tracked compact backhoes; tracks are the most expensive wear item"
+      }
+    }
+  },
+
+  "value_impact_legend": {
+    "high": "Frequently cited as decision driver; measurable price premium in used market",
+    "medium": "Positive listing signal; increases buyer interest but smaller price impact",
+    "low": "Nice-to-have; informational but minimal standalone price impact"
+  },
+
+  "listing_tone_by_feature_cluster": {
+    "work_ready_cluster": ["tight_pins", "no_leaks", "new_tires", "fleet_maintained", "ready_to_work"],
+    "premium_operator_cluster": ["enclosed_cab", "ac", "pilot_controls", "air_suspension_seat", "powershift_transmission"],
+    "utility_contractor_cluster": ["extendahoe", "rear_aux_hydraulics", "4wd", "hydraulic_thumb", "pilot_controls"],
+    "versatility_cluster": ["4in1_bucket", "hydraulic_thumb", "quick_coupler_rear", "breaker_hammer", "pallet_forks"],
+    "farm_property_cluster": ["4wd", "pallet_forks", "4in1_bucket", "auger", "self_leveling"]
+  }
+}

@@ -1,13 +1,185 @@
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
-.env
-*.zip
-*backup*.py
-venv/
+*.pyd
+.Python
+
+# ── Virtual environments ──────────────────────────────────────────────────────
 .venv/
+venv/
+env/
+ENV/
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+*.key
+*.pem
+*.secret
+
+# ── Test / coverage ───────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+*.pytest_cache
+
+# ── Runtime output (generated per request, never committed) ──────────────────
 outputs/
 inputs/
+
+# ── Temporary / scratch folders ───────────────────────────────────────────────
+tmp/
+tmp*/
+generated/
+temp/
+
+# ── OS artifacts ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+
+# ── Editor / IDE ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Claude Code local config ──────────────────────────────────────────────────
+.claude/
+
+# ── Archives / build artifacts ────────────────────────────────────────────────
+*.zip
+*.tar.gz
+spec_resolver.zip
+files.zip
+
+# ── Spreadsheets (local research only, too large / not deployment deps) ───────
 *.xlsx
 *.xls
-.claude/
+
+# ── Registry dev and build tooling ───────────────────────────────────────────
+# Archive versions (superseded by registry/active/)
+registry/archive/
+# Dev/staging/research folders inside registry
+registry/dev/
+registry/research/
+registry/cleanup/
+# Patch logs and audit artifacts
+registry/patch_logs/
+registry/logs/
+registry/audit_report.json
+registry/mtm_mini_ex_audit_report_v1.json
+registry/mtm_mini_ex_patch_candidates_v1.json
+# Stale root-level registry files superseded by registry/active/
+registry/mtm_ctl_registry_v1_6.json
+registry/mtm_mini_ex_registry_v1.json
+registry/mtm_mini_ex_registry_v2.json
+registry/mtm_skid_steer_registry_v1_5.json
+registry/mtm_telehandler_registry_v2.json
+registry/mtm_wheel_loader_registry_v1_final.json
+
+# ── Registry build / patch / audit scripts (one-time tools, not app code) ─────
+_apply_*.py
+_audit_*.py
+_batch*.py
+_bobcat*.py
+_case_*.py
+_content_trace.py
+_ctl_v1_22_patch.py
+_gen_ctl_soft_spec.py
+_jcb_*.py
+_migrate_*.py
+_migration_report*.txt
+_nh_oem_cleanup*.py
+_patch_*.py
+_roc_normalize.py
+_schema_cleanup*.py
+_takeuchi_*.py
+_validation_test.py
+_wl_cleanup*.py
+add_jd_ct_records.py
+analyze_registry.py
+apply_*.py
+bobcat_fix_pass/
+build_top50_index.py
+cleanup_takeuchi_batch1.py
+create_case_xt_stubs.py
+ctl_batch*.py
+ctl_tl8r_alias_fix.py
+ctl_tl8r_alias_rollback.py
+fix_svl110_3.py
+generate_full_blocking_report.py
+generate_priority_application.ps1
+generate_report.py
+list_9spec_machines.py
+patch_*.py
+patch_apply_*.py
+patch_legacy_batch1.py
+patch_notes/
+promote_records.py
+registry_patches.json
+patch_5spec_threshold_upgrade.json
+run_audit.py
+run_ctl_audit.py
+run_full_audit.py
+run_top50_coverage.py
+run_validation_batch.py
+spec_audit_run.py
+spec_coverage_audit.py
+
+# ── Dev / audit / diagnostic scripts (not app code) ──────────────────────────
+_ctl_phase2_audit.py
+demo_image_pack.py
+demo_listing_pack.py
+demo_spec_sheets.py
+demo_walkaround_pack.py
+mtm_analysis_results.json
+mtm_registry_status_report.txt
+mtm_registry_status_report_updated.txt
+spec_audit.csv
+file_summaries.txt
+full_classification_blocking_report.txt
+top50_audit.txt
+xlsx_preview.txt
+xlsx_preview2.txt
+tmp_franchise_extract.txt
+ctl_missing_field_frequency.csv
+ctl_research_queue.csv
+ctl_top_models_status.csv
+ctl_v1_completion_summary.txt
+spec_sheet_generator_redesign.py
+mtm_spec_audit.py
+test_svl_routing.py
+mtm_service_backup.py.py
+"mtm_service_backup.py (2).py"
+mtm_listing_parser_attachments_backup.py.py
+mtm_listing_parser_price_backup.py.py
+
+# ── Frozen / archived code snapshots ─────────────────────────────────────────
+mtm_parser_v1_frozen/
+
+# ── Session notes / planning docs (not deployment deps) ───────────────────────
+MTM_CATCH_UP_PROMPT.md
+MTM_NIGHTLY_HANDOFF_2026-03-28.md
+"NEXT STEPS 3.23 10PM/"
+"MTM MODEL LIST/"
+
+# ── React component stubs (not used by the Flask app) ────────────────────────
+ListingSpecSection.jsx
+SpecDisplay.jsx
+
+# ── Stale JS / CSS (superseded by app_v2.js and styles_v2.css) ───────────────
+static/app.js
+static/styles.css
+
+# ── Audit CSVs ────────────────────────────────────────────────────────────────
+generated/audits/
+ctl_use_case_scores.csv
+
+# ── Temp template artifact ────────────────────────────────────────────────────
+templates/build_listing.tail.tmp
+
+# ── Stale spec_resolver __init__ backup ───────────────────────────────────────
+spec_resolver/_init_.py

@@ -1,0 +1,541 @@
+{
+  "lock_version": "1.18",
+  "locked_date": "2026-04-13",
+  "registry_file": "registry/active/mtm_skid_steer_registry_v1_18.json",
+  "record_count": 270,
+  "rules": {
+    "fail_on_value_change": true,
+    "fail_on_core_null_in_production": true,
+    "fail_on_confidence_drop": true
+  },
+  "locked_models": [
+    {
+      "model_slug": "bobcat_s590",
+      "manufacturer": "Bobcat",
+      "model": "S590",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 66.0,
+        "rated_operating_capacity_lbs": 2100,
+        "tipping_load_lbs": 4200,
+        "operating_weight_lbs": 6594,
+        "aux_flow_standard_gpm": 17.1,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 11.0
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s650",
+      "manufacturer": "Bobcat",
+      "model": "S650",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 74,
+        "rated_operating_capacity_lbs": 2690,
+        "tipping_load_lbs": 5000,
+        "operating_weight_lbs": 8061,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.3
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s750",
+      "manufacturer": "Bobcat",
+      "model": "S750",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 85.0,
+        "rated_operating_capacity_lbs": 3200,
+        "tipping_load_lbs": 6200,
+        "operating_weight_lbs": 8730,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.3
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s770",
+      "manufacturer": "Bobcat",
+      "model": "S770",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 92,
+        "rated_operating_capacity_lbs": 3350,
+        "tipping_load_lbs": 7000,
+        "operating_weight_lbs": 9314,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.3
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s86",
+      "manufacturer": "Bobcat",
+      "model": "S86",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 110,
+        "rated_operating_capacity_lbs": 3400,
+        "tipping_load_lbs": 6800,
+        "operating_weight_lbs": 9728,
+        "aux_flow_standard_gpm": 23.6,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.0
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "cat_262d3",
+      "manufacturer": "Caterpillar",
+      "model": "262D3",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 72.9,
+        "rated_operating_capacity_lbs": 2700,
+        "tipping_load_lbs": 5400,
+        "operating_weight_lbs": 8296,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 11.0
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "cat_272d3",
+      "manufacturer": "Caterpillar",
+      "model": "272D3",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 95,
+        "rated_operating_capacity_lbs": 3450,
+        "tipping_load_lbs": 6900,
+        "operating_weight_lbs": 9133,
+        "aux_flow_standard_gpm": 20.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 9.4
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "jd_320g",
+      "manufacturer": "John Deere",
+      "model": "320G",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 66,
+        "rated_operating_capacity_lbs": 2190,
+        "tipping_load_lbs": 4400,
+        "operating_weight_lbs": 7140,
+        "aux_flow_standard_gpm": 21.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.0
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "jd_332g",
+      "manufacturer": "John Deere",
+      "model": "332G",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 96.6,
+        "rated_operating_capacity_lbs": 3600,
+        "tipping_load_lbs": 6600,
+        "operating_weight_lbs": 9006,
+        "aux_flow_standard_gpm": 25.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.0
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "kubota_ssv75",
+      "manufacturer": "Kubota",
+      "model": "SSV75",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 72,
+        "rated_operating_capacity_lbs": 2690,
+        "tipping_load_lbs": 5380,
+        "operating_weight_lbs": 8157,
+        "aux_flow_standard_gpm": 20.9,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 11.8
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "nh_l320",
+      "manufacturer": "New Holland",
+      "model": "L320",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 64,
+        "rated_operating_capacity_lbs": 2000,
+        "tipping_load_lbs": 4000,
+        "operating_weight_lbs": 6470,
+        "aux_flow_standard_gpm": 20.6,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 11.4
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": null,
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "new_holland_l328",
+      "manufacturer": "New Holland",
+      "model": "L328",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 68,
+        "rated_operating_capacity_lbs": 2800,
+        "tipping_load_lbs": 5600,
+        "operating_weight_lbs": 7895,
+        "aux_flow_standard_gpm": 24.2,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 10.5
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "MEDIUM"
+      }
+    },
+    {
+      "model_slug": "nh_l334",
+      "manufacturer": "New Holland",
+      "model": "L334",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 84,
+        "rated_operating_capacity_lbs": 3400,
+        "tipping_load_lbs": 6800,
+        "operating_weight_lbs": 8900,
+        "aux_flow_standard_gpm": 24.2,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 11.5
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": null,
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": null,
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "case_sr240b",
+      "manufacturer": "Case",
+      "model": "SR240B",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 74,
+        "rated_operating_capacity_lbs": 2400,
+        "tipping_load_lbs": 4800,
+        "operating_weight_lbs": 7400,
+        "aux_flow_standard_gpm": 24.2,
+        "lift_path": "radial",
+        "travel_speed_high_mph": 11.5
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "MEDIUM"
+      }
+    },
+    {
+      "model_slug": "case_sv340b",
+      "manufacturer": "Case",
+      "model": "SV340B",
+      "status": "current",
+      "fields": {
+        "horsepower_hp": 90,
+        "rated_operating_capacity_lbs": 3400,
+        "tipping_load_lbs": 6800,
+        "operating_weight_lbs": 9100,
+        "aux_flow_standard_gpm": 24.2,
+        "lift_path": "radial",
+        "travel_speed_high_mph": 11.5
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "MEDIUM"
+      }
+    },
+    {
+      "model_slug": "bobcat_s510_mseries_t4",
+      "manufacturer": "Bobcat",
+      "model": "S510",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 46.1,
+        "rated_operating_capacity_lbs": 1650,
+        "tipping_load_lbs": 3300,
+        "operating_weight_lbs": 5922,
+        "aux_flow_standard_gpm": 17.1,
+        "lift_path": "radial",
+        "travel_speed_high_mph": 11.02
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s570_mseries_t4",
+      "manufacturer": "Bobcat",
+      "model": "S570",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 61,
+        "rated_operating_capacity_lbs": 1950,
+        "tipping_load_lbs": 3900,
+        "operating_weight_lbs": 6395,
+        "aux_flow_standard_gpm": 17.1,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 7.1
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "MEDIUM"
+      }
+    },
+    {
+      "model_slug": "bobcat_s650_mseries_t4",
+      "manufacturer": "Bobcat",
+      "model": "S650 M-Series (T4)",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 74,
+        "rated_operating_capacity_lbs": 2690,
+        "tipping_load_lbs": 5000,
+        "operating_weight_lbs": 8061,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.3
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s750_mseries_t4",
+      "manufacturer": "Bobcat",
+      "model": "S750 M-Series (T4)",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 85.0,
+        "rated_operating_capacity_lbs": 3200,
+        "tipping_load_lbs": 6200,
+        "operating_weight_lbs": 8893,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.3
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "bobcat_s770_mseries_t4",
+      "manufacturer": "Bobcat",
+      "model": "S770 M-Series (T4)",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 92,
+        "rated_operating_capacity_lbs": 3350,
+        "tipping_load_lbs": 7000,
+        "operating_weight_lbs": 9314,
+        "aux_flow_standard_gpm": 23.0,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 12.3
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    },
+    {
+      "model_slug": "nh_l316",
+      "manufacturer": "New Holland",
+      "model": "L316",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 57,
+        "rated_operating_capacity_lbs": 1600,
+        "tipping_load_lbs": 3200,
+        "operating_weight_lbs": 5645,
+        "aux_flow_standard_gpm": 18.4,
+        "lift_path": "radial",
+        "travel_speed_high_mph": null
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "LOW"
+      }
+    },
+    {
+      "model_slug": "nh_l318",
+      "manufacturer": "New Holland",
+      "model": "L318",
+      "status": "active_used_market",
+      "fields": {
+        "horsepower_hp": 57,
+        "rated_operating_capacity_lbs": 1800,
+        "tipping_load_lbs": 3600,
+        "operating_weight_lbs": 6230,
+        "aux_flow_standard_gpm": 20.6,
+        "lift_path": "vertical",
+        "travel_speed_high_mph": 10.8
+      },
+      "confidence": {
+        "horsepower_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "lift_path": "HIGH",
+        "travel_speed_high_mph": "HIGH"
+      }
+    }
+  ]
+}

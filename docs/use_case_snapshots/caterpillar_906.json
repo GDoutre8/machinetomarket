@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "Cat 906 \u2014 Compact Wheel Loader",
+    "equipment_type": "wheel_loader",
+    "make": "Caterpillar",
+    "model": "906",
+    "year": 2021,
+    "hours": 1800,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Material Handling & Yard Work",
+      "Pallet Handling & Loading"
+    ],
+    "attachment_sentence": "Skid steer coupler compatible \u2014 accepts standard SSL attachments.",
+    "limitation_sentence": null
+  }
+}

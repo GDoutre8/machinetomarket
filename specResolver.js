@@ -52,6 +52,14 @@ const EQUIPMENT_TYPE_ALIASES = {
 // ── Field metadata ────────────────────────────────────────────────────────────
 
 const FIELD_LABELS = {
+  // ── CTL dealer-input core output fields ───────────────────────────────────
+  hours:                           'Hours',
+  high_flow:                       'High Flow',
+  two_speed:                       '2-Speed',
+  quick_attach:                    'Quick Attach',
+  ac:                              'A/C',
+  track_condition:                 'Track Condition',
+  serial_number:                   'Serial Number',
   // ── Skid steer / CTL ──────────────────────────────────────────────────────
   rated_operating_capacity_lbs:    'Rated Operating Capacity',
   operating_weight_lbs:            'Operating Weight',
@@ -123,6 +131,8 @@ const FIELD_LABELS = {
 };
 
 const FIELD_UNITS = {
+  // ── CTL dealer-input core output fields ───────────────────────────────────
+  hours:                           'hrs',
   // ── Skid steer / CTL ──────────────────────────────────────────────────────
   rated_operating_capacity_lbs:    'lbs',
   tipping_load_lbs:                'lbs',
@@ -362,21 +372,38 @@ function render_spec_block(record, equipment_type, profile) {
 }
 
 /**
- * render_feature_flags(record)
+ * render_feature_flags(record, equipment_type?)
  *
- * Returns all feature flags from the record with human labels.
+ * Returns feature flags from the record with human labels.
  * Profile-independent — used for skid steer / CTL flag chips.
  *
+ * For skid_steer: high_flow_available and two_speed_available are model-level
+ * availability flags, not unit-installed config. They are suppressed here to
+ * prevent them being rendered as buyer-facing "installed" chips. Unit-level
+ * high_flow / two_speed truth comes from DealerInput (Python pipeline only).
+ *
  * @param {Object} record
+ * @param {string} [equipment_type]  optional — 'skid_steer' triggers SSL suppression
  * @returns {Array<{flag, label, value}>}
  */
-function render_feature_flags(record) {
-  const flags = record.feature_flags || {};
-  return Object.entries(flags).map(([flag, value]) => ({
-    flag,
-    label: FLAG_LABELS[flag] || flag,
-    value,
-  }));
+function render_feature_flags(record, equipment_type) {
+  const flags        = record.feature_flags || {};
+  const normalizedType = EQUIPMENT_TYPE_ALIASES[equipment_type] || (equipment_type || '');
+  const isSSL        = normalizedType === 'skid_steer';
+  const isCTL        = normalizedType === 'compact_track_loader';
+
+  // SSL and CTL: high_flow_available / two_speed_available are model-level availability flags,
+  // not unit-installed config. Suppress them from buyer-facing chips for both types.
+  // Unit-level high_flow / two_speed truth comes from DealerInput (Python pipeline only).
+  const AVAILABILITY_SUPPRESSED = new Set(['high_flow_available', 'two_speed_available']);
+
+  return Object.entries(flags)
+    .filter(([flag]) => !((isSSL || isCTL) && AVAILABILITY_SUPPRESSED.has(flag)))
+    .map(([flag, value]) => ({
+      flag,
+      label: FLAG_LABELS[flag] || flag,
+      value,
+    }));
 }
 
 /**

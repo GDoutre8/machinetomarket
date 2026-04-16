@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "SkyTrak 8042 \u2014 Telehandler",
+    "equipment_type": "telehandler",
+    "make": "SkyTrak",
+    "model": "8042",
+    "year": 2019,
+    "hours": 3200,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Jobsite Reach & Placement",
+      "Pallet Handling"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": null
+  }
+}

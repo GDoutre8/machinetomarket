@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "Kubota KX080-4 \u2014 Mini Excavator",
+    "equipment_type": "mini_excavator",
+    "make": "Kubota",
+    "model": "KX080-4",
+    "year": 2021,
+    "hours": 1400,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Utility Trenching",
+      "Excavation & Digging"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": "Machine width and tail swing limit use in tight residential or gate-restricted sites."
+  }
+}

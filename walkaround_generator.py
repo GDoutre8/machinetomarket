@@ -31,10 +31,12 @@ from pathlib import Path
 # Constants
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Prefer explicit ffmpeg location (Windows); fall back to PATH
+# Check common explicit locations first; fall back to PATH
 _FFMPEG_CANDIDATES = [
-    r"C:\ffmpeg\ffmpeg\bin\ffmpeg.exe",
-    "ffmpeg",
+    r"C:\ffmpeg\ffmpeg\bin\ffmpeg.exe",  # Windows explicit install
+    "/usr/bin/ffmpeg",                    # Linux system install
+    "/usr/local/bin/ffmpeg",              # Linux local install
+    "ffmpeg",                             # PATH fallback (any platform)
 ]
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".tif", ".heic"}
@@ -61,8 +63,8 @@ def _find_ffmpeg() -> str:
         if found:
             return found
     raise RuntimeError(
-        "ffmpeg not found. Install ffmpeg and ensure it is on PATH, "
-        "or place it at C:\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe"
+        "ffmpeg not found. Install ffmpeg and ensure it is on PATH "
+        "(e.g. `apt-get install ffmpeg` on Linux, or https://ffmpeg.org on Windows)."
     )
 
 

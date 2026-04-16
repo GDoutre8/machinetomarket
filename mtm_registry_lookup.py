@@ -6,7 +6,7 @@ Loads the three canonical MTM registries into a unified in-memory dataset
 and exposes lookup_machine() for use by the listing parser and autofill engine.
 
 Canonical sources:
-  - mtm_skid_steer_registry_v1_5.json    (skid_steer           — 244 records)
+  - mtm_skid_steer_registry_v1_16.json   (skid_steer           — 255 records)
   - mtm_ctl_registry_v1_6.json           (compact_track_loader — 195 records)
   - mtm_mini_ex_registry_v1.json         (mini_excavator        — 48 records)
 
@@ -128,10 +128,13 @@ _DEFAULT_REGISTRY_DIR = os.environ.get(
 )
 
 def _registry_path(filename: str) -> str:
-    """Resolve a registry filename. Checks MTM_REGISTRY_DIR first, then cwd."""
+    """Resolve a registry filename. Checks MTM_REGISTRY_DIR, active/ subdir, then cwd."""
     explicit = os.path.join(_DEFAULT_REGISTRY_DIR, filename)
     if os.path.exists(explicit):
         return explicit
+    active_path = os.path.join(_DEFAULT_REGISTRY_DIR, "active", filename)
+    if os.path.exists(active_path):
+        return active_path
     cwd_path = os.path.join(os.getcwd(), filename)
     if os.path.exists(cwd_path):
         return cwd_path
@@ -142,16 +145,16 @@ def _registry_path(filename: str) -> str:
 
 # Keys are canonical equipment_type values
 REGISTRY_FILENAMES = {
-    EQ_SKID_STEER:   "mtm_skid_steer_registry_v1_5.json",
-    EQ_CTL:          "mtm_ctl_registry_v1_6.json",
-    EQ_MINI_EX:      "mtm_mini_ex_registry_v2.json",
+    EQ_SKID_STEER:   "mtm_skid_steer_registry_v1_18.json",
+    EQ_CTL:          "mtm_ctl_registry_v1_24.json",
+    EQ_MINI_EX:      "mtm_mini_ex_registry_v2_1.json",
     EQ_BACKHOE:      "mtm_backhoe_loader_registry_v1.json",
     EQ_DOZER:        "mtm_dozer_registry_v1.json",
     EQ_SCISSOR_LIFT: "mtm_scissor_lift_registry_v1.json",
     EQ_BOOM_LIFT:    "mtm_boom_lift_registry_v1.json",
     "excavator":     "mtm_excavator_registry_v2.json",
-    "wheel_loader":  "mtm_wheel_loader_registry_v1_final.json",
-    "telehandler":   "mtm_telehandler_registry_v2.json",
+    "wheel_loader":  "mtm_wheel_loader_registry_v1_2.json",
+    "telehandler":   "mtm_telehandler_registry_v3.json",
 }
 
 # ---------------------------------------------------------------------------
@@ -240,6 +243,12 @@ MODEL_BRIDGE_ALIASES: dict[str, str] = {
     # via containment (0.95).  Bridge covers the common "580N" and "580SN" inputs.
     "580n":  "580N / 580 Super N",
     "580sn": "580N / 580 Super N",
+    # Caterpillar wheel loader family stub — the wheel loader registry currently
+    # stores 966 as a family/series record rather than exact generation records.
+    # Bridge common marketplace inputs so 966M/966GC resolve deterministically to
+    # the existing family record instead of failing the Tier 1 exact/slug gate.
+    "966m":  "966",
+    "966gc": "966",
 }
 
 # ---------------------------------------------------------------------------

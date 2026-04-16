@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "label": "Cat 299D3 \u2014 CTL Class C/D",
+    "equipment_type": "compact_track_loader",
+    "make": "Caterpillar",
+    "model": "299D3",
+    "year": 2021,
+    "hours": 1850,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Grading & Site Prep",
+      "Land Clearing",
+      "Rock Trenching"
+    ],
+    "attachment_sentence": "High-flow hydraulics support mulchers, cold planers, and rotary cutters.",
+    "limitation_sentence": null
+  }
+}

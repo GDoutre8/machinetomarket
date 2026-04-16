@@ -60,6 +60,29 @@ from .field_resolvers import (
 )
 
 
+_CALLER_MODIFIER_ALIASES = {
+    "4wd": "four_wheel_drive",
+    "four_wd": "four_wheel_drive",
+}
+
+
+def _merge_detected_options(
+    caller_modifiers: list[str],
+    text_options: DetectedOptions,
+) -> DetectedOptions:
+    merged_keys = set(text_options.keys)
+    merged_evidence = {k: list(v) for k, v in text_options.evidence.items()}
+
+    for raw_key in caller_modifiers:
+        key = _CALLER_MODIFIER_ALIASES.get(raw_key, raw_key)
+        merged_keys.add(key)
+        merged_evidence.setdefault(key, [])
+        if "[structured input]" not in merged_evidence[key]:
+            merged_evidence[key].append("[structured input]")
+
+    return DetectedOptions(keys=frozenset(merged_keys), evidence=merged_evidence)
+
+
 # ---------------------------------------------------------------------------
 # Field dispatcher — maps category → ordered list of resolver callables
 # Each callable receives a ResolutionContext and returns
@@ -152,6 +175,9 @@ _PASSTHROUGH_FIELDS = [
     "lift_capacity_lb",
     "max_lift_height_ft",
     "max_forward_reach_ft",
+    "lift_capacity_at_full_height_lbs",   # promoted to standard buyer-facing tier 2026-04-13
+    # Telehandler drivetrain/config string fields
+    "transmission_type",                  # telehandler
     # Hydraulic flow — numeric passthrough for types without a dedicated
     # hydraulic resolver (EX, WL, TH, BH, DOZ).  The passthrough loop
     # guards against overwriting resolver output, so SSL/CTL records whose
@@ -170,6 +196,24 @@ _PASSTHROUGH_FIELDS = [
     # Dozer site-suitability spec and telehandler drivetrain — direct registry keys
     "ground_pressure_psi",        # crawler_dozer
     "drive_type",                 # telehandler
+    # Mini excavator hydraulic pressure — renamed from aux_pressure_primary_psi
+    # and hydraulic_pressure_psi by _SPEC_KEY_MAP before reaching the resolver.
+    "hydraulic_pressure_standard_psi",
+    # Mini excavator dimensional specs — direct registry keys (no resolver needed)
+    "max_dump_height_ft",         # mini_excavator
+    "max_reach_ft",               # mini_excavator
+    "width_in",                   # mini_excavator
+    # Boom lift and scissor lift specs — direct registry keys (no resolver needed)
+    "platform_height_ft",         # boom_lift, scissor_lift
+    "platform_capacity_lbs",      # boom_lift, scissor_lift
+    "horizontal_reach_ft",        # boom_lift
+    "boom_type",                  # boom_lift
+    "power_source",               # boom_lift, scissor_lift
+    "drive_speed_stowed_mph",     # boom_lift, scissor_lift
+    "platform_length_ft",         # scissor_lift
+    "platform_width_ft",          # scissor_lift
+    # Dozer blade width — direct registry key
+    "blade_width_ft",             # crawler_dozer
 ]
 
 
@@ -425,10 +469,10 @@ def resolve(inp: ResolverInput) -> ResolverOutput:
     Resolve specs for a single equipment listing.
 
     All inputs arrive pre-parsed by the calling layer; the resolver does
-    NOT re-parse manufacturer/model/category from raw text.  It does
-    re-run option detection and numeric extraction on the raw text to
-    guarantee the detection-before-stripping order is honoured regardless
-    of what the caller pre-populated in detected_modifiers.
+    NOT re-parse manufacturer/model/category from raw text. It still
+    re-runs option detection and numeric extraction on the raw text, then
+    merges those results with any caller-provided modifiers or numeric
+    claims so text-based and structured flows both work.
     """
 
     # ── 1. Validate ──────────────────────────────────────────────────────
@@ -474,7 +518,12 @@ def resolve(inp: ResolverInput) -> ResolverOutput:
     # ── 4. Re-detect options from raw text ────────────────────────────────
     #    Always from raw listing text, not from pre-parsed detected_modifiers.
     #    This enforces: option detection BEFORE noise stripping.
-    options = detect_options(inp.raw_listing_text)
+    # Raw text detection still runs so text-only flows keep working,
+    # while structured build flows can augment those results.
+    options = _merge_detected_options(
+        inp.detected_modifiers or [],
+        detect_options(inp.raw_listing_text),
+    )
 
     # ── 5. Re-extract numeric claims ──────────────────────────────────────
     numeric_claims = extract_numeric_claims(inp.raw_listing_text)
@@ -551,6 +600,10 @@ def resolve(inp: ResolverInput) -> ResolverOutput:
         if pt is None:
             continue
         val, meta, trace = pt
+        # Manual-review fields must not be auto-injected (same policy as evaluate_injection)
+        if meta.behavior == FieldBehavior.MANUAL_REVIEW:
+            all_traces.append(trace)
+            continue
         resolved_specs[pf] = val
         per_field_meta[pf]  = meta
         all_traces.append(trace)

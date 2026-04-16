@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "Cat D6 \u2014 Large Dozer",
+    "equipment_type": "dozer",
+    "make": "Caterpillar",
+    "model": "D6",
+    "year": 2020,
+    "hours": 5100,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Grading & Site Prep",
+      "Land Clearing"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": null
+  }
+}

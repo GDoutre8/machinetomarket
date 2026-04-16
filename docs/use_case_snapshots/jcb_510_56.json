@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "label": "JCB 510-56 \u2014 Telehandler High-Reach",
+    "equipment_type": "telehandler",
+    "make": "JCB",
+    "model": "510-56",
+    "year": 2021,
+    "hours": 1600,
+    "lock_date": "2026-04-15",
+    "note": "Locked production snapshot. Regenerate only after version increment."
+  },
+  "payload": {
+    "top_use_cases_for_listing": [
+      "Rooftop Material Placement",
+      "High-Reach Loading"
+    ],
+    "attachment_sentence": null,
+    "limitation_sentence": null
+  }
+}

@@ -1,0 +1,228 @@
+================================================================================
+Patch Report -- Remove lift_capacity_to_full_height_lbs from SSL/CTL Tier 1
+Applied: 2026-03-29
+================================================================================
+
+SUMMARY
+-------
+Removed `lift_capacity_to_full_height_lbs` from the Tier 1 required field list
+for skid_steer and compact_track_loader in analyze_registry.py.
+
+This is a classification-rule change only. No registry JSON records were
+modified. No schema changes were made. The field remains valid as an optional
+spec in any registry record that has it.
+
+Reason: Field is inconsistently published across OEMs, absent from all 203 CTL
+and all 255 SSL registry records, not reliably derivable from ROC or tipping
+load, and should be research-only rather than a FULL-gating requirement.
+
+--------------------------------------------------------------------------------
+FILE CHANGED
+--------------------------------------------------------------------------------
+
+  File:  C:/mtm_mvp3/analyze_registry.py
+  Block: TIER1 dict  (lines 6-17)
+
+  --- BEFORE (lines 7-8) ---
+
+    "skid_steer": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "net_hp",
+        "lift_capacity_to_full_height_lbs",   << REMOVED
+        "breakout_force_lbs",
+        "tipping_load_lbs",
+    ],
+    "compact_track_loader": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "net_hp",
+        "lift_capacity_to_full_height_lbs",   << REMOVED
+        "breakout_force_lbs",
+        "tipping_load_lbs",
+    ],
+
+  --- AFTER (lines 7-8) ---
+
+    "skid_steer": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "net_hp",
+        "breakout_force_lbs",
+        "tipping_load_lbs",
+    ],
+    "compact_track_loader": [
+        "rated_operating_capacity_lbs",
+        "operating_weight_lbs",
+        "net_hp",
+        "breakout_force_lbs",
+        "tipping_load_lbs",
+    ],
+
+  Diff (compact):
+    line 7:  - "...", "lift_capacity_to_full_height_lbs", "breakout_force_lbs", ...
+    line 7:  + "...", "breakout_force_lbs", ...
+    line 8:  - "...", "lift_capacity_to_full_height_lbs", "breakout_force_lbs", ...
+    line 8:  + "...", "breakout_force_lbs", ...
+
+  Lines changed: 2
+  Characters removed: 2x ", \"lift_capacity_to_full_height_lbs\""
+  All other lines: UNCHANGED
+
+--------------------------------------------------------------------------------
+TIER 1 FIELD LIST -- OLD vs NEW
+--------------------------------------------------------------------------------
+
+  SKID STEER
+    Old (6 fields):
+      1. rated_operating_capacity_lbs
+      2. operating_weight_lbs
+      3. net_hp
+      4. lift_capacity_to_full_height_lbs    << removed
+      5. breakout_force_lbs
+      6. tipping_load_lbs
+
+    New (5 fields):
+      1. rated_operating_capacity_lbs
+      2. operating_weight_lbs
+      3. net_hp
+      4. breakout_force_lbs
+      5. tipping_load_lbs
+
+  COMPACT TRACK LOADER
+    Old (6 fields):
+      1. rated_operating_capacity_lbs
+      2. operating_weight_lbs
+      3. net_hp
+      4. lift_capacity_to_full_height_lbs    << removed
+      5. breakout_force_lbs
+      6. tipping_load_lbs
+
+    New (5 fields):
+      1. rated_operating_capacity_lbs
+      2. operating_weight_lbs
+      3. net_hp
+      4. breakout_force_lbs
+      5. tipping_load_lbs
+
+--------------------------------------------------------------------------------
+CLASSIFICATION COUNTS -- BEFORE vs AFTER
+--------------------------------------------------------------------------------
+
+  COMPACT TRACK LOADER (203 total models)
+  ----------------------------------------
+  Status          BEFORE   AFTER   Change
+  FULL_READY           0       0       0   *
+  DEALER_READY         0       0       0
+  QUICK_READY          0       0       0
+  MATCH_READY        157     157       0
+  STUB                46      46       0
+  Autofill-Safe        0       0       0
+
+  SKID STEER (255 total models)
+  ----------------------------------------
+  Status          BEFORE   AFTER   Change
+  FULL_READY           0       0       0   *
+  DEALER_READY         0       0       0
+  QUICK_READY          0       0       0
+  MATCH_READY        186     186       0
+  STUB                67      67       0
+  Autofill-Safe        0       0       0
+
+  * Zero change in FULL count is EXPECTED and CORRECT.
+    See explanation below.
+
+--------------------------------------------------------------------------------
+WHY COUNTS ARE UNCHANGED (Expected Result)
+--------------------------------------------------------------------------------
+
+  Removing lift_capacity_to_full_height_lbs was a necessary but not sufficient
+  step to unlock FULL classification for CTL/SSL.
+
+  The remaining Tier 1 blocker is breakout_force_lbs.
+
+  CTL/SSL registries store breakout force under field names:
+    boom_breakout_lb, boom_breakout_lbs, bucket_breakout_lb, bucket_breakout_lbs
+
+  The analyzer's TIER1_ALIASES for breakout_force_lbs currently maps to:
+    breakout_force_lbs, loader_breakout_force_lbs,
+    bucket_breakout_force_lbs, breakout_force_lbf
+
+  NONE of the registry field names match the analyzer aliases.
+  Result: 0/203 CTL and 0/255 SSL models have breakout recognized.
+
+  This is a KNOWN pending fix -- a separate alias patch ticket.
+  This patch deliberately does NOT touch breakout aliases per task scope.
+
+  Unlock potential once breakout alias patch is applied:
+    CTL:   8 models -> FULL_READY immediately (already have breakout data)
+    SSL:   4 models -> FULL_READY immediately (already have breakout data)
+
+  Unlock potential after full breakout backfill sprint:
+    CTL:  85 models could reach FULL_READY
+    SSL:  68 models could reach FULL_READY
+
+--------------------------------------------------------------------------------
+ALL OTHER EQUIPMENT TYPES -- CONFIRMATION UNCHANGED
+--------------------------------------------------------------------------------
+
+  Equipment Type      Tier 1 Fields   Changed?
+  mini_excavator           6            NO
+  excavator                6            NO
+  wheel_loader             6            NO
+  telehandler              6            NO
+  backhoe_loader           6            NO
+  crawler_dozer            6            NO
+  scissor_lift             6            NO
+  boom_lift                6            NO
+
+  Confirmed: No Tier 1 definition was changed for any category
+  other than skid_steer and compact_track_loader.
+
+  Post-patch FULL_READY counts for all other categories:
+    mini_excavator:    0  (unchanged -- blocked by bucket_capacity_cy)
+    excavator:         6  (unchanged -- already FULL before patch)
+    wheel_loader:      0  (unchanged)
+    telehandler:       0  (unchanged)
+    backhoe_loader:    0  (unchanged)
+    crawler_dozer:     0  (unchanged)
+    scissor_lift:      9  (unchanged -- already FULL before patch)
+    boom_lift:         0  (unchanged -- DEALER_READY, 8 models)
+
+--------------------------------------------------------------------------------
+WHAT WAS NOT CHANGED
+--------------------------------------------------------------------------------
+
+  Registry JSON files:        NOT TOUCHED
+    mtm_skid_steer_registry_v1_5.json       -- unchanged
+    mtm_ctl_registry_v1_6.json              -- unchanged
+    (all other registry files)              -- unchanged
+
+  Field aliases (TIER1_ALIASES):            NOT TOUCHED
+    breakout_force_lbs aliases              -- unchanged (separate ticket)
+
+  TIER2 / TIER3 definitions:               NOT TOUCHED
+    lift_capacity_to_full_height_lbs        -- not referenced in T2/T3 anyway
+
+  generate_report.py:                      NOT TOUCHED
+    (report generator reads TIER1 from analyze_registry.py dynamically)
+
+  Status report output file:               REGENERATED
+    mtm_registry_status_report.txt         -- rerun reflects new Tier 1 definition
+
+--------------------------------------------------------------------------------
+NEXT STEPS
+--------------------------------------------------------------------------------
+
+  1. PATCH 2 (Pending): Fix breakout_force_lbs aliases in TIER1_ALIASES
+     Add: boom_breakout_lb, boom_breakout_lbs,
+          bucket_breakout_lb, bucket_breakout_lbs
+     Expected unlock: 8 CTL + 4 SSL -> FULL_READY immediately
+
+  2. DATA SPRINT (Separate): Backfill breakout_force data into CTL records
+     ~140 CTL models have all other T1 fields but no breakout value
+     Priority targets listed in full_classification_blocking_report.txt
+
+================================================================================
+END OF PATCH REPORT
+================================================================================

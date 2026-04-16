@@ -1,0 +1,295 @@
+{
+  "version": "1.0",
+  "scope": "Tier A launch-critical models only",
+  "rules": {
+    "fail_on_value_change": true,
+    "fail_on_null": true,
+    "fail_on_missing_field": true,
+    "fail_on_noncanonical_duplicate": true,
+    "fail_on_confidence_drop": true,
+    "require_non_null_for_ready_for_lock": true,
+    "require_non_null_for_locked": true
+  },
+  "notes": {
+    "status_flow": "Workflow is PENDING -> READY_FOR_LOCK -> LOCKED.",
+    "null_fields": "Null fields are allowed only while lock_status=PENDING. READY_FOR_LOCK and LOCKED entries must be fully populated.",
+    "pending_fixes": "Models with PENDING entries in registry/logs/tierA_fix_log.md may have known field issues. Values below reflect current live registry state, not post-fix state.",
+    "jd_325g_warning": "horsepower_gross_hp=69.0 is less than horsepower_hp=74 — known inversion, fix is PENDING in tierA_fix_log.md",
+    "bobcat_t66_warning": "horsepower_gross_hp=horsepower_hp=66.0 — net/gross equality is suspicious, pending OEM verification",
+    "cat_308_cr_note": "Record lives in registry/mtm_excavator_registry_v2.json as 'Caterpillar 308'. Fields locked against excavator registry schema.",
+    "machine_width_in_note": "Mini ex records currently use field name 'width_in', not 'machine_width_in'. Locked under 'width_in' until field rename is applied."
+  },
+  "locked_models": [
+    {
+      "model": "jd_333g",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 97,
+        "horsepower_gross_hp": 100.0,
+        "operating_weight_lbs": 11400,
+        "rated_operating_capacity_lbs": 3700,
+        "tipping_load_lbs": 7200,
+        "width_over_tires_in": 80.7,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 25.0,
+        "aux_flow_high_gpm": 41.1,
+        "travel_speed_high_mph": 10.5
+      }
+    },
+    {
+      "model": "bobcat_t770",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 88,
+        "horsepower_gross_hp": 92.0,
+        "operating_weight_lbs": 10480,
+        "rated_operating_capacity_lbs": 3475,
+        "tipping_load_lbs": 6700,
+        "width_over_tires_in": 78.0,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 23.0,
+        "aux_flow_high_gpm": 37.0,
+        "travel_speed_high_mph": 7.4
+      }
+    },
+    {
+      "model": "jd_325g",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 74,
+        "horsepower_gross_hp": 69.0,
+        "operating_weight_lbs": 9500,
+        "rated_operating_capacity_lbs": 2590,
+        "tipping_load_lbs": 5180,
+        "width_over_tires_in": 71.5,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 21.0,
+        "aux_flow_high_gpm": 30.0,
+        "travel_speed_high_mph": 8.7
+      }
+    },
+    {
+      "model": "cat_259d3",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 73,
+        "horsepower_gross_hp": 74,
+        "operating_weight_lbs": 9832,
+        "rated_operating_capacity_lbs": 2872,
+        "tipping_load_lbs": 5745,
+        "width_over_tires_in": 66.0,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 23.0,
+        "aux_flow_high_gpm": 32.0,
+        "travel_speed_high_mph": 10.4
+      }
+    },
+    {
+      "model": "cat_299d3",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 95,
+        "horsepower_gross_hp": 98,
+        "operating_weight_lbs": 11650,
+        "rated_operating_capacity_lbs": 4972,
+        "tipping_load_lbs": 9945,
+        "width_over_tires_in": 76.0,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 20.0,
+        "aux_flow_high_gpm": 30.0,
+        "travel_speed_high_mph": 9.5
+      }
+    },
+    {
+      "model": "bobcat_t66",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 66.0,
+        "horsepower_gross_hp": 66.0,
+        "operating_weight_lbs": 8700,
+        "rated_operating_capacity_lbs": 2100,
+        "tipping_load_lbs": 4200,
+        "width_over_tires_in": 67.0,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 17.1,
+        "aux_flow_high_gpm": 26.7,
+        "travel_speed_high_mph": 7.1
+      }
+    },
+    {
+      "model": "jd_317g",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 67,
+        "horsepower_gross_hp": 70.0,
+        "operating_weight_lbs": 7650,
+        "rated_operating_capacity_lbs": 2050,
+        "tipping_load_lbs": 4100,
+        "width_over_tires_in": 65.1,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 21.0,
+        "aux_flow_high_gpm": 30.0,
+        "travel_speed_high_mph": 8.7
+      }
+    },
+    {
+      "model": "kubota_svl75",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 74,
+        "horsepower_gross_hp": null,
+        "operating_weight_lbs": 9030,
+        "rated_operating_capacity_lbs": 3285,
+        "tipping_load_lbs": 6570,
+        "width_over_tires_in": 65.9,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 19.0,
+        "aux_flow_high_gpm": null,
+        "travel_speed_high_mph": 7.1
+      }
+    },
+    {
+      "model": "kubota_svl97_2",
+      "equipment_type": "compact_track_loader",
+      "registry_file": "registry/active/mtm_ctl_registry_v1_19.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 96,
+        "horsepower_gross_hp": 99.0,
+        "operating_weight_lbs": 12566,
+        "rated_operating_capacity_lbs": 3900,
+        "tipping_load_lbs": 7800,
+        "width_over_tires_in": 77.2,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 28.0,
+        "aux_flow_high_gpm": 45.0,
+        "travel_speed_high_mph": 10.5
+      }
+    },
+    {
+      "model": "cat_262d3",
+      "equipment_type": "skid_steer_loader",
+      "registry_file": "registry/active/mtm_skid_steer_registry_v1_15.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 72.9,
+        "horsepower_gross_hp": 74.3,
+        "operating_weight_lbs": 8296,
+        "rated_operating_capacity_lbs": 2700,
+        "tipping_load_lbs": 5400,
+        "width_over_tires_in": null,
+        "hinge_pin_height_in": null,
+        "aux_flow_standard_gpm": 23.0,
+        "aux_flow_high_gpm": 32.0,
+        "travel_speed_high_mph": 11.0
+      }
+    },
+    {
+      "model": "cat_308_cr",
+      "equipment_type": "excavator",
+      "registry_file": "registry/mtm_excavator_registry_v2.json",
+      "registry_model_name": "Caterpillar 308",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 70.3,
+        "horsepower_gross_hp": 74.3,
+        "operating_weight_lbs": 17960,
+        "max_dig_depth_ft": null,
+        "width_in": null,
+        "zero_tail_swing": null,
+        "tail_swing_type": "compact_radius"
+      }
+    },
+    {
+      "model": "kubota_kx040_4",
+      "equipment_type": "mini_excavator",
+      "registry_file": "registry/active/mtm_mini_ex_registry_v2_1.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 31.5,
+        "horsepower_gross_hp": 32.7,
+        "operating_weight_lbs": 8930,
+        "max_dig_depth_ft": 9.97,
+        "width_in": 63.4,
+        "zero_tail_swing": null,
+        "tail_swing_type": "zero"
+      }
+    },
+    {
+      "model": "bobcat_e35",
+      "equipment_type": "mini_excavator",
+      "registry_file": "registry/active/mtm_mini_ex_registry_v2_1.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 24.8,
+        "horsepower_gross_hp": 24.8,
+        "operating_weight_lbs": 7847,
+        "max_dig_depth_ft": 9.27,
+        "width_in": 62.2,
+        "zero_tail_swing": null,
+        "tail_swing_type": "zero"
+      }
+    },
+    {
+      "model": "jd_35g",
+      "equipment_type": "mini_excavator",
+      "registry_file": "registry/active/mtm_mini_ex_registry_v2_1.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 24.4,
+        "horsepower_gross_hp": 24.8,
+        "operating_weight_lbs": 7716,
+        "max_dig_depth_ft": 9.17,
+        "width_in": 59.1,
+        "zero_tail_swing": null,
+        "tail_swing_type": "reduced"
+      }
+    },
+    {
+      "model": "cat_303_cr",
+      "equipment_type": "mini_excavator",
+      "registry_file": "registry/active/mtm_mini_ex_registry_v2_1.json",
+      "lock_status": "PENDING",
+      "locked": false,
+      "fields": {
+        "horsepower_hp": 24.4,
+        "horsepower_gross_hp": 25.5,
+        "operating_weight_lbs": 6614,
+        "max_dig_depth_ft": 9.08,
+        "width_in": 55.1,
+        "zero_tail_swing": null,
+        "tail_swing_type": "zero"
+      }
+    }
+  ]
+}
