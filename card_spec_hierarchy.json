@@ -9,7 +9,7 @@
       "CTL 2026-04-10: aux_flow_high_gpm banned from buyer-facing output. Strip uses aux_flow_standard_gpm. High-flow badge sources from DealerInput 'high_flow' boolean, not registry feature_flags.high_flow_available (suppressed).",
       "SSL 2026-04-10: aux_flow_high_gpm IS buyer-facing for SSL (not banned). High-flow badge sources from DealerInput 'high_flow' boolean — registry feature_flags.high_flow_available suppressed.",
       "MEX: canonical aux flow field is aux_flow_primary_gpm, not aux_flow_standard_gpm. Dump height is max_dump_height_ft in feet; CTL/SSL use dump_height_in in inches — do not cross-reference units.",
-      "MEX tail_swing_type value keys are descriptive strings: zero_tail_swing, conventional_tail_swing, reduced_tail_swing."
+      "MEX tail_swing_type uses short value keys — zero, conventional, reduced — consistent with CTL/SSL. Corrected 2026-04-17: prior documentation incorrectly claimed MEX used descriptive keys (zero_tail_swing etc.); direct verification of all 63 registry records confirmed short keys only."
     ],
     "known_field_mismatches": [
       "aux_flow_standard_gpm (CTL/SSL) vs aux_flow_primary_gpm (MEX)",
@@ -20,7 +20,6 @@
       "feature_flags.enclosed_cab_available/boolean (CTL/SSL) vs specs.cab_available/boolean (MEX) — namespace differs",
       "feature_flags.two_speed_available (CTL/SSL) vs feature_flags.two_speed_travel_available (MEX)",
       "hydraulic_pressure_standard_psi (CTL/SSL) vs hydraulic_pressure_psi + aux_pressure_primary_psi (MEX — two fields, one concept, needs verification)",
-      "tail_swing_type value keys: CTL/SSL use short keys, MEX uses descriptive keys (zero_tail_swing, conventional_tail_swing, reduced_tail_swing)",
       "feature_flags fields have no field_confidence entries — confidence gate cannot be enforced for enclosed_cab_available, high_flow_available, two_speed_available"
     ]
   },
@@ -221,12 +220,12 @@
         {
           "position": 4,
           "primary": "aux_flow_primary_gpm",
-          "fallbacks": ["hydraulic_flow_gpm"],
+          "fallbacks": [],
           "source": "registry_specs",
           "require_confidence": "MEDIUM",
           "display_label": "Aux Flow",
           "unit": "GPM",
-          "_note": "MEX canonical field is aux_flow_primary_gpm — not aux_flow_standard_gpm. Fallback hydraulic_flow_gpm may exist in some records as an alternate field name for the same concept."
+          "_note": "MEX canonical field is aux_flow_primary_gpm — not aux_flow_standard_gpm. hydraulic_flow_gpm removed from fallbacks: verified as a legacy duplicate with identical values across all 63 registry records, not a distinct concept. Pending deprecation — see MEX legacy field deprecation plan 2026-04-17."
         }
       ],
       "badge_zone": {
@@ -236,10 +235,10 @@
             "id": "zero_tail_swing",
             "source": "registry_specs",
             "field": "tail_swing_type",
-            "condition": { "equals": "zero_tail_swing" },
+            "condition": { "equals": "zero" },
             "label": "Zero Tail Swing",
             "style": "primary",
-            "_note": "MEX tail_swing_type uses descriptive value keys: zero_tail_swing, conventional_tail_swing, reduced_tail_swing. Badge fires only on exact string 'zero_tail_swing'. Zero tail swing unlocks interior demolition and tight-access work — hard cap rule in mini_ex_use_case_scorer.py lines 291–294."
+            "_note": "tail_swing_type uses short value keys consistent across all equipment types: zero, conventional, reduced. Corrected 2026-04-17 — prior entry used 'zero_tail_swing' based on incorrect spec_display_profiles.json documentation; direct verification of all 63 MEX registry records confirmed short keys only. Zero tail swing unlocks interior demolition and tight-access work — hard cap rule in mini_ex_use_case_scorer.py lines 291–294."
           }
         ]
       },
