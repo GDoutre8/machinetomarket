@@ -57,7 +57,6 @@ Open: http://localhost:8000/build-listing
 - No dealer contact fields on the Build Listing form — spec sheet footer is blank (add in V1.1)
 - Track Condition % field appears in Machine Identity section (cosmetic — move in V1.1)
 - Feature toggles have no sublabels (Cab / Hydraulic / Other groupings) — V1.1
-- Debug print statements from spec resolver appear in server logs — internal only, not visible to dealers
 
 ---
 
@@ -74,6 +73,20 @@ Open: http://localhost:8000/build-listing
 | Registry miss now shows an explicit notice instead of silently hiding | `build_listing.html` |
 | Post-submit summary: "Pack ready for [machine]. Includes OEM spec sheet + N use cases." | `build_listing.html` |
 | "Machine Snapshot" → "Key Specs" in listing.txt (buyer-visible section header) | `listing_builder.py` |
+
+---
+
+## Post-Launch Fixes (2026-04-17)
+
+| Fix | Commit | File(s) |
+|-----|--------|---------|
+| Kubota MEX R-suffix variants (R1/R2/R3/R1T/R2T/R3T) now resolve via suffix stripping instead of WEB_FALLBACK — all 8 KX/U base models covered | 28db3fc | `mtm_registry_lookup.py` |
+| KX040-4R3T bridge alias added (exact-key coverage for this specific variant prior to systemic fix) | 28db3fc | `mtm_registry_lookup.py` |
+| Debug print statements from spec resolver converted to `logger.debug()` — stdout clean at INFO level | 28db3fc | `mtm_service.py` |
+| Listing card (4:5 PNG) added to pack — generates as `_01_card.png` in `Listing_Photos/`, sorts first | 28db3fc | `card_renderer.py`, `card_renderer_adapter.py`, `listing_pack_builder.py` |
+| card_spec_hierarchy.json: 4-hero spec strip config for listing card, field names corrected to pipeline output namespace | 28db3fc | `card_spec_hierarchy.json` |
+
+**Phase 2 lookup extensibility:** `_strip_variant_suffix()` in `mtm_registry_lookup.py` is designed for additional manufacturer suffix patterns. Bobcat T4F and JD P-Tier are deferred — each requires an independent false-positive audit before implementation.
 
 ---
 
