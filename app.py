@@ -1037,6 +1037,7 @@ async def build_listing_endpoint(
         "make_source": "explicit",
     }
     specs, confidence = safe_lookup_machine(parsed)
+    _full_record: dict | None = specs.get("full_record") if specs else None
 
     resolved_machine: dict | None = None
     resolved_specs: dict = {}
@@ -1133,6 +1134,7 @@ async def build_listing_endpoint(
             overlay_contact_name=_contact_name,
             overlay_contact_phone=_contact_phone,
             dealer_info=_dealer_info,
+            full_record=_full_record,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Pack generation error: {exc}")

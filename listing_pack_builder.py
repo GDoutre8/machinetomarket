@@ -32,6 +32,7 @@ Usage:
 from __future__ import annotations
 import json
 import os
+import re
 import shutil
 import zipfile
 from datetime import datetime, timezone
@@ -152,6 +153,30 @@ def _safe_machine_name(make: str, model: str) -> str:
     return "".join(c for c in raw if c.isalnum() or c in "_-")[:40] or "machine"
 
 
+def _renumber_listing_photos(listing_dir: Path, machine_name: str) -> None:
+    """
+    Shift all {machine_name}_NN_listing.* files up by 1 index (01→02, 02→03, …)
+    so position 01 is free for the card PNG. Renames in reverse index order to
+    avoid collision when two files would otherwise share the same target name.
+    """
+    pattern = re.compile(
+        rf"^{re.escape(machine_name)}_(\d+)_listing(\.[^.]+)$",
+        re.IGNORECASE,
+    )
+    photos = sorted(
+        [p for p in listing_dir.iterdir() if p.is_file() and pattern.match(p.name)],
+        key=lambda p: p.name,
+        reverse=True,  # highest index first to avoid collisions
+    )
+    for photo in photos:
+        m = pattern.match(photo.name)
+        if not m:
+            continue
+        new_idx = int(m.group(1)) + 1
+        new_name = f"{machine_name}_{new_idx:02d}_listing{m.group(2)}"
+        photo.rename(listing_dir / new_name)
+
+
 # Desired top-level entry order in the ZIP (lower index = earlier)
 # Files written to pack_dir for server-side use but excluded from the user ZIP
 _ZIP_EXCLUDE = {"metadata_internal.json"}
@@ -216,6 +241,9 @@ def build_listing_pack(
     overlay_logo_path: "str | None" = None,
     overlay_contact_name: "str | None" = None,
     overlay_contact_phone: "str | None" = None,
+    # Listing card PNG (card_renderer_adapter)
+    full_record: "dict | None" = None,
+    card_dealer_data: "dict | None" = None,
 ) -> dict:
     """
     Assemble one complete MTM listing pack from pre-processed components.
@@ -373,6 +401,27 @@ def build_listing_pack(
             os.makedirs(os.path.join(pack_dir, sub), exist_ok=True)
         if not image_input_paths:
             warnings.append("No photos provided — image folders created but empty.")
+
+    # ── 3c. Listing card PNG ──────────────────────────────────────────────────
+    # Card is always position _01. Existing listing photos are shifted up by 1
+    # so the card sorts first in Listing_Photos/ and is image #1 in the FB batch.
+    # Card generation does not require other photos to be present.
+    if full_record and card_dealer_data:
+        listing_photos_dir = Path(os.path.join(pack_dir, "Listing_Photos"))
+        listing_photos_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            _renumber_listing_photos(listing_photos_dir, machine_name)
+            from card_renderer_adapter import export_listing_card
+            card_out = listing_photos_dir / f"{machine_name}_01_card.png"
+            result = export_listing_card(full_record, card_dealer_data, card_out)
+            if result:
+                print(f"  [Pack] card PNG           : OK → {card_out.name}")
+            else:
+                warnings.append("Card render failed — see logs for details.")
+                print("  [Pack] card PNG           : FAIL (see logs)")
+        except Exception as exc:
+            warnings.append(f"Card render failed: {exc}")
+            print(f"  [Pack] card PNG           : FAIL ({exc})")
 
     # ── 4. Walkaround video (lowest priority — failure never blocks ZIP) ───────
     if walkaround_requested:
@@ -546,6 +595,8 @@ def build_listing_pack_v1(
     overlay_logo_path:     "str | None" = None,
     overlay_contact_name:  "str | None" = None,
     overlay_contact_phone: "str | None" = None,
+    # Listing card PNG
+    full_record:           "dict | None" = None,
 ) -> dict:
     """
     V1 pack generation entry point using structured DealerInput + resolved OEM specs.
@@ -736,7 +787,13 @@ def build_listing_pack_v1(
         equipment_type or "",
     )
 
-    # 4. Delegate to the full pack assembler
+    # 4. Build pre-adapted dealer dict for the card renderer (if full_record present)
+    card_dealer_data: "dict | None" = None
+    if full_record is not None:
+        from card_renderer_adapter import adapt_dealer_input
+        card_dealer_data = adapt_dealer_input(dealer_input, image_input_paths or [])
+
+    # 5. Delegate to the full pack assembler
     return build_listing_pack(
         raw_text               = "",
         parsed_listing         = parsed_listing,
@@ -753,4 +810,6 @@ def build_listing_pack_v1(
         overlay_logo_path      = overlay_logo_path,
         overlay_contact_name   = overlay_contact_name,
         overlay_contact_phone  = overlay_contact_phone,
+        full_record            = full_record,
+        card_dealer_data       = card_dealer_data,
     )
