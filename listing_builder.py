@@ -991,6 +991,12 @@ def _build_features_block(dealer_input: DealerInput) -> str:
         bullets.append("Radio")
     if getattr(dealer_input, "air_ride_seat", None):
         bullets.append("Air ride seat")
+    if getattr(dealer_input, "self_leveling", None):
+        bullets.append("Self-leveling")
+    if getattr(dealer_input, "reversing_fan", None):
+        bullets.append("Reversing fan")
+    if dealer_input.control_type and "joystick" in dealer_input.control_type.lower():
+        bullets.append("Joystick controls")
     if dealer_input.one_owner:
         bullets.append("One owner")
 
