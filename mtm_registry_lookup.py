@@ -238,6 +238,14 @@ MODEL_BRIDGE_ALIASES: dict[str, str] = {
     "svl75original": "SVL75",
     "svl65gen1":     "SVL65",
     "svl65original": "SVL65",
+    # Kubota mini excavator — generation-suffix variants.
+    # R3T (and similar Tier 4 Final / emissions-generation suffixes) appear in
+    # auction listings but are not stored as separate registry records.
+    # The base model KX040-4 covers all production years (2013–2024).
+    # Key normalization: re.sub(r"[\s\-]", "", input.lower()) — hyphens and spaces
+    # are both stripped, so "KX040-4R3T", "KX0404R3T", "KX040 4R3T" all resolve
+    # to key "kx0404r3t" before this lookup.
+    "kx0404r3t": "KX040-4",
     # Case backhoe — registry model "580N / 580 Super N" scores too low against
     # plain "580N" input (fuzzy 0.47).  Slug "case_580" already handles bare "580"
     # via containment (0.95).  Bridge covers the common "580N" and "580SN" inputs.
