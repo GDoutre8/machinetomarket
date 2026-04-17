@@ -221,6 +221,31 @@ AMBIGUITY_BAND = 0.03
 # This is NOT fuzzy matching — exact key lookup only.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# KUBOTA MEX SUFFIX-STRIPPING CONSTANTS  (Phase 1 — Approach B)
+#
+# Kubota mini excavators sometimes appear in listings with an emissions-tier
+# suffix appended to the generation number (e.g. KX040-4R3T, U35-4R1).
+# These suffixes are NOT stored as separate registry records; the base model
+# (KX040-4, U35-4, etc.) covers all production years.
+#
+# _KUBOTA_MEX_BASE_MODELS is the authoritative set of Kubota MEX registry
+# entries that participate in suffix stripping.  Only these stripped values
+# are ever returned — the registry-existence check is an additional guard.
+#
+# Scope is intentionally narrow:
+#   - Kubota make only (case-insensitive)
+#   - /R[1-3]T?$/ suffix only — matches R1, R2, R3, R1T, R2T, R3T
+#   - Base model must be in _KUBOTA_MEX_BASE_MODELS
+# ---------------------------------------------------------------------------
+
+_KUBOTA_MEX_BASE_MODELS: frozenset = frozenset({
+    "KX033-4", "KX040-4", "KX057-6", "KX080-4",
+    "U17", "U27-4", "U35-4", "U55-5",
+})
+
+_KUBOTA_MEX_SUFFIX_RE = re.compile(r"R[1-3]T?$", re.IGNORECASE)
+
 MODEL_BRIDGE_ALIASES: dict[str, str] = {
     # Caterpillar CTL — shorthand without generation suffix
     # Note: 289d/259d/279d already resolve via slug_match (conf=0.95).
@@ -335,6 +360,40 @@ def _model_score(input_model: str, record_model: str, record_slug: str) -> float
     if norm_input in norm_slug or norm_slug.endswith(norm_input):
         return 0.95
     return SequenceMatcher(None, norm_input, norm_model).ratio()
+
+
+def _strip_variant_suffix(
+    make: str,
+    model: str,
+    registry_models: set,
+) -> "str | None":
+    """
+    Strip Kubota MEX emissions-tier suffixes (R1, R2, R3, R1T, R2T, R3T).
+
+    Returns the stripped base model string only when ALL four conditions hold:
+      1. make is Kubota (case-insensitive)
+      2. The suffix regex matches and actually changes the model string
+      3. The stripped model is in _KUBOTA_MEX_BASE_MODELS
+      4. The stripped model exists in the live registry_models set
+
+    Returns None in all other cases — caller falls through with original result.
+    """
+    if not re.match(r"kubota", make, re.IGNORECASE):
+        return None
+    stripped = _KUBOTA_MEX_SUFFIX_RE.sub("", model).rstrip("-").strip()
+    if stripped == model:
+        return None
+    # Resolve canonical casing from _KUBOTA_MEX_BASE_MODELS (input may be lowercase)
+    stripped_lower = stripped.lower()
+    canonical = next(
+        (m for m in _KUBOTA_MEX_BASE_MODELS if m.lower() == stripped_lower),
+        None,
+    )
+    if canonical is None:
+        return None
+    if canonical not in registry_models:
+        return None
+    return canonical
 
 
 # ---------------------------------------------------------------------------
@@ -1760,6 +1819,36 @@ def lookup_machine(
 
     scored.sort(key=lambda x: x[0], reverse=True)
     best_score, best_record = scored[0]
+
+    # ── 4b. Suffix strip — Kubota MEX R-suffix variants ──────────────────
+    # If the first scoring pass produces a fuzzy result, try stripping a
+    # Kubota MEX emissions-tier suffix (R1/R2/R3/R1T/R2T/R3T) and re-score.
+    # Only fires when the stripped model exists in the live registry; otherwise
+    # falls through and the original fuzzy result continues to step 5.
+    _first_method = (
+        "exact" if _normalize_str(model) == _normalize_str(best_record.get("model", ""))
+        else "slug_match" if best_score >= 0.95
+        else "fuzzy"
+    )
+    if _first_method == "fuzzy" and canonical_mfr:
+        _registry_models: set = {r.get("model", "") for r in candidates}
+        _stripped = _strip_variant_suffix(canonical_mfr, model, _registry_models)
+        if _stripped is not None:
+            _scored2 = []
+            for r in candidates:
+                s = _model_score(_stripped, r.get("model", ""), r.get("model_slug", ""))
+                _scored2.append((s, r))
+            _scored2.sort(key=lambda x: x[0], reverse=True)
+            _best2_score, _best2_record = _scored2[0]
+            _best2_method = (
+                "exact" if _normalize_str(_stripped) == _normalize_str(_best2_record.get("model", ""))
+                else "slug_match" if _best2_score >= 0.95
+                else "fuzzy"
+            )
+            if _best2_method in ("exact", "slug_match"):
+                scored      = _scored2
+                best_score  = _best2_score
+                best_record = _best2_record
 
     # ── 5. Below-threshold: no confident match ───────────────────────────
     if best_score < FUZZY_THRESHOLD:
