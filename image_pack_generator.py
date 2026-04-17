@@ -578,9 +578,9 @@ def _apply_branding_overlay(
     w, h = img.size
     safe_pad = max(18, int(min(w, h) * 0.024))
     overlay_h = max(142, int(h * 0.19))
-    contact_block_max_w = int(w * 0.70)
-    contact_logo_max_h = max(74, int(overlay_h * 0.58))
-    contact_logo_max_w = int(w * 0.30)
+    contact_block_max_w = int(w * 0.72)
+    contact_logo_max_h = max(62, int(overlay_h * 0.48))
+    contact_logo_max_w = int(w * 0.22)
     watermark_max_w = int(w * 0.18)
     watermark_max_h = int(h * 0.11)
 
@@ -610,8 +610,8 @@ def _apply_branding_overlay(
         raw_parts = [part.strip() for part in normalized_contact.split("|") if part.strip()]
         primary_text = raw_parts[0] if raw_parts else normalized_contact.strip()
         secondary_text = " | ".join(raw_parts[1:]) if len(raw_parts) > 1 else ""
-        title_font = _load_overlay_font(max(26, int(h * 0.0255)), bold=True)
-        body_font = _load_overlay_font(max(20, int(h * 0.0190)), bold=True)
+        title_font = _load_overlay_font(max(22, int(h * 0.0210)), bold=True)
+        body_font = _load_overlay_font(max(17, int(h * 0.0160)), bold=True)
         primary_bbox = draw.textbbox((0, 0), primary_text, font=title_font)
         primary_w = primary_bbox[2] - primary_bbox[0]
         primary_h = primary_bbox[3] - primary_bbox[1]
