@@ -1,0 +1,265 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-04-17",
+    "description": "Hero spec hierarchy for 4:5 Facebook listing card — 4-spec bottom strip per equipment type. Grounded in use-case scorer research (ctl_use_case_scorer_v1_0.py, skid_steer_use_case_scorer_v1_0.py, mini_ex_use_case_scorer.py), hard-gate thresholds, and hundreds of real dealer listings analyzed across MachineryTrader, EquipmentTrader, and Facebook Marketplace.",
+    "field_namespace": "All primary and fallback field names match canonical registry field names per spec_display_profiles.json conventions. Fields live in the record's 'specs' object unless noted source:feature_flags or source:dealer_input.",
+    "confidence_note": "require_confidence is checked against field_confidence[field_name] on the registry record. Fields sourced from feature_flags have no field_confidence entry — require_confidence NONE bypasses the gate entirely. DealerInput fields have no registry confidence and are always trusted if present.",
+    "locked_standards": [
+      "CTL 2026-04-10: aux_flow_high_gpm banned from buyer-facing output. Strip uses aux_flow_standard_gpm. High-flow badge sources from DealerInput 'high_flow' boolean, not registry feature_flags.high_flow_available (suppressed).",
+      "SSL 2026-04-10: aux_flow_high_gpm IS buyer-facing for SSL (not banned). High-flow badge sources from DealerInput 'high_flow' boolean — registry feature_flags.high_flow_available suppressed.",
+      "MEX: canonical aux flow field is aux_flow_primary_gpm, not aux_flow_standard_gpm. Dump height is max_dump_height_ft in feet; CTL/SSL use dump_height_in in inches — do not cross-reference units.",
+      "MEX tail_swing_type value keys are descriptive strings: zero_tail_swing, conventional_tail_swing, reduced_tail_swing."
+    ],
+    "known_field_mismatches": [
+      "aux_flow_standard_gpm (CTL/SSL) vs aux_flow_primary_gpm (MEX)",
+      "aux_flow_high_gpm (CTL/SSL) — not modeled in MEX registry",
+      "high_flow_available feature_flag (CTL/SSL) — not modeled in MEX registry",
+      "dump_height_in/inches (SSL) vs max_dump_height_ft/feet (MEX) — name and unit both differ",
+      "width_over_tires_in (CTL/SSL) vs width_in (MEX)",
+      "feature_flags.enclosed_cab_available/boolean (CTL/SSL) vs specs.cab_available/boolean (MEX) — namespace differs",
+      "feature_flags.two_speed_available (CTL/SSL) vs feature_flags.two_speed_travel_available (MEX)",
+      "hydraulic_pressure_standard_psi (CTL/SSL) vs hydraulic_pressure_psi + aux_pressure_primary_psi (MEX — two fields, one concept, needs verification)",
+      "tail_swing_type value keys: CTL/SSL use short keys, MEX uses descriptive keys (zero_tail_swing, conventional_tail_swing, reduced_tail_swing)",
+      "feature_flags fields have no field_confidence entries — confidence gate cannot be enforced for enclosed_cab_available, high_flow_available, two_speed_available"
+    ]
+  },
+
+  "equipment_types": {
+
+    "compact_track_loader": {
+      "spec_strip": [
+        {
+          "position": 1,
+          "primary": "rated_operating_capacity_lbs",
+          "fallbacks": ["tipping_load_lbs"],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "ROC",
+          "unit": "LB"
+        },
+        {
+          "position": 2,
+          "primary": "horsepower_hp",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "HP",
+          "unit": "HP"
+        },
+        {
+          "position": 3,
+          "primary": "aux_flow_standard_gpm",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "MEDIUM",
+          "display_label": "Aux Flow",
+          "unit": "GPM",
+          "_note": "aux_flow_high_gpm is banned from buyer-facing CTL output per locked standard 2026-04-10. Standard GPM shown here; high-flow capability signaled via badge_zone only."
+        },
+        {
+          "position": 4,
+          "primary": "enclosed_cab_available",
+          "fallbacks": [],
+          "source": "registry_feature_flags",
+          "require_confidence": "NONE",
+          "display_label": "Cab",
+          "unit": null,
+          "render_hint": "boolean — render 'Enclosed' when true; drop cell when false or null"
+        }
+      ],
+      "badge_zone": {
+        "position": "above_strip",
+        "badges": [
+          {
+            "id": "high_flow_status",
+            "source": "dealer_input",
+            "field": "high_flow",
+            "condition": { "equals": true },
+            "label": "High Flow",
+            "style": "primary",
+            "_note": "Sourced from DealerInput boolean 'high_flow'. Registry feature_flags.high_flow_available is suppressed per locked CTL standard and must not be used as the badge trigger."
+          }
+        ]
+      },
+      "skip_rules": {
+        "drop_cell_if": [
+          {
+            "rule": "primary_missing_no_fallback",
+            "applies_to": "all_positions",
+            "description": "Drop cell if primary value is null or missing AND all fallback values are null or missing. Never render a blank label."
+          },
+          {
+            "rule": "confidence_below_threshold",
+            "applies_to": "positions_with_require_confidence_HIGH_or_MEDIUM",
+            "description": "Drop cell if field_confidence[primary] (or the active fallback field) is below require_confidence. LOW always triggers drop. NONE bypasses check entirely."
+          }
+        ],
+        "promote_fallback_on_drop": true,
+        "collapse_strip_on_full_drop": false
+      }
+    },
+
+    "skid_steer": {
+      "spec_strip": [
+        {
+          "position": 1,
+          "primary": "rated_operating_capacity_lbs",
+          "fallbacks": ["tipping_load_lbs"],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "ROC",
+          "unit": "LB"
+        },
+        {
+          "position": 2,
+          "primary": "lift_path",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "MEDIUM",
+          "display_label": "Lift Path",
+          "unit": null,
+          "render_hint": "enum — capitalize first letter and render value directly: 'Vertical' or 'Radial'. This is the primary SSL-specific buyer filter. Vertical commands 10–20% resale premium. Drop cell only if value is null — never substitute a default."
+        },
+        {
+          "position": 3,
+          "primary": "aux_flow_high_gpm",
+          "fallbacks": ["aux_flow_standard_gpm"],
+          "source": "registry_specs",
+          "require_confidence": "MEDIUM",
+          "display_label": "Aux Flow",
+          "unit": "GPM",
+          "_note": "Show high-flow GPM when present (not banned for SSL). Fall back to standard GPM if high-flow is absent. High-flow badge fires separately from badge_zone."
+        },
+        {
+          "position": 4,
+          "primary": "horsepower_hp",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "HP",
+          "unit": "HP"
+        }
+      ],
+      "badge_zone": {
+        "position": "above_strip",
+        "badges": [
+          {
+            "id": "high_flow_status",
+            "source": "dealer_input",
+            "field": "high_flow",
+            "condition": { "equals": true },
+            "label": "High Flow",
+            "style": "primary",
+            "_note": "Sourced from DealerInput boolean 'high_flow'. Registry feature_flags.high_flow_available is suppressed per locked SSL standard and must not be used as the badge trigger."
+          },
+          {
+            "id": "class_d_specialty",
+            "source": "registry_specs",
+            "condition": {
+              "all_of": [
+                { "field": "horsepower_hp", "gte": 85 },
+                { "field": "aux_flow_high_gpm", "gte": 36 }
+              ]
+            },
+            "label": "Class D Specialty",
+            "style": "premium",
+            "_note": "Composite badge. Fires when HP >= 85 AND high-flow GPM >= 36. Signals eligibility for forestry mulching, cold planing, and premium attachment market. Both conditions must pass with at least MEDIUM field_confidence to render."
+          }
+        ]
+      },
+      "skip_rules": {
+        "drop_cell_if": [
+          {
+            "rule": "primary_missing_no_fallback",
+            "applies_to": "all_positions",
+            "description": "Drop cell if primary value is null or missing AND all fallback values are null or missing. Never render a blank label."
+          },
+          {
+            "rule": "confidence_below_threshold",
+            "applies_to": "positions_with_require_confidence_HIGH_or_MEDIUM",
+            "description": "Drop cell if field_confidence[primary] (or the active fallback field) is below require_confidence. LOW always triggers drop. NONE bypasses check entirely."
+          }
+        ],
+        "promote_fallback_on_drop": true,
+        "collapse_strip_on_full_drop": false
+      }
+    },
+
+    "mini_excavator": {
+      "spec_strip": [
+        {
+          "position": 1,
+          "primary": "operating_weight_lbs",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "Weight",
+          "unit": "LB",
+          "_note": "Primary class classifier for MEX. Weight bracket determines use-case eligibility before any other spec. Hard caps by class: A 0–4k lb, B 4–8k lb, C 8–13k lb, D 13–20k lb."
+        },
+        {
+          "position": 2,
+          "primary": "max_dig_depth_ft",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "Dig Depth",
+          "unit": "FT",
+          "_note": "Core revenue spec. Scorer weight 30–40% for trenching and utility use cases. Hard gates: 5.0 ft utility, 7.0 ft septic, 8.0 ft deep trench, 9.5 ft sewer service."
+        },
+        {
+          "position": 3,
+          "primary": "max_dump_height_ft",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "MEDIUM",
+          "display_label": "Dump Ht",
+          "unit": "FT",
+          "_note": "Unit is feet. MEX registry stores this as max_dump_height_ft. CTL/SSL equivalent is dump_height_in (inches) — do not cross-reference or share rendering logic without unit conversion."
+        },
+        {
+          "position": 4,
+          "primary": "aux_flow_primary_gpm",
+          "fallbacks": ["hydraulic_flow_gpm"],
+          "source": "registry_specs",
+          "require_confidence": "MEDIUM",
+          "display_label": "Aux Flow",
+          "unit": "GPM",
+          "_note": "MEX canonical field is aux_flow_primary_gpm — not aux_flow_standard_gpm. Fallback hydraulic_flow_gpm may exist in some records as an alternate field name for the same concept."
+        }
+      ],
+      "badge_zone": {
+        "position": "above_strip",
+        "badges": [
+          {
+            "id": "zero_tail_swing",
+            "source": "registry_specs",
+            "field": "tail_swing_type",
+            "condition": { "equals": "zero_tail_swing" },
+            "label": "Zero Tail Swing",
+            "style": "primary",
+            "_note": "MEX tail_swing_type uses descriptive value keys: zero_tail_swing, conventional_tail_swing, reduced_tail_swing. Badge fires only on exact string 'zero_tail_swing'. Zero tail swing unlocks interior demolition and tight-access work — hard cap rule in mini_ex_use_case_scorer.py lines 291–294."
+          }
+        ]
+      },
+      "skip_rules": {
+        "drop_cell_if": [
+          {
+            "rule": "primary_missing_no_fallback",
+            "applies_to": "all_positions",
+            "description": "Drop cell if primary value is null or missing AND all fallback values are null or missing. Never render a blank label."
+          },
+          {
+            "rule": "confidence_below_threshold",
+            "applies_to": "positions_with_require_confidence_HIGH_or_MEDIUM",
+            "description": "Drop cell if field_confidence[primary] (or the active fallback field) is below require_confidence. LOW always triggers drop. NONE bypasses check entirely."
+          }
+        ],
+        "promote_fallback_on_drop": true,
+        "collapse_strip_on_full_drop": false
+      }
+    }
+
+  }
+}
