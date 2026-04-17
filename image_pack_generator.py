@@ -3,25 +3,23 @@ image_pack_generator.py
 =======================
 MTM Image Pack Generator
 
-Given a folder of machine photos, produces platform-ready resized/cropped
-images and packages everything into a ZIP file.
+Given a folder of machine photos, produces clean dealer listing images
+with an optional branding overlay and packages everything into a ZIP.
 
 Pipeline (per image, in order):
   1. Auto-rotate from EXIF
   2. HEIC → JPG conversion
   3. Convert to sRGB
-  4. Resize to cover target dimensions
-  5. Center crop to exact aspect ratio
-  6. Sharpen slightly
+  4. Downscale to max 2400px on longest side (aspect ratio preserved — NO cropping)
+  5. Sharpen slightly
+  6. Apply lower-third branding overlay (logo + name + phone) if provided
   7. Compress to web-friendly JPEG
   8. Export
 
 Output structure:
   {output_folder}/
-    Facebook_Post_Optimized/
-    Website_Optimized/
-    Facebook_&_Instagram_Story_Optimized/
-    Original_Photos/
+    Listing_Photos/      ← overlay applied, original AR preserved
+    Original_Photos/     ← normalized originals, no overlay
   {output_folder}.zip
 
 Usage:
@@ -57,11 +55,9 @@ except ImportError:
 # Platform targets
 # ─────────────────────────────────────────────────────────────────────────────
 
-TARGETS = {
-    "4x5":  {"size": (1080, 1350), "suffix": "4x5",  "quality": 85},
-    "1x1":  {"size": (1200, 1200), "suffix": "1x1",  "quality": 85},
-    "9x16": {"size": (1080, 1920), "suffix": "9x16", "quality": 85},
-}
+# Maximum pixel dimension for listing photos (longest side).
+# Original aspect ratio is always preserved — no cropping.
+MAX_LISTING_DIM = 2400
 
 # Max file size goal (bytes) — soft target, we try subsampling
 MAX_FILE_SIZE = 500 * 1024  # 500 KB
@@ -139,69 +135,20 @@ def _to_srgb(img: Image.Image) -> Image.Image:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Steps 3–4: Resize to cover, then center crop
+# Step 3: Downscale to listing size, preserving original aspect ratio
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _smart_crop(img: Image.Image, target_w: int, target_h: int) -> Image.Image:
+def _resize_for_listing(img: Image.Image, max_dim: int = MAX_LISTING_DIM) -> Image.Image:
     """
-    Resize image to cover target dimensions, then center-weighted crop.
-
-    Strategy:
-    - Scale so the source fully covers the target (no letterboxing).
-    - Horizontally: pure center crop — keeps machine centered in frame.
-    - Vertically: center crop with an upward bias (20% of overage) so the
-      cab/boom/top of machines shot at ground level stays in frame.  This
-      avoids cutting off the top of the machine on portrait formats (4:5, 9:16).
-
-    The crop is computed on the scaled source before any resize step so that
-    only one LANCZOS pass is ever applied (resize and crop in one call via
-    box parameter).
+    Scale the image down so its longest side is at most max_dim.
+    Original aspect ratio is preserved exactly — no cropping.
+    Images already within the limit are returned unchanged.
     """
-    src_w, src_h = img.size
-    target_ratio = target_w / target_h
-    src_ratio = src_w / src_h
-
-    if src_ratio > target_ratio:
-        # Source is wider than target — scale to fit height exactly, crop sides
-        scale = target_h / src_h
-    else:
-        # Source is taller than target — scale to fit width exactly, crop top/bottom
-        scale = target_w / src_w
-
-    # Compute crop box in source-image coordinates (before scaling)
-    # This applies crop + resize in a single LANCZOS pass — no double-scaling.
-    scaled_w = src_w * scale  # float
-    scaled_h = src_h * scale  # float
-
-    # Horizontal: pure center
-    crop_left_scaled = (scaled_w - target_w) / 2.0
-
-    # Vertical: center with upward bias to keep top of machine visible
-    crop_top_center = (scaled_h - target_h) / 2.0
-    vertical_overage = scaled_h - target_h
-    if vertical_overage > 0:
-        # Shift crop window upward by 38% of the overage — keeps cab/top of machine in frame
-        bias = vertical_overage * 0.38
-        crop_top_scaled = max(0.0, crop_top_center - bias)
-    else:
-        crop_top_scaled = crop_top_center
-
-    # Convert back to source-image coordinates
-    src_left  = crop_left_scaled / scale
-    src_top   = crop_top_scaled  / scale
-    src_right = src_left + (target_w / scale)
-    src_bot   = src_top  + (target_h / scale)
-
-    # Clamp to source bounds
-    src_left  = max(0.0, src_left)
-    src_top   = max(0.0, src_top)
-    src_right = min(float(src_w), src_right)
-    src_bot   = min(float(src_h), src_bot)
-
-    # Single-pass: crop then resize (Pillow accepts float box for sub-pixel accuracy)
-    img = img.resize((target_w, target_h), Image.LANCZOS,
-                     box=(src_left, src_top, src_right, src_bot))
-    return img
+    w, h = img.size
+    if max(w, h) <= max_dim:
+        return img
+    scale = max_dim / max(w, h)
+    return img.resize((round(w * scale), round(h * scale)), Image.LANCZOS)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -663,8 +610,8 @@ def _apply_branding_overlay(
         raw_parts = [part.strip() for part in normalized_contact.split("|") if part.strip()]
         primary_text = raw_parts[0] if raw_parts else normalized_contact.strip()
         secondary_text = " | ".join(raw_parts[1:]) if len(raw_parts) > 1 else ""
-        title_font = _load_overlay_font(max(21, int(h * 0.0215)), bold=True)
-        body_font = _load_overlay_font(max(15, int(h * 0.0148)), bold=False)
+        title_font = _load_overlay_font(max(26, int(h * 0.0255)), bold=True)
+        body_font = _load_overlay_font(max(20, int(h * 0.0190)), bold=True)
         primary_bbox = draw.textbbox((0, 0), primary_text, font=title_font)
         primary_w = primary_bbox[2] - primary_bbox[0]
         primary_h = primary_bbox[3] - primary_bbox[1]
@@ -723,15 +670,8 @@ def _apply_branding_overlay(
         block_w = min(contact_block_max_w, max(int(w * 0.28), content_w + (block_pad_x * 2)))
         block_x = safe_pad
         block_y = h - safe_pad - block_h
-        block = Image.new("RGBA", (block_w, block_h), (11, 12, 16, 0))
+        block = Image.new("RGBA", (block_w, block_h), (0, 0, 0, 0))
         block_draw = ImageDraw.Draw(block)
-        block_draw.rounded_rectangle(
-            (0, 0, block_w, block_h),
-            radius=max(14, int(block_h * 0.14)),
-            fill=(9, 11, 15, 150),
-            outline=(255, 255, 255, 44),
-            width=max(1, int(block_h * 0.02)),
-        )
 
         content_x = block_pad_x
         if contact_logo is not None:
@@ -741,6 +681,9 @@ def _apply_branding_overlay(
 
         text_x = content_x
         text_y = max(block_pad_y, (block_h - text_stack_h) // 2)
+        # Subtle shadow pass for legibility on the gradient
+        _sd = max(1, int(h * 0.0012))
+        block_draw.text((text_x + _sd, text_y + _sd), primary_text, font=title_font, fill=(0, 0, 0, 110))
         block_draw.text(
             (text_x, text_y),
             primary_text,
@@ -749,6 +692,7 @@ def _apply_branding_overlay(
         )
         if secondary_text:
             text_y += primary_h + text_gap
+            block_draw.text((text_x + _sd, text_y + _sd), secondary_text, font=body_font, fill=(0, 0, 0, 90))
             block_draw.text(
                 (text_x, text_y),
                 secondary_text,
@@ -820,34 +764,22 @@ def _process_image(
     orig_size = _save_original(img.copy(), orig_path)
     results["original"] = (orig_path, orig_size)
 
-    # Steps 3–6: Each platform variant
-    for variant, cfg in TARGETS.items():
-        tw, th = cfg["size"]
-        suffix = cfg["suffix"]
-        quality = cfg["quality"]
+    # Step 3: Scale to listing size — original aspect ratio preserved, no cropping
+    listing_img = _resize_for_listing(img.copy())
+    listing_img = _sharpen(listing_img)
 
-        cropped   = _smart_crop(img.copy(), tw, th)
-        sharpened = _sharpen(cropped)
+    # Step 4: Apply branding overlay (lower-third only, non-destructive)
+    if overlay_logo_path or overlay_contact_text:
+        try:
+            listing_img = _apply_branding_overlay(
+                listing_img, overlay_logo_path, overlay_contact_text, overlay_company_name
+            )
+        except Exception as _ov_exc:
+            print(f"  [WARN] Overlay failed for {os.path.basename(src_path)}: {_ov_exc}")
 
-        # Apply branding overlay to platform variants (not Original_Photos)
-        if overlay_logo_path or overlay_contact_text:
-            try:
-                sharpened = _apply_branding_overlay(
-                    sharpened, overlay_logo_path, overlay_contact_text, overlay_company_name
-                )
-            except Exception as _ov_exc:
-                print(f"  [WARN] Overlay failed for {os.path.basename(src_path)} "
-                      f"({variant}): {_ov_exc}")
-
-        folder_key = {
-            "4x5":  "4x5",
-            "1x1":  "1x1",
-            "9x16": "9x16",
-        }[variant]
-
-        out_path = os.path.join(dirs[folder_key], f"{base}_{suffix}.jpg")
-        size = _save_jpeg(sharpened, out_path, quality)
-        results[variant] = (out_path, size)
+    out_path = os.path.join(dirs["listing"], f"{base}_listing.jpg")
+    size = _save_jpeg(listing_img, out_path, quality=88)
+    results["listing"] = (out_path, size)
 
     return results
 
@@ -859,9 +791,7 @@ def _process_image(
 def _make_dirs(output_folder: str) -> dict:
     dirs = {
         "root":     output_folder,
-        "4x5":      os.path.join(output_folder, "Facebook_Post_Optimized"),
-        "1x1":      os.path.join(output_folder, "Website_Optimized"),
-        "9x16":     os.path.join(output_folder, "Facebook_&_Instagram_Story_Optimized"),
+        "listing":  os.path.join(output_folder, "Listing_Photos"),
         "original": os.path.join(output_folder, "Original_Photos"),
         "spec":     os.path.join(output_folder, "spec_sheet"),
     }

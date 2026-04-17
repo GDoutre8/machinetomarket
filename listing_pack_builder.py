@@ -10,9 +10,7 @@ Output structure:
     {session_dir}/listing_output/
         START_HERE.txt
         listing_description.txt
-        Facebook_Post_Optimized/
-        Website_Optimized/
-        Facebook_&_Instagram_Story_Optimized/
+        Listing_Photos/
         Original_Photos/
         spec_sheet/
             machine_spec_sheet.png
@@ -161,9 +159,7 @@ _ZIP_EXCLUDE = {"metadata_internal.json"}
 _ZIP_ORDER = [
     "START_HERE.txt",
     "listing_description.txt",
-    "Facebook_Post_Optimized",
-    "Website_Optimized",
-    "Facebook_&_Instagram_Story_Optimized",
+    "Listing_Photos",
     "Original_Photos",
     "spec_sheet",
     "walkaround.mp4",
@@ -373,8 +369,7 @@ def build_listing_pack(
             warnings.append(f"Image pack failed: {exc}")
             shutil.rmtree(os.path.join(session_dir, "_img_tmp"), ignore_errors=True)
     else:
-        for sub in ("Facebook_Post_Optimized", "Website_Optimized",
-                    "Facebook_&_Instagram_Story_Optimized", "Original_Photos"):
+        for sub in ("Listing_Photos", "Original_Photos"):
             os.makedirs(os.path.join(pack_dir, sub), exist_ok=True)
         if not image_input_paths:
             warnings.append("No photos provided — image folders created but empty.")
@@ -472,29 +467,17 @@ MTM LISTING PACK \u2013 HOW TO USE
 1. listing_description.txt
 Copy and paste this into Facebook Marketplace, Craigslist, or your website.
 
-2. Facebook_Post_Optimized
-Use these photos for:
+2. Listing_Photos
+Branded listing images with your logo and contact info.
+Use these for:
 - Facebook Marketplace
-- Facebook posts
-- Facebook groups
-These are sized to perform best in the Facebook feed.
+- Craigslist
+- EquipmentTrader, Iron Planet, Machinery Trader
+- Your website and any dealer listing platform
 
-3. Website_Optimized
-Use these for:
-- EquipmentTrader
-- your website
-- dealer listing platforms
-These are standard square images for compatibility.
-
-4. Facebook_&_Instagram_Story_Optimized
-Use these for:
-- Facebook Stories
-- Instagram Stories
-- Reels
-These are vertical images for mobile viewing.
-
-5. Original_Photos
+3. Original_Photos
 Your original uploaded photos (full quality).
+Use these if you need to re-edit or upload to platforms with their own crop tool.
 """
     try:
         with open(os.path.join(pack_dir, "START_HERE.txt"), "w", encoding="utf-8") as f:

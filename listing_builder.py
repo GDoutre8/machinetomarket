@@ -109,13 +109,12 @@ def _title_feature_tokens(
     Return 1–2 value-driver tokens for the listing title.
 
     Priority order:
-      1. High flow + mulcher attachment → ["High Flow", "Mulcher Ready"]
-      2. High flow confirmed            → ["High Flow"]  + best structural feature
+      1. High flow + mulcher attachment → ["High Flow", "Mulching Head"]
+      2. High flow confirmed            → ["High Flow"] + best structural feature
       3. Enclosed cab + A/C             → ["Enclosed Cab, A/C"]
       4. Enclosed cab only              → ["Enclosed Cab"]
       5. 2-speed confirmed              → ["2-Speed"]
-      6. Low hours (< 1200)             → ["Low Hours"]
-      Fallback                          → ["Jobsite Ready"]
+    No fallback — hours-in-title is handled by build_headline when hours ≤ 500.
     """
     att_text = (dealer_input.attachments_included or "").lower()
     has_mulcher = any(kw in att_text for kw in (
@@ -156,24 +155,29 @@ def _title_feature_tokens(
     if has_two_speed:
         tokens.append("2-Speed")
 
-    if dealer_input.hours < 500 and not tokens:
-        tokens.append("Low Hours")
-
-    return tokens or []
+    return tokens
 
 
 def build_headline(dealer_input: DealerInput, use_case_payload: "dict | None" = None) -> str:
     """
     Dealer-grade headline: YEAR MAKE MODEL — KEY VALUE DRIVER(S)
 
+    Feature tokens take priority. When no tokens and hours ≤ 500, appends
+    the actual hour count ("— 312 Hours") instead of a bare label.
+
     Examples:
         2021 CAT 299D3 XPS — High Flow, Enclosed Cab
         2019 Bobcat S650 — Enclosed Cab, 2-Speed
-        2018 JD 333G — High Flow, Mulcher Ready
+        2022 Kubota SVL75-2 — 312 Hours
+        2018 JD 333G — High Flow, Mulching Head
     """
     base = f"{dealer_input.year} {dealer_input.make.upper()} {dealer_input.model}"
     tokens = _title_feature_tokens(dealer_input, use_case_payload)
-    return f"{base} \u2014 {', '.join(tokens)}" if tokens else base
+    if tokens:
+        return f"{base} \u2014 {', '.join(tokens)}"
+    if dealer_input.hours and dealer_input.hours <= 500:
+        return f"{base} \u2014 {dealer_input.hours:,} Hours"
+    return base
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -323,11 +327,11 @@ def _build_mini_ex_headline(dealer_input: DealerInput) -> str:
         tokens.append("Thumb")
     if dealer_input.aux_hydraulics:
         tokens.append("Aux Hydraulics")
-    if dealer_input.hours <= 1500 and not tokens:
-        tokens.append("Low Hours")
 
     if tokens:
         return f"{base} \u2014 {', '.join(tokens[:2])}"
+    if dealer_input.hours and dealer_input.hours <= 500:
+        return f"{base} \u2014 {dealer_input.hours:,} Hours"
     return base
 
 
@@ -461,7 +465,7 @@ def _build_mini_ex_specs_block(resolved_specs: dict, make: str = "") -> str:
 
     if not lines:
         return ""
-    return "Specs:\n" + "\n".join(f"  \u2022 {ln}" for ln in lines)
+    return "Core Specs:\n" + "\n".join(f"  \u2022 {ln}" for ln in lines)
 
 
 def _mini_ex_context_sentence(
@@ -591,39 +595,44 @@ def _build_mini_ex_listing(
     """
     Build a dealer-quality mini excavator listing with enforced section structure:
       1. Headline
-      2. Opening paragraph
-      3. Key Features
-      4. Specs
-      5. Why This Machine
-      6. Attachments / Additional Details (if provided)
-      7. CTA
+      2. $Price (if set)
+      3. Core Specs (OEM-backed)
+      4. Features (market-facing, hours first)
+      5. Best For (scorer-backed bullets)
+      6. Attachments Included (if provided)
+      7. Additional Details (if provided)
+      8. Contact Details
     """
     sections: list[str] = []
 
     # 1. Headline
     sections.append(_build_mini_ex_headline(dealer_input))
 
-    # 2. Opening paragraph
-    sections.append(_build_mini_ex_opening(dealer_input))
+    # 2. Asking price (if provided)
+    if dealer_input.asking_price:
+        sections.append(f"${dealer_input.asking_price:,}")
 
-    # 3. Key Features (market-facing, hours first)
-    feat_lines = _build_mini_ex_key_features(dealer_input)
-    if feat_lines:
-        sections.append("Key Features:\n" + "\n".join(f"  \u2022 {f}" for f in feat_lines))
-
-    # 4. Specs (OEM-backed)
+    # 3. Core Specs (OEM-backed)
     specs_block = _build_mini_ex_specs_block(resolved_specs, make=dealer_input.make)
     if specs_block:
         sections.append(specs_block)
 
-    # 5. Why This Machine
-    sections.append(_build_mini_ex_why(use_case_payload, dealer_input, resolved_specs))
+    # 4. Features (market-facing, hours first)
+    feat_lines = _build_mini_ex_key_features(dealer_input)
+    if feat_lines:
+        sections.append("Features:\n" + "\n".join(f"  \u2022 {f}" for f in feat_lines))
 
-    # 6. Attachments (if provided)
+    # 5. Attachments Included (if provided)
     if dealer_input.attachments_included and dealer_input.attachments_included.strip():
         att_block = _fmt_attachments_bullets(dealer_input.attachments_included.strip())
         if att_block:
             sections.append(att_block)
+
+    # 6. Best For (scorer-backed, optional)
+    if use_case_payload:
+        uc_section = _build_use_case_section(use_case_payload)
+        if uc_section:
+            sections.append(uc_section)
 
     # 7. Additional Details (if provided)
     details_raw = (dealer_input.additional_details or dealer_input.condition_notes or "").strip()
@@ -632,11 +641,8 @@ def _build_mini_ex_listing(
         if details_block:
             sections.append(details_block)
 
-    # 8. CTA
-    if dealer_input.asking_price:
-        sections.append("Call or text to schedule a look.")
-    else:
-        sections.append("Call or text for pricing and availability.")
+    # 8. Contact Details (always last)
+    sections.append("Contact Details:\nCall or text to schedule a look.")
 
     return _compact_listing("\n\n".join(sections))
 
@@ -1039,7 +1045,7 @@ def _build_key_details(
     if not lines:
         return ""
 
-    return "Key Details:\n" + "\n".join(f"  \u2022 {ln}" for ln in lines)
+    return "Core Specs:\n" + "\n".join(f"  \u2022 {ln}" for ln in lines)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1060,10 +1066,8 @@ def build_listing_text(
       TITLE
       $Price               (if set)
 
-      Key Details:         (hours + OEM specs)
+      Core Specs:          (hours + OEM specs)
       • ...
-
-      [Prose description — P1 identity + P2 capability]
 
       Features:            (confirmed config bullets)
       • ...
@@ -1074,17 +1078,19 @@ def build_listing_text(
       Attachments Included: (if provided)
       • ...
 
-      [Additional Details]  (dealer notes, if provided)
+      Extras:              (dealer notes, if provided)
+      • ...
 
-      [CTA]
+      Contact Details:
+      Call or text to schedule a look.
 
-    No --- dividers. No P3 prose paragraph (config moves to Features bullets).
+    No prose paragraphs. No --- dividers. One blank line between sections.
+    Empty sections are suppressed cleanly.
     """
     # Mini excavator: enforced dealer-quality structure (separate builder)
     if equipment_type == "mini_excavator":
         return _build_mini_ex_listing(dealer_input, resolved_specs, use_case_payload)
 
-    use_cases = (use_case_payload or {}).get("top_use_cases_for_listing") or []
     sections: list[str] = []
 
     # 1. Title
@@ -1094,22 +1100,21 @@ def build_listing_text(
     if dealer_input.asking_price:
         sections.append(f"${dealer_input.asking_price:,}")
 
-    # 3. Key Details (hours + OEM specs)
+    # 3. Core Specs (hours + OEM specs)
     key_details = _build_key_details(dealer_input, resolved_specs, equipment_type)
     if key_details:
         sections.append(key_details)
 
-    # 4. Description — P1 identity + P2 capability (no P3 — config moves to Features)
-    p1 = _build_p1_identity(dealer_input)
-    p2 = _build_p2_capability(use_cases, dealer_input, equipment_type)
-    description_paras = [p for p in [p1, p2] if p]
-    if description_paras:
-        sections.append("\n\n".join(description_paras))
-
-    # 5. Features block (cab, comforts, hydraulics, radio, condition, etc.)
+    # 4. Features block (cab, comforts, hydraulics, radio, condition, etc.)
     features_block = _build_features_block(dealer_input)
     if features_block:
         sections.append(features_block)
+
+    # 5. Attachments Included
+    if dealer_input.attachments_included and dealer_input.attachments_included.strip():
+        att_block = _fmt_attachments_bullets(dealer_input.attachments_included.strip())
+        if att_block:
+            sections.append(att_block)
 
     # 6. Best For (scorer-backed, optional)
     if use_case_payload:
@@ -1117,21 +1122,15 @@ def build_listing_text(
         if uc_section:
             sections.append(uc_section)
 
-    # 7. Attachments
-    if dealer_input.attachments_included and dealer_input.attachments_included.strip():
-        att_block = _fmt_attachments_bullets(dealer_input.attachments_included.strip())
-        if att_block:
-            sections.append(att_block)
-
-    # 8. Additional Details / dealer notes (optional)
+    # 7. Extras / dealer notes (optional)
     details_raw = (dealer_input.additional_details or dealer_input.condition_notes or "").strip()
     if details_raw:
         details_block = _fmt_details_bullets(details_raw)
         if details_block:
             sections.append(details_block)
 
-    # 9. CTA
-    sections.append(_build_p4_close(dealer_input))
+    # 8. Contact Details (always last)
+    sections.append("Contact Details:\nCall or text to schedule a look.")
 
     return _compact_listing("\n\n".join(sections))
 

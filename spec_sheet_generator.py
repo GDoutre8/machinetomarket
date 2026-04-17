@@ -26,12 +26,12 @@ SHEET_W      = 1200
 SHEET_H      = 1200
 MARGIN       = 60          # outer left/right margin
 COL_GAP      = 48          # gap between left and right grid columns
-GRID_ROW_GAP = 22          # gap between top and bottom grid rows
-ROW_H        = 56          # height per spec data row
-HEAD_H       = 44          # section heading block height
+GRID_ROW_GAP = 8           # gap between top and bottom grid rows
+ROW_H        = 46          # height per spec data row
+HEAD_H       = 36          # section heading block height
 CELL_PAD_X   = 20          # inner horizontal padding per cell
-CELL_PAD_TOP = 16          # vertical padding above section heading
-CELL_PAD_BOT = 12          # vertical padding below last row
+CELL_PAD_TOP = 6           # vertical padding above section heading
+CELL_PAD_BOT = 4           # vertical padding below last row
 
 # Legacy aliases kept for _draw_features_strip and _render_column
 SECT_GAP     = GRID_ROW_GAP
@@ -39,18 +39,36 @@ BODY_PAD_TOP = CELL_PAD_TOP
 BODY_PAD_BOT = CELL_PAD_BOT
 
 # ── Color Palette ─────────────────────────────────────────────────────────────
-C_BG      = "#F5F3EE"   # warm off-white body
-C_HEADER  = "#1C2228"   # near-black charcoal header
-C_ACCENT  = "#F4A100"   # yellow/gold accent
-C_WHITE   = "#FFFFFF"
-C_TEXT    = "#16212B"   # dark body text
-C_MUTED   = "#647580"   # label gray — slightly darkened for legibility on light background
-C_RULE    = "#DDD9D2"   # light row divider
-C_FOOTER  = "#9EA8B0"   # footer text
+C_BG      = "#F8F7F5"   # clean warm off-white body
+C_HEADER  = "#1F2328"   # cleaner charcoal header
+C_ACCENT  = "#F5B301"   # refined gold — use sparingly
+C_ICON    = "#C49000"   # dimmer gold for icons/dividers — reduces yellow overuse
+C_WHITE   = "#E8E8E6"   # soft off-white for text on dark backgrounds
+C_TEXT    = "#1A2027"   # primary dark text (spec body)
+C_MUTED   = "#9CA3AF"   # muted label gray (lighter than values)
+C_RULE    = "#ECEAE6"   # very soft row divider
+C_FOOTER  = "#9CA3AF"   # footer text
+
+
+# ── Row Suppression ───────────────────────────────────────────────────────────
+# Values that add no useful information to a buyer-facing spec sheet.
+# A row whose resolved value is in this set is dropped entirely; the section
+# collapses upward so no blank gaps are left behind.
+_SUPPRESS_VALUES: frozenset = frozenset({
+    "NO", "N/A", "N/A.", "SINGLE", "CONVENTIONAL", "",
+})
+
+
+def _is_suppressed(value: str) -> bool:
+    """Return True for spec values that should not be printed."""
+    return not value or value.strip().upper() in _SUPPRESS_VALUES
 
 
 # ── Font Resolution ───────────────────────────────────────────────────────────
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
 _FONT_CANDIDATES_REG = [
+    os.path.join(_HERE, "fonts", "Inter-Regular.ttf"),   # bundled Inter
     r"C:\Windows\Fonts\segoeui.ttf",
     r"C:\Windows\Fonts\arial.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
@@ -60,6 +78,7 @@ _FONT_CANDIDATES_REG = [
     "/Library/Fonts/Arial.ttf",
 ]
 _FONT_CANDIDATES_BOLD = [
+    os.path.join(_HERE, "fonts", "Inter-SemiBold.ttf"),  # bundled Inter SemiBold
     r"C:\Windows\Fonts\segoeuib.ttf",
     r"C:\Windows\Fonts\arialbd.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
@@ -155,9 +174,9 @@ def _wrap_text(draw, text, font, max_width, max_lines=2):
 def _draw_section_icon(draw: ImageDraw.ImageDraw, cx: int, cy: int, r: int, section_name: str) -> None:
     """Thin-line section icon — unique per section type."""
     name = (section_name or "").upper()
-    c = C_ACCENT
+    c = C_ICON   # dimmer gold — icons should support, not compete
 
-    if "PERF" in name:
+    if "PERF" in name or "CORE" in name:
         # Speedometer: half-circle arc + baseline + needle
         draw.arc((cx - r, cy - r, cx + r, cy + r), 180, 360, fill=c, width=2)
         draw.line((cx - r, cy, cx + r, cy), fill=c, width=2)
@@ -220,10 +239,10 @@ def _draw_section_heading(
     head_font = _font(17, bold=True)
     text_x = x0 + icon_r * 2 + 10
     text_y = y + (HEAD_H - _line_h(draw, head_font)) // 2
-    _draw_tracked_text(draw, text_x, text_y, section_name.upper(), head_font, C_TEXT, tracking=2)
+    draw.text((text_x, text_y), section_name.title(), font=head_font, fill=C_TEXT)
 
     rule_y = y + HEAD_H
-    draw.line((x0, rule_y, x1, rule_y), fill=C_ACCENT, width=2)
+    draw.line((x0, rule_y, x1, rule_y), fill=C_ICON, width=1)
 
     return rule_y + 8
 
@@ -243,30 +262,30 @@ def _draw_spec_row(
       ──────────────────────────────────────────────────────────────────────────────
     price_row=True adds subtle top-rule and bolder value for Asking Price emphasis.
     """
-    label_font = _font(12, bold=False)
+    # Both label and value use the same base size — clean, balanced rows.
+    # Value shrinks to fit if long; label stays fixed.
+    row_w = x1 - x0
+    max_val_w = int(row_w * 0.55)
+    value_font = _fit_font(draw, value, 16, max_val_w, min_size=13, bold=True)
+    label_font = _font(16, bold=False)
 
-    # Value font: allow up to 60% of row width so values never crowd labels
-    max_val_w = int((x1 - x0) * 0.60)
-    value_font = _fit_font(draw, value, 23, max_val_w, min_size=16, bold=True)
+    lh = _line_h(draw, value_font)
+    val_top = y + (ROW_H - lh) // 2
+    lbl_lh  = _line_h(draw, label_font)
+    lbl_top = y + (ROW_H - lbl_lh) // 2
 
-    val_lh = _line_h(draw, value_font)
-    lbl_lh = _line_h(draw, label_font)
-
-    # Vertically center value; align label baseline to value baseline
-    val_top = y + (ROW_H - val_lh) // 2
-    lbl_top = val_top + (val_lh - lbl_lh)
-
-    # Price row: faint top separator + slightly lighter rule to make it stand out
+    # Price row: faint top separator
     if price_row:
         draw.line((x0, y + 1, x1, y + 1), fill="#C8C2B8", width=1)
 
-    # Label — light muted gray, uppercase
-    draw.text((x0, lbl_top), label.upper(), font=label_font, fill=C_MUTED)
+    # Label — muted gray, left-aligned, Title Case
+    draw.text((x0, lbl_top), label.title(), font=label_font, fill="#7B8694")
 
-    # Value — right-pinned to x1, bold dark
-    val_fill = C_TEXT if not price_row else "#0D1820"   # near-black for price
-    val_w = _text_w(draw, value, value_font)
-    draw.text((x1 - val_w, val_top), value, font=value_font, fill=val_fill)
+    # Value — right-pinned, bold dark, uppercase
+    val_fill = C_TEXT if not price_row else "#0D1820"
+    disp_val = value if price_row else value.upper()
+    val_w = _text_w(draw, disp_val, value_font)
+    draw.text((x1 - val_w, val_top), disp_val, font=value_font, fill=val_fill)
 
     # Thin bottom divider
     draw.line((x0, y + ROW_H, x1, y + ROW_H), fill=C_RULE, width=1)
@@ -309,6 +328,25 @@ _FULL_FIELDS: list[tuple[str, str, str]] = [
 ]
 
 # ── Equipment Type Normalization ──────────────────────────────────────────────
+
+_HUMAN_TYPE: dict[str, str] = {
+    "compact_track_loader": "Compact Track Loader",
+    "skid_steer":           "Skid Steer Loader",
+    "mini_excavator":       "Mini Excavator",
+    "telehandler":          "Telescopic Handler",
+    "backhoe_loader":       "Backhoe Loader",
+    "boom_lift":            "Boom Lift",
+    "scissor_lift":         "Scissor Lift",
+    "wheel_loader":         "Wheel Loader",
+    "dozer":                "Crawler Dozer",
+}
+
+
+def _humanize_subtitle(raw: str) -> str:
+    """Convert raw equipment_type strings like 'compact_track_loader' to display form."""
+    key = str(raw).lower().strip().replace(" ", "_").replace("-", "_")
+    return _HUMAN_TYPE.get(key, raw.replace("_", " ").title())
+
 
 _EQ_TYPE_ALIASES: dict[str, str] = {
     "compact_track_loader": "compact_track_loader",
@@ -660,6 +698,34 @@ def _resolve_profile_field(
             return None
         return (label, "YES" if val else "NO")
 
+    if key == "_cab_type":
+        val = resolved_specs.get("cab_type") or listing_data.get("cab_type")
+        if val:
+            s = str(val).strip().upper()
+            if s not in _SUPPRESS_VALUES:
+                return (label, s)
+        for f in features_lower:
+            if "enclosed cab" in f or "cab, enclosed" in f:
+                return (label, "ENCLOSED")
+            if "open cab" in f or "rops" in f or "open station" in f:
+                return (label, "OPEN")
+            if "canopy" in f:
+                return (label, "CANOPY")
+        return None
+
+    if key == "_ac":
+        val = (
+            resolved_specs.get("ac")
+            or resolved_specs.get("air_conditioning")
+            or listing_data.get("ac")
+        )
+        if val is not None:
+            return (label, "YES") if val else None
+        for f in features_lower:
+            if "a/c" in f or "air cond" in f or "air-cond" in f:
+                return (label, "YES")
+        return None
+
     # ── Passthrough string normalization ──────────────────────────────────────
     if key == "tail_swing_type":
         val = resolved_specs.get("tail_swing_type")
@@ -738,7 +804,7 @@ def _build_section_from_profile(
             key, lbl, unit, source,
             resolved_specs, listing_data, ui_hints, features_lower,
         )
-        if result is not None:
+        if result is not None and not _is_suppressed(result[1]):
             rows.append(result)
     return rows
 
@@ -823,7 +889,7 @@ def _build_grouped_rows_from_profile(
         field_defs = profile.get(section_name)
         if not field_defs:
             continue
-        max_rows = 3 if section_name == "MACHINE CONDITION" else 4
+        max_rows = 3 if section_name == "MACHINE CONDITION" else (5 if section_name == "CONFIGURATION" else 4)
         rows = _build_section_from_profile(
             section_name, field_defs,
             resolved_specs, listing_data, ui_hints, max_rows=max_rows,
@@ -849,6 +915,9 @@ def _build_grouped_rows(
         or ""
     )
     eq_type = _normalize_eq_type(eq_type_raw)
+    priority_profile = PRIORITY_SPEC_PROFILES.get(eq_type)
+    if priority_profile:
+        return _build_priority_sections(priority_profile, resolved_specs, listing_data, ui_hints)
     profile = CORE_SPEC_PROFILES.get(eq_type)
     if profile:
         return _build_grouped_rows_from_profile(profile, resolved_specs, listing_data, ui_hints)
@@ -907,13 +976,16 @@ def _build_grouped_rows_dynamic(
                 continue
 
             if isinstance(val, bool):
-                rows.append((label, "YES" if val else "NO"))
+                if val:  # only append when True — False adds nothing to a spec sheet
+                    rows.append((label, "YES"))
             else:
-                rows.append((label, _fmt_val(val, unit).upper()))
+                formatted = _fmt_val(val, unit).upper()
+                if not _is_suppressed(formatted):
+                    rows.append((label, formatted))
 
         # --- CONFIGURATION extras from features/ui_hints ---
         if section_name == "CONFIGURATION":
-            # High flow option
+            # High flow option — only when present
             has_hi_flow = (
                 resolved_specs.get("hi_flow_gpm") is not None
                 or hi_flow_active
@@ -922,19 +994,19 @@ def _build_grouped_rows_dynamic(
             if has_hi_flow:
                 rows.append(("High Flow Option", "YES"))
 
-            # Ride control — show both YES and NO (decision-relevant; listed before travel speed)
+            # Ride control — only show when the machine has it
             ride_val = resolved_specs.get("ride_control")
-            if ride_val is not None:
-                rows.append(("Ride Control", "YES" if ride_val else "NO"))
+            if ride_val:
+                rows.append(("Ride Control", "YES"))
             elif any("ride control" in f for f in features_lower):
                 rows.append(("Ride Control", "YES"))
 
-            # Two-speed (lower priority than ride control in brochure view)
+            # Two-speed — only show when present
             two_speed_val = resolved_specs.get("two_speed")
-            if two_speed_val is not None:
-                rows.append(("Travel Speed", "2-SPEED" if two_speed_val else "SINGLE"))
+            if two_speed_val:
+                rows.append(("Travel Speed", "2-SPEED"))
             elif any("2-speed" in f or "two-speed" in f or "two speed" in f for f in features_lower):
-                rows.append(("Travel Speed (2-Speed)", "YES"))
+                rows.append(("Travel Speed", "2-SPEED"))
 
         # Enforce per-section row cap
         limit = _ROW_LIMITS.get(section_name)
@@ -979,6 +1051,220 @@ def _build_grouped_rows_dynamic(
     return result
 
 
+# ── Priority Spec Registry ────────────────────────────────────────────────────
+# Field tuple: (key, label, unit, source, priority, section_group)
+#   priority: 1=must-show  2=fill-space  3=nice-to-have
+#   section_group: "core" | "dimensions" | "config" | "condition"
+
+PRIORITY_SPEC_PROFILES: dict[str, list[tuple]] = {
+
+    "compact_track_loader": [
+        ("net_hp",                        "Engine Power",         "HP",  "specs",   1, "core"),
+        ("roc_lb",                        "Rated Capacity",       "LB",  "specs",   1, "core"),
+        ("tipping_load_lb",               "Tipping Load",         "LB",  "specs",   1, "core"),
+        ("hydraulic_flow_gpm",            "Aux Hydraulic Flow",   "GPM", "specs",   1, "core"),
+        ("lift_type",                     "Lift Path",            "",    "specs",   1, "config"),
+        ("_high_flow",                    "High Flow",            "",    "derived", 1, "config"),
+        ("_two_speed",                    "2-Speed Travel",       "",    "derived", 1, "config"),
+        ("_cab_type",                     "Cab Type",             "",    "derived", 1, "config"),
+        ("_ac",                           "A/C",                  "",    "derived", 1, "config"),
+        ("hours",                         "Hours",                "HRS", "listing", 1, "condition"),
+        ("track_condition",               "Track Condition",      "",    "listing", 1, "condition"),
+        ("price_value",                   "Asking Price",         "",    "listing", 1, "condition"),
+        ("hinge_pin_height_in",           "Hinge Pin Height",     "IN",  "specs",   2, "dimensions"),
+        ("width_in",                      "Width Over Tracks",    "IN",  "specs",   2, "dimensions"),
+        ("operating_weight_lb",           "Operating Weight",     "LB",  "specs",   2, "dimensions"),
+        ("track_type",                    "Track Type",           "",    "specs",   2, "config"),
+        ("ride_control",                  "Ride Control",         "",    "derived", 2, "config"),
+        ("overall_condition",             "Overall Condition",    "",    "listing", 2, "condition"),
+        ("length_in",                     "Machine Length",       "IN",  "specs",   3, "dimensions"),
+        ("travel_speed_high_mph",         "Max Travel Speed",     "MPH", "specs",   3, "dimensions"),
+        ("hydraulic_pressure_standard_psi","Hyd. Pressure",       "PSI", "specs",   3, "core"),
+    ],
+
+    "skid_steer": [
+        ("net_hp",                        "Engine Power",         "HP",  "specs",   1, "core"),
+        ("roc_lb",                        "Rated Capacity",       "LB",  "specs",   1, "core"),
+        ("tipping_load_lb",               "Tipping Load",         "LB",  "specs",   1, "core"),
+        ("hydraulic_flow_gpm",            "Aux Hydraulic Flow",   "GPM", "specs",   1, "core"),
+        ("lift_type",                     "Lift Path",            "",    "specs",   1, "config"),
+        ("_high_flow",                    "High Flow",            "",    "derived", 1, "config"),
+        ("_two_speed",                    "2-Speed Travel",       "",    "derived", 1, "config"),
+        ("_cab_type",                     "Cab Type",             "",    "derived", 1, "config"),
+        ("_ac",                           "A/C",                  "",    "derived", 1, "config"),
+        ("hours",                         "Hours",                "HRS", "listing", 1, "condition"),
+        ("tire_condition",                "Tire Condition",       "",    "listing", 1, "condition"),
+        ("price_value",                   "Asking Price",         "",    "listing", 1, "condition"),
+        ("hinge_pin_height_in",           "Hinge Pin Height",     "IN",  "specs",   2, "dimensions"),
+        ("width_in",                      "Width Over Tires",     "IN",  "specs",   2, "dimensions"),
+        ("operating_weight_lb",           "Operating Weight",     "LB",  "specs",   2, "dimensions"),
+        ("tire_type",                     "Tire Type",            "",    "specs",   2, "config"),
+        ("ride_control",                  "Ride Control",         "",    "derived", 2, "config"),
+        ("overall_condition",             "Overall Condition",    "",    "listing", 2, "condition"),
+        ("length_in",                     "Machine Length",       "IN",  "specs",   3, "dimensions"),
+        ("travel_speed_high_mph",         "Max Travel Speed",     "MPH", "specs",   3, "dimensions"),
+    ],
+
+    "mini_excavator": [
+        ("net_hp",                        "Engine Power",         "HP",  "specs",   1, "core"),
+        ("operating_weight_lb",           "Operating Weight",     "LB",  "specs",   1, "core"),
+        ("max_dig_depth",                 "Max Dig Depth",        "",    "specs",   1, "core"),
+        ("hydraulic_flow_gpm",            "Aux Hydraulic Flow",   "GPM", "specs",   1, "core"),
+        ("tail_swing_type",               "Tail Swing",           "",    "specs",   1, "config"),
+        ("_cab_type",                     "Cab Type",             "",    "derived", 1, "config"),
+        ("_ac",                           "A/C",                  "",    "derived", 1, "config"),
+        ("blade_type",                    "Blade",                "",    "specs",   1, "config"),
+        ("hours",                         "Hours",                "HRS", "listing", 1, "condition"),
+        ("track_condition",               "Undercarriage",        "",    "listing", 1, "condition"),
+        ("price_value",                   "Asking Price",         "",    "listing", 1, "condition"),
+        ("bucket_breakout_lb",            "Breakout Force",       "LB",  "specs",   2, "core"),
+        ("max_reach_ft",                  "Max Reach",            "FT",  "specs",   2, "dimensions"),
+        ("max_dump_height_ft",            "Dump Height",          "FT",  "specs",   2, "dimensions"),
+        ("width_in",                      "Transport Width",      "IN",  "specs",   2, "dimensions"),
+        ("thumb_type",                    "Thumb",                "",    "specs",   2, "config"),
+        ("_two_speed",                    "2-Speed Travel",       "",    "derived", 2, "config"),
+        ("track_type",                    "Track Type",           "",    "specs",   2, "config"),
+        ("overall_condition",             "Overall Condition",    "",    "listing", 2, "condition"),
+        ("length_in",                     "Machine Length",       "IN",  "specs",   3, "dimensions"),
+    ],
+
+    "telehandler": [
+        ("net_hp",                        "Engine Power",         "HP",  "specs",   1, "core"),
+        ("max_lift_capacity_lb",          "Max Lift Capacity",    "LB",  "specs",   1, "core"),
+        ("max_lift_height_in",            "Max Lift Height",      "IN",  "specs",   1, "core"),
+        ("max_forward_reach_in",          "Max Forward Reach",    "IN",  "specs",   1, "core"),
+        ("_cab_type",                     "Cab Type",             "",    "derived", 1, "config"),
+        ("_ac",                           "A/C",                  "",    "derived", 1, "config"),
+        ("_stabilizers",                  "Stabilizers",          "",    "derived", 1, "config"),
+        ("hours",                         "Hours",                "HRS", "listing", 1, "condition"),
+        ("price_value",                   "Asking Price",         "",    "listing", 1, "condition"),
+        ("operating_weight_lb",           "Operating Weight",     "LB",  "specs",   2, "dimensions"),
+        ("length_in",                     "Overall Length",       "IN",  "specs",   2, "dimensions"),
+        ("carriage_type",                 "Carriage Type",        "",    "specs",   2, "config"),
+        ("tire_type",                     "Tire Type",            "",    "specs",   2, "config"),
+        ("overall_condition",             "Overall Condition",    "",    "listing", 2, "condition"),
+        ("travel_speed_high_mph",         "Max Travel Speed",     "MPH", "specs",   3, "dimensions"),
+    ],
+
+    "backhoe_loader": [
+        ("net_hp",                        "Engine Power",         "HP",  "specs",   1, "core"),
+        ("loader_cap_lb",                 "Loader Capacity",      "LB",  "specs",   1, "core"),
+        ("max_dig_depth_in",              "Max Dig Depth",        "IN",  "specs",   1, "core"),
+        ("_cab_type",                     "Cab Type",             "",    "derived", 1, "config"),
+        ("_ac",                           "A/C",                  "",    "derived", 1, "config"),
+        ("hours",                         "Hours",                "HRS", "listing", 1, "condition"),
+        ("price_value",                   "Asking Price",         "",    "listing", 1, "condition"),
+        ("operating_weight_lb",           "Operating Weight",     "LB",  "specs",   2, "dimensions"),
+        ("loader_dump_height_in",         "Loader Dump Height",   "IN",  "specs",   2, "dimensions"),
+        ("length_in",                     "Overall Length",       "IN",  "specs",   2, "dimensions"),
+        ("backhoe_cap_lb",                "Backhoe Capacity",     "LB",  "specs",   2, "core"),
+        ("tire_type",                     "Tire Type",            "",    "specs",   2, "config"),
+        ("quick_attach",                  "Quick Attach",         "",    "specs",   2, "config"),
+        ("_two_speed",                    "Travel Speed",         "",    "derived", 2, "config"),
+        ("overall_condition",             "Overall Condition",    "",    "listing", 2, "condition"),
+        ("travel_speed_high_mph",         "Max Travel Speed",     "MPH", "specs",   3, "dimensions"),
+    ],
+
+    "wheel_loader": [
+        ("net_hp",                        "Engine Power",         "HP",  "specs",   1, "core"),
+        ("bucket_capacity_cy",            "Bucket Capacity",      "CY",  "specs",   1, "core"),
+        ("operating_weight_lb",           "Operating Weight",     "LB",  "specs",   1, "core"),
+        ("hydraulic_flow_gpm",            "Aux Hydraulic Flow",   "GPM", "specs",   1, "core"),
+        ("_cab_type",                     "Cab Type",             "",    "derived", 1, "config"),
+        ("_ac",                           "A/C",                  "",    "derived", 1, "config"),
+        ("hours",                         "Hours",                "HRS", "listing", 1, "condition"),
+        ("price_value",                   "Asking Price",         "",    "listing", 1, "condition"),
+        ("dump_height_in",                "Dump Height",          "IN",  "specs",   2, "dimensions"),
+        ("length_in",                     "Overall Length",       "IN",  "specs",   2, "dimensions"),
+        ("width_in",                      "Machine Width",        "IN",  "specs",   2, "dimensions"),
+        ("tire_type",                     "Tire Type",            "",    "specs",   2, "config"),
+        ("quick_attach",                  "Quick Attach",         "",    "specs",   2, "config"),
+        ("_two_speed",                    "Travel Speed",         "",    "derived", 2, "config"),
+        ("overall_condition",             "Overall Condition",    "",    "listing", 2, "condition"),
+        ("travel_speed_high_mph",         "Max Travel Speed",     "MPH", "specs",   3, "dimensions"),
+    ],
+}
+
+_PRIORITY_SECTION_NAMES: dict[str, str] = {
+    "core":      "CORE SPECS",
+    "dimensions":"DIMENSIONS",
+    "config":    "CONFIGURATION",
+    "condition": "CONDITION",
+}
+
+_PRIORITY_SECTION_ORDER = ["core", "dimensions", "config", "condition"]
+
+
+def _merge_thin_sections(
+    sections: list[tuple[str, list[tuple[str, str]]]],
+    min_rows: int = 3,
+) -> list[tuple[str, list[tuple[str, str]]]]:
+    """Merge any section with fewer than min_rows rows into the preceding section."""
+    if len(sections) <= 1:
+        return sections
+    result: list[tuple[str, list[tuple[str, str]]]] = []
+    for name, rows in sections:
+        if rows and len(rows) < min_rows and result:
+            prev_name, prev_rows = result[-1]
+            result[-1] = (prev_name, prev_rows + rows)
+        else:
+            result.append((name, rows))
+    return result
+
+
+def _balance_columns(
+    sections: list[tuple[str, list[tuple[str, str]]]],
+) -> tuple[list, list]:
+    """Greedily assign sections to left/right columns to minimise height difference."""
+    left: list[tuple[str, list]] = []
+    right: list[tuple[str, list]] = []
+    left_h = right_h = 0
+    for name, rows in sections:
+        sec_h = HEAD_H + 8 + len(rows) * ROW_H + SECT_GAP
+        if left_h <= right_h:
+            left.append((name, rows))
+            left_h += sec_h
+        else:
+            right.append((name, rows))
+            right_h += sec_h
+    return left, right
+
+
+def _build_priority_sections(
+    profile: list[tuple],
+    resolved_specs: dict,
+    listing_data: dict,
+    ui_hints: dict,
+) -> list[tuple[str, list[tuple[str, str]]]]:
+    """
+    P1 → fill all available; P2 → fill remaining space; P3 → only if space remains.
+    Groups resolved fields into semantic sections; merges thin sections.
+    """
+    features_lower = [str(f).lower() for f in (listing_data.get("features") or [])]
+    buckets: dict[str, list[tuple[str, str]]] = {s: [] for s in _PRIORITY_SECTION_ORDER}
+    seen_labels: set[str] = set()
+
+    for pri in (1, 2, 3):
+        for key, label, unit, source, priority, section in profile:
+            if priority != pri or label in seen_labels:
+                continue
+            result = _resolve_profile_field(
+                key, label, unit, source,
+                resolved_specs, listing_data, ui_hints, features_lower,
+            )
+            if result is not None and not _is_suppressed(result[1]):
+                buckets[section].append(result)
+                seen_labels.add(label)
+
+    sections: list[tuple[str, list[tuple[str, str]]]] = [
+        (_PRIORITY_SECTION_NAMES[key], rows)
+        for key in _PRIORITY_SECTION_ORDER
+        for rows in [buckets[key]]
+        if rows
+    ]
+    return _merge_thin_sections(sections)
+
+
 # ── Header Rendering ──────────────────────────────────────────────────────────
 
 def _draw_header(
@@ -989,20 +1275,37 @@ def _draw_header(
     make: str,
     model: str,
     subtitle: str,
+    header_override: "str | None" = None,
 ) -> None:
     """
     Dark charcoal header bar.
-    Title: [YEAR bold yellow] [MAKE bold white] [MODEL bold yellow]
-    Subtitle: muted gray, smaller
-    Small yellow accent line at bottom-left.
+
+    Standard mode: [YEAR yellow] [MAKE white] [MODEL yellow] + subtitle below.
+    Brochure panel-2 mode (header_override set): single clean equipment-type line.
     """
-    # Background
     draw.rectangle((0, 0, canvas_w, header_h), fill=C_HEADER)
 
-    # --- Title: mixed-color inline text ---
+    if header_override:
+        # Brochure panel 2: year (small, accent) stacked above equipment type (large, white)
+        # header_override carries the Title Case equipment type string
+        type_str = header_override  # already Title Case from caller
+        yr_font   = _font(18, bold=False)
+        type_font = _fit_font(draw, type_str, 42, canvas_w - MARGIN * 2 - 40, min_size=22, bold=True)
+        yr_lh     = _line_h(draw, yr_font) if year else 0
+        type_lh   = _line_h(draw, type_font)
+        gap       = 5 if year else 0
+        total_block_h = yr_lh + gap + type_lh
+        block_y   = (header_h - total_block_h) // 2
+        if year:
+            draw.text((MARGIN, block_y), year, font=yr_font, fill=C_ACCENT)
+            block_y += yr_lh + gap
+        draw.text((MARGIN, block_y), type_str, font=type_font, fill=C_WHITE)
+        draw.rectangle((0, header_h - 3, canvas_w, header_h), fill=C_ACCENT)
+        return
+
+    # Standard mode — year/make/model mixed-color inline
     max_title_w = canvas_w - MARGIN * 2 - 40
-    # Pick a size that fits
-    title_size = 52
+    title_size = 58
     while title_size >= 28:
         fy = _font(title_size, bold=True)
         fw = _font(title_size, bold=True)
@@ -1034,11 +1337,8 @@ def _draw_header(
     if model:
         draw.text((x, title_y), model.upper(), font=title_font_bold, fill=C_ACCENT)
 
-    # Subtitle
-    draw.text((MARGIN, sub_y), subtitle.upper(), font=subtitle_font, fill="#8A95A0")
-
-    # Yellow accent bar at header bottom-left
-    draw.rectangle((0, header_h - 4, canvas_w, header_h), fill=C_ACCENT)
+    draw.text((MARGIN, sub_y), _humanize_subtitle(subtitle), font=subtitle_font, fill=C_MUTED)
+    draw.rectangle((0, header_h - 3, canvas_w, header_h), fill=C_ACCENT)
 
 
 # ── Features Row ──────────────────────────────────────────────────────────────
@@ -1055,7 +1355,7 @@ def _draw_features_strip(
         return y
 
     head_font = _font(13, bold=True)
-    _draw_tracked_text(draw, x0, y, "FEATURES & OPTIONS", head_font, C_MUTED, tracking=2)
+    draw.text((x0, y), "Features & Options", font=head_font, fill=C_MUTED)
     rule_y = y + _line_h(draw, head_font) + 4
     draw.line((x0, rule_y, x1, rule_y), fill=C_RULE, width=1)
     y = rule_y + 12
@@ -1089,7 +1389,9 @@ def _render_spec_sheet_to_image(
     model: str,
     grouped_sections: list[tuple[str, list[tuple[str, str]]]],
     features: list[str],
+    dealer_info: dict | None = None,
     fixed_height: int | None = None,
+    brochure_panel: bool = False,
 ) -> Image.Image:
     """
     2×2 dealer-brochure grid spec sheet — returns PIL Image (not saved).
@@ -1102,8 +1404,13 @@ def _render_spec_sheet_to_image(
     start-y and end-y, determined by whichever cell has more rows.
     Thin rules separate the columns and rows. No heavy boxes.
     """
-    HEADER_H = 110
-    FOOTER_H  = 46
+    HEADER_H = 126
+    _di = dealer_info or {}
+    _has_contact = bool(
+        _di.get("dealer_name") or _di.get("contact_name")
+        or _di.get("phone") or _di.get("contact_phone")
+    )
+    FOOTER_H = 100 if _has_contact else 36
 
     # ── Column geometry ───────────────────────────────────────────────────────
     col_w = (SHEET_W - MARGIN * 2 - COL_GAP) // 2
@@ -1117,30 +1424,26 @@ def _render_spec_sheet_to_image(
     # Vertical divider x (center of gap)
     vdiv_x = MARGIN + col_w + COL_GAP // 2
 
-    # ── Assign sections to the 2×2 grid ──────────────────────────────────────
-    # Expected order: PERFORMANCE(0), DIMENSIONS(1), CONFIGURATION(2), MACHINE CONDITION(3)
-    grid: list[tuple[str, list] | None] = [None, None, None, None]
-    for i, sec in enumerate(grouped_sections[:4]):
-        grid[i] = sec
+    # ── Assign sections to two independent stacked columns ───────────────────
+    # _balance_columns greedily distributes sections to minimise height diff.
+    left_secs, right_secs = _balance_columns(grouped_sections)
 
-    def _cell_h(pos: int) -> int:
-        """Content height for one grid cell (heading + rows + padding)."""
-        sec = grid[pos]
-        if sec is None:
+    def _col_content_h(secs: list) -> int:
+        if not secs:
             return 0
-        _, rows = sec
-        return CELL_PAD_TOP + HEAD_H + 8 + len(rows) * ROW_H + CELL_PAD_BOT
+        h = CELL_PAD_TOP
+        for _, rows in secs:
+            h += HEAD_H + 8 + len(rows) * ROW_H + SECT_GAP
+        return h
 
-    # Synchronized row heights
-    row1_h = max(_cell_h(0), _cell_h(1), 1)
-    row2_h = max(_cell_h(2), _cell_h(3), 1)
+    grid_h = max(_col_content_h(left_secs), _col_content_h(right_secs), 1)
 
     # ── Optional features strip ───────────────────────────────────────────────
     feat_rows = math.ceil(len(features) / 2) if features else 0
     feat_strip_h = (32 + feat_rows * 28 + 16) if features else 0
 
     # ── Canvas ────────────────────────────────────────────────────────────────
-    canvas_h = HEADER_H + row1_h + GRID_ROW_GAP + row2_h + feat_strip_h + FOOTER_H
+    canvas_h = HEADER_H + grid_h + feat_strip_h + FOOTER_H
     if fixed_height is not None:
         canvas_h = fixed_height
 
@@ -1148,60 +1451,73 @@ def _render_spec_sheet_to_image(
     draw = ImageDraw.Draw(img)
 
     # ── Header bar ────────────────────────────────────────────────────────────
-    _draw_header(draw, SHEET_W, HEADER_H, year, make, model, subtitle)
+    _hdr_override: "str | None" = None
+    if brochure_panel:
+        _hdr_override = _humanize_subtitle(subtitle)  # Title Case; year rendered separately inside _draw_header
+    _draw_header(draw, SHEET_W, HEADER_H, year, make, model, subtitle, header_override=_hdr_override)
 
-    # ── Grid y-anchors ────────────────────────────────────────────────────────
-    row1_y = HEADER_H          # top of grid row 1
-    row2_y = row1_y + row1_h + GRID_ROW_GAP   # top of grid row 2
-
-    # ── Grid separator lines ──────────────────────────────────────────────────
-    # Vertical (column divider)
+    # ── Vertical column divider ───────────────────────────────────────────────
     draw.line(
-        (vdiv_x, HEADER_H, vdiv_x, row2_y + row2_h),
-        fill=C_RULE, width=1,
-    )
-    # Horizontal (row divider)
-    hdiv_y = row1_y + row1_h + GRID_ROW_GAP // 2
-    draw.line(
-        (MARGIN, hdiv_y, SHEET_W - MARGIN, hdiv_y),
+        (vdiv_x, HEADER_H, vdiv_x, HEADER_H + grid_h),
         fill=C_RULE, width=1,
     )
 
-    # ── Draw each grid cell ───────────────────────────────────────────────────
-    def _draw_cell(pos: int, x0: int, x1: int, cell_top: int) -> None:
-        sec = grid[pos]
-        if sec is None:
-            return
-        section_name, rows = sec
-        y = cell_top + CELL_PAD_TOP
-        y = _draw_section_heading(draw, x0, x1, y, section_name)
-        for label, value in rows:
-            is_price = label.lower() == "asking price"
-            _draw_spec_row(draw, x0, x1, y, label, value, price_row=is_price)
-            y += ROW_H
-
-    _draw_cell(0, lx0, lx1, row1_y)   # PERFORMANCE     — top-left
-    _draw_cell(1, rx0, rx1, row1_y)   # DIMENSIONS      — top-right
-    _draw_cell(2, lx0, lx1, row2_y)   # CONFIGURATION   — bottom-left
-    _draw_cell(3, rx0, rx1, row2_y)   # MACHINE COND.   — bottom-right
+    # ── Render each column (sections stack naturally within their column) ─────
+    _render_column(draw, left_secs,  lx0, lx1, HEADER_H + CELL_PAD_TOP)
+    _render_column(draw, right_secs, rx0, rx1, HEADER_H + CELL_PAD_TOP)
 
     # ── Features strip (optional, below grid) ────────────────────────────────
-    feat_y = row2_y + row2_h + 8
+    feat_y = HEADER_H + grid_h + 8
     if features:
         _draw_features_strip(draw, MARGIN, SHEET_W - MARGIN, feat_y, features)
 
-    # ── Footer ────────────────────────────────────────────────────────────────
+    # ── Footer / Contact Block ────────────────────────────────────────────────
     footer_y = canvas_h - FOOTER_H
-    draw.line((MARGIN, footer_y, SHEET_W - MARGIN, footer_y), fill=C_RULE, width=1)
-    footer_font = _font(15, bold=False)
-    footer_text = "Generated by Machine to Market"
-    footer_w = _text_w(draw, footer_text, footer_font)
-    draw.text(
-        (SHEET_W - MARGIN - footer_w, footer_y + 14),
-        footer_text,
-        font=footer_font,
-        fill=C_FOOTER,
-    )
+    if _has_contact:
+        # Dark bar matching header — acts as the CTA block
+        draw.rectangle((0, footer_y, SHEET_W, canvas_h), fill=C_HEADER)
+        draw.line((0, footer_y, SHEET_W, footer_y), fill=C_ACCENT, width=3)
+
+        _cname  = _di.get("dealer_name") or _di.get("contact_name") or ""
+        _cphone = _di.get("phone") or _di.get("contact_phone") or ""
+
+        cy = footer_y + 18
+        if _cname:
+            cf_name = _font(28, bold=True)
+            draw.text((MARGIN, cy), _cname, font=cf_name, fill=C_WHITE)
+            cy += _line_h(draw, cf_name) + 5
+        if _cphone:
+            cf_phone = _font(24, bold=True)
+            draw.text((MARGIN, cy), _cphone, font=cf_phone, fill=C_ACCENT)
+
+        # "Call or text" CTA — right-aligned, vertically centered
+        cta_font = _font(14, bold=False)
+        cta_text = "Call or text to schedule"
+        cta_w = _text_w(draw, cta_text, cta_font)
+        draw.text(
+            (SHEET_W - MARGIN - cta_w, footer_y + 22),
+            cta_text, font=cta_font, fill=C_MUTED,
+        )
+
+        # MTM attribution — bottom-right, near-invisible
+        attr_font = _font(9, bold=False)
+        attr_text = "Generated by Machine to Market"
+        attr_w = _text_w(draw, attr_text, attr_font)
+        draw.text(
+            (SHEET_W - MARGIN - attr_w, canvas_h - 14),
+            attr_text, font=attr_font, fill="#2E3840",
+        )
+    else:
+        draw.line((MARGIN, footer_y, SHEET_W - MARGIN, footer_y), fill=C_RULE, width=1)
+        footer_font = _font(10, bold=False)
+        footer_text = "Generated by Machine to Market"
+        footer_w = _text_w(draw, footer_text, footer_font)
+        draw.text(
+            (SHEET_W - MARGIN - footer_w, footer_y + 12),
+            footer_text,
+            font=footer_font,
+            fill="#6A7580",
+        )
 
     return img
 
@@ -1215,13 +1531,17 @@ def _render_spec_sheet(
     model: str,
     grouped_sections: list[tuple[str, list[tuple[str, str]]]],
     features: list[str],
+    dealer_info: dict | None = None,
     output_path: str,
     fixed_height: int | None = None,
+    brochure_panel: bool = False,
 ) -> str:
     """Save the spec sheet image to output_path and return the path."""
     img = _render_spec_sheet_to_image(
         title=title, subtitle=subtitle, year=year, make=make, model=model,
-        grouped_sections=grouped_sections, features=features, fixed_height=fixed_height,
+        grouped_sections=grouped_sections, features=features,
+        dealer_info=dealer_info, fixed_height=fixed_height,
+        brochure_panel=brochure_panel,
     )
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     img.save(output_path, "PNG", optimize=True)
@@ -1233,15 +1553,15 @@ def _render_spec_sheet(
 # Brochure layout constants
 BROCHURE_W   = 1200
 P1_H         = 660     # height of marketing panel
-P1_BG        = "#18191D"
-P1_DARK_BG   = "#0D0F12"   # inner image dark fill
+P1_BG        = "#1F2328"   # matches C_HEADER for visual unity
+P1_DARK_BG   = "#131519"   # inner image dark fill
 
 # Image frame (left side)
 IF_X0 = 22
 IF_Y0 = 22
 IF_W  = 786             # frame outer width
 IF_H  = 616             # frame outer height  →  y1 = 22+616 = 638
-IF_BORDER = 2
+IF_BORDER = 1
 II_X0 = IF_X0 + IF_BORDER   # = 24
 II_Y0 = IF_Y0 + IF_BORDER   # = 24
 II_W  = IF_W - IF_BORDER * 2   # = 782
@@ -1289,7 +1609,7 @@ def _load_fit_image(
 
 def _draw_callout_icon(draw: ImageDraw.ImageDraw, cx: int, cy: int, r: int, icon_type: str) -> None:
     """Thin-line callout icon for Panel 1 highlights."""
-    c = C_ACCENT
+    c = C_ICON   # dimmer gold — icons support, not compete
     w = 2
     if icon_type == "gear":
         draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=c, width=w)
@@ -1376,10 +1696,10 @@ def _render_panel1(
         fit = _load_fit_image(machine_image_path, II_W, II_H, bg=P1_DARK_BG)
         img.paste(fit, (II_X0, II_Y0))
 
-    # Yellow frame border
+    # Subtle frame border — 1px, dimmer gold so it doesn't compete with the image
     draw.rectangle(
         (IF_X0, IF_Y0, IF_X0 + IF_W - 1, IF_Y0 + IF_H - 1),
-        outline=C_ACCENT, width=IF_BORDER,
+        outline=C_ICON, width=1,
     )
 
     # ── Bottom overlay bar ────────────────────────────────────────────────────
@@ -1387,61 +1707,49 @@ def _render_panel1(
     ov_y1 = II_Y0 + II_H
     draw.rectangle((II_X0, ov_y0, II_X0 + II_W - 1, ov_y1 - 1), fill=P1_BG)
 
-    # Logo box: white rect, anchored to left edge of overlay
-    logo_box_x = II_X0 + 12
-    logo_box_y = ov_y0 + 8
-    logo_box_w = 160
-    logo_box_h = OVERLAY_H - 16
-    draw.rectangle(
-        (logo_box_x, logo_box_y, logo_box_x + logo_box_w, logo_box_y + logo_box_h),
-        fill=C_WHITE,
-    )
+    # Logo: composite directly onto dark overlay strip — no white box
+    logo_zone_x = II_X0 + 12
+    logo_zone_y = ov_y0 + 6
+    logo_max_w  = 148
+    logo_max_h  = OVERLAY_H - 12
+    has_logo = False
     if dealer_logo_path and os.path.isfile(dealer_logo_path):
         try:
             logo_src = Image.open(dealer_logo_path).convert("RGBA")
-            pad = 6
-            lw, lh = logo_box_w - pad * 2, logo_box_h - pad * 2
-            scale = min(lw / logo_src.width, lh / logo_src.height)
+            scale = min(logo_max_w / logo_src.width, logo_max_h / logo_src.height)
             ls = logo_src.resize(
                 (int(logo_src.width * scale), int(logo_src.height * scale)), Image.LANCZOS
             )
-            lx = logo_box_x + pad + (lw - ls.width) // 2
-            ly = logo_box_y + pad + (lh - ls.height) // 2
-            # Convert RGBA to RGB for paste onto RGB canvas using alpha
+            lx = logo_zone_x + (logo_max_w - ls.width) // 2
+            ly = logo_zone_y + (logo_max_h - ls.height) // 2
             bg_patch = img.crop((lx, ly, lx + ls.width, ly + ls.height))
             bg_patch.paste(ls, (0, 0), ls.split()[3] if ls.mode == "RGBA" else None)
             img.paste(bg_patch, (lx, ly))
+            has_logo = True
         except Exception:
             pass
-    else:
-        # Fallback: "MACHINE TO MARKET" text
-        mtm_font = _font(11, bold=True)
-        mtm_lines = ["MACHINE", "TO MARKET"]
-        ty = logo_box_y + (logo_box_h - len(mtm_lines) * (_line_h(draw, mtm_font) + 2)) // 2
-        for ml in mtm_lines:
-            mw = _text_w(draw, ml, mtm_font)
-            draw.text((logo_box_x + (logo_box_w - mw) // 2, ty), ml, font=mtm_font, fill="#1C2228")
-            ty += _line_h(draw, mtm_font) + 2
 
-    # Contact info (right of logo box)
-    contact_x = logo_box_x + logo_box_w + 16
-    contact_y = ov_y0 + 12
+    # Contact info: right of logo zone (or left-aligned if no logo)
+    contact_x = (logo_zone_x + logo_max_w + 14) if has_logo else (II_X0 + 14)
+    contact_y = ov_y0 + 8
     dealer_name = dealer_info.get("dealer_name") or dealer_info.get("contact_name") or ""
     dealer_phone = dealer_info.get("phone") or dealer_info.get("contact_phone") or ""
     if dealer_name:
-        name_font = _font(13, bold=True)
+        name_font = _font(16, bold=True)
         draw.text((contact_x, contact_y), dealer_name, font=name_font, fill=C_WHITE)
-        contact_y += _line_h(draw, name_font) + 5
+        contact_y += _line_h(draw, name_font) + 3
     if dealer_phone:
-        ph_font = _font(12, bold=False)
-        draw.text((contact_x, contact_y), dealer_phone, font=ph_font, fill=C_MUTED)
+        ph_font = _font(15, bold=True)
+        draw.text((contact_x, contact_y), dealer_phone, font=ph_font, fill=C_ACCENT)
+        contact_y += _line_h(draw, ph_font) + 3
+    if dealer_name or dealer_phone:
+        cta_font = _font(11, bold=False)
+        draw.text((contact_x, contact_y), "Call or text to schedule", font=cta_font, fill=C_MUTED)
 
     # ── Right info rail ───────────────────────────────────────────────────────
-    ry = 28  # current y position in rail
+    ry = 22  # current y position in rail
 
-    # "BEST OPTION" label + "LISTING" pill
-    bo_font = _font(11, bold=True)
-    _draw_tracked_text(draw, RAIL_CX, ry, "BEST OPTION", bo_font, C_ACCENT, tracking=3)
+    # "LISTING" pill — top-right identifier
     pill_label = "  LISTING  "
     pill_font  = _font(11, bold=True)
     pill_w     = _text_w(draw, pill_label, pill_font) + 4
@@ -1449,45 +1757,49 @@ def _render_panel1(
     pill_x     = RAIL_CX2 - pill_w
     draw.rounded_rectangle(
         (pill_x, ry - 2, pill_x + pill_w, ry - 2 + pill_h),
-        radius=10, outline=C_ACCENT, width=2,
+        radius=10, outline=C_ICON, width=1,
     )
     pw = _text_w(draw, "LISTING", pill_font)
-    draw.text((pill_x + (pill_w - pw) // 2, ry + 2), "LISTING", font=pill_font, fill=C_ACCENT)
-    ry += 28
+    draw.text((pill_x + (pill_w - pw) // 2, ry + 2), "LISTING", font=pill_font, fill=C_ICON)
+    ry += 20
 
-    # Yellow separator
-    draw.line((RAIL_CX, ry, RAIL_CX2, ry), fill=C_ACCENT, width=1)
-    ry += 18
+    # Subtle separator — dark line
+    draw.line((RAIL_CX, ry, RAIL_CX2, ry), fill="#3A4148", width=1)
+    ry += 10
 
-    # Year / Make / Model (stacked, large)
-    # Hierarchy: Model is hero (largest, gold), Make is strong (white bold), Year is small accent
-    year_font  = _font(32, bold=False)
-    make_font  = _fit_font(draw, make.upper() or "MAKE",  52, RAIL_W - 10, min_size=26, bold=True)
-    model_font = _fit_font(draw, model.upper() or "MODEL", 64, RAIL_W - 10, min_size=30, bold=True)
+    # Identity block — single headline "MAKE MODEL", year subordinate below
+    # Preferred structure: BOBCAT T770 (primary) / 2019 (secondary)
+    make_model = f"{make.upper()} {model.upper()}".strip()
+    mm_font = _fit_font(draw, make_model, 52, RAIL_W - 10, min_size=24, bold=True)
+    mm_lh = _line_h(draw, mm_font)
 
-    if year:
-        draw.text((RAIL_CX, ry), year, font=year_font, fill=C_WHITE)
-        ry += _line_h(draw, year_font) + 10
+    # Draw MAKE in white, MODEL in gold on the same baseline
+    make_part_w = _text_w(draw, make.upper() + " ", mm_font) if make and model else 0
     if make:
-        draw.text((RAIL_CX, ry), make.upper(), font=make_font, fill=C_WHITE)
-        ry += _line_h(draw, make_font) + 8
+        draw.text((RAIL_CX, ry), make.upper(), font=mm_font, fill=C_WHITE)
     if model:
-        draw.text((RAIL_CX, ry), model.upper(), font=model_font, fill=C_ACCENT)
-        ry += _line_h(draw, model_font) + 16
+        draw.text((RAIL_CX + make_part_w, ry), model.upper(), font=mm_font, fill=C_ACCENT)
+    ry += mm_lh + 4
 
-    # Equipment type subtitle
+    # Year — small, muted, subordinate
+    if year:
+        yr_font = _font(16, bold=False)
+        draw.text((RAIL_CX, ry), year, font=yr_font, fill=C_MUTED)
+        ry += _line_h(draw, yr_font) + 10
+
+    # Equipment type
     type_font = _font(13, bold=False)
-    draw.text((RAIL_CX, ry), subtitle.upper(), font=type_font, fill="#8A95A0")
-    ry += _line_h(draw, type_font) + 30
+    draw.text((RAIL_CX, ry), _humanize_subtitle(subtitle).upper(), font=type_font, fill=C_MUTED)
+    ry += _line_h(draw, type_font) + 14
 
-    # Second yellow separator
-    draw.line((RAIL_CX, ry, RAIL_CX2, ry), fill=C_ACCENT, width=1)
-    ry += 28
+    # Subtle separator — dark line
+    draw.line((RAIL_CX, ry, RAIL_CX2, ry), fill="#3A4148", width=1)
+    ry += 14
 
     # Highlight callouts — evenly distributed in remaining rail height
-    remaining = P1_H - ry - 24
-    callout_spacing = max(remaining // max(len(highlights), 1), 88)
-    icon_r = 17
+    remaining = P1_H - ry - 20
+    callout_spacing = min(max(remaining // max(len(highlights), 1), 64), 96)
+    icon_r = 11
     lbl_font = _font(15, bold=True)
     sub_font = _font(13, bold=False)
 
@@ -1611,12 +1923,14 @@ def generate_brochure_image(
         dealer_info=dealer_info,
     )
 
-    # Panel 2: spec grid — auto-height (no fixed constraint, let content breathe)
+    # Panel 2: spec grid — brochure_panel=True suppresses duplicate machine name in header
     p2 = _render_spec_sheet_to_image(
         title=title, subtitle=subtitle, year=year, make=make, model=model,
         grouped_sections=grouped_sections,
-        features=[],   # no features strip in brochure mode — keeps it clean
+        features=[],
+        dealer_info=dealer_info,
         fixed_height=None,
+        brochure_panel=True,
     )
 
     # Thin accent bar between panels (visual connector, not a gap)
@@ -1705,10 +2019,20 @@ def generate_spec_sheet(
     year_str = str(year) if year else ""
     subtitle = equipment_type or "Machine Specifications"
 
-    # Convert legacy flat spec_sheet list → PERFORMANCE group
+    # Normalize entries: suppress negatives, title-case labels, uppercase values.
+    clean: list[tuple[str, str]] = []
+    for lbl, val in (spec_sheet or []):
+        if _is_suppressed(str(val)):
+            continue
+        clean.append((str(lbl).title(), str(val).upper()))
+
+    # Split into two halves so _balance_columns fills both columns.
     grouped: list[tuple[str, list[tuple[str, str]]]] = []
-    if spec_sheet:
-        grouped.append(("PERFORMANCE", list(spec_sheet)))
+    if clean:
+        mid = (len(clean) + 1) // 2
+        grouped.append(("PERFORMANCE", clean[:mid]))
+        if clean[mid:]:
+            grouped.append(("CONFIGURATION", clean[mid:]))
 
     return _render_spec_sheet(
         title=" ".join(p for p in [year_str, make.upper() if make else "", normalized_model] if p) or "Heavy Equipment",

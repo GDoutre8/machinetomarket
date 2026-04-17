@@ -110,6 +110,7 @@ templates = Jinja2Templates(directory=os.path.join(_BASE, "templates"))
 
 _FEATURE_CONFIG: dict[str, list[dict]] = {
     "compact_track_loader": [
+        # ── Primary machine features ──────────────────────────────────────────
         {"name": "cab_type",          "label": "Cab Type"},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
@@ -119,14 +120,10 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "backup_camera",     "label": "Backup Camera"},
         {"name": "air_ride_seat",     "label": "Air Ride Seat"},
         {"name": "self_leveling",     "label": "Self-Leveling"},
-        {"name": "reversing_fan",     "label": "Reversing Fan"},
         {"name": "radio",             "label": "Radio"},
-        {"name": "control_type",      "label": "Controls Type"},
-        {"name": "coupler_type",      "label": "Quick Attach"},
-        {"name": "bucket_included",   "label": "Bucket Included"},
-        {"name": "bucket_size",       "label": "Bucket Size"},
-        {"name": "warranty_status",   "label": "Warranty"},
         {"name": "one_owner",         "label": "One Owner"},
+        # ── Lower priority ────────────────────────────────────────────────────
+        {"name": "reversing_fan",     "label": "Reversing Fan"},
     ],
     "skid_steer": [
         {"name": "cab_type",         "label": "Cab Type"},
@@ -137,8 +134,6 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "ride_control",      "label": "Ride Control"},
         {"name": "backup_camera",     "label": "Backup Camera"},
         {"name": "radio",             "label": "Radio"},
-        {"name": "control_type",      "label": "Controls Type"},
-        {"name": "coupler_type",      "label": "Quick Attach"},
         {"name": "one_owner",         "label": "One Owner"},
     ],
     "mini_excavator": [
@@ -147,15 +142,11 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "heater",               "label": "Heater"},
         {"name": "ac",                   "label": "A/C"},
         {"name": "aux_hydraulics",       "label": "Aux Hydraulics"},
-        {"name": "coupler_type",         "label": "Coupler Type"},
         {"name": "thumb",                "label": "Thumb"},
         {"name": "blade",                "label": "Blade"},
-        {"name": "serial_number",        "label": "Serial Number"},
         # ── Mini ex FEATURES (secondary output) ──────────────────────────────
-        {"name": "arm_length",           "label": "Arm Length"},
         {"name": "two_speed",            "label": "2-Speed Travel"},
         {"name": "pattern_changer",      "label": "Pattern Changer"},
-        {"name": "bucket_size_included", "label": "Bucket Included"},
         {"name": "rubber_tracks",        "label": "Rubber Tracks"},
         {"name": "zero_tail_swing",      "label": "Zero Tail Swing"},
         {"name": "backup_camera",        "label": "Backup Camera"},
@@ -165,8 +156,6 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "cab_type",          "label": "Cab Type"},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
-        {"name": "control_type",      "label": "Pilot Controls"},
-        {"name": "coupler_type",      "label": "Quick Attach"},
         {"name": "backup_camera",     "label": "Backup Camera"},
         {"name": "one_owner",         "label": "One Owner"},
     ],
@@ -174,35 +163,20 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "cab_type",          "label": "Cab Type"},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
-        {"name": "control_type",      "label": "Controls Type"},
-        {"name": "coupler_type",      "label": "Quick Attach"},
         {"name": "backup_camera",     "label": "Backup Camera"},
         {"name": "one_owner",         "label": "One Owner"},
     ],
     # ── Large excavator LOCKED standard 2026-04-10 ───────────────────────────
-    # Core output fields (always surfaced when provided):
+    # Boolean feature fields only:
     "excavator": [
-        {"name": "ac",                       "label": "A/C"},
-        {"name": "heater",                   "label": "Heater"},
-        {"name": "aux_hydraulics_type",      "label": "Aux Hydraulics Type"},
-        {"name": "coupler_type",             "label": "Coupler Type"},
-        {"name": "rear_camera",              "label": "Rear Camera"},
-        {"name": "stick_arm_length_ft",      "label": "Stick/Arm Length (ft)"},
-        {"name": "track_shoe_width_in",      "label": "Track Shoe Width (in)"},
-        {"name": "undercarriage_condition_pct", "label": "Undercarriage Condition"},
-        {"name": "serial_number",            "label": "Serial Number"},
-        {"name": "boom_length_ft",           "label": "Boom Length (ft)"},
-        # Feature fields (secondary output):
-        {"name": "bucket_size_included",     "label": "Bucket Included"},
-        {"name": "grade_control_type",       "label": "Grade Control"},
-        {"name": "thumb_type",               "label": "Thumb"},
-        {"name": "hammer_plumbing",          "label": "Hammer Plumbing"},
-        {"name": "track_type",               "label": "Track Type"},
-        {"name": "pattern_changer",          "label": "Pattern Changer"},
-        {"name": "heated_seat",              "label": "Heated Seat"},
-        {"name": "air_ride_seat",            "label": "Air Ride Seat"},
-        {"name": "radio",                    "label": "Radio"},
-        {"name": "warranty_status",          "label": "Warranty"},
+        {"name": "ac",                "label": "A/C"},
+        {"name": "heater",            "label": "Heater"},
+        {"name": "rear_camera",       "label": "Rear Camera"},
+        {"name": "hammer_plumbing",   "label": "Hammer Plumbing"},
+        {"name": "pattern_changer",   "label": "Pattern Changer"},
+        {"name": "heated_seat",       "label": "Heated Seat"},
+        {"name": "air_ride_seat",     "label": "Air Ride Seat"},
+        {"name": "radio",             "label": "Radio"},
     ],
     "_default": [
         {"name": "cab_type",          "label": "Cab Type"},
@@ -418,25 +392,11 @@ async def build_listing_result(request: Request, session_id: str):
 
     image_packs = [
         {
-            "folder":   "Facebook_Post_Optimized",
-            "label":    "Facebook Post Optimized",
-            "tag":      "Best Option",
-            "hint":     "4:5 portrait — ideal for Facebook Marketplace, Iron Planet, Machinery Trader, and most listing platforms.",
-            "urls":     _load_image_urls("Facebook_Post_Optimized"),
-        },
-        {
-            "folder":   "Website_Optimized",
-            "label":    "Website Optimized",
-            "tag":      "Square",
-            "hint":     "1:1 square — works on EquipmentTrader, your website, and any dealer platform that prefers square thumbnails.",
-            "urls":     _load_image_urls("Website_Optimized"),
-        },
-        {
-            "folder":   "Facebook_&_Instagram_Story_Optimized",
-            "label":    "Facebook & Instagram Story Optimized",
-            "tag":      "Reels & Ads",
-            "hint":     "9:16 vertical — sized for Facebook Stories, Instagram Stories, Reels, and paid social ads.",
-            "urls":     _load_image_urls("Facebook_&_Instagram_Story_Optimized"),
+            "folder":   "Listing_Photos",
+            "label":    "Listing Photos",
+            "tag":      "Ready to Post",
+            "hint":     "Branded listing images with your logo and contact info. Use these for Facebook Marketplace, Craigslist, dealer sites, and all listing platforms.",
+            "urls":     _load_image_urls("Listing_Photos"),
         },
         {
             "folder":   "Original_Photos",
@@ -1152,6 +1112,12 @@ async def build_listing_endpoint(
             pass  # non-fatal — overlay just won't include logo
 
     # ── Build pack ────────────────────────────────────────────────────────────
+    _contact_name  = (overlay_contact_name  or "").strip() or None
+    _contact_phone = (overlay_contact_phone or "").strip() or None
+    _dealer_info   = (
+        {"contact_name": _contact_name, "contact_phone": _contact_phone}
+        if (_contact_name or _contact_phone) else None
+    )
     try:
         pack = build_listing_pack_v1(
             dealer_input=dealer_input,
@@ -1161,8 +1127,9 @@ async def build_listing_endpoint(
             session_dir=session_dir,
             session_web=session_web,
             overlay_logo_path=overlay_logo_path,
-            overlay_contact_name=(overlay_contact_name or "").strip() or None,
-            overlay_contact_phone=(overlay_contact_phone or "").strip() or None,
+            overlay_contact_name=_contact_name,
+            overlay_contact_phone=_contact_phone,
+            dealer_info=_dealer_info,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Pack generation error: {exc}")
