@@ -1,0 +1,552 @@
+{#
+  spec_sheet_ctl.html — MTM Registry-Driven CTL Spec Sheet (Jinja2)
+  ─────────────────────────────────────────────────────────────────
+  Usage:
+    templates.TemplateResponse("spec_sheet_ctl.html", {
+        "request": request,
+        "ctl": {
+            "manufacturer": "Caterpillar",
+            "model": "299D3",
+            "equipment_type": "compact_track_loader",
+            "specs": {
+                "horsepower_gross_hp":              98,
+                "horsepower_hp":                    95,
+                "rated_operating_capacity_lbs":   4972,
+                "aux_flow_high_gpm":              30.0,
+                "lift_path":                   "vertical",
+                "engine_model":                "C3.8 DIT",
+                "aux_flow_standard_gpm":          23.0,
+                "hydraulic_pressure_standard_psi": 3336,
+                "tipping_load_lbs":               9945,
+                "operating_weight_lbs":          11464,
+                "bucket_hinge_pin_height_in":    126.3,
+                "width_over_tires_in":            76.0,
+            },
+        },
+        "listing": {
+            "year":                   2021,
+            "serial_number":          "CAT0299DXTME04821",
+            "mtm_listing_number":     "MTM-2024-04821",
+            "hours":                  1850,
+            "undercarriage_percent":  65,
+            "undercarriage_grade":    "Good",
+            "ownership":              "1-Owner",
+            "service_notes":          "Dealer-Maintained",
+            "dealer_notes":           "Recent 500-hr service completed. All fluids fresh. No known issues.",
+            "features":               ["High Flow Hydraulics", "2-Speed", "Enclosed Cab", "Ride Control", "Joystick Controls"],
+        },
+    })
+
+  Field mapping (registry → template):
+    listing.year                              → header year
+    ctl.manufacturer | upper                  → header make (always uppercased in template)
+    ctl.model                                 → header model
+    ctl.equipment_type (underscores→spaces)   → header equipment type
+    listing.serial_number                     → doc bar SN
+    listing.mtm_listing_number                → doc bar MTM №
+    ctl.specs.horsepower_gross_hp             → headline Engine HP
+    ctl.specs.rated_operating_capacity_lbs    → headline ROC
+    ctl.specs.aux_flow_high_gpm               → headline High Flow GPM
+    ctl.specs.lift_path                       → headline Lift Path (vertical→VERT, radial→RAD, other→UPPER)
+    ctl.specs.engine_model                    → §01 Engine
+    ctl.specs.horsepower_hp                   → §01 Net HP
+    ctl.specs.aux_flow_standard_gpm           → §01 Aux Flow Std
+    ctl.specs.hydraulic_pressure_standard_psi → §01 Hyd Pressure
+    ctl.specs.tipping_load_lbs                → §02 Tipping Load
+    ctl.specs.operating_weight_lbs            → §02 Op Weight
+    ctl.specs.bucket_hinge_pin_height_in      → §02 Hinge Pin Ht
+    ctl.specs.width_over_tires_in             → §02 Width
+    listing.features[0–1]                     → §03 .chip.yellow (highlighted)
+    listing.features[2+]                      → §03 .chip
+    listing.hours                             → §04 Hours
+    listing.undercarriage_percent/grade       → §04 Undercarriage (n% · grade; graceful if either missing)
+    listing.ownership                         → §04 Ownership
+    listing.service_notes                     → §04 Service
+    listing.dealer_notes                      → §04 free-text notes block (omitted if None/missing)
+
+  Missing values: None/undefined → — (U+2014). Empty string and 0 render as-is.
+#}
+{%- macro fmt(v) -%}
+{%- set r = v | default(none) -%}
+{%- if r is none -%}—{%- elif r is integer -%}{{ "{:,}".format(r) }}{%- else -%}{{ r }}{%- endif -%}
+{%- endmacro -%}
+{%- macro lift_abbr(v) -%}
+{%- set r = v | default(none) -%}
+{%- if r is none -%}—{%- elif r | lower == 'vertical' -%}VERT{%- elif r | lower == 'radial' -%}RAD{%- else -%}{{ r | upper }}{%- endif -%}
+{%- endmacro -%}
+{%- macro undercarriage(pct, grade) -%}
+{%- set p = pct | default(none) -%}
+{%- set g = grade | default(none) -%}
+{%- if p is none and g is none -%}—{%- elif p is none -%}{{ g }}{%- elif g is none -%}{{ p }}%{%- else -%}{{ p }}% · {{ g }}{%- endif -%}
+{%- endmacro -%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTM Spec Sheet — {{ ctl.manufacturer | upper }} {{ fmt(ctl.model) }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --mtm-yellow: #F5C400;
+  --mtm-black: #0D0D0D;
+  --paper: #F8F6F1;
+  --muted: #6B6B6B;
+  --dashed: rgba(13,13,13,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #E8E8E8;
+  font-family: 'Inter', sans-serif;
+  padding: 32px 16px;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.sheet {
+  width: 440px;
+  aspect-ratio: 4 / 5;
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+  color: var(--mtm-black);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER — identical to card */
+.top-frame {
+  background: var(--mtm-yellow);
+  color: var(--mtm-black);
+  padding: 16px 22px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px solid var(--mtm-black);
+  flex-shrink: 0;
+}
+.top-frame .year {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.top-frame .make {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  font-weight: 700;
+  margin-top: 3px;
+}
+.top-frame .right-stack { text-align: right; }
+.top-frame .model {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.top-frame .type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* DOCUMENT BAR */
+.doc-bar {
+  background: var(--mtm-black);
+  color: var(--mtm-yellow);
+  padding: 8px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.doc-bar .right { color: rgba(245,196,0,0.55); }
+
+/* HEADLINE STRIP */
+.headline-strip {
+  background: var(--paper);
+  padding: 16px 16px 14px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-bottom: 2px solid var(--mtm-black);
+  flex-shrink: 0;
+}
+.headline-strip .cell {
+  text-align: center;
+  padding: 0 6px;
+  position: relative;
+}
+.headline-strip .cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: var(--dashed);
+}
+.headline-strip .num {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 22px;
+  color: var(--mtm-black);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.headline-strip .unit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+.headline-strip .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 16px 22px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.section { margin-bottom: 14px; }
+.section:last-child { margin-bottom: 0; }
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1.5px solid var(--mtm-black);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--dashed);
+  align-items: baseline;
+  gap: 12px;
+}
+.row:last-child { border-bottom: none; }
+.row .k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #444;
+  font-weight: 500;
+}
+.row .v {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mtm-black);
+  text-align: right;
+  letter-spacing: -0.005em;
+}
+.row .v .unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-left: 3px;
+}
+
+.spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+}
+
+/* FEATURE CHIPS */
+.feature-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-top: 2px;
+}
+.chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  background: var(--mtm-black);
+  color: var(--paper);
+}
+.chip.yellow {
+  background: var(--mtm-yellow);
+  color: var(--mtm-black);
+}
+
+/* CONDITION (dark anchor block) */
+.condition-block {
+  background: var(--mtm-black);
+  color: var(--paper);
+  padding: 12px 16px 14px;
+  margin: 0 -22px 0 -22px;
+  flex-shrink: 0;
+}
+.condition-block .section-header {
+  border-bottom-color: rgba(245,196,0,0.4);
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+}
+.condition-block .section-title { color: var(--mtm-yellow); }
+.condition-block .section-num { color: rgba(245,196,0,0.5); }
+.condition-block .row {
+  border-bottom: 1px dashed rgba(245,196,0,0.15);
+  padding: 4px 0;
+}
+.condition-block .row .k { color: rgba(248,246,241,0.65); }
+.condition-block .row .v { color: var(--paper); }
+.condition-block .row .v .unit { color: var(--mtm-yellow); }
+
+.dealer-notes {
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: rgba(248,246,241,0.88);
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px dashed rgba(245,196,0,0.2);
+}
+.dealer-notes::before {
+  content: 'NOTES — ';
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--mtm-yellow);
+  margin-right: 4px;
+}
+
+/* BOTTOM */
+.bottom {
+  background: var(--mtm-yellow);
+  color: var(--mtm-black);
+  padding: 10px 22px;
+  border-top: 4px solid var(--mtm-black);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.bottom .brand {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bottom .brand::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--mtm-black);
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+.bottom .url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="top-frame">
+    <div class="left-stack">
+      <div class="year">{{ fmt(listing.year) }}</div>
+      <div class="make">{{ ctl.manufacturer | upper }}</div>
+    </div>
+    <div class="right-stack">
+      <div class="model">{{ fmt(ctl.model) }}</div>
+      <div class="type">{{ ctl.equipment_type | default('—') | replace('_', ' ') | upper }}</div>
+    </div>
+  </div>
+
+  <div class="doc-bar">
+    <span>SPECIFICATION SHEET</span>
+    <span class="right">SN · {{ fmt(listing.serial_number) }} &nbsp;·&nbsp; MTM &#x2116; {{ fmt(listing.mtm_listing_number) }}</span>
+  </div>
+
+  <div class="headline-strip">
+    <div class="cell">
+      <div class="num">{{ fmt(ctl.specs.horsepower_gross_hp) }}<span class="unit">HP</span></div>
+      <div class="lbl">Engine</div>
+    </div>
+    <div class="cell">
+      <div class="num">{{ fmt(ctl.specs.rated_operating_capacity_lbs) }}<span class="unit">LB</span></div>
+      <div class="lbl">ROC</div>
+    </div>
+    <div class="cell">
+      <div class="num">{{ fmt(ctl.specs.aux_flow_high_gpm) }}<span class="unit">GPM</span></div>
+      <div class="lbl">High Flow</div>
+    </div>
+    <div class="cell">
+      <div class="num">{{ lift_abbr(ctl.specs.lift_path) }}</div>
+      <div class="lbl">Lift Path</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- §01 Power & Hydraulics -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Power &amp; Hydraulics</div>
+        <div class="section-num">§ 01</div>
+      </div>
+      <div class="spec-grid">
+        <div class="row">
+          <span class="k">Engine</span>
+          <span class="v">{{ fmt(ctl.specs.engine_model) }}</span>
+        </div>
+        <div class="row">
+          <span class="k">Net HP</span>
+          <span class="v">{{ fmt(ctl.specs.horsepower_hp) }}<span class="unit">HP</span></span>
+        </div>
+        <div class="row">
+          <span class="k">Aux Flow Std</span>
+          <span class="v">{{ fmt(ctl.specs.aux_flow_standard_gpm) }}<span class="unit">GPM</span></span>
+        </div>
+        <div class="row">
+          <span class="k">Hyd Pressure</span>
+          <span class="v">{{ fmt(ctl.specs.hydraulic_pressure_standard_psi) }}<span class="unit">PSI</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- §02 Dimensions & Capacity -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Dimensions &amp; Capacity</div>
+        <div class="section-num">§ 02</div>
+      </div>
+      <div class="spec-grid">
+        <div class="row">
+          <span class="k">Tipping Load</span>
+          <span class="v">{{ fmt(ctl.specs.tipping_load_lbs) }}<span class="unit">LB</span></span>
+        </div>
+        <div class="row">
+          <span class="k">Op Weight</span>
+          <span class="v">{{ fmt(ctl.specs.operating_weight_lbs) }}<span class="unit">LB</span></span>
+        </div>
+        <div class="row">
+          <span class="k">Hinge Pin Ht</span>
+          <span class="v">{{ fmt(ctl.specs.bucket_hinge_pin_height_in) }}<span class="unit">IN</span></span>
+        </div>
+        <div class="row">
+          <span class="k">Width</span>
+          <span class="v">{{ fmt(ctl.specs.width_over_tires_in) }}<span class="unit">IN</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- §03 Equipment & Features -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Equipment &amp; Features</div>
+        <div class="section-num">§ 03</div>
+      </div>
+      <div class="feature-chips">
+        {%- set features = listing.features | default(none) -%}
+        {%- if features -%}
+          {%- for feature in features %}
+        <div class="chip{% if loop.index0 < 2 %} yellow{% endif %}">{{ feature }}</div>
+          {%- endfor -%}
+        {%- endif %}
+      </div>
+    </div>
+
+    <!-- §04 Condition (dark anchor block) -->
+    <div style="flex: 1;"></div>
+    <div class="condition-block">
+      <div class="section-header">
+        <div class="section-title">Condition &amp; Service</div>
+        <div class="section-num">§ 04</div>
+      </div>
+      <div class="spec-grid">
+        <div class="row">
+          <span class="k">Hours</span>
+          <span class="v">{{ fmt(listing.hours) }}<span class="unit">HRS</span></span>
+        </div>
+        <div class="row">
+          <span class="k">Undercarriage</span>
+          <span class="v">{{ undercarriage(listing.undercarriage_percent, listing.undercarriage_grade) }}</span>
+        </div>
+        <div class="row">
+          <span class="k">Ownership</span>
+          <span class="v">{{ fmt(listing.ownership) }}</span>
+        </div>
+        <div class="row">
+          <span class="k">Service</span>
+          <span class="v">{{ fmt(listing.service_notes) }}</span>
+        </div>
+      </div>
+      {%- set notes = listing.dealer_notes | default(none) -%}
+      {%- if notes %}
+      <div class="dealer-notes">{{ notes }}</div>
+      {%- endif %}
+    </div>
+
+  </div>
+
+  <div class="bottom">
+    <div class="brand">MACHINE TO MARKET</div>
+    <div class="url">machinetomarket.com</div>
+  </div>
+
+</div>
+
+</body>
+</html>

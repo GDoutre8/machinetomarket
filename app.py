@@ -40,6 +40,7 @@ from listing_use_case_enrichment import build_use_case_payload
 from listing_builder import build_listing_text, build_use_case_ui_items
 from dealer_input import DealerInput
 from fastapi.responses import JSONResponse
+from mtm_registry_lookup import lookup_machine
 
 # ── Session cleanup ───────────────────────────────────────────────────────────
 _SESSION_MAX_AGE_SECS = 86400   # 24 hours
@@ -295,6 +296,43 @@ async def index(request: Request):
 @app.get("/fix-listing", response_class=HTMLResponse)
 async def fix_listing_page(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/spec-sheet/ctl", response_class=HTMLResponse)
+async def spec_sheet_ctl(
+    request: Request,
+    manufacturer: str,
+    model: str,
+    year: Optional[int] = None,
+    serial_number: Optional[str] = None,
+    mtm_listing_number: Optional[str] = None,
+    hours: Optional[int] = None,
+    undercarriage_percent: Optional[int] = None,
+    undercarriage_grade: Optional[str] = None,
+    ownership: Optional[str] = None,
+    service_notes: Optional[str] = None,
+    dealer_notes: Optional[str] = None,
+    features: Optional[List[str]] = None,
+):
+    result = lookup_machine(manufacturer=manufacturer, model=model, equipment_type="compact_track_loader")
+    if not result.get("match"):
+        raise HTTPException(status_code=404, detail=result.get("reason", "CTL record not found"))
+    listing = {
+        "year": year,
+        "serial_number": serial_number,
+        "mtm_listing_number": mtm_listing_number,
+        "hours": hours,
+        "undercarriage_percent": undercarriage_percent,
+        "undercarriage_grade": undercarriage_grade,
+        "ownership": ownership,
+        "service_notes": service_notes,
+        "dealer_notes": dealer_notes,
+        "features": features or [],
+    }
+    return templates.TemplateResponse(
+        "spec_sheet_ctl.html",
+        {"request": request, "ctl": result["full_record"], "listing": listing},
+    )
 
 
 @app.get("/download-pack")
