@@ -3,7 +3,7 @@ app.py — Machine-to-Market: Fix My Listing
 FastAPI entry point. All business logic lives in mtm_service.py.
 """
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -312,8 +312,14 @@ async def spec_sheet_ctl(
     ownership: Optional[str] = None,
     service_notes: Optional[str] = None,
     dealer_notes: Optional[str] = None,
-    features: Optional[List[str]] = None,
+    features: Optional[List[str]] = Query(default=None),  # Query() required for repeated ?features= params
 ):
+    # Direct lookup_machine() call is intentional here. safe_lookup_machine() gates on
+    # make_source=="explicit" (the make must have appeared verbatim in listing text) to
+    # prevent spec injection into AI-generated listing descriptions from partial matches.
+    # That guard is irrelevant for this route: the caller is explicitly supplying
+    # manufacturer + model as URL params, so the intent is unambiguous. lookup_machine()
+    # still applies all its own alias normalisation, fuzzy scoring, and ambiguity guards.
     result = lookup_machine(manufacturer=manufacturer, model=model, equipment_type="compact_track_loader")
     if not result.get("match"):
         raise HTTPException(status_code=404, detail=result.get("reason", "CTL record not found"))
