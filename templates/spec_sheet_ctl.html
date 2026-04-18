@@ -492,6 +492,7 @@ body {
       </div>
     </div>
 
+    {%- if listing.features %}
     <!-- §03 Equipment & Features -->
     <div class="section">
       <div class="section-header">
@@ -499,14 +500,12 @@ body {
         <div class="section-num">§ 03</div>
       </div>
       <div class="feature-chips">
-        {%- set features = listing.features | default(none) -%}
-        {%- if features -%}
-          {%- for feature in features %}
+        {%- for feature in listing.features %}
         <div class="chip{% if loop.index0 < 2 %} yellow{% endif %}">{{ feature }}</div>
-          {%- endfor -%}
-        {%- endif %}
+        {%- endfor %}
       </div>
     </div>
+    {%- endif %}
 
     <!-- §04 Condition (dark anchor block) -->
     <div style="flex: 1;"></div>
