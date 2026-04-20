@@ -6,7 +6,7 @@
   <title>Build My Listing - Machine-to-Market</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&family=Oswald:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&family=Oswald:wght@600&family=Barlow:wght@400;700&family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css" />
   <style>
     :root {
@@ -85,23 +85,44 @@
     .preview-status{display:inline-flex;align-items:center;gap:8px;color:var(--mtm-yellow)}
     .preview-status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mtm-yellow);box-shadow:0 0 12px rgba(232,169,32,.3)}
     .preview-stack{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:20px;height:100%}
-    .listing-card{display:grid;grid-template-rows:minmax(360px,73%) auto;gap:18px;min-height:100%}
-    .listing-image-wrap{position:relative;min-height:360px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#0e1116;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
-    .listing-image-wrap::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;background:linear-gradient(180deg,transparent 0%,rgba(7,8,10,.14) 35%,rgba(7,8,10,.66) 100%);pointer-events:none}
-    .listing-image-wrap > img{width:100%;height:100%;display:block;object-fit:cover;object-position:center center}
-    .dealer-overlay{position:absolute;bottom:-36px;left:-24px;z-index:3;display:inline-flex;align-items:center;gap:10px;padding:0;background:none;pointer-events:none}
-    .dealer-overlay-logo{height:156px;width:auto;object-fit:contain;flex-shrink:0}
-    .dealer-overlay-contact{display:flex;flex-direction:column;gap:0px;justify-content:center}
-    .dealer-overlay-name{font-family:'Bebas Neue','Oswald',sans-serif;font-size:28px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:#ffffff;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.7)}
-    .dealer-overlay-phone{font-family:'Bebas Neue','Oswald',sans-serif;font-size:20px;font-weight:400;letter-spacing:1px;color:#D1D5DB;line-height:1;margin-top:2px;text-shadow:0 1px 2px rgba(0,0,0,0.6)}
-    .listing-copy{display:grid;gap:12px}
-    .listing-copy h3,.secondary-preview h3{margin:0;font-family:var(--cond);font-size:30px;font-weight:600;letter-spacing:.03em;color:var(--text);text-transform:uppercase}
-    .package-price{font-family:var(--cond);font-size:34px;font-weight:600;line-height:1;color:var(--mtm-yellow);margin:0}
-    .listing-lines{display:grid;gap:6px}
-    .listing-lines div{font-size:14px;line-height:1.5;color:#d6dbe0}
-    .meta-row{display:flex;flex-wrap:wrap;gap:8px}
-    .meta-chip{padding:8px 10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#d7dce1}
-    .listing-note{font-size:12px;line-height:1.45;color:var(--dim)}
+    /* ── Listing card — brochure layout ── */
+    .listing-card{display:flex;flex-direction:column;min-height:100%;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+    .listing-card-top{display:grid;grid-template-columns:minmax(0,1.55fr) 240px;height:320px;background:#0a0c10}
+    .listing-image-col{position:relative;overflow:hidden;border-right:1px solid rgba(255,255,255,.07)}
+    .listing-image-col > img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+    .listing-image-col::after{content:"";position:absolute;inset:auto 0 0 0;height:44%;background:linear-gradient(180deg,transparent 0%,rgba(4,5,7,.85) 100%);pointer-events:none}
+    .dealer-info-inner{position:absolute;bottom:10px;left:12px;z-index:3;display:flex;align-items:center;gap:8px}
+    .dealer-logo-sm{height:52px;width:auto;object-fit:contain;flex-shrink:0}
+    .dealer-contact-sm{display:flex;flex-direction:column;gap:1px}
+    .dealer-name-sm{font-family:'Bebas Neue','Oswald',sans-serif;font-size:17px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:#fff;line-height:1.1;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+    .dealer-phone-sm{font-family:'Bebas Neue','Oswald',sans-serif;font-size:13px;letter-spacing:.04em;color:#c0c4cc;line-height:1.2;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+    .dealer-cta-sm{font-family:var(--body);font-size:9px;color:rgba(255,255,255,.42);line-height:1.3;letter-spacing:.02em}
+    .listing-badges-col{display:flex;flex-direction:column;padding:14px 14px 12px;background:linear-gradient(180deg,#0f1217 0%,#080b0f 100%);position:relative}
+    .listing-badge-tag{position:absolute;top:11px;right:11px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--mtm-yellow);border:1px solid rgba(232,169,32,.36);border-radius:2px;padding:3px 7px;background:rgba(232,169,32,.06)}
+    .machine-title-block{margin-bottom:12px;padding-right:44px}
+    .machine-headline{font-family:var(--cond);font-size:34px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;line-height:.96;color:#f5f5f3}
+    .machine-headline .model-accent{color:var(--mtm-yellow)}
+    .machine-sub-line{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#666660;margin-top:5px}
+    .badge-list{display:flex;flex-direction:column;gap:6px;flex:1}
+    .hl-badge{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:4px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055)}
+    .hl-icon-circle{width:26px;height:26px;border-radius:50%;background:rgba(232,169,32,.1);border:1px solid rgba(232,169,32,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--mtm-yellow)}
+    .hl-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+    .hl-label{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#e0ddd7;line-height:1}
+    .hl-sub{font-family:var(--body);font-size:10px;color:#666660;line-height:1.3}
+    /* ── Spec section (light, 2-col grid) ── */
+    .listing-spec-section{background:#f4f3f0;padding:14px 18px 10px;flex:1}
+    .spec-section-kicker{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#777772;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .spec-section-kicker::before{content:"";width:18px;height:1px;background:rgba(0,0,0,.18)}
+    .spec-grid-2col{display:grid;grid-template-columns:1fr 1fr}
+    .spec-2col-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 10px 6px 0;border-bottom:1px solid rgba(0,0,0,.07);font-size:12px;gap:6px}
+    .spec-2col-row:nth-child(2n){padding-left:10px;padding-right:0;border-left:1px solid rgba(0,0,0,.07)}
+    .spec-2col-row span:first-child{color:#555550;font-weight:400}
+    .spec-2col-row span:last-child{font-family:var(--mono);font-size:11px;color:#1a1a1a;font-weight:600;text-align:right;letter-spacing:.03em}
+    /* ── Listing footer bar ── */
+    .listing-footer-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:#181c22;border-top:1px solid rgba(255,255,255,.05);min-height:40px;flex-shrink:0}
+    .footer-dealer-info{font-family:var(--cond);font-size:15px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#e8e4dc}
+    .footer-dealer-phone{color:var(--mtm-yellow)}
+    .footer-cta-text{font-family:var(--body);font-size:10px;color:#666660;letter-spacing:.02em}
     .spec-sheet{display:grid;gap:10px}
     .spec-sheet-head{padding:0 0 10px;border-bottom:1px solid rgba(255,255,255,.08)}
     .spec-sheet-head strong{display:block;font-family:var(--cond);font-size:24px;font-weight:600;letter-spacing:.03em;color:var(--text);text-transform:uppercase}
@@ -133,8 +154,9 @@
     .brand-subline{font-size:12px;color:var(--dim)}
     .process-section{display:none}
     @media (max-width:1100px){.hero-inner,.marketing-grid,.preview-grid,.preview-layout{grid-template-columns:1fr}.feature-strip-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-stack{grid-template-columns:1fr 1fr;grid-template-rows:none}}
-    @media (max-width:860px){.build-shell{padding:0 18px}.hero-inner{min-height:auto;gap:26px;padding:64px 0 56px;grid-template-columns:1fr}.hero-form-wrap{justify-content:stretch}.hero-form-card{width:100%;padding:32px 32px 30px}.hero-bullets,.feature-strip-grid,.process-grid,.field-row.three,.toggles-grid,.preview-stack{grid-template-columns:1fr}.field-row{grid-template-columns:1fr}.preview-frame{padding:22px}.listing-card{grid-template-rows:minmax(280px,62vw) auto}.brand-visual{grid-template-rows:minmax(200px,58vw) auto auto}#step2{padding:22px 0 8px}}
-    @media (max-width:560px){.site-mark{font-size:17px}.header-link{padding:7px 10px;font-size:10px}.hero-copy h1{font-size:46px}.hero-copy p{font-size:17px}.hero-value-callout{font-size:17px;max-width:100%;padding-left:12px}.hero-form-card,.form-card,.uc-preview-card,.preview-frame{padding:20px}.support-card,.process-card,.preview-card{min-height:auto}.field input[type="text"],.field input[type="number"],.field textarea{min-height:52px;font-size:15px}.btn-generate{font-size:18px;min-height:62px;padding:17px 20px}.listing-copy h3,.secondary-preview h3{font-size:24px}.package-price{font-size:28px}.cta-note{font-size:12px}.preview-topline{align-items:flex-start;flex-direction:column}.media-square{width:42%}.media-portrait{width:46%;left:24%}.media-vertical{width:34%}}
+    @media (max-width:860px){.build-shell{padding:0 18px}.hero-inner{min-height:auto;gap:26px;padding:64px 0 56px;grid-template-columns:1fr}.hero-form-wrap{justify-content:stretch}.hero-form-card{width:100%;padding:32px 32px 30px}.hero-bullets,.feature-strip-grid,.process-grid,.field-row.three,.toggles-grid,.preview-stack{grid-template-columns:1fr}.field-row{grid-template-columns:1fr}.preview-frame{padding:22px}.listing-image-col{min-height:240px}.listing-badges-col{padding:12px}.brand-visual{grid-template-rows:minmax(200px,58vw) auto auto}#step2{padding:22px 0 8px}}
+    @media (max-width:480px){.listing-card-top{grid-template-columns:1fr;height:auto}.spec-grid-2col{grid-template-columns:1fr}.spec-2col-row:nth-child(2n){border-left:none;padding-left:0}}
+    @media (max-width:560px){.site-mark{font-size:17px}.header-link{padding:7px 10px;font-size:10px}.hero-copy h1{font-size:46px}.hero-copy p{font-size:17px}.hero-value-callout{font-size:17px;max-width:100%;padding-left:12px}.hero-form-card,.form-card,.uc-preview-card,.preview-frame{padding:20px}.support-card,.process-card,.preview-card{min-height:auto}.field input[type="text"],.field input[type="number"],.field textarea{min-height:52px;font-size:15px}.btn-generate{font-size:18px;min-height:62px;padding:17px 20px}.secondary-preview h3{font-size:24px}.machine-headline{font-size:26px}.cta-note{font-size:12px}.preview-topline{align-items:flex-start;flex-direction:column}.media-square{width:42%}.media-portrait{width:46%;left:24%}.media-vertical{width:34%}.spec-2col-row:nth-child(2n){border-left:none;padding-left:0}}
     @media (max-width:600px){
       .dealer-overlay{bottom:12px;left:12px;right:12px;gap:7px}
       .dealer-overlay-logo{height:80px}
@@ -196,14 +218,17 @@
         <div class="form-card"><div class="section-label">Hours &amp; Condition</div><div class="field-row" style="grid-template-columns:160px 1fr 1fr;"><div class="field"><label for="hours">Hours <span class="req">*</span></label><input type="number" id="hours" name="hours" placeholder="1450" min="0"></div><div class="field"><label for="condition_field" id="condition-pct-label">Track Condition</label><select id="condition_field" name="condition_field"><option value="">-- Select --</option><option value="New">New</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="Worn">Worn</option></select></div><div class="field"><label for="serial_number">Serial Number</label><input type="text" id="serial_number" name="serial_number" placeholder="CAT0259D3XXXXX"></div></div></div>
         <div class="form-card"><div class="section-label">Attachments</div><div class="field-row" style="grid-template-columns:160px 1fr;"><div class="field"><label for="bucket_size">Bucket Size <span style="font-weight:400;color:var(--dim);font-size:11px;">inches</span></label><input type="number" id="bucket_size" name="bucket_size" placeholder="84" min="0"></div><div class="field"><label for="attachments_included">Attachments Included</label><input type="text" id="attachments_included" name="attachments_included" placeholder="Bucket, pallet forks, grapple"></div></div></div>
         <div class="form-card"><div class="section-label">Photos</div><div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()"><div class="photo-drop-label"><strong>Click to upload</strong> or drag &amp; drop photos here<br><span style="font-size:11px;">JPG, PNG, WEBP - multiple files supported</span></div></div><div id="photo-preview"></div><div id="photo-count" class="photo-count hidden"></div></div>
+        <div class="form-card" id="dealer-badge-card"></div>
         <div class="form-card" id="branding-card"><div class="section-label">Branding / Contact Overlay <span style="font-size:10px;font-weight:500;color:var(--dim);margin-left:6px;text-transform:none;letter-spacing:0;">Optional</span></div><div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Add your logo and contact info to generated listing images.</div><div class="field-row single" style="margin-bottom:10px;"><div class="field"><label for="overlay-logo-input">Company Logo</label><div class="photo-drop" id="overlay-logo-drop" style="min-height:38px;padding:8px 12px;" onclick="document.getElementById('overlay-logo-input').click()"><div id="overlay-logo-label" class="photo-drop-label"><strong>Click to upload logo</strong> &nbsp;-&nbsp; PNG with transparency recommended</div></div><input type="file" id="overlay-logo-input" accept="image/*" style="display:none"></div></div><div class="field-row"><div class="field"><label for="overlay-contact-name">Contact Name</label><input type="text" id="overlay-contact-name" placeholder="John Smith"></div><div class="field"><label for="overlay-contact-phone">Contact Phone</label><input type="text" id="overlay-contact-phone" placeholder="555-123-4567"></div></div></div>
         <div class="uc-preview-card hidden" id="uc-preview-card"><div class="uc-preview-header"><span class="uc-preview-label">What This Machine Is Best For</span><span class="uc-preview-machine" id="uc-preview-machine"></span></div><div id="uc-preview-body"></div></div>
         <div class="submit-row"><div><button type="submit" class="btn-generate" id="submit-btn">Next: Review Listing</button><div style="margin-top:7px;font-size:12px;color:var(--dim);">You'll review and refine before posting</div></div><span class="status-msg hidden" id="status-msg"></span></div>
       </div></div></div></section>
-    <section class="marketing-section" id="homepage-example" style="scroll-margin-top:72px"><div class="build-shell"><div class="marketing-grid"><div class="marketing-copy"><div class="section-kicker">Output Proof</div><h2>Formatted for every channel.</h2><p>Build once, then deliver a full listing, buyer-ready specs, and machine photos already formatted for the places you post.</p><div class="marketing-points"><div class="marketing-point">Full listing presentation with real machine imagery</div><div class="marketing-point">Exact machine specs organized for buyer review</div><div class="marketing-point">Finished media outputs ready for marketplace, website, and social</div></div></div><div class="preview-layout"><article class="preview-card primary-preview"><div class="preview-frame"><div class="preview-topline"><span class="preview-status">Listing Sample</span><span>Primary output</span></div><div class="listing-card"><div class="listing-image-wrap"><img src="/images/299d3/hero.jpg" alt="2024 CAT 299D3 listing preview" /><div class="dealer-overlay"><img class="dealer-overlay-logo" src="/static/assets/yellow_iron_yard_logo.png?v=5" alt="Yellow Iron Yard" /><div class="dealer-overlay-contact"><span class="dealer-overlay-name">John Smith</span><span class="dealer-overlay-phone">555-555-5555</span></div></div></div><div class="listing-copy"><h3>2024 CAT 299D3</h3><div class="package-price">$84,999</div><div class="listing-lines"><div>Clean, late-model machine ready for work</div><div>Enclosed cab with heat &amp; AC</div></div><div class="meta-row"><div class="meta-chip">Enclosed Cab</div><div class="meta-chip">High Flow</div><div class="meta-chip">2-Speed</div></div><div class="listing-note">6 photos included</div></div></div></div></article><div class="preview-stack"><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Spec Sheet Preview</span><span>Buyer-ready</span></div><h3>Machine Details</h3><div class="spec-sheet"><div class="spec-sheet-head"><strong>Buyer-ready spec summary</strong><span>Clean rows for quick review and fast handoff.</span></div><div class="spec-row"><span>Operating Weight</span><span>11,451 LB</span></div><div class="spec-row"><span>Rated Capacity</span><span>3,480 LB</span></div><div class="spec-row"><span>Tipping Load</span><span>9,945 LB</span></div><div class="spec-row"><span>Engine Power</span><span>74.3 HP</span></div><div class="spec-row"><span>Auxiliary Flow</span><span>23 GPM</span></div><div class="spec-row"><span>Travel Speed</span><span>8.4 MPH</span></div><div class="spec-row"><span>Width</span><span>72.9 IN</span></div><div class="spec-row"><span>Hinge Pin Height</span><span>10.8 FT</span></div><div class="spec-footer">Full spec sheet included</div></div></div></article><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Finished Media Output</span><span>Export-ready</span></div><h3>Finished Media Output</h3><div class="brand-visual"><div class="brand-canvas"><div class="brand-overlay-tag">Dealer Overlay Active</div><div class="media-stack"><div class="media-format-card media-square"><img src="/images/299d3/side.jpg" alt="Square 1:1 crop preview of CAT 299D3" /><span>1:1 Square</span></div><div class="media-format-card media-portrait"><img src="/images/299d3/alt.jpg" alt="Portrait 4:5 crop preview of CAT 299D3" /><span>4:5 Portrait</span></div><div class="media-format-card media-vertical"><img src="/images/299d3/side.jpg" alt="Vertical 9:16 crop preview of CAT 299D3" /><span>9:16 Vertical</span></div></div></div><div class="brand-bar"><strong>Ready for: Marketplace • Website • Social</strong></div><div class="brand-subline">Multiple formats generated automatically</div></div></div></article></div></div></div></div></section>
+    <section class="marketing-section" id="homepage-example" style="scroll-margin-top:72px"><div class="build-shell"><div class="marketing-grid"><div class="marketing-copy"><div class="section-kicker">Output Proof</div><h2>Formatted for every channel.</h2><p>Build once, then deliver a full listing, buyer-ready specs, and machine photos already formatted for the places you post.</p><div class="marketing-points"><div class="marketing-point">Full listing presentation with real machine imagery</div><div class="marketing-point">Exact machine specs organized for buyer review</div><div class="marketing-point">Finished media outputs ready for marketplace, website, and social</div></div></div><div class="preview-layout"><article class="preview-card primary-preview"><div class="preview-frame"><div class="preview-topline"><span class="preview-status">Listing Sample</span><span>Primary output</span></div><div class="listing-card"><div class="listing-card-top"><div class="listing-image-col"><img src="/images/299d3/hero.jpg" alt="2024 CAT 299D3 listing preview" /><div class="dealer-info-inner"><img class="dealer-logo-sm" src="/static/assets/yellow_iron_yard_logo.png?v=5" alt="Yellow Iron Yard" /><div class="dealer-contact-sm"><span class="dealer-name-sm">John Smith</span><span class="dealer-phone-sm">555-555-5555</span><span class="dealer-cta-sm">Call or text to schedule</span></div></div></div><div class="listing-badges-col"><span class="listing-badge-tag">LISTING</span><div class="machine-title-block"><div class="machine-headline">CAT <span class="model-accent">299D3</span></div><div class="machine-sub-line">2024 &bull; Compact Track Loader</div></div><div class="badge-list"><div class="hl-badge"><div class="hl-icon-circle">&#9881;</div><div class="hl-text"><span class="hl-label">POWERFUL</span><span class="hl-sub">74.3 HP Engine</span></div></div><div class="hl-badge"><div class="hl-icon-circle">&#8679;</div><div class="hl-text"><span class="hl-label">STRONG LIFT</span><span class="hl-sub">3,480 lb Rated Capacity</span></div></div><div class="hl-badge"><div class="hl-icon-circle">&#8776;</div><div class="hl-text"><span class="hl-label">HIGH FLOW</span><span class="hl-sub">23 GPM Aux Hydraulics</span></div></div><div class="hl-badge"><div class="hl-icon-circle">&#8644;</div><div class="hl-text"><span class="hl-label">2-SPEED</span><span class="hl-sub">8.4 MPH Travel Speed</span></div></div></div></div></div><div class="listing-spec-section"><div class="spec-section-kicker">Core Specs</div><div class="spec-grid-2col"><div class="spec-2col-row"><span>Engine Power</span><span>74.3 HP</span></div><div class="spec-2col-row"><span>Rated Capacity</span><span>3,480 LB</span></div><div class="spec-2col-row"><span>Tipping Load</span><span>9,945 LB</span></div><div class="spec-2col-row"><span>Aux Hydraulic Flow</span><span>23 GPM</span></div><div class="spec-2col-row"><span>Operating Weight</span><span>11,451 LB</span></div><div class="spec-2col-row"><span>Hyd. Pressure</span><span>3,720 PSI</span></div><div class="spec-2col-row"><span>Max Travel Speed</span><span>8.4 MPH</span></div><div class="spec-2col-row"><span>High Flow</span><span>YES</span></div></div></div><div class="listing-footer-bar"><span class="footer-dealer-info">JOHN SMITH &nbsp;<span class="footer-dealer-phone">555-555-5555</span></span><span class="footer-cta-text">Call or text to schedule</span></div></div></div></article><div class="preview-stack"><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Spec Sheet Preview</span><span>Buyer-ready</span></div><h3>Machine Details</h3><div class="spec-sheet"><div class="spec-sheet-head"><strong>Buyer-ready spec summary</strong><span>Clean rows for quick review and fast handoff.</span></div><div class="spec-row"><span>Operating Weight</span><span>11,451 LB</span></div><div class="spec-row"><span>Rated Capacity</span><span>3,480 LB</span></div><div class="spec-row"><span>Tipping Load</span><span>9,945 LB</span></div><div class="spec-row"><span>Engine Power</span><span>74.3 HP</span></div><div class="spec-row"><span>Auxiliary Flow</span><span>23 GPM</span></div><div class="spec-row"><span>Travel Speed</span><span>8.4 MPH</span></div><div class="spec-row"><span>Width</span><span>72.9 IN</span></div><div class="spec-row"><span>Hinge Pin Height</span><span>10.8 FT</span></div><div class="spec-footer">Full spec sheet included</div></div></div></article><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Finished Media Output</span><span>Export-ready</span></div><h3>Finished Media Output</h3><div class="brand-visual"><div class="brand-canvas"><div class="brand-overlay-tag">Dealer Overlay Active</div><div class="media-stack"><div class="media-format-card media-square"><img src="/images/299d3/side.jpg" alt="Square 1:1 crop preview of CAT 299D3" /><span>1:1 Square</span></div><div class="media-format-card media-portrait"><img src="/images/299d3/alt.jpg" alt="Portrait 4:5 crop preview of CAT 299D3" /><span>4:5 Portrait</span></div><div class="media-format-card media-vertical"><img src="/images/299d3/side.jpg" alt="Vertical 9:16 crop preview of CAT 299D3" /><span>9:16 Vertical</span></div></div></div><div class="brand-bar"><strong>Ready for: Marketplace • Website • Social</strong></div><div class="brand-subline">Multiple formats generated automatically</div></div></div></article></div></div></div></div></section>
     <input type="hidden" name="year" id="h-year"><input type="hidden" name="make" id="h-make"><input type="hidden" name="model" id="h-model"><input type="hidden" name="asking_price" id="h-asking-price"><input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none">
   </form>
 </main>
+<script src="/static/dealer_badge_renderer.js"></script>
+<script src="/static/dealer_profile.js"></script>
 <script>
 (function () {
 
@@ -746,8 +771,6 @@
     const couplerElFinal = document.querySelector('input[name="coupler_type"]');
     if (couplerElFinal !== null) fd.append('coupler_type', couplerElFinal.checked ? 'hydraulic' : '');
 
-    Array.from(photoInput.files).forEach(f => fd.append('photos', f));
-
     // Branding overlay fields
     const overlayName  = document.getElementById('overlay-contact-name').value.trim();
     const overlayPhone = document.getElementById('overlay-contact-phone').value.trim();
@@ -757,7 +780,29 @@
     if (overlayLogoFiles.length > 0) fd.append('overlay_logo', overlayLogoFiles[0]);
 
     submitBtn.disabled = true;
-    showStatus('<span class="spinner"></span>Generating your listing packâ€¦', '');
+
+    // Stamp photos with dealer badge if a profile is saved in localStorage
+    const _dealerProf = window.getDealerProfile ? window.getDealerProfile() : null;
+    const _rawPhotos  = Array.from(photoInput.files);
+    if (_dealerProf && _rawPhotos.length > 0) {
+      showStatus('<span class="spinner"></span>Stamping ' + _rawPhotos.length + ' photo' + (_rawPhotos.length !== 1 ? 's' : '') + '…', '');
+      try {
+        await document.fonts.ready;
+        const _stamped = await window.stampPhotoBatch(_rawPhotos, _dealerProf, function (done, total) {
+          showStatus('<span class="spinner"></span>Stamping ' + done + ' of ' + total + ' photos…', '');
+        });
+        _stamped.forEach(function (blob, i) {
+          fd.append('photos', blob, _rawPhotos[i].name.replace(/\.[^.]+$/, '') + '.jpg');
+        });
+      } catch (_stampErr) {
+        // Badge stamp failed — upload originals and continue
+        _rawPhotos.forEach(function (f) { fd.append('photos', f); });
+      }
+    } else {
+      _rawPhotos.forEach(function (f) { fd.append('photos', f); });
+    }
+
+    showStatus('<span class="spinner"></span>Generating your listing pack…', '');
 
     try {
       const resp = await fetch('/build-listing', { method: 'POST', body: fd });
@@ -808,6 +853,7 @@
   }
 
   applyDraftToForm(loadBuildListingDraft());
+  if (typeof window.initDealerProfile === 'function') window.initDealerProfile('dealer-badge-card');
 
 })();
 </script>
