@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spec Sheet — {{ year }} {{ make }} {{ model }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --yellow:#F5C400; --black:#0D0D0D; --paper:#F8F6F1; --muted:#888; --rule:rgba(13,13,13,0.1); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#E0DEDB; font-family:'Inter',sans-serif; padding:32px 16px; display:flex; justify-content:center; min-height:100vh; }
+.sheet { width:440px; background:var(--paper); color:var(--black); box-shadow:0 12px 40px rgba(0,0,0,0.22); display:flex; flex-direction:column; overflow:hidden; }
+
+.top-frame { background:var(--yellow); padding:12px 22px 10px; display:flex; flex-direction:column; align-items:center; text-align:center; border-bottom:4px solid var(--black); flex-shrink:0; gap:3px; }
+.tf-type-top { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:rgba(0,0,0,0.4); }
+.tf-hero { font-family:'Archivo Black',sans-serif; font-size:28px; color:var(--black); line-height:1; letter-spacing:-0.02em; display:flex; align-items:center; gap:10px; }
+.tf-hero-divider { width:2px; height:20px; background:rgba(0,0,0,0.22); flex-shrink:0; }
+
+.doc-bar { background:var(--black); padding:7px 22px; display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:0.16em; color:var(--yellow); text-transform:uppercase; flex-shrink:0; }
+.doc-bar .dim { color:rgba(245,196,0,0.45); }
+
+.headline-strip { background:var(--yellow); border-top:1px solid rgba(0,0,0,0.1); border-bottom:3px solid var(--black); display:grid; grid-template-columns:repeat({{ headline_cells|length }},1fr); flex-shrink:0; }
+.hs-cell { padding:12px; text-align:center; border-right:1px solid rgba(0,0,0,0.1); }
+.hs-cell:last-child { border-right:none; }
+.hs-num { font-family:'Archivo Black',sans-serif; font-size:24px; color:var(--black); line-height:1; }
+.hs-unit { font-family:'JetBrains Mono',monospace; font-size:11px; color:rgba(0,0,0,0.45); margin-left:2px; }
+.hs-lbl { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(0,0,0,0.45); margin-top:5px; }
+
+.body { flex:1; padding:20px 22px 0; display:flex; flex-direction:column; background:var(--paper); }
+.spec-table { display:grid; grid-template-columns:1fr 1fr; gap:0 32px; margin-bottom:20px; }
+.row { display:flex; justify-content:space-between; align-items:baseline; padding:7px 0; border-bottom:1px solid var(--rule); gap:8px; }
+.row:last-child { border-bottom:none; }
+.k { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:#AAA; font-weight:500; white-space:nowrap; }
+.v { font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:var(--black); text-align:right; }
+.v .u { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); font-weight:700; margin-left:2px; }
+
+.features-label { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#AAA; margin-bottom:8px; }
+.chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px; }
+.chip { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:5px 11px; background:var(--black); color:var(--yellow); }
+.chip.std { background:transparent; color:#999; border:1px solid #CCC; }
+
+.spacer { flex:1; min-height:12px; }
+
+.condition-block { background:var(--black); padding:14px 22px 16px; flex-shrink:0; }
+.cond-sec-label { display:flex; align-items:center; gap:8px; margin-bottom:12px; border-bottom:1px solid rgba(245,196,0,0.2); padding-bottom:8px; }
+.cond-sec-bar { width:3px; height:14px; background:var(--yellow); flex-shrink:0; }
+.cond-sec-text { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--yellow); }
+.cond-stats { display:grid; border:1px solid rgba(245,196,0,0.2); margin-bottom:12px; }
+.cond-stats.one-up  { grid-template-columns:1fr; }
+.cond-stats.two-up  { grid-template-columns:repeat(2,1fr); }
+.cond-stats.three-up { grid-template-columns:repeat(3,1fr); }
+.cond-stat { padding:9px 12px; border-right:1px solid rgba(245,196,0,0.2); }
+.cond-stat:last-child { border-right:none; }
+.ck { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--yellow); margin-bottom:4px; }
+.cv { font-family:'Archivo Black',sans-serif; font-size:18px; color:#FFFFFF; line-height:1; }
+.notes { font-family:'Inter',sans-serif; font-style:italic; font-size:12px; line-height:1.55; color:rgba(245,196,0,0.75); border-top:1px solid rgba(245,196,0,0.15); padding-top:10px; }
+.notes::before { content:'NOTES — '; font-family:'JetBrains Mono',monospace; font-style:normal; font-size:10px; letter-spacing:0.16em; font-weight:700; color:var(--yellow); margin-right:3px; }
+
+/* Dark dealer footer (default) */
+.dealer-footer { background:var(--black); border-top:3px solid var(--yellow); padding:12px 22px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.d-logo { width:36px; height:36px; border-radius:2px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+.d-logo.logo-bg-dark  { background:var(--yellow); }
+.d-logo.logo-bg-white { background:#FFFFFF; }
+.d-logo img { width:100%; height:100%; object-fit:contain; border-radius:2px; }
+.d-logo-initials { font-family:'Archivo Black',sans-serif; font-size:12px; }
+.d-logo-initials.on-yellow { color:var(--black); }
+.d-logo-initials.on-dark   { color:#FFFFFF; }
+.d-div { width:1.5px; height:30px; flex-shrink:0; }
+.d-div.div-yellow { background:var(--yellow); }
+.d-div.div-red    { background:#CC2222; }
+.d-info { flex:1; }
+.d-role { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:2px; }
+.d-name { font-family:'Inter',sans-serif; font-size:16px; font-weight:700; line-height:1.1; }
+.d-phone { font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:2px; }
+/* Dark badge (default) */
+.dealer-footer.badge-dark .d-role  { color:var(--yellow); }
+.dealer-footer.badge-dark .d-name  { color:var(--yellow); }
+.dealer-footer.badge-dark .d-phone { color:var(--yellow); }
+/* White badge (when logo is light) */
+.dealer-footer.badge-white { background:#FFFFFF; border-top-color:#CC2222; }
+.dealer-footer.badge-white .d-role  { color:#0D0D0D; }
+.dealer-footer.badge-white .d-name  { color:#0D0D0D; }
+.dealer-footer.badge-white .d-phone { color:#0D0D0D; }
+</style>
+</head>
+<body>
+<!-- Generated by MTM -->
+<div class="sheet">
+
+  <div class="top-frame">
+    <div class="tf-type-top">{{ equipment_type_display }}</div>
+    <div class="tf-hero">
+      <span>{{ make }}</span>
+      <div class="tf-hero-divider"></div>
+      <span>{{ model }}</span>
+    </div>
+  </div>
+
+  <div class="doc-bar">
+    <span>{{ year }} &nbsp;·&nbsp; Specification Sheet</span>
+    {% if serial_number %}
+    <span class="dim">SN · {{ serial_number }}{% if location %} &nbsp;·&nbsp; {{ location }}{% endif %}</span>
+    {% elif location %}
+    <span class="dim">{{ location }}</span>
+    {% endif %}
+  </div>
+
+  {% if headline_cells %}
+  <div class="headline-strip">
+    {% for cell in headline_cells %}
+    <div class="hs-cell">
+      <div class="hs-num">{{ cell.value }}<span class="hs-unit">{{ cell.unit }}</span></div>
+      <div class="hs-lbl">{{ cell.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="body">
+    {% if spec_rows %}
+    <div class="spec-table">
+      {% for row in spec_rows %}
+      <div class="row">
+        <span class="k">{{ row.key }}</span>
+        <span class="v">{{ row.value }}{% if row.unit %}<span class="u">{{ row.unit }}</span>{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if feature_chips %}
+    <div class="features-label">Features</div>
+    <div class="chips">
+      {% for chip in feature_chips %}
+      <span class="chip{% if not chip.premium %} std{% endif %}">{{ chip.label }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="spacer"></div>
+  </div>
+
+  {% if condition_stats %}
+  <div class="condition-block">
+    <div class="cond-sec-label">
+      <div class="cond-sec-bar"></div>
+      <span class="cond-sec-text">Condition &amp; Service</span>
+    </div>
+    <div class="cond-stats {{ condition_grid_class }}">
+      {% for stat in condition_stats %}
+      <div class="cond-stat">
+        <div class="ck">{{ stat.label }}</div>
+        <div class="cv">{{ stat.value }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if dealer_notes %}
+    <div class="notes">{{ dealer_notes }}</div>
+    {% endif %}
+  </div>
+  {% elif dealer_notes %}
+  <div class="condition-block">
+    <div class="cond-sec-label">
+      <div class="cond-sec-bar"></div>
+      <span class="cond-sec-text">Notes</span>
+    </div>
+    <div class="notes">{{ dealer_notes }}</div>
+  </div>
+  {% endif %}
+
+  <div class="dealer-footer badge-{{ badge_style }}">
+    <div class="d-logo logo-bg-{{ logo_bg }}">
+      {% if dealer_logo_url %}
+      <img src="{{ dealer_logo_url }}" alt="{{ dealer_name }}">
+      {% else %}
+      <span class="d-logo-initials on-yellow">{{ dealer_initials }}</span>
+      {% endif %}
+    </div>
+    <div class="d-div div-{{ divider_color }}"></div>
+    <div class="d-info">
+      {% if dealer_role %}<div class="d-role">{{ dealer_role }}</div>{% endif %}
+      <div class="d-name">{{ dealer_name }}</div>
+      {% if dealer_phone %}<div class="d-phone">{{ dealer_phone }}</div>{% endif %}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
