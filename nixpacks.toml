@@ -8,6 +8,9 @@ aptPkgs = [
 
 [phases.build]
 cmds = [
-  "python -m playwright install --with-deps chromium",
-  "echo 'Chromium installed for Playwright card generation'",
+  "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright python -m playwright install --with-deps chromium",
+  "echo 'Chromium installed to /ms-playwright'",
 ]
+
+[variables]
+PLAYWRIGHT_BROWSERS_PATH = "/ms-playwright"
