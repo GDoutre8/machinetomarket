@@ -22,6 +22,7 @@ Integration checklist for real modules:
 
 from __future__ import annotations
 import json
+import logging
 import os
 import re
 import uuid
@@ -33,6 +34,8 @@ from mtm_listing_parser_price       import extract_price
 from mtm_listing_parser_attachments import extract_attachments
 from mtm_listing_parser_model_alias import match_known_model, lookup_make_for_model, scan_bare_model_tokens
 from mtm_registry_lookup            import lookup_machine
+
+logger = logging.getLogger(__name__)
 
 # ── Spec resolver ─────────────────────────────────────────────────────────────
 from spec_resolver.spec_resolver import resolve as _spec_resolve
@@ -1534,21 +1537,21 @@ def _run_spec_resolver(
     Returns None on any error so the caller can fall back gracefully.
     """
     full_record = registry_result.get("full_record") or {}
-    print(f"[MTM DEBUG SR] full_record keys   : {list(full_record.keys()) if full_record else 'EMPTY'}")
+    logger.debug("SR: full_record keys: %s", list(full_record.keys()) if full_record else "EMPTY")
     if not full_record:
-        print("[MTM DEBUG SR] EXIT 1: full_record empty")
+        logger.debug("SR: EXIT 1: full_record empty")
         return None
 
     eq_type  = registry_result.get("equipment_type") or parsed.get("equipment_type") or ""
     category = _eq_type_to_category(eq_type)
     method   = registry_result.get("match_method", "exact")
-    print(f"[MTM DEBUG SR] eq_type={eq_type!r}  category={category!r}  method={method!r}")
+    logger.debug("SR: eq_type=%r  category=%r  method=%r", eq_type, category, method)
 
     # Normalize raw registry record into the shape RegistryEntry.from_dict expects
     normalized = _normalize_registry_record(full_record, category)
-    print(f"[MTM DEBUG SR] normalized keys    : {list(normalized.keys())}")
-    print(f"[MTM DEBUG SR] normalized specs   : {normalized.get('specs')}")
-    print(f"[MTM DEBUG SR] match confidence   : {confidence}")
+    logger.debug("SR: normalized keys: %s", list(normalized.keys()))
+    logger.debug("SR: normalized specs: %s", normalized.get("specs"))
+    logger.debug("SR: match confidence: %s", confidence)
 
     try:
         inp = ResolverInput(
@@ -1566,9 +1569,7 @@ def _run_spec_resolver(
             inp.raw_listing_text = str(parsed_year)
         out = _spec_resolve(inp)
     except Exception as exc:
-        import traceback as _tb
-        print(f"[MTM DEBUG SR] EXIT 2: exception — {exc}")
-        _tb.print_exc()
+        logger.debug("SR: EXIT 2: exception — %s", exc, exc_info=True)
         return None
 
     return {

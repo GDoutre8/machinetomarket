@@ -55,6 +55,26 @@
 
 ---
 
+## 3b. Lookup Pipeline Changes (2026-04-17)
+
+### Kubota MEX R-suffix stripping — Phase 1 (merged: 28db3fc)
+
+**Problem:** Kubota mini excavator listings often include emissions-tier suffixes (R1, R2, R3, R1T, R2T, R3T) appended to the generation number (e.g. KX040-4R3T, U35-4R1). These suffixes are not stored as separate registry records. Previously, any such input scored fuzzy (0.75–0.85) and was unconditionally rejected by the `safe_lookup_machine()` Tier 1 gate, falling through to WEB_FALLBACK with no specs injected.
+
+**Fix:** `_strip_variant_suffix(make, model, registry_models) → str | None` in `mtm_registry_lookup.py`. Strips the suffix and re-scores only when all 4 guards pass: Kubota make, suffix changes the string, stripped model is in `_KUBOTA_MEX_BASE_MODELS`, stripped model exists in the live registry.
+
+**Scope:** Phase 1 only.
+- Pattern: `/R[1-3]T?$/` (matches R1, R2, R3, R1T, R2T, R3T)
+- Models covered: KX033-4, KX040-4, KX057-6, KX080-4, U17, U27-4, U35-4, U55-5
+
+**Result:** All 8 Kubota MEX base models now accept R-suffix variants. Inputs resolve via `slug_match` conf=1.000, passing the Tier 1 gate. 11/11 spec fields populated in smoke test for KX040-4R3T, KX033-4R3T, U27-4R3T.
+
+**Phase 2 extensibility:** `_strip_variant_suffix()` accepts additional manufacturer branches by adding a new conditional block inside the function. No changes to `lookup_machine()` wiring required. Planned: Bobcat T4F, JD P-Tier — each requires its own audit (false-positive risk analysis, registry existence verification) before implementation.
+
+**Sentinels confirmed not affected:** KX040-3 and KX042-4 stay fuzzy (pattern does not match `-3` suffix); S650/S750/333G resolve correctly; non-Kubota makes bypass the strip entirely.
+
+---
+
 ## 4. Known Deferred Work (INTENTIONAL)
 
 ### Kubota Horsepower

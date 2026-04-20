@@ -9,7 +9,7 @@
       "'full' profile removed in v2.0. Registry stores ~28–31 fields internally; profiles control what is surfaced.",
       "Null or missing field values are always skipped — no blank labels ever rendered.",
       "Field order within each profile is intentional and must be preserved by the resolver.",
-      "tail_swing_type: skid_steer/CTL use short keys (radial/zero/reduced). Mini excavator and excavator use descriptive keys (zero_tail_swing, conventional_tail_swing, reduced_tail_swing).",
+      "tail_swing_type: all equipment types use short keys — zero, conventional, reduced. CORRECTED 2026-04-17: prior note incorrectly claimed mini excavator and excavator used descriptive keys (zero_tail_swing, conventional_tail_swing, reduced_tail_swing); direct verification of all 63 MEX registry records confirmed short keys only, consistent with CTL/SSL.",
       "breakout_force_lbf not in current skid_steer/CTL canonical schema — omitted from those profiles.",
       "mini_excavator profile uses aux_flow_primary_gpm (canonical registry field name, not aux_flow_standard_gpm).",
       "wheel_loader / excavator / telehandler use canonical display-layer names (horsepower_hp, operating_weight_lbs, travel_speed_mph). Registry source fields that differ must be mapped at ingest — not in profiles.",
