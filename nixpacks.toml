@@ -5,12 +5,3 @@ aptPkgs = [
   "fonts-liberation",
   "libheif1",
 ]
-
-[phases.build]
-cmds = [
-  "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright python -m playwright install --with-deps chromium",
-  "echo 'Chromium installed to /ms-playwright'",
-]
-
-[variables]
-PLAYWRIGHT_BROWSERS_PATH = "/ms-playwright"
