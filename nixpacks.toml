@@ -5,3 +5,9 @@ aptPkgs = [
   "fonts-liberation",
   "libheif1",
 ]
+
+[phases.build]
+cmds = [
+  "python -m playwright install --with-deps chromium",
+  "echo 'Chromium installed for Playwright spec sheet and card rendering'",
+]
