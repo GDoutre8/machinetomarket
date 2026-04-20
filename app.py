@@ -85,10 +85,37 @@ async def _cleanup_loop() -> None:
             print(f"  [Cleanup] Error during session cleanup: {exc}")
 
 
+def _ensure_playwright_chromium() -> None:
+    """Install Playwright Chromium if the binary is not already present.
+
+    Runs synchronously at startup.  Playwright caches the binary so
+    subsequent restarts complete in < 1 s (just a path check).
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    cache_root = Path.home() / ".cache" / "ms-playwright"
+    found = list(cache_root.glob("chromium-*/chrome-linux/chrome"))
+    if found:
+        print(f"  [Startup] Playwright Chromium already installed: {found[0]}")
+        return
+    print("  [Startup] Playwright Chromium not found — installing now...")
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "playwright", "install", "--with-deps", "chromium"],
+            check=True,
+        )
+        print("  [Startup] Playwright Chromium installed OK.")
+    except Exception as exc:
+        print(f"  [Startup] WARNING: Playwright install failed: {exc}")
+
+
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
-    # On startup: purge any sessions left over from a previous run, then
-    # start the hourly background cleanup loop.
+    # On startup: ensure Playwright Chromium is present, purge stale
+    # sessions from previous run, then start the hourly cleanup loop.
+    _ensure_playwright_chromium()
     removed = _cleanup_old_sessions()
     if removed:
         print(f"  [Startup] Cleaned up {removed} stale session(s) from previous run.")
