@@ -305,6 +305,7 @@ def screenshot_spec_sheet(
     Viewport 500×900 at device_scale_factor=2 captures the 440 px wide .sheet
     element at high resolution (≈880 px effective width).
     """
+    import concurrent.futures
     import jinja2
     from playwright.sync_api import sync_playwright
 
@@ -326,17 +327,26 @@ def screenshot_spec_sheet(
     html_str = env.get_template("spec_sheet.html").render(**ctx)
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=True)
-        try:
-            page = browser.new_page(
-                viewport={"width": 500, "height": 900},
-                device_scale_factor=2.0,
-            )
-            page.set_content(html_str, wait_until="networkidle")
-            sheet_el = page.query_selector(".sheet")
-            if sheet_el is None:
-                raise RuntimeError("'.sheet' selector not found in rendered spec sheet HTML")
-            sheet_el.screenshot(path=str(output_path))
-        finally:
-            browser.close()
+
+    def _playwright_render() -> None:
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True)
+            try:
+                page = browser.new_page(
+                    viewport={"width": 500, "height": 900},
+                    device_scale_factor=2.0,
+                )
+                page.set_content(html_str, wait_until="networkidle")
+                sheet_el = page.query_selector(".sheet")
+                if sheet_el is None:
+                    raise RuntimeError("'.sheet' selector not found in rendered spec sheet HTML")
+                sheet_el.screenshot(path=str(output_path))
+            finally:
+                browser.close()
+
+    # sync_playwright creates its own event loop internally and will raise
+    # "Please use the Async API instead" if called directly inside FastAPI's
+    # asyncio loop.  Running it in a ThreadPoolExecutor worker thread gives it
+    # a clean context with no active event loop.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        pool.submit(_playwright_render).result()
