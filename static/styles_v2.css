@@ -59,8 +59,9 @@ body {
 /* ── HEADER ──────────────────────────────────────────────── */
 
 header {
-  background: var(--mtm-charcoal);
-  border-bottom: 1px solid rgba(0,0,0,0.25);
+  background: linear-gradient(to bottom, rgba(30,30,30,0.95), rgba(15,15,15,0.88));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -70,7 +71,7 @@ header {
   max-width: var(--max);
   margin: 0 auto;
   padding: 0 32px;
-  height: 62px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -79,21 +80,22 @@ header {
 .logo {
   display: flex;
   align-items: center;
-  padding: 8px 0;
+  padding: 10px 0;
   text-decoration: none;
 }
 
 .logo img {
-  height: 60px;
+  height: 72px;
   width: auto;
   object-fit: contain;
   display: block;
   mix-blend-mode: screen;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
 }
 
 @media (max-width: 768px) {
   .logo img {
-    height: 44px;
+    height: 56px;
   }
 }
 

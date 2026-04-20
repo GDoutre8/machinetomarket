@@ -38,12 +38,14 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from spec_sheet_generator  import generate_spec_sheet, generate_brochure_image
+from spec_sheet_context    import screenshot_spec_sheet
 from image_pack_generator  import generate_image_pack, SUPPORTED_EXTENSIONS
 from walkaround_generator  import generate_walkaround_video
 from dealer_input          import DealerInput
 from listing_builder              import build_listing_text
 from listing_use_case_enrichment  import build_use_case_payload
+
+_OUTPUTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -244,6 +246,9 @@ def build_listing_pack(
     # Listing card PNG (card_renderer_adapter)
     full_record: "dict | None" = None,
     card_dealer_data: "dict | None" = None,
+    # New spec sheet export (single source of truth)
+    dealer_input_dump: "dict | None" = None,
+    enriched_resolved_specs: "dict | None" = None,
 ) -> dict:
     """
     Assemble one complete MTM listing pack from pre-processed components.
@@ -316,55 +321,37 @@ def build_listing_pack(
     # ── 2. Spec sheet PNG ─────────────────────────────────────────────────────
     spec_count = len(spec_sheet_entries)
     spec_sheet_path = None
-    if spec_sheet_entries:
-        try:
-            spec_sheet_out = os.path.join(spec_dir, "machine_spec_sheet.png")
-            generate_spec_sheet(
-                make              = make or "Unknown",
-                model             = model or "Machine",
-                year              = year,
-                equipment_type    = eq_type.replace("_", " ").title() if eq_type else None,
-                spec_sheet        = spec_sheet_entries,
-                dealer_name       = dealer.get("dealer_name"),
-                phone             = dealer.get("phone"),
-                email             = dealer.get("email"),
-                location          = dealer.get("location"),
-                output_path       = spec_sheet_out,
-                use_case_payload  = use_case_payload,
-            )
-            spec_sheet_path = spec_sheet_out
-            outputs["spec_sheet_png"] = spec_sheet_out
-        except Exception as exc:
-            warnings.append(f"Spec sheet generation failed: {exc}")
-    else:
-        warnings.append("No spec sheet entries — spec sheet skipped.")
 
-    # ── 2b. Brochure PNG (Panel 1 marketing card + Panel 2 spec grid) ──────────
-    if spec_sheet_entries:
-        try:
-            brochure_out       = os.path.join(spec_dir, "machine_brochure.png")
-            _resolved_specs    = (resolved_machine or {}).get("resolved_specs") or {}
-            _ui_hints          = (resolved_machine or {}).get("ui_hints") or {}
-            # Use first uploaded photo as the machine image in Panel 1
-            _machine_img: str | None = next(
-                (p for p in (image_input_paths or [])
-                 if os.path.isfile(p) and Path(p).suffix.lower() in SUPPORTED_EXTENSIONS),
-                None,
-            )
-            generate_brochure_image(
-                listing_data       = parsed_listing,
-                resolved_specs     = _resolved_specs,
-                ui_hints           = _ui_hints,
-                machine_image_path = _machine_img,
-                dealer_logo_path   = overlay_logo_path,
-                dealer_info        = dealer,
-                output_path        = brochure_out,
-            )
-            outputs["brochure_png"]   = brochure_out
-            # Promote brochure to primary spec sheet output so the UI renders it
-            outputs["spec_sheet_png"] = brochure_out
-        except Exception as exc:
-            warnings.append(f"Brochure generation failed: {exc}")
+    if dealer_input_dump is not None and enriched_resolved_specs is not None:
+        spec_sheet_out = os.path.join(spec_dir, "machine_spec_sheet.png")
+        # Remove any stale artifact before writing so re-downloads never serve old output
+        if os.path.isfile(spec_sheet_out):
+            os.remove(spec_sheet_out)
+        session_id = os.path.basename(session_dir) if session_dir else ""
+        dealer_contact = {
+            "contact_name":  overlay_contact_name,
+            "contact_phone": overlay_contact_phone,
+            "dealer_name":   dealer.get("dealer_name"),
+            "phone":         dealer.get("phone"),
+            "location":      dealer.get("location"),
+            "logo_filename":
+                os.path.basename(overlay_logo_path) if overlay_logo_path else None,
+        }
+        screenshot_spec_sheet(
+            dealer_input_data=dealer_input_dump,
+            resolved_specs=enriched_resolved_specs,
+            ui_hints=(resolved_machine or {}).get("ui_hints") or {},
+            equipment_type=eq_type or "",
+            dealer_contact=dealer_contact,
+            session_id=session_id,
+            outputs_dir=_OUTPUTS_DIR,
+            output_path=spec_sheet_out,
+        )
+        print(f"  [Pack] spec_sheet path    : {spec_sheet_out}")
+        spec_sheet_path = spec_sheet_out
+        outputs["spec_sheet_png"] = spec_sheet_out
+    else:
+        warnings.append("No dealer input — spec sheet skipped.")
 
     # ── 3. Image pack ─────────────────────────────────────────────────────────
     valid_images = [
@@ -795,21 +782,23 @@ def build_listing_pack_v1(
 
     # 5. Delegate to the full pack assembler
     return build_listing_pack(
-        raw_text               = "",
-        parsed_listing         = parsed_listing,
-        resolved_machine       = resolved_machine,
-        generated_listing_text = generated_listing_text,
-        spec_sheet_entries     = spec_sheet_entries,
-        image_input_paths      = image_input_paths or [],
-        dealer_info            = dealer_info,
-        generate_walkaround    = generate_walkaround,
-        walkaround_video_path  = walkaround_video_path,
-        session_dir            = session_dir,
-        session_web            = session_web,
-        use_case_payload       = use_case_payload,
-        overlay_logo_path      = overlay_logo_path,
-        overlay_contact_name   = overlay_contact_name,
-        overlay_contact_phone  = overlay_contact_phone,
-        full_record            = full_record,
-        card_dealer_data       = card_dealer_data,
+        raw_text                = "",
+        parsed_listing          = parsed_listing,
+        resolved_machine        = resolved_machine,
+        generated_listing_text  = generated_listing_text,
+        spec_sheet_entries      = spec_sheet_entries,
+        image_input_paths       = image_input_paths or [],
+        dealer_info             = dealer_info,
+        generate_walkaround     = generate_walkaround,
+        walkaround_video_path   = walkaround_video_path,
+        session_dir             = session_dir,
+        session_web             = session_web,
+        use_case_payload        = use_case_payload,
+        overlay_logo_path       = overlay_logo_path,
+        overlay_contact_name    = overlay_contact_name,
+        overlay_contact_phone   = overlay_contact_phone,
+        full_record             = full_record,
+        card_dealer_data        = card_dealer_data,
+        dealer_input_dump       = dealer_input.model_dump(),
+        enriched_resolved_specs = _resolved_for_sheet,
     )

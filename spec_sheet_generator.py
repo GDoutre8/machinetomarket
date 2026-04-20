@@ -1892,6 +1892,7 @@ def generate_brochure_image(
     dealer_info        : dict with dealer_name, phone keys
     output_path        : PNG output path (auto-generated if None)
     """
+    print(">>> OLD SPEC SHEET CALLED - ERROR")
     if ui_hints is None:
         ui_hints = {}
     if resolved_specs is None:
@@ -2006,6 +2007,7 @@ def generate_spec_sheet(
     output_path: str | None = None,
     use_case_payload: dict | None = None,
 ) -> str:
+    print(">>> OLD SPEC SHEET CALLED - ERROR")
     del dealer_name, phone, email, location, use_case_payload
 
     if output_path is None:
