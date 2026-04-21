@@ -94,18 +94,22 @@ def _trim_bounds(logo: Image.Image) -> tuple[int, int, int, int]:
 def _font(size: int, bold: bool = False) -> "ImageFont.FreeTypeFont | ImageFont.ImageFont":
     """Load a sans-serif font; graceful fallback chain for all deployment targets."""
     candidates = (
-        [   # Bold — prefer Montserrat Bold, then system fallbacks
+        [   # Bold (contact name) — Montserrat Black preferred
+            "/usr/share/fonts/truetype/montserrat/Montserrat-Black.ttf",
             "/usr/share/fonts/truetype/montserrat/Montserrat-Bold.ttf",
             "C:/Windows/Fonts/arialbd.ttf",
             "C:/Windows/Fonts/calibrib.ttf",
+            "/usr/share/fonts/truetype/carlito/Carlito-Bold.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         ]
         if bold
-        else [  # Regular
+        else [  # Regular (phone) — Montserrat Medium preferred
+            "/usr/share/fonts/truetype/montserrat/Montserrat-Medium.ttf",
             "/usr/share/fonts/truetype/montserrat/Montserrat-Regular.ttf",
             "C:/Windows/Fonts/arial.ttf",
             "C:/Windows/Fonts/calibri.ttf",
+            "/usr/share/fonts/truetype/carlito/Carlito-Regular.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         ]
@@ -165,9 +169,9 @@ def apply_badge_to_photo(
         tx, ty, tw, th = _trim_bounds(logo_src)
         native_ar = tw / max(th, 1)
 
-        # ── Badge sizing (scales with photo width) ────────────────────────────
+        # ── Badge sizing (fixed spec) ─────────────────────────────────────────
         badge_w  = min(700, max(400, round(photo_w * 0.45)))
-        logo_h   = min(100, max(60,  round(photo_w * 0.06)))
+        logo_h   = 80
         logo_w   = round(logo_h * native_ar)
         badge_h  = logo_h + 24
 
@@ -175,7 +179,7 @@ def apply_badge_to_photo(
         pad_l    = 14
         pad_v    = 12
         gap      = 14
-        div_w    = 3
+        div_w    = 5
         stripe_h = max(3, round(4  * ps))
         radius   = max(4, round(6  * ps))
         margin   = max(12, round(20 * ps))

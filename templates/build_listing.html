@@ -763,29 +763,8 @@
 
     submitBtn.disabled = true;
 
-    // Stamp photos — prefer live form state over localStorage so preset loads are reflected
-    const _dealerProf = (window.readProfileFromFormState ? window.readProfileFromFormState(form) : null)
-                     || (window.getDealerProfile         ? window.getDealerProfile()              : null);
-    const _rawPhotos  = Array.from(photoInput.files);
-    if (_dealerProf && _rawPhotos.length > 0) {
-      showStatus('<span class="spinner"></span>Stamping ' + _rawPhotos.length + ' photo' + (_rawPhotos.length !== 1 ? 's' : '') + '\u2026', '');
-      try {
-        await document.fonts.ready;
-        const _stamped = await window.exportImagePack(_dealerProf, _rawPhotos, {
-          onProgress: function (done, total) {
-            showStatus('<span class="spinner"></span>Stamping ' + done + ' of ' + total + ' photos\u2026', '');
-          }
-        });
-        _stamped.forEach(function (blob, i) {
-          fd.append('photos', blob, _rawPhotos[i].name.replace(/\.[^.]+$/, '') + '.jpg');
-        });
-      } catch (_stampErr) {
-        // Badge stamp failed — upload originals and continue
-        _rawPhotos.forEach(function (f) { fd.append('photos', f); });
-      }
-    } else {
-      _rawPhotos.forEach(function (f) { fd.append('photos', f); });
-    }
+    // Server applies badge overlay — upload raw photos only
+    Array.from(photoInput.files).forEach(function (f) { fd.append('photos', f); });
 
     showStatus('<span class="spinner"></span>Generating your listing pack…', '');
 
