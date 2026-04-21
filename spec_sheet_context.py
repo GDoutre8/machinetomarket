@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import datetime
 import os
+import sys
 from pathlib import Path
 
 from spec_sheet_config import (
@@ -64,11 +65,11 @@ TAIL_SWING_CONTEXT: dict[str, str] = {
 HERO_SPECS: dict[str, list[dict]] = {
     "compact_track_loader": [
         {
-            "field": "rated_operating_capacity_lbs", "aliases": ["tipping_load_lbs"],
+            "field": "rated_operating_capacity_lbs", "aliases": ["tipping_load_lbs", "roc_lb"],
             "label": "ROC", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
         },
         {
-            "field": "horsepower_hp", "aliases": ["net_horsepower_hp"],
+            "field": "horsepower_hp", "aliases": ["net_horsepower_hp", "net_hp"],
             "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
         },
         {
@@ -108,7 +109,7 @@ HERO_SPECS: dict[str, list[dict]] = {
             "sublabel": "tail_swing_type",
         },
         {
-            "field": "max_dig_depth_ft", "aliases": [],
+            "field": "max_dig_depth_ft", "aliases": ["max_dig_depth"],
             "label": "Dig Depth", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
         },
         {
@@ -122,19 +123,19 @@ HERO_SPECS: dict[str, list[dict]] = {
     ],
     "telehandler": [
         {
-            "field": "lift_capacity_lbs", "aliases": ["lift_capacity_at_full_height_lbs"],
+            "field": "lift_capacity_lbs", "aliases": ["lift_capacity_at_full_height_lbs", "lift_capacity_lb"],
             "label": "Lift Cap", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
         },
         {
-            "field": "lift_height_ft", "aliases": [],
+            "field": "lift_height_ft", "aliases": ["max_lift_height_ft"],
             "label": "Lift Ht", "unit": None, "fmt": "feet_inches", "req_conf": "NONE",
         },
         {
-            "field": "forward_reach_ft", "aliases": [],
+            "field": "forward_reach_ft", "aliases": ["max_forward_reach_ft"],
             "label": "Fwd Reach", "unit": None, "fmt": "feet_inches", "req_conf": "NONE",
         },
         {
-            "field": "horsepower_hp", "aliases": [],
+            "field": "horsepower_hp", "aliases": ["net_hp"],
             "label": "HP", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
         },
     ],
@@ -276,8 +277,18 @@ def _render_tile_value(value: object, fmt: str) -> str:
         v = float(value)
         return str(int(v)) if v == int(v) else str(round(v, 1))
     if fmt == "feet_inches":
-        result = format_feet_inches(float(value))
-        return result if result is not None else str(value)
+        try:
+            result = format_feet_inches(float(value))
+            return result if result is not None else str(value)
+        except (TypeError, ValueError):
+            # pre-v2 sessions stored dig/dump depth as "X ft Y in" strings
+            import re
+            m = re.match(r"(\d+)\s*ft\s*(\d+)\s*in", str(value).strip())
+            if m:
+                ft, inch = int(m.group(1)), int(m.group(2))
+                return f"{ft}'" if inch == 0 else f"{ft}' {inch}\""
+            print(f"[spec_sheet] feet_inches unhandled value: {value!r}", file=sys.stderr)
+            return str(value)
     if fmt == "lift_path":
         return _LIFT_PATH_DISPLAY.get(str(value).lower(), str(value).title())
     return str(value)
