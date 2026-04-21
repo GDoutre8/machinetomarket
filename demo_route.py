@@ -246,14 +246,19 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
     zip_abs = os.path.join(session_dir, "listing_output.zip")
     zip_url = f"/download-pack/{session_id}" if os.path.isfile(zip_abs) else None
 
-    # Listing photo URLs (processed images from Listing_Photos/)
+    # Listing photo URLs — JPEGs first (processed input photos), then PNGs (cards)
     import glob as _glob
     _lp_dir = os.path.join(pack_dir, "Listing_Photos")
     listing_photos: list[str] = []
     if os.path.isdir(_lp_dir):
-        for _p in sorted(_glob.glob(os.path.join(_lp_dir, "*"))):
-            if os.path.isfile(_p) and _p.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
-                listing_photos.append(f"{web_base}/Listing_Photos/{os.path.basename(_p)}")
+        _all = [
+            _p for _p in sorted(_glob.glob(os.path.join(_lp_dir, "*")))
+            if os.path.isfile(_p) and _p.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
+        ]
+        _jpgs = [_p for _p in _all if _p.lower().endswith((".jpg", ".jpeg", ".webp"))]
+        _pngs = [_p for _p in _all if _p.lower().endswith(".png")]
+        for _p in (_jpgs or _pngs) + (_pngs if _jpgs else []):
+            listing_photos.append(f"{web_base}/Listing_Photos/{os.path.basename(_p)}")
 
     machine_label = (
         f"{dealer_input.year} {dealer_input.make.upper()} {dealer_input.model}"
