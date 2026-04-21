@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEMO PREVIEW — Machine-to-Market</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles_v2.css" />
+  <style>
+    .demo-banner {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: #C62828;
+      color: #fff;
+      text-align: center;
+      padding: 11px 20px;
+      font-family: var(--cond);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-bottom: 3px solid #8B0000;
+      user-select: none;
+    }
+
+    .demo-badge {
+      display: inline-block;
+      background: #C62828;
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-left: 8px;
+      line-height: 1.5;
+    }
+
+    .demo-wrap {
+      max-width: 1280px;
+      margin: 36px auto;
+      padding: 0 32px 80px;
+    }
+
+    .demo-hero {
+      background: var(--mtm-charcoal);
+      border-radius: 6px;
+      padding: 26px 32px 22px;
+      margin-bottom: 24px;
+    }
+
+    .demo-hero h1 {
+      font-family: var(--cond);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #F5F5F3;
+      margin-bottom: 4px;
+      line-height: 1.1;
+    }
+
+    .demo-hero h1 .machine-name { color: var(--mtm-yellow); }
+
+    .demo-hero p {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .preset-nav {
+      margin-bottom: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .preset-nav a {
+      color: #888;
+      text-decoration: none;
+      margin-right: 14px;
+      padding: 3px 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .preset-nav a:hover { color: var(--mtm-yellow); }
+
+    .preset-nav a.active {
+      color: var(--mtm-yellow);
+      border-bottom-color: var(--mtm-yellow);
+    }
+
+    .demo-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .btn-dl {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--mtm-yellow);
+      color: var(--mtm-black);
+      border: 1px solid var(--mtm-yellow);
+      border-radius: var(--radius);
+      font-family: var(--cond);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 9px 16px;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-dl:hover {
+      background: var(--mtm-yellow-dim);
+      border-color: var(--mtm-yellow-dim);
+    }
+
+    .btn-dl-ghost {
+      background: transparent;
+      color: #555;
+      border-color: #ccc;
+    }
+
+    .btn-dl-ghost:hover {
+      color: var(--mtm-black);
+      border-color: #888;
+      background: transparent;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .demo-grid { grid-template-columns: 1fr; }
+    }
+
+    .demo-panel {
+      background: #fff;
+      border: 1px solid #DCDCDA;
+      border-top: 3px solid var(--mtm-yellow);
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+    }
+
+    .demo-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      background: #F9F9F7;
+      border-bottom: 1px solid #E0E0DC;
+    }
+
+    .demo-panel-label {
+      font-family: var(--cond);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+      flex: 1;
+    }
+
+    .demo-panel-body {
+      padding: 18px 20px;
+    }
+
+    .listing-text {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.75;
+      color: #222;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+    }
+
+    .spec-sheet-img {
+      width: 100%;
+      display: block;
+      border: none;
+    }
+
+    .spec-sheet-link { display: block; }
+    .spec-sheet-link:hover .spec-sheet-img { opacity: 0.92; }
+
+    .demo-hint {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    .demo-raw details {
+      margin-top: 28px;
+    }
+
+    .demo-raw summary {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #aaa;
+      cursor: pointer;
+      padding: 6px 0;
+      outline: none;
+    }
+
+    .demo-raw summary:hover { color: #666; }
+
+    .demo-raw pre {
+      background: #1A1A1A;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: #aaa;
+      overflow: auto;
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    .no-output {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Page-level demo banner — unmistakable, sticky -->
+<div class="demo-banner">
+  &#9888; DEMO PREVIEW &mdash; SAMPLE DATA &mdash; NOT A REAL LISTING &#9888;
+</div>
+
+<div class="demo-wrap">
+
+  <!-- Hero -->
+  <div class="demo-hero">
+    <h1>
+      <span class="machine-name">{{ machine_label }}</span>
+      <span class="demo-badge">DEMO</span>
+    </h1>
+    <p>
+      Preset: <strong style="color:#ddd">{{ preset_name }}</strong>
+      &nbsp;&bull;&nbsp; Hardcoded sample data &nbsp;&bull;&nbsp;
+      All specs, prices, and details are fictional
+    </p>
+  </div>
+
+  <!-- Preset switcher -->
+  {% if valid_presets | length > 1 %}
+  <div class="preset-nav">
+    Presets:
+    {% for name in valid_presets %}
+      <a href="/demo?preset={{ name }}"
+         class="{{ 'active' if name == preset_name else '' }}">{{ name }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Action bar -->
+  <div class="demo-actions">
+    {% if zip_url %}
+      <a href="{{ zip_url }}" class="btn-dl">&#8595;&nbsp; Download Pack ZIP</a>
+    {% endif %}
+    <a href="{{ result_url }}" class="btn-dl btn-dl-ghost" target="_blank">Full Result Page &rarr;</a>
+    <a href="{{ spec_sheet_view_url }}" class="btn-dl btn-dl-ghost" target="_blank">Spec Sheet Page &rarr;</a>
+    <a href="/build-listing" class="btn-dl btn-dl-ghost">Go to Wizard</a>
+  </div>
+
+  <!-- Side-by-side preview grid -->
+  <div class="demo-grid">
+
+    <!-- Left: Listing description -->
+    <div class="demo-panel">
+      <div class="demo-panel-head">
+        <span class="demo-panel-label">Listing Description</span>
+        <span class="demo-badge">DEMO</span>
+      </div>
+      <div class="demo-panel-body">
+        {% if listing_text %}
+          <pre class="listing-text">{{ listing_text }}</pre>
+        {% else %}
+          <p class="no-output">Listing text not generated — check server logs.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right: Spec sheet image -->
+    <div class="demo-panel">
+      <div class="demo-panel-head">
+        <span class="demo-panel-label">Spec Sheet Preview</span>
+        <span class="demo-badge">DEMO</span>
+      </div>
+      <div class="demo-panel-body" style="padding: 0;">
+        {% if spec_sheet_url %}
+          <a href="{{ spec_sheet_view_url }}" target="_blank" class="spec-sheet-link">
+            <img src="{{ spec_sheet_url }}"
+                 alt="Spec Sheet — {{ machine_label }} (DEMO)"
+                 class="spec-sheet-img" />
+          </a>
+          <p class="demo-hint" style="padding: 10px 18px 14px;">
+            Click image to open full spec sheet page
+          </p>
+        {% else %}
+          <div style="padding: 18px 20px;">
+            <p class="no-output">Spec sheet not generated — check server logs.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div><!-- /.demo-grid -->
+
+  <!-- Preset input data (collapsible) -->
+  <div class="demo-raw">
+    <details>
+      <summary>&#9654; Preset input data (raw JSON)</summary>
+      <pre>{{ preset_data_json | safe }}</pre>
+    </details>
+  </div>
+
+</div><!-- /.demo-wrap -->
+
+</body>
+</html>

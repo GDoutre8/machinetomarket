@@ -1015,9 +1015,6 @@ async def build_listing_endpoint(
     bucket_included:        str                  = Form("false"),
     bucket_size:            Optional[str]        = Form(None),
     warranty_status:        Optional[str]        = Form(None),
-    overlay_contact_name:   Optional[str]        = Form(None),
-    overlay_contact_phone:  Optional[str]        = Form(None),
-    overlay_logo:           Optional[UploadFile] = File(None),
     dealer_profile_json:    Optional[str]        = Form(None),
     photos: List[UploadFile] = File(default=[]),
 ):
@@ -1160,28 +1157,7 @@ async def build_listing_endpoint(
             except Exception:
                 pass  # non-fatal; photo skipped
 
-    # ── Save overlay logo if provided ─────────────────────────────────────────
-    overlay_logo_path: Optional[str] = None
-    if overlay_logo and overlay_logo.filename:
-        ext = os.path.splitext(overlay_logo.filename)[1].lower() or ".png"
-        if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
-            ext = ".png"
-        logo_dest = os.path.join(session_dir, f"overlay_logo{ext}")
-        try:
-            logo_content = await overlay_logo.read()
-            with open(logo_dest, "wb") as f:
-                f.write(logo_content)
-            overlay_logo_path = logo_dest
-        except Exception:
-            pass  # non-fatal — overlay just won't include logo
-
     # ── Build pack ────────────────────────────────────────────────────────────
-    _contact_name  = (overlay_contact_name  or "").strip() or None
-    _contact_phone = (overlay_contact_phone or "").strip() or None
-    _dealer_info   = (
-        {"contact_name": _contact_name, "contact_phone": _contact_phone}
-        if (_contact_name or _contact_phone) else None
-    )
     try:
         pack = build_listing_pack_v1(
             dealer_input=dealer_input,
@@ -1190,10 +1166,6 @@ async def build_listing_endpoint(
             image_input_paths=photo_paths,
             session_dir=session_dir,
             session_web=session_web,
-            overlay_logo_path=overlay_logo_path,
-            overlay_contact_name=_contact_name,
-            overlay_contact_phone=_contact_phone,
-            dealer_info=_dealer_info,
             full_record=_full_record,
         )
     except Exception as exc:
@@ -1267,16 +1239,6 @@ async def build_listing_endpoint(
 
         with open(os.path.join(session_dir, "ui_hints.json"), "w", encoding="utf-8") as f:
             json.dump(ui_hints, f)
-
-        # Save dealer contact for spec sheet rendering
-        _logo_fn = os.path.basename(overlay_logo_path) if overlay_logo_path else None
-        dealer_contact_data = {
-            "contact_name":  _contact_name,
-            "contact_phone": _contact_phone,
-            "logo_filename": _logo_fn,
-        }
-        with open(os.path.join(session_dir, "dealer_contact.json"), "w", encoding="utf-8") as f:
-            json.dump(dealer_contact_data, f)
     except Exception:
         pass  # non-fatal — refinement just won't be offered for this session
 
@@ -1521,3 +1483,8 @@ async def fix_listing(payload: FixListingRequest):
             cleaned_listing="",
             error=f"Processing error: {str(exc)}"
         )
+
+
+# ── DEMO mode (dev scaffolding — remove by deleting demo_route.py + this block) ──
+from demo_route import router as demo_router  # noqa: E402
+app.include_router(demo_router)
