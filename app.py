@@ -1157,6 +1157,36 @@ async def build_listing_endpoint(
             except Exception:
                 pass  # non-fatal; photo skipped
 
+    # ── Dealer info for badge stamping ───────────────────────────────────────
+    # dealer_profile_json arrives from the browser as:
+    #   {"companyName": ..., "contactName": ..., "phone": ..., "logoDataUrl": "data:..."}
+    # Decode the logo from base64 so listing_pack_builder can stamp Images 2+.
+    dealer_info: dict | None = None
+    if dealer_profile_json:
+        try:
+            import base64 as _b64
+            _dp = json.loads(dealer_profile_json)
+            if isinstance(_dp, dict) and (_dp.get("companyName") or "").strip():
+                _logo_save_path: str | None = None
+                _logo_url = (_dp.get("logoDataUrl") or "").strip()
+                if _logo_url.startswith("data:") and "base64," in _logo_url:
+                    _logo_bytes = _b64.b64decode(_logo_url.split("base64,", 1)[1])
+                    _uploads_dir = os.path.join(session_dir, "_uploads")
+                    os.makedirs(_uploads_dir, exist_ok=True)
+                    _logo_save_path = os.path.join(_uploads_dir, "dealer_logo.png")
+                    with open(_logo_save_path, "wb") as _lf:
+                        _lf.write(_logo_bytes)
+                dealer_info = {
+                    "dealer_name":  (_dp.get("companyName")  or "").strip() or None,
+                    "contact_name": (_dp.get("contactName")  or "").strip() or None,
+                    "phone":        (_dp.get("phone")        or "").strip() or None,
+                    "logo_path":    _logo_save_path,
+                    # accent_color: not yet in dealer_profile_json schema — defaults to "yellow"
+                    "accent_color": (_dp.get("accentColor") or "yellow"),
+                }
+        except Exception:
+            pass  # non-fatal — badge silently skipped if profile is malformed
+
     # ── Build pack ────────────────────────────────────────────────────────────
     try:
         pack = build_listing_pack_v1(
@@ -1164,6 +1194,7 @@ async def build_listing_endpoint(
             resolved_specs=resolved_specs,
             resolved_machine=resolved_machine,
             image_input_paths=photo_paths,
+            dealer_info=dealer_info,
             session_dir=session_dir,
             session_web=session_web,
             full_record=_full_record,

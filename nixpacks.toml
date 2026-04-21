@@ -3,6 +3,7 @@ aptPkgs = [
   "ffmpeg",
   "fonts-dejavu-core",
   "fonts-liberation",
+  "fonts-montserrat",
   "libheif1",
 ]
 

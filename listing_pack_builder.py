@@ -239,10 +239,6 @@ def build_listing_pack(
     session_dir: str = "",
     session_web: str = "",
     use_case_payload: "dict | None" = None,
-    # Branding overlay (optional)
-    overlay_logo_path: "str | None" = None,
-    overlay_contact_name: "str | None" = None,
-    overlay_contact_phone: "str | None" = None,
     # Listing card PNG (card_renderer_adapter)
     full_record: "dict | None" = None,
     card_dealer_data: "dict | None" = None,
@@ -329,13 +325,9 @@ def build_listing_pack(
             os.remove(spec_sheet_out)
         session_id = os.path.basename(session_dir) if session_dir else ""
         dealer_contact = {
-            "contact_name":  overlay_contact_name,
-            "contact_phone": overlay_contact_phone,
-            "dealer_name":   dealer.get("dealer_name"),
-            "phone":         dealer.get("phone"),
-            "location":      dealer.get("location"),
-            "logo_filename":
-                os.path.basename(overlay_logo_path) if overlay_logo_path else None,
+            "dealer_name": dealer.get("dealer_name"),
+            "phone":       dealer.get("phone"),
+            "location":    dealer.get("location"),
         }
         screenshot_spec_sheet(
             dealer_input_data=dealer_input_dump,
@@ -371,14 +363,10 @@ def build_listing_pack(
             for src in valid_images:
                 shutil.copy2(src, _img_tmp)
             _img_result = generate_image_pack(
-                input_folder          = _img_tmp,
-                output_folder         = pack_dir,
-                machine_name          = machine_name,
-                overlay_logo_path     = overlay_logo_path,
-                overlay_company_name  = dealer.get("dealer_name"),
-                overlay_contact_name  = overlay_contact_name,
-                overlay_contact_phone = overlay_contact_phone,
-                skip_zip              = True,  # listing_pack_builder owns the final ZIP
+                input_folder  = _img_tmp,
+                output_folder = pack_dir,
+                machine_name  = machine_name,
+                skip_zip      = True,  # listing_pack_builder owns the final ZIP
             )
             outputs["image_pack_folder"] = pack_dir
             outputs["image_pack_count"]  = _img_result.get("image_count", 0)
@@ -416,6 +404,39 @@ def build_listing_pack(
         except Exception as exc:
             warnings.append(f"Card render failed: {exc}")
             print(f"  [Pack] card PNG           : FAIL ({exc})")
+
+    # ── 3d. Light badge overlay on listing photos ─────────────────────────────
+    # generate_image_pack() → APPLY BADGE → zip
+    #
+    # Targeting rules (non-negotiable):
+    #   ONLY  *_listing.jpg  (glob pattern, applied after generate_image_pack)
+    #   NEVER *_01_card.png  (hero card — untouched)
+    #
+    # Skips silently when logo_path is absent — never blocks ZIP.
+    _logo_path = (dealer or {}).get("logo_path")
+    if _logo_path and valid_images:
+        try:
+            from renderers.badge_renderer import apply_badge_to_photo
+            _lp_badge      = Path(os.path.join(pack_dir, "Listing_Photos"))
+            _badge_targets = sorted(_lp_badge.glob("*_listing.jpg"))
+            _badge_name    = (dealer or {}).get("contact_name") or (dealer or {}).get("dealer_name") or None
+            _badge_phone   = (dealer or {}).get("phone") or None
+            _badge_accent  = (dealer or {}).get("accent_color", "yellow")
+            _badged = sum(
+                1 for _bp in _badge_targets
+                if apply_badge_to_photo(
+                    photo_path  = str(_bp),
+                    logo_path   = _logo_path,
+                    name        = _badge_name,
+                    phone       = _badge_phone,
+                    accent      = _badge_accent,
+                    output_path = str(_bp),
+                )
+            )
+            print(f"  [Pack] badge stamp        : {_badged}/{len(_badge_targets)} listing photo(s)")
+        except Exception as _badge_exc:
+            warnings.append(f"Badge stamping failed: {_badge_exc}")
+            print(f"  [Pack] badge stamp        : FAIL ({_badge_exc})")
 
     # ── 4. Walkaround video (lowest priority — failure never blocks ZIP) ───────
     if walkaround_requested:
@@ -585,10 +606,6 @@ def build_listing_pack_v1(
     session_dir:           str = "",
     session_web:           str = "",
     equipment_type:        "str | None" = None,
-    # Branding overlay (optional)
-    overlay_logo_path:     "str | None" = None,
-    overlay_contact_name:  "str | None" = None,
-    overlay_contact_phone: "str | None" = None,
     # Listing card PNG
     full_record:           "dict | None" = None,
 ) -> dict:
@@ -801,9 +818,6 @@ def build_listing_pack_v1(
         session_dir             = session_dir,
         session_web             = session_web,
         use_case_payload        = use_case_payload,
-        overlay_logo_path       = overlay_logo_path,
-        overlay_contact_name    = overlay_contact_name,
-        overlay_contact_phone   = overlay_contact_phone,
         full_record             = full_record,
         card_dealer_data        = card_dealer_data,
         dealer_input_dump       = dealer_input.model_dump(),
