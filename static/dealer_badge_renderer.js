@@ -197,7 +197,7 @@
     var ctx   = cv.getContext('2d');
     ctx.drawImage(photo, 0, 0);
 
-    var scale   = photo.naturalWidth / 800;
+    var scale   = Math.max(photo.naturalWidth, photo.naturalHeight) / 800;
     var logoImg = null;
     if (dealerProfile.logoDataUrl) {
       try { logoImg = await loadImage(dealerProfile.logoDataUrl); } catch (_) {}

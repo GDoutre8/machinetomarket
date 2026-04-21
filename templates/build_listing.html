@@ -229,6 +229,7 @@
 </main>
 <script src="/static/dealer_badge_renderer.js"></script>
 <script src="/static/dealer_profile.js"></script>
+<script src="/static/imagePackExporter.js"></script>
 <script>
 (function () {
 
@@ -783,17 +784,26 @@
     const overlayLogoFiles = document.getElementById('overlay-logo-input').files;
     if (overlayLogoFiles.length > 0) fd.append('overlay_logo', overlayLogoFiles[0]);
 
+    // Serialize dealer profile into dealer_input.json via server (snapshot semantics)
+    const _profileForSave = window.readProfileFromFormState ? window.readProfileFromFormState(form) : null;
+    if (_profileForSave && _profileForSave.companyName) {
+      fd.append('dealer_profile_json', JSON.stringify(_profileForSave));
+    }
+
     submitBtn.disabled = true;
 
-    // Stamp photos with dealer badge if a profile is saved in localStorage
-    const _dealerProf = window.getDealerProfile ? window.getDealerProfile() : null;
+    // Stamp photos — prefer live form state over localStorage so preset loads are reflected
+    const _dealerProf = (window.readProfileFromFormState ? window.readProfileFromFormState(form) : null)
+                     || (window.getDealerProfile         ? window.getDealerProfile()              : null);
     const _rawPhotos  = Array.from(photoInput.files);
     if (_dealerProf && _rawPhotos.length > 0) {
-      showStatus('<span class="spinner"></span>Stamping ' + _rawPhotos.length + ' photo' + (_rawPhotos.length !== 1 ? 's' : '') + '…', '');
+      showStatus('<span class="spinner"></span>Stamping ' + _rawPhotos.length + ' photo' + (_rawPhotos.length !== 1 ? 's' : '') + '\u2026', '');
       try {
         await document.fonts.ready;
-        const _stamped = await window.stampPhotoBatch(_rawPhotos, _dealerProf, function (done, total) {
-          showStatus('<span class="spinner"></span>Stamping ' + done + ' of ' + total + ' photos…', '');
+        const _stamped = await window.exportImagePack(_dealerProf, _rawPhotos, {
+          onProgress: function (done, total) {
+            showStatus('<span class="spinner"></span>Stamping ' + done + ' of ' + total + ' photos\u2026', '');
+          }
         });
         _stamped.forEach(function (blob, i) {
           fd.append('photos', blob, _rawPhotos[i].name.replace(/\.[^.]+$/, '') + '.jpg');

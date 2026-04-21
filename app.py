@@ -1018,6 +1018,7 @@ async def build_listing_endpoint(
     overlay_contact_name:   Optional[str]        = Form(None),
     overlay_contact_phone:  Optional[str]        = Form(None),
     overlay_logo:           Optional[UploadFile] = File(None),
+    dealer_profile_json:    Optional[str]        = Form(None),
     photos: List[UploadFile] = File(default=[]),
 ):
     """
@@ -1203,8 +1204,16 @@ async def build_listing_endpoint(
 
     # Persist inputs so the result page can offer listing refinement + tier toggle
     try:
+        di_dict = dealer_input.model_dump()
+        if dealer_profile_json:
+            try:
+                _dp = json.loads(dealer_profile_json)
+                if isinstance(_dp, dict):
+                    di_dict["dealer_profile"] = _dp
+            except Exception:
+                pass
         with open(os.path.join(session_dir, "dealer_input.json"), "w", encoding="utf-8") as f:
-            json.dump(dealer_input.model_dump(), f)
+            json.dump(di_dict, f)
 
         # Build the same enriched resolved_specs that listing_pack_builder uses for
         # the spec sheet, so the result page tier toggle and the spec sheet are identical.

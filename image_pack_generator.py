@@ -22,6 +22,13 @@ Output structure:
     Original_Photos/     ← normalized originals, no overlay
   {output_folder}.zip
 
+Stamping note:
+  Dealer badge (rounded-rect logo/contact at bottom-left) is stamped client-side
+  in static/dealer_badge_renderer.js before photos are uploaded. This module treats
+  uploaded photos as already-final for the badge and does not re-stamp it.
+  The branding overlay here (lower-third gradient + text) is a separate, independent
+  feature driven by the overlay_contact_name / overlay_logo form fields.
+
 Usage:
     from image_pack_generator import generate_image_pack
     result = generate_image_pack("path/to/photos", "path/to/output", "Bobcat_T770")

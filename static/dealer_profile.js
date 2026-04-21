@@ -1,10 +1,14 @@
-/* dealer_profile.js — dealer badge profile UI + localStorage persistence */
+/* dealer_profile.js — dealer badge profile UI + localStorage persistence + preset library */
 (function () {
   'use strict';
 
   var STORAGE_KEY = 'mtm_dealer_profile';
+  var PRESETS_KEY = 'mtm_dealer_profile_presets';
 
-  // ── Storage ────────────────────────────────────────────────────────────────────
+  // Module-level logo state — shared between initDealerProfile and read/write helpers
+  var _logoDataUrl = null;
+
+  // ── Storage ────────────────────────────────────────────────────────────────
 
   function getDealerProfile() {
     try {
@@ -17,7 +21,38 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); } catch (_) {}
   }
 
-  // ── Phone auto-format: (###) ###-#### ─────────────────────────────────────────
+  // ── Preset library ─────────────────────────────────────────────────────────
+
+  function loadProfilePresets() {
+    try {
+      var raw = localStorage.getItem(PRESETS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (_) { return []; }
+  }
+
+  function saveProfilePreset(name, profile) {
+    var presets = loadProfilePresets();
+    presets.push({
+      id:           Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name:         String(name || 'Preset').slice(0, 40),
+      createdAt:    new Date().toISOString(),
+      companyName:  profile.companyName  || '',
+      contactName:  profile.contactName  || '',
+      phone:        profile.phone        || '',
+      role:         profile.role         || '',
+      logoDataUrl:  profile.logoDataUrl  || null,
+    });
+    try { localStorage.setItem(PRESETS_KEY, JSON.stringify(presets)); } catch (_) {}
+    return presets;
+  }
+
+  function deleteProfilePreset(id) {
+    var presets = loadProfilePresets().filter(function (p) { return p.id !== id; });
+    try { localStorage.setItem(PRESETS_KEY, JSON.stringify(presets)); } catch (_) {}
+    return presets;
+  }
+
+  // ── Phone auto-format: (###) ###-#### ─────────────────────────────────────
 
   function formatPhone(raw) {
     var digits = raw.replace(/\D/g, '').slice(0, 10);
@@ -27,11 +62,73 @@
     return '';
   }
 
+  // ── Form state read/write ──────────────────────────────────────────────────
+  // These operate on the dp-* inputs rendered by initDealerProfile.
+  // _formEl is accepted for API symmetry but the IDs are document-global.
+
+  function readProfileFromFormState(_formEl) {
+    var companyEl = document.getElementById('dp-company');
+    if (!companyEl) return null;
+    var company = (companyEl.value || '').trim();
+    if (!company) return null;
+    return {
+      companyName:  company,
+      contactName:  ((document.getElementById('dp-contact') || {}).value || '').trim(),
+      phone:        ((document.getElementById('dp-phone')   || {}).value || '').trim(),
+      role:         ((document.getElementById('dp-role')    || {}).value || '').trim(),
+      logoDataUrl:  _logoDataUrl || null,
+    };
+  }
+
+  function writeProfileToFormState(_formEl, profile) {
+    if (!profile) return;
+    var companyEl = document.getElementById('dp-company');
+    var contactEl = document.getElementById('dp-contact');
+    var phoneEl   = document.getElementById('dp-phone');
+    var roleEl    = document.getElementById('dp-role');
+    var logoDrop  = document.getElementById('dp-logo-drop');
+    var logoLabel = document.getElementById('dp-logo-label');
+    var statusEl  = document.getElementById('dp-status');
+
+    if (companyEl) companyEl.value = profile.companyName  || '';
+    if (contactEl) contactEl.value = profile.contactName  || '';
+    if (roleEl)    roleEl.value    = profile.role         || '';
+    if (phoneEl)   phoneEl.value   = profile.phone        || '';
+
+    _logoDataUrl = profile.logoDataUrl || null;
+    if (logoDrop) {
+      if (_logoDataUrl) {
+        logoDrop.classList.add('has-files');
+        if (logoLabel) logoLabel.innerHTML = '<strong>Logo loaded</strong> \u2014 click to replace';
+      } else {
+        logoDrop.classList.remove('has-files');
+        if (logoLabel) logoLabel.innerHTML = '<strong>Click to upload logo</strong>';
+      }
+    }
+
+    if (statusEl) {
+      var hasProfile = !!(profile.companyName || '').trim();
+      statusEl.textContent = hasProfile ? '\u2014 Badge Active' : '\u2014 No Profile (badge off)';
+      statusEl.style.color = hasProfile ? '#5cc58a' : 'var(--dim)';
+    }
+
+    saveDealerProfileData(profile);
+  }
+
+  // ── hydrateProfile ─────────────────────────────────────────────────────────
+
+  function hydrateProfile(_containerId) {
+    var profile = getDealerProfile();
+    if (profile) writeProfileToFormState(null, profile);
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
   function fileToBase64(file) {
     return new Promise(function (res, rej) {
-      var reader      = new FileReader();
-      reader.onload   = function (e) { res(e.target.result); };
-      reader.onerror  = rej;
+      var reader     = new FileReader();
+      reader.onload  = function (e) { res(e.target.result); };
+      reader.onerror = rej;
       reader.readAsDataURL(file);
     });
   }
@@ -42,7 +139,58 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // ── UI init ────────────────────────────────────────────────────────────────────
+  // ── Preset list renderer (called by initDealerProfile) ────────────────────
+
+  function renderPresetList(listEl) {
+    var presets = loadProfilePresets();
+    if (presets.length === 0) {
+      listEl.innerHTML = '<div style="font-size:11px;color:var(--dim);padding:4px 0;">No presets saved.</div>';
+      return;
+    }
+    var html = '';
+    presets.forEach(function (p) {
+      html +=
+        '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;margin-bottom:6px;' +
+        'border:1px solid rgba(255,255,255,.1);border-radius:3px;background:rgba(255,255,255,.03);">' +
+        '<span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+        escHtml(p.name) + '</span>' +
+        '<button type="button" data-preset-load="' + escHtml(p.id) + '" ' +
+        'style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;' +
+        'background:rgba(92,197,138,.1);border:1px solid rgba(92,197,138,.3);color:#5cc58a;' +
+        'padding:4px 8px;border-radius:3px;cursor:pointer;flex-shrink:0;">Load</button>' +
+        '<button type="button" data-preset-delete="' + escHtml(p.id) + '" ' +
+        'style="background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.25);color:#ff8d8d;' +
+        'padding:4px 7px;border-radius:3px;cursor:pointer;font-size:12px;flex-shrink:0;">\u2715</button>' +
+        '</div>';
+    });
+    listEl.innerHTML = html;
+
+    listEl.querySelectorAll('[data-preset-load]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id     = btn.getAttribute('data-preset-load');
+        var preset = loadProfilePresets().filter(function (p) { return p.id === id; })[0];
+        if (!preset) return;
+        writeProfileToFormState(null, preset);
+        // Expand fields panel if collapsed
+        var fields = document.getElementById('dp-fields');
+        var arrow  = document.getElementById('dp-arrow');
+        if (fields && fields.style.display === 'none') {
+          fields.style.display = '';
+          if (arrow) arrow.innerHTML = '&#9650;';
+        }
+      });
+    });
+
+    listEl.querySelectorAll('[data-preset-delete]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-preset-delete');
+        deleteProfilePreset(id);
+        renderPresetList(listEl);
+      });
+    });
+  }
+
+  // ── UI init ────────────────────────────────────────────────────────────────
 
   function initDealerProfile(containerId) {
     var container = document.getElementById(containerId);
@@ -100,24 +248,51 @@
           '</div>',
         '</div>',
         '<div style="font-size:11px;color:var(--dim);">Changes save automatically.</div>',
+        // ── Preset section ──────────────────────────────────────────────────
+        '<div id="dp-preset-section" style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);">',
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">',
+            '<span style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);">Presets</span>',
+            '<button type="button" id="dp-preset-save-btn"',
+                    ' style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;',
+                    'background:rgba(232,169,32,.1);border:1px solid rgba(232,169,32,.28);color:var(--mtm-yellow,#f5c400);',
+                    'padding:4px 10px;border-radius:3px;cursor:pointer;">+ Save as Preset</button>',
+          '</div>',
+          '<div id="dp-preset-list"></div>',
+          '<div id="dp-preset-name-row" style="display:none;margin-top:8px;gap:6px;align-items:center;">',
+            '<input type="text" id="dp-preset-name" placeholder="Preset name\u2026" maxlength="40"',
+                   ' style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);',
+                   'color:var(--text);border-radius:3px;padding:7px 10px;font-family:var(--body);font-size:13px;min-height:0;">',
+            '<button type="button" id="dp-preset-confirm"',
+                    ' style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;',
+                    'background:rgba(92,197,138,.14);border:1px solid rgba(92,197,138,.3);color:#5cc58a;',
+                    'padding:6px 12px;border-radius:3px;cursor:pointer;white-space:nowrap;">Save</button>',
+            '<button type="button" id="dp-preset-cancel"',
+                    ' style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);',
+                    'color:var(--dim);padding:6px 10px;border-radius:3px;cursor:pointer;font-size:12px;">\u2715</button>',
+          '</div>',
+        '</div>',
       '</div>',
     ].join('');
 
-    var header    = document.getElementById('dp-header');
-    var fields    = document.getElementById('dp-fields');
-    var arrow     = document.getElementById('dp-arrow');
-    var statusEl  = document.getElementById('dp-status');
-    var companyEl = document.getElementById('dp-company');
-    var roleEl    = document.getElementById('dp-role');
-    var contactEl = document.getElementById('dp-contact');
-    var phoneEl   = document.getElementById('dp-phone');
-    var logoInput = document.getElementById('dp-logo-input');
-    var logoLabel = document.getElementById('dp-logo-label');
-    var logoDrop  = document.getElementById('dp-logo-drop');
+    var header           = document.getElementById('dp-header');
+    var fields           = document.getElementById('dp-fields');
+    var arrow            = document.getElementById('dp-arrow');
+    var statusEl         = document.getElementById('dp-status');
+    var companyEl        = document.getElementById('dp-company');
+    var roleEl           = document.getElementById('dp-role');
+    var contactEl        = document.getElementById('dp-contact');
+    var phoneEl          = document.getElementById('dp-phone');
+    var logoInput        = document.getElementById('dp-logo-input');
+    var logoLabel        = document.getElementById('dp-logo-label');
+    var logoDrop         = document.getElementById('dp-logo-drop');
+    var presetList       = document.getElementById('dp-preset-list');
+    var presetSaveBtn    = document.getElementById('dp-preset-save-btn');
+    var presetNameRow    = document.getElementById('dp-preset-name-row');
+    var presetNameInput  = document.getElementById('dp-preset-name');
+    var presetConfirm    = document.getElementById('dp-preset-confirm');
+    var presetCancel     = document.getElementById('dp-preset-cancel');
 
-    var currentLogoDataUrl = null;
-
-    // ── Status indicator ───────────────────────────────────────────────────────
+    // ── Status indicator ───────────────────────────────────────────────────
 
     function updateStatus() {
       var hasProfile = !!(companyEl.value || '').trim();
@@ -125,7 +300,7 @@
       statusEl.style.color = hasProfile ? '#5cc58a' : 'var(--dim)';
     }
 
-    // ── Save to localStorage ───────────────────────────────────────────────────
+    // ── Save to localStorage ───────────────────────────────────────────────
 
     function save() {
       var company = (companyEl.value || '').trim();
@@ -139,12 +314,12 @@
         contactName:  (contactEl.value || '').trim(),
         phone:        (phoneEl.value   || '').trim(),
         role:         (roleEl.value    || '').trim(),
-        logoDataUrl:  currentLogoDataUrl,
+        logoDataUrl:  _logoDataUrl,
       });
       updateStatus();
     }
 
-    // ── Restore from localStorage ──────────────────────────────────────────────
+    // ── Restore from localStorage ──────────────────────────────────────────
 
     function restoreFields() {
       var profile = getDealerProfile();
@@ -154,27 +329,26 @@
       contactEl.value = profile.contactName  || '';
       phoneEl.value   = profile.phone        || '';
       if (profile.logoDataUrl) {
-        currentLogoDataUrl = profile.logoDataUrl;
+        _logoDataUrl = profile.logoDataUrl;
         logoDrop.classList.add('has-files');
         logoLabel.innerHTML = '<strong>Logo loaded</strong> \u2014 click to replace';
       }
       updateStatus();
-      // Auto-expand when a profile is already set
       if ((profile.companyName || '').trim()) {
         fields.style.display = '';
         arrow.innerHTML      = '&#9650;';
       }
     }
 
-    // ── Toggle collapse ────────────────────────────────────────────────────────
+    // ── Toggle collapse ────────────────────────────────────────────────────
 
     header.addEventListener('click', function () {
-      var open         = fields.style.display !== 'none';
+      var open             = fields.style.display !== 'none';
       fields.style.display = open ? 'none' : '';
-      arrow.innerHTML  = open ? '&#9660;' : '&#9650;';
+      arrow.innerHTML      = open ? '&#9660;' : '&#9650;';
     });
 
-    // ── Text field listeners (auto-save) ───────────────────────────────────────
+    // ── Text field listeners (auto-save) ───────────────────────────────────
 
     [companyEl, roleEl, contactEl].forEach(function (el) {
       el.addEventListener('input', save);
@@ -190,13 +364,13 @@
       save();
     });
 
-    // ── Logo upload ────────────────────────────────────────────────────────────
+    // ── Logo upload ────────────────────────────────────────────────────────
 
     logoInput.addEventListener('change', function () {
       if (!logoInput.files || !logoInput.files.length) return;
       var file = logoInput.files[0];
       fileToBase64(file).then(function (dataUrl) {
-        currentLogoDataUrl = dataUrl;
+        _logoDataUrl = dataUrl;
         logoDrop.classList.add('has-files');
         logoLabel.innerHTML = '<strong>' + escHtml(file.name) + '</strong> \u2014 logo ready';
         if ((companyEl.value || '').trim()) save();
@@ -205,11 +379,47 @@
       });
     });
 
+    // ── Preset UI ─────────────────────────────────────────────────────────
+
+    renderPresetList(presetList);
+
+    presetSaveBtn.addEventListener('click', function () {
+      presetNameInput.value         = '';
+      presetNameRow.style.display   = 'flex';
+      presetNameInput.focus();
+    });
+
+    presetCancel.addEventListener('click', function () {
+      presetNameRow.style.display = 'none';
+    });
+
+    presetConfirm.addEventListener('click', function () {
+      var name    = (presetNameInput.value || '').trim();
+      if (!name) { presetNameInput.focus(); return; }
+      var profile = readProfileFromFormState(null);
+      if (!profile) { presetNameRow.style.display = 'none'; return; }
+      saveProfilePreset(name, profile);
+      presetNameRow.style.display = 'none';
+      renderPresetList(presetList);
+    });
+
+    presetNameInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter')  { presetConfirm.click(); }
+      if (e.key === 'Escape') { presetCancel.click();  }
+    });
+
     restoreFields();
   }
 
-  // ── Exports ────────────────────────────────────────────────────────────────────
+  // ── Exports ────────────────────────────────────────────────────────────────
 
-  window.getDealerProfile  = getDealerProfile;
-  window.initDealerProfile = initDealerProfile;
+  window.getDealerProfile         = getDealerProfile;
+  window.initDealerProfile        = initDealerProfile;
+  window.readProfileFromFormState = readProfileFromFormState;
+  window.writeProfileToFormState  = writeProfileToFormState;
+  window.saveProfilePreset        = saveProfilePreset;
+  window.loadProfilePresets       = loadProfilePresets;
+  window.deleteProfilePreset      = deleteProfilePreset;
+  window.formatPhone              = formatPhone;
+  window.hydrateProfile           = hydrateProfile;
 })();
