@@ -1,32 +1,9 @@
 /* dealer_badge_renderer.js — client-side dealer badge stamping for MTM photo packs */
+console.log('>>> DEALER BADGE FILE LOADED');
 (function () {
   'use strict';
 
-  var DARK  = { bg: '#1A1A1A', text: '#FFFFFF', muted: 'rgba(255,255,255,0.62)', div: '#F5C400', acc: '#F5C400' };
-  var LIGHT = { bg: '#FFFFFF', text: '#111111', muted: 'rgba(17,17,17,0.62)',    div: '#CC2222', acc: '#CC2222' };
-
-  // ── Logo white-detection ───────────────────────────────────────────────────────
-  // Sample 8×8px from each corner; return true if avg brightness of opaque pixels > 200
-
-  function detectWhiteLogo(img) {
-    var size = 8;
-    var cv   = document.createElement('canvas');
-    var w    = img.naturalWidth  || img.width  || 1;
-    var h    = img.naturalHeight || img.height || 1;
-    cv.width = w; cv.height = h;
-    var ctx  = cv.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    var corners = [[0, 0], [w - size, 0], [0, h - size], [w - size, h - size]];
-    var total = 0, count = 0;
-    for (var ci = 0; ci < corners.length; ci++) {
-      var cx = corners[ci][0], cy = corners[ci][1];
-      var d  = ctx.getImageData(Math.max(0, cx), Math.max(0, cy), size, size).data;
-      for (var i = 0; i < d.length; i += 4) {
-        if (d[i + 3] > 10) { total += (d[i] + d[i + 1] + d[i + 2]) / 3; count++; }
-      }
-    }
-    return count > 0 && (total / count) > 200;
-  }
+  var DARK = { bg: '#0D0D0D', text: '#FFFFFF', muted: 'rgba(255,255,255,0.62)', div: '#F5C400', acc: '#F5C400' };
 
   // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -61,20 +38,18 @@
   // ── Core badge draw (synchronous — all images already loaded) ─────────────────
 
   function drawBadge(cv, ctx, profile, logoImg, scale) {
-    var isWhite = logoImg ? detectWhiteLogo(logoImg) : false;
-    var clr     = isWhite ? LIGHT : DARK;
-    var hasLogo = !!logoImg;
+    var clr = DARK;
 
     // Scaled metrics
-    var padX   = 12  * scale;
-    var padY   = 12  * scale;
-    var logoSz = 40  * scale;
-    var gap    = 6   * scale;
-    var divW   = 2   * scale;
-    var barW   = 2.5 * scale;
-    var radius = 8   * scale;
-    var margin = 16  * scale;
-    var lineGap= 4   * scale;
+    var padX     = 12  * scale;
+    var padY     = 12  * scale;
+    var logoSz   = 40  * scale;
+    var gap      = 6   * scale;
+    var divW     = 2   * scale;
+    var stripeH  = 4   * scale;
+    var radius   = 8   * scale;
+    var margin   = 16  * scale;
+    var lineGap  = 4   * scale;
 
     // Font sizes
     var roleSize  = 9  * scale;
@@ -86,43 +61,32 @@
     var phoneFont = '400 ' + phoneSize + "px 'Barlow',sans-serif";
 
     // Text content
-    var company = trunc(profile.companyName || '', 22).toUpperCase();
     var contact = (profile.contactName || '').trim();
     var phone   = (profile.phone       || '').trim();
     var role    = (profile.role        || '').trim().toUpperCase();
 
-    // Build lines array
     var lines = [];
-    if (hasLogo) {
-      if (role)    lines.push({ text: role,    sz: roleSize,  font: roleFont,  col: clr.acc  });
-      if (contact) lines.push({ text: contact, sz: nameSize,  font: nameFont,  col: clr.text });
-      if (phone)   lines.push({ text: phone,   sz: phoneSize, font: phoneFont, col: clr.muted });
-    } else {
-      // No logo: company name on the role line per spec
-      if (company) lines.push({ text: company, sz: roleSize,  font: roleFont,  col: clr.acc  });
-      if (contact) lines.push({ text: contact, sz: nameSize,  font: nameFont,  col: clr.text });
-      if (phone)   lines.push({ text: phone,   sz: phoneSize, font: phoneFont, col: clr.muted });
-    }
+    if (role)    lines.push({ text: role,    sz: roleSize,  font: roleFont,  col: clr.acc  });
+    if (contact) lines.push({ text: contact, sz: nameSize,  font: nameFont,  col: clr.text });
+    if (phone)   lines.push({ text: phone,   sz: phoneSize, font: phoneFont, col: clr.muted });
 
-    if (lines.length === 0) return; // nothing to draw
+    if (lines.length === 0) return;
 
     // Measure max text width
-    var maxW = 100 * scale; // minimum text block width
+    var maxW = 100 * scale;
     for (var li = 0; li < lines.length; li++) {
       ctx.font = lines[li].font;
       maxW = Math.max(maxW, ctx.measureText(lines[li].text).width);
     }
 
-    // Content height = sum of line heights + gaps between lines
+    // Content height = sum of line heights + gaps
     var contentH = 0;
     for (var lj = 0; lj < lines.length; lj++) {
       contentH += lines[lj].sz + (lj < lines.length - 1 ? lineGap : 0);
     }
 
-    var badgeH = 2 * padY + Math.max(hasLogo ? logoSz : 0, contentH);
-    var badgeW = hasLogo
-      ? padX + logoSz + gap + divW + gap + maxW + padX
-      : padX + barW   + gap + maxW + padX;
+    var badgeH = 2 * padY + Math.max(logoSz, contentH);
+    var badgeW = padX + logoSz + gap + divW + gap + maxW + padX;
 
     var bx = margin;
     var by = cv.height - margin - badgeH;
@@ -130,42 +94,37 @@
     // Shadow + rounded background
     ctx.save();
     ctx.shadowColor   = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur    = 14 * scale;
-    ctx.shadowOffsetY = 3  * scale;
+    ctx.shadowBlur    = 12 * scale;
+    ctx.shadowOffsetY = 5  * scale;
     ctx.beginPath();
     roundRectPath(ctx, bx, by, badgeW, badgeH, radius);
     ctx.fillStyle = clr.bg;
     ctx.fill();
-
-    if (isWhite) {
-      // Light badge: add subtle border (after clearing shadow)
-      ctx.shadowColor = 'transparent';
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-      ctx.lineWidth   = 0.5 * scale;
-      ctx.stroke();
-    }
     ctx.restore();
 
-    // Logo or accent bar
-    var accentTop    = by + padY * 0.6;
-    var accentHeight = badgeH - padY * 1.2;
-    if (hasLogo) {
-      var lx = bx + padX;
-      var ly = by + (badgeH - logoSz) / 2;
-      ctx.drawImage(logoImg, lx, ly, logoSz, logoSz);
-      // Vertical divider
-      ctx.fillStyle = clr.div;
-      ctx.fillRect(bx + padX + logoSz + gap, accentTop, divW, accentHeight);
-    } else {
-      // Accent bar flush left of text
-      ctx.fillStyle = clr.acc;
-      ctx.fillRect(bx + padX, accentTop, barW, accentHeight);
-    }
+    // Top yellow accent stripe (clipped to badge rounded corners)
+    ctx.save();
+    ctx.beginPath();
+    roundRectPath(ctx, bx, by, badgeW, badgeH, radius);
+    ctx.clip();
+    ctx.fillStyle = clr.acc;
+    ctx.fillRect(bx, by, badgeW, stripeH);
+    ctx.restore();
 
-    // Text — vertically centered in badge content area
-    var textX = hasLogo
-      ? bx + padX + logoSz + gap + divW + gap
-      : bx + padX + barW + gap;
+    // Logo
+    var lx = bx + padX;
+    var ly = by + (badgeH - logoSz) / 2;
+    ctx.drawImage(logoImg, lx, ly, logoSz, logoSz);
+
+    // Vertical divider
+    var divX      = bx + padX + logoSz + gap;
+    var divTop    = by + padY * 0.6;
+    var divHeight = badgeH - padY * 1.2;
+    ctx.fillStyle = clr.div;
+    ctx.fillRect(divX, divTop, divW, divHeight);
+
+    // Text — vertically centered
+    var textX = divX + divW + gap;
     var textY = by + (badgeH - contentH) / 2;
 
     ctx.save();
@@ -174,7 +133,7 @@
       var ln = lines[lk];
       ctx.font      = ln.font;
       ctx.fillStyle = ln.col;
-      ctx.fillText(ln.text, textX, textY + ln.sz); // +sz: top-of-line → baseline
+      ctx.fillText(ln.text, textX, textY + ln.sz);
       textY += ln.sz + lineGap;
     }
     ctx.restore();
@@ -183,6 +142,22 @@
   // ── Public: render one photo ───────────────────────────────────────────────────
 
   async function renderDealerBadge(photoFile, dealerProfile) {
+    console.log('>>> NEW BADGE RENDERER ACTIVE');
+    console.log('renderDealerBadge CALLED', { profile: dealerProfile, source: photoFile && photoFile.name });
+
+    // Apply phone formatting
+    var profile = Object.assign({}, dealerProfile);
+    if (profile.phone && window.formatPhone) {
+      profile.phone = window.formatPhone(profile.phone);
+    }
+
+    // No valid logo → return original file unchanged
+    var logoImg = null;
+    if (profile.logoDataUrl) {
+      try { logoImg = await loadImage(profile.logoDataUrl); } catch (_) {}
+    }
+    if (!logoImg) return photoFile;
+
     var url   = URL.createObjectURL(photoFile);
     var photo;
     try {
@@ -197,13 +172,9 @@
     var ctx   = cv.getContext('2d');
     ctx.drawImage(photo, 0, 0);
 
-    var scale   = Math.max(photo.naturalWidth, photo.naturalHeight) / 800;
-    var logoImg = null;
-    if (dealerProfile.logoDataUrl) {
-      try { logoImg = await loadImage(dealerProfile.logoDataUrl); } catch (_) {}
-    }
+    var scale = Math.max(photo.naturalWidth, photo.naturalHeight) / 800;
 
-    drawBadge(cv, ctx, dealerProfile, logoImg, scale);
+    drawBadge(cv, ctx, profile, logoImg, scale);
 
     return new Promise(function (res) { cv.toBlob(res, 'image/jpeg', 0.92); });
   }
@@ -217,7 +188,7 @@
 
     async function worker() {
       while (next < files.length) {
-        var i    = next++;
+        var i      = next++;
         results[i] = await renderDealerBadge(files[i], dealerProfile);
         if (onProgress) onProgress(i + 1, files.length);
       }
