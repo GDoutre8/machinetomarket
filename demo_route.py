@@ -31,6 +31,8 @@ _BASE = os.path.dirname(os.path.abspath(__file__))
 _OUTPUTS_DIR = os.path.join(_BASE, "outputs")
 _templates = Jinja2Templates(directory=os.path.join(_BASE, "templates"))
 
+DEMO_IMAGE_PATH = os.path.join(_BASE, "static", "demo", "demo1.jpg")
+
 router = APIRouter()
 
 # ── Demo presets ──────────────────────────────────────────────────────────────
@@ -207,11 +209,12 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
     dealer_info = {"location": p.get("location")}
 
     try:
+        _demo_images = [DEMO_IMAGE_PATH] if os.path.isfile(DEMO_IMAGE_PATH) else []
         pack = build_listing_pack_v1(
             dealer_input=dealer_input,
             resolved_specs=resolved_specs,
             resolved_machine=resolved_machine,
-            image_input_paths=[],
+            image_input_paths=_demo_images,
             dealer_info=dealer_info,
             session_dir=session_dir,
             session_web=session_web,
@@ -243,6 +246,15 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
     zip_abs = os.path.join(session_dir, "listing_output.zip")
     zip_url = f"/download-pack/{session_id}" if os.path.isfile(zip_abs) else None
 
+    # Listing photo URLs (processed images from Listing_Photos/)
+    import glob as _glob
+    _lp_dir = os.path.join(pack_dir, "Listing_Photos")
+    listing_photos: list[str] = []
+    if os.path.isdir(_lp_dir):
+        for _p in sorted(_glob.glob(os.path.join(_lp_dir, "*"))):
+            if os.path.isfile(_p) and _p.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+                listing_photos.append(f"{web_base}/Listing_Photos/{os.path.basename(_p)}")
+
     machine_label = (
         f"{dealer_input.year} {dealer_input.make.upper()} {dealer_input.model}"
     )
@@ -256,6 +268,7 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
             "machine_label": machine_label,
             "listing_text": listing_text,
             "spec_sheet_url": spec_sheet_url,
+            "listing_photos": listing_photos,
             "zip_url": zip_url,
             "result_url": f"/build-listing/result/{session_id}",
             "spec_sheet_view_url": f"/build-listing/spec-sheet/{session_id}",

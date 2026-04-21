@@ -303,7 +303,29 @@
       </div>
     </div>
 
-    <!-- Right: Spec sheet image -->
+    <!-- Right col: Listing photo (if generated) + Spec sheet -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+    {% if listing_photos and listing_photos|length > 0 %}
+    <div class="demo-panel">
+      <div class="demo-panel-head">
+        <span class="demo-panel-label">Listing Photo</span>
+        <span class="demo-badge">DEMO</span>
+      </div>
+      <div class="demo-panel-body" style="padding:0;">
+        <img src="{{ listing_photos[0] }}"
+             alt="Listing photo — {{ machine_label }} (DEMO)"
+             style="width:100%;display:block;" />
+        {% if listing_photos|length > 1 %}
+          <p class="demo-hint" style="padding:8px 18px 12px;">
+            +{{ listing_photos|length - 1 }} more in ZIP
+          </p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Spec sheet image -->
     <div class="demo-panel">
       <div class="demo-panel-head">
         <span class="demo-panel-label">Spec Sheet Preview</span>
@@ -326,6 +348,8 @@
         {% endif %}
       </div>
     </div>
+
+    </div><!-- /.right-col -->
 
   </div><!-- /.demo-grid -->
 
