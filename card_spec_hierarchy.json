@@ -185,6 +185,70 @@
       }
     },
 
+    "telehandler": {
+      "spec_strip": [
+        {
+          "position": 1,
+          "primary": "lift_capacity_lbs",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "Lift Cap",
+          "unit": "LB",
+          "_note": "Primary telehandler buyer spec. Rated at 24-inch load center per JLG/SkyTrak OEM convention."
+        },
+        {
+          "position": 2,
+          "primary": "lift_height_ft",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "NONE",
+          "display_label": "Lift Ht",
+          "unit": "FT",
+          "_note": "Max lift height in feet. No field_confidence entry in telehandler registry records — NONE bypasses the confidence gate."
+        },
+        {
+          "position": 3,
+          "primary": "forward_reach_ft",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "NONE",
+          "display_label": "Fwd Reach",
+          "unit": "FT",
+          "_note": "Max horizontal forward reach in feet. Critical buyer filter for placement-sensitive jobsites. No field_confidence entry — NONE bypasses gate."
+        },
+        {
+          "position": 4,
+          "primary": "horsepower_hp",
+          "fallbacks": [],
+          "source": "registry_specs",
+          "require_confidence": "HIGH",
+          "display_label": "HP",
+          "unit": "HP"
+        }
+      ],
+      "badge_zone": {
+        "position": "above_strip",
+        "badges": []
+      },
+      "skip_rules": {
+        "drop_cell_if": [
+          {
+            "rule": "primary_missing_no_fallback",
+            "applies_to": "all_positions",
+            "description": "Drop cell if primary value is null or missing AND all fallback values are null or missing. Never render a blank label."
+          },
+          {
+            "rule": "confidence_below_threshold",
+            "applies_to": "positions_with_require_confidence_HIGH_or_MEDIUM",
+            "description": "Drop cell if field_confidence[primary] (or the active fallback field) is below require_confidence. LOW always triggers drop. NONE bypasses check entirely."
+          }
+        ],
+        "promote_fallback_on_drop": true,
+        "collapse_strip_on_full_drop": false
+      }
+    },
+
     "mini_excavator": {
       "spec_strip": [
         {

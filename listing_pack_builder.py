@@ -346,6 +346,7 @@ def build_listing_pack(
             session_id=session_id,
             outputs_dir=_OUTPUTS_DIR,
             output_path=spec_sheet_out,
+            field_confidence=(full_record or {}).get("field_confidence") or {},
         )
         print(f"  [Pack] spec_sheet path    : {spec_sheet_out}")
         spec_sheet_path = spec_sheet_out
@@ -369,7 +370,7 @@ def build_listing_pack(
             os.makedirs(_img_tmp, exist_ok=True)
             for src in valid_images:
                 shutil.copy2(src, _img_tmp)
-            generate_image_pack(
+            _img_result = generate_image_pack(
                 input_folder          = _img_tmp,
                 output_folder         = pack_dir,
                 machine_name          = machine_name,
@@ -377,17 +378,23 @@ def build_listing_pack(
                 overlay_company_name  = dealer.get("dealer_name"),
                 overlay_contact_name  = overlay_contact_name,
                 overlay_contact_phone = overlay_contact_phone,
+                skip_zip              = True,  # listing_pack_builder owns the final ZIP
             )
             outputs["image_pack_folder"] = pack_dir
+            outputs["image_pack_count"]  = _img_result.get("image_count", 0)
+            print(f"  [Pack] image_pack Listing  : {os.path.join(pack_dir, 'Listing_Photos')}")
+            print(f"  [Pack] image_pack Original : {os.path.join(pack_dir, 'Original_Photos')}")
             shutil.rmtree(_img_tmp, ignore_errors=True)
         except Exception as exc:
             warnings.append(f"Image pack failed: {exc}")
+            print(f"  [Pack] image_pack FAIL     : {exc}")
             shutil.rmtree(os.path.join(session_dir, "_img_tmp"), ignore_errors=True)
     else:
         for sub in ("Listing_Photos", "Original_Photos"):
             os.makedirs(os.path.join(pack_dir, sub), exist_ok=True)
         if not image_input_paths:
             warnings.append("No photos provided — image folders created but empty.")
+            print(f"  [Pack] image_pack MISSING  : no photos provided — folders empty")
 
     # ── 3c. Listing card PNG ──────────────────────────────────────────────────
     # Card is always position _01. Existing listing photos are shifted up by 1
@@ -402,7 +409,7 @@ def build_listing_pack(
             card_out = listing_photos_dir / f"{machine_name}_01_card.png"
             result = export_listing_card(full_record, card_dealer_data, card_out)
             if result:
-                print(f"  [Pack] card PNG           : OK → {card_out.name}")
+                print(f"  [Pack] card PNG           : OK -> {card_out.name}")
             else:
                 warnings.append("Card render failed — see logs for details.")
                 print("  [Pack] card PNG           : FAIL (see logs)")

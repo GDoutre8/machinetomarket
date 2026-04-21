@@ -860,6 +860,7 @@ def generate_image_pack(
     overlay_company_name: "str | None" = None,
     overlay_contact_name: "str | None" = None,
     overlay_contact_phone: "str | None" = None,
+    skip_zip: bool = False,
 ) -> dict:
     """
     Generate a complete MTM image pack from a folder of machine photos.
@@ -873,13 +874,14 @@ def generate_image_pack(
     overlay_company_name  : Dealer/company name used for text fallback branding.
     overlay_contact_name  : Contact name for overlay text.
     overlay_contact_phone : Contact phone for overlay text.
+    skip_zip              : Skip ZIP creation (use when caller handles ZIP assembly).
 
     Returns
     -------
     dict with keys:
         output_folder  : str — path to output directory
-        zip_path       : str — path to generated ZIP
-        zip_size       : int — ZIP file size in bytes
+        zip_path       : str or None — path to generated ZIP (None if skip_zip=True)
+        zip_size       : int — ZIP file size in bytes (0 if skip_zip=True)
         image_count    : int — number of source images processed
         results        : list[dict] — per-image results
     """
@@ -921,7 +923,23 @@ def generate_image_pack(
         if variants:
             all_results.append({"label": label, "variants": variants})
 
-    # ZIP everything
+    listing_dir  = dirs["listing"]
+    original_dir = dirs["original"]
+    total_variants = sum(len(r["variants"]) for r in all_results)
+    print(f"  [ImagePack] Listing_Photos  : {listing_dir}")
+    print(f"  [ImagePack] Original_Photos : {original_dir}")
+    print(f"  [ImagePack] variants written: {total_variants} across {len(all_results)} image(s)")
+
+    if skip_zip:
+        return {
+            "output_folder": output_folder,
+            "zip_path":      None,
+            "zip_size":      0,
+            "image_count":   len(all_results),
+            "results":       all_results,
+        }
+
+    # ZIP everything (standalone / CLI usage)
     zip_path = output_folder.rstrip("/\\") + ".zip"
     zip_size = _zip_folder(output_folder, zip_path)
 

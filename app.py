@@ -149,6 +149,7 @@ def _build_spec_sheet_context(
     equipment_type: str,
     dealer_contact: dict,
     session_id: str,
+    image_input_paths: "list[str] | None" = None,
 ) -> dict:
     """Assemble the full Jinja2 context dict for spec_sheet.html."""
     return _build_spec_sheet_context_impl(
@@ -160,6 +161,7 @@ def _build_spec_sheet_context(
         session_id=session_id,
         outputs_dir=_OUTPUTS_DIR,
         logo_as_data_uri=False,
+        image_input_paths=image_input_paths,
     )
 
 
@@ -428,17 +430,13 @@ async def build_listing_result(request: Request, session_id: str):
         except Exception:
             pass
 
-    # Spec sheet web URL — prefer brochure (Panel 1+2), fall back to legacy spec sheet
-    _brochure_abs   = os.path.join(pack_dir, "spec_sheet", "machine_brochure.png")
+    # Spec sheet web URL — single source: machine_spec_sheet.png written by screenshot_spec_sheet()
     _spec_sheet_abs = os.path.join(pack_dir, "spec_sheet", "machine_spec_sheet.png")
-    if os.path.isfile(_brochure_abs):
-        spec_sheet_abs = _brochure_abs
-        spec_sheet_url = f"{web_base}/spec_sheet/machine_brochure.png"
-    elif os.path.isfile(_spec_sheet_abs):
-        spec_sheet_abs = _spec_sheet_abs
+    spec_sheet_abs  = _spec_sheet_abs
+    if os.path.isfile(_spec_sheet_abs):
         spec_sheet_url = f"{web_base}/spec_sheet/machine_spec_sheet.png"
     else:
-        spec_sheet_abs = _spec_sheet_abs
+        print(f"  [Result] WARNING: spec sheet not found at {_spec_sheet_abs}")
         spec_sheet_url = None
 
     def _load_image_urls(subfolder: str) -> list[str]:
@@ -1007,6 +1005,7 @@ async def build_listing_endpoint(
     track_condition:      Optional[str]  = Form(None),
     attachments_included: Optional[str]  = Form(None),
     condition_notes:        Optional[str]        = Form(None),
+    condition_grade:        Optional[str]        = Form(None),
     # CTL core output field (locked standard 2026-04-10)
     serial_number:          Optional[str]        = Form(None),
     # CTL feature fields (locked standard 2026-04-10)
@@ -1078,6 +1077,7 @@ async def build_listing_endpoint(
             track_condition=track_condition.strip() or None if track_condition else None,
             attachments_included=attachments_included.strip() or None if attachments_included else None,
             condition_notes=condition_notes.strip() or None if condition_notes else None,
+            condition_grade=condition_grade.strip() or None if condition_grade else None,
             serial_number=serial_number.strip() or None if serial_number else None,
             air_ride_seat=_bool(air_ride_seat),
             self_leveling=_bool(self_leveling),
@@ -1322,6 +1322,15 @@ async def spec_sheet_view(request: Request, session_id: str):
         with open(dc_path, encoding="utf-8") as f:
             dealer_contact = json.load(f)
 
+    # Scan session _uploads/ for machine photos to embed in the spec sheet
+    _photo_paths: list[str] = []
+    _uploads_dir = os.path.join(session_dir, "_uploads")
+    if os.path.isdir(_uploads_dir):
+        _supported = {".jpg", ".jpeg", ".png", ".webp"}
+        for _fname in sorted(os.listdir(_uploads_dir)):
+            if os.path.splitext(_fname)[1].lower() in _supported:
+                _photo_paths.append(os.path.join(_uploads_dir, _fname))
+
     ctx = _build_spec_sheet_context(
         dealer_input_data=di_data,
         resolved_specs=rs_data,
@@ -1329,6 +1338,7 @@ async def spec_sheet_view(request: Request, session_id: str):
         equipment_type=equipment_type,
         dealer_contact=dealer_contact,
         session_id=session_id,
+        image_input_paths=_photo_paths or None,
     )
     ctx["request"] = request
     return templates.TemplateResponse("spec_sheet.html", ctx)
@@ -1362,6 +1372,7 @@ async def build_listing_preview(
     track_condition:      Optional[str] = Form(None),
     attachments_included: Optional[str] = Form(None),
     condition_notes:      Optional[str] = Form(None),
+    condition_grade:      Optional[str] = Form(None),
     # CTL core output field (locked standard 2026-04-10)
     serial_number:        Optional[str] = Form(None),
     # CTL feature fields (locked standard 2026-04-10)
@@ -1414,6 +1425,7 @@ async def build_listing_preview(
             track_condition=track_condition.strip() or None if track_condition else None,
             attachments_included=attachments_included.strip() or None if attachments_included else None,
             condition_notes=condition_notes.strip() or None if condition_notes else None,
+            condition_grade=condition_grade.strip() or None if condition_grade else None,
             serial_number=serial_number.strip() or None if serial_number else None,
             air_ride_seat=_bool(air_ride_seat),
             self_leveling=_bool(self_leveling),
