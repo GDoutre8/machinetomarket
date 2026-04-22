@@ -4,9 +4,10 @@ image_pack_generator.py
 MTM Image Pack Generator
 
 Given a folder of machine photos, produces clean dealer listing images
-and packages everything into a ZIP. Dealer badge stamping is done
-client-side (dealer_badge_renderer.js) before upload; photos arrive
-here already final and are not re-stamped.
+and packages everything into a ZIP. Dealer contact badge is applied
+server-side after resize/sharpen, by listing_pack_builder.py step 3d
+via renderers.badge_renderer. Photos arrive here raw from the upload;
+this module does not stamp.
 
 Pipeline (per image, in order):
   1. Auto-rotate from EXIF

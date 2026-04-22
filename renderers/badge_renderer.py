@@ -1,259 +1,337 @@
 """
-renderers/badge_renderer.py
-============================
-Server-side light badge overlay for listing photos (Images 2+).
+MTM Listing Badge Renderer
+==========================
 
-Badge layout — bottom-left corner:
-    ┌──── accent stripe ──────────────────────────────────┐
-    │  [Logo]  │  Contact Name                            │
-    │          │  Phone                                   │
-    └─────────────────────────────────────────────────────┘
+Composites a dealer contact badge onto listing photos #2-6.
+Photo #1 (hero card) has its own full overlay and does NOT receive this badge.
 
-Rules:
-  - Applied ONLY to *_listing.jpg (never *_01_card.png)
-  - Applied AFTER resize/crop, BEFORE zip
-  - Photo is the primary visual — badge is secondary, bottom-left only
-  - No title, no price, no spec strip
+Design spec (as reviewed and approved):
+- Logo with near-white background       -> WHITE badge, black text
+- Logo with transparent/colored/dark bg  -> DARK charcoal badge, white text
+- Accent color (vertical divider) from dealer profile:
+    "yellow" (MTM)  -> (244, 196, 0)
+    "red"    (Rhino)-> (220, 38, 38)
+- Typography: Montserrat Black (name), Montserrat Medium (phone)
+- Phone auto-normalized to (xxx) xxx-xxxx
+- Text block (name + phone) centered horizontally within its column
+- Phone has 1px letter-spacing for more polished numerals
+- Logo height 80px, badge height = 80 + 2*padding_y
+- Badge width fits content (no hard minimum/maximum)
+- Positioned bottom-left with margin + drop shadow
 
-Public API
-----------
-apply_badge_to_photo(photo_path, logo_path, name, phone, accent, output_path) -> bool
+Required apt packages on Railway/Debian/Ubuntu:
+    fonts-montserrat   (ships .otf files under /usr/share/fonts/opentype/)
+    fonts-crosextra-carlito   (fallback)
+    fonts-dejavu-core         (final fallback)
 """
-
 from __future__ import annotations
 
-import os
-from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
+from typing import Optional
 
-# ── Accent palettes ────────────────────────────────────────────────────────────
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-_ACCENTS: dict[str, tuple[int, int, int]] = {
-    "yellow": (245, 166,  35),
-    "red":    (198,  40,  40),
-}
-_ACCENT_DEFAULT = _ACCENTS["yellow"]
 
-# ── Badge background themes ────────────────────────────────────────────────────
-# Auto-detected from logo artwork luminance — mirrors dealer_badge_renderer.js.
+# ─── Design tokens ────────────────────────────────────────────────────────────
 
-_DARK = {
-    "bg":   (26,  26,  26),
-    "text": (255, 255, 255),
-    "muted":(160, 160, 160),
-}
-_WHITE = {
-    "bg":   (255, 255, 255),
-    "text": (26,  26,  26),
-    "muted":(100, 100, 100),
+WHITE_BG       = (255, 255, 255)
+DARK_BG        = (24, 24, 26)
+TEXT_ON_WHITE  = (17, 17, 17)
+TEXT_ON_DARK   = (245, 245, 245)
+SUB_ON_WHITE   = (85, 85, 85)
+SUB_ON_DARK    = (190, 190, 195)
+
+ACCENTS = {
+    "yellow": (244, 196, 0),    # MTM
+    "red":    (220, 38, 38),    # Rhino
 }
 
-_LUMA_THRESHOLD = 0.7
-_NEAR_WHITE_CUT = 0.95
-_MIN_USABLE_PX  = 50
+
+# ─── Font loading ─────────────────────────────────────────────────────────────
+#
+# CRITICAL: Debian's `fonts-montserrat` package installs OTF files under
+# /usr/share/fonts/opentype/montserrat/ — not TTF, not truetype/.
+# Using the wrong path silently falls through the cascade to Carlito/DejaVu
+# and rendered output looks nothing like Montserrat.
+
+_FONT_CANDIDATES = {
+    "black": [
+        "/usr/share/fonts/opentype/montserrat/Montserrat-Black.otf",
+        "/usr/share/fonts/opentype/montserrat/Montserrat-ExtraBold.otf",
+        "/usr/share/fonts/opentype/montserrat/Montserrat-Bold.otf",
+        "/usr/share/fonts/truetype/crosextra/Carlito-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    ],
+    "medium": [
+        "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
+        "/usr/share/fonts/opentype/montserrat/Montserrat-Regular.otf",
+        "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ],
+}
 
 
-# ── Internal helpers ───────────────────────────────────────────────────────────
-
-def _linearize(c: float) -> float:
-    c /= 255.0
-    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
-
-
-def _luma(r: int, g: int, b: int) -> float:
-    return 0.2126 * _linearize(r) + 0.7152 * _linearize(g) + 0.0722 * _linearize(b)
+def _load_font(size: int, weight: str = "medium") -> ImageFont.FreeTypeFont:
+    for path in _FONT_CANDIDATES.get(weight, _FONT_CANDIDATES["medium"]):
+        if Path(path).exists():
+            return ImageFont.truetype(path, size)
+    return ImageFont.load_default()
 
 
-def _detect_theme(logo: Image.Image) -> dict:
-    """Return DARK or WHITE badge palette based on logo artwork luminance."""
-    rgba  = logo.convert("RGBA")
-    data  = list(rgba.getdata())
-    total, count = 0.0, 0
-    for r, g, b, a in data:
-        if a <= 10:
-            continue
-        lum = _luma(r, g, b)
-        if lum > _NEAR_WHITE_CUT:
-            continue
-        total += lum
-        count += 1
-    if count < _MIN_USABLE_PX:
-        return _DARK
-    return _DARK if (total / count) > _LUMA_THRESHOLD else _WHITE
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+
+def _format_phone_us(phone: str) -> str:
+    """Normalize to (xxx) xxx-xxxx. Returns original if not parseable to 10 digits."""
+    digits = "".join(ch for ch in phone if ch.isdigit())
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+    if len(digits) != 10:
+        return phone
+    return f"({digits[0:3]}) {digits[3:6]}-{digits[6:10]}"
 
 
-def _trim_bounds(logo: Image.Image) -> tuple[int, int, int, int]:
-    """Return (x, y, w, h) bounding box of non-transparent artwork pixels."""
-    alpha = logo.convert("RGBA").split()[3]
-    bbox  = alpha.point(lambda p: 255 if p > 10 else 0).getbbox()
-    if bbox is None:
-        return (0, 0, logo.width, logo.height)
-    x0, y0, x1, y1 = bbox
-    return (x0, y0, x1 - x0, y1 - y0)
+def _detect_logo_bg(logo_img: Image.Image) -> str:
+    """Sample the four corners. Near-white + opaque -> 'white'. Else 'dark'."""
+    rgba = logo_img.convert("RGBA")
+    w, h = rgba.size
+    arr = np.array(rgba)
+
+    pw = max(2, min(w // 20, 20))
+    ph = max(2, min(h // 20, 20))
+
+    corners = [
+        arr[0:ph,         0:pw],
+        arr[0:ph,         w - pw:w],
+        arr[h - ph:h,     0:pw],
+        arr[h - ph:h,     w - pw:w],
+    ]
+
+    # Any transparent corner -> not on white
+    alphas = [c[..., 3].mean() for c in corners]
+    if min(alphas) < 200:
+        return "dark"
+
+    rgbs = [c[..., :3].mean(axis=(0, 1)) for c in corners]
+    white_corners = sum(1 for rgb in rgbs if all(ch >= 240 for ch in rgb))
+    return "white" if white_corners >= 3 else "dark"
 
 
-def _font(size: int, bold: bool = False) -> "ImageFont.FreeTypeFont | ImageFont.ImageFont":
-    """Load a sans-serif font; graceful fallback chain for all deployment targets."""
-    candidates = (
-        [   # Bold (contact name) — Montserrat Black preferred
-            "/usr/share/fonts/truetype/montserrat/Montserrat-Black.ttf",
-            "/usr/share/fonts/truetype/montserrat/Montserrat-Bold.ttf",
-            "C:/Windows/Fonts/arialbd.ttf",
-            "C:/Windows/Fonts/calibrib.ttf",
-            "/usr/share/fonts/truetype/carlito/Carlito-Bold.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        ]
-        if bold
-        else [  # Regular (phone) — Montserrat Medium preferred
-            "/usr/share/fonts/truetype/montserrat/Montserrat-Medium.ttf",
-            "/usr/share/fonts/truetype/montserrat/Montserrat-Regular.ttf",
-            "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/calibri.ttf",
-            "/usr/share/fonts/truetype/carlito/Carlito-Regular.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        ]
+def _measure_tracked(font: ImageFont.FreeTypeFont, text: str, tracking: int = 0) -> tuple[int, int]:
+    """Measure (width, height) of `text` drawn with `tracking` extra px per glyph."""
+    if not text:
+        return (0, 0)
+    width = 0
+    max_h = 0
+    for ch in text:
+        bbox = font.getbbox(ch)
+        width += (bbox[2] - bbox[0]) + tracking
+        max_h = max(max_h, bbox[3] - bbox[1])
+    return (width - tracking, max_h)
+
+
+def _draw_tracked(
+    draw: ImageDraw.ImageDraw,
+    xy: tuple[int, int],
+    text: str,
+    font: ImageFont.FreeTypeFont,
+    fill,
+    tracking: int = 0,
+) -> None:
+    """Draw `text` at `xy` with `tracking` extra px between glyphs."""
+    x, y = xy
+    for ch in text:
+        draw.text((x, y), ch, font=font, fill=fill)
+        bbox = font.getbbox(ch)
+        x += (bbox[2] - bbox[0]) + tracking
+
+
+# ─── Badge builder ────────────────────────────────────────────────────────────
+
+def build_badge(
+    logo_path: str,
+    name: str,
+    phone: str,
+    accent: str = "yellow",
+    *,
+    target_logo_height: int = 80,
+    padding_x: int = 14,
+    padding_y: int = 14,
+    divider_gap_logo: int = 10,
+    divider_gap_text: int = 14,
+    divider_width: int = 5,
+    text_gap: int = 6,
+    corner_radius: int = 10,
+    phone_tracking: int = 1,
+    name_size: int = 26,
+    phone_size: int = 19,
+) -> Image.Image:
+    """
+    Build the badge as an RGBA image with drop shadow baked in.
+
+    Returns a PIL Image sized canvas_w x canvas_h; shadow extends
+    `shadow_margin` pixels on each side of the visible badge.
+    """
+    # Logo
+    logo = Image.open(logo_path).convert("RGBA")
+    bg_kind = _detect_logo_bg(logo)
+
+    if bg_kind == "white":
+        badge_bg    = WHITE_BG
+        name_color  = TEXT_ON_WHITE
+        phone_color = SUB_ON_WHITE
+    else:
+        badge_bg    = DARK_BG
+        name_color  = TEXT_ON_DARK
+        phone_color = SUB_ON_DARK
+
+    accent_rgb = ACCENTS.get(accent, ACCENTS["yellow"])
+
+    # Scale logo to fixed target height; width flexes with aspect ratio
+    lw, lh = logo.size
+    scale   = target_logo_height / lh
+    logo_w  = int(lw * scale)
+    logo_h  = target_logo_height
+    logo_scaled = logo.resize((logo_w, logo_h), Image.LANCZOS)
+
+    # Fonts
+    name_font   = _load_font(name_size,  "black")
+    phone_font  = _load_font(phone_size, "medium")
+    phone_disp  = _format_phone_us(phone)
+
+    # Measure text block
+    scratch = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    name_bbox = scratch.textbbox((0, 0), name, font=name_font)
+    name_w    = name_bbox[2] - name_bbox[0]
+    name_h    = name_bbox[3] - name_bbox[1]
+    phone_w, phone_h = _measure_tracked(phone_font, phone_disp, tracking=phone_tracking)
+
+    text_block_w = max(name_w, phone_w)
+    text_block_h = name_h + text_gap + phone_h
+
+    # Badge dimensions — fit content exactly, no minimum floor
+    content_h = max(logo_h, text_block_h)
+    badge_h   = content_h + 2 * padding_y
+    badge_w   = (padding_x + logo_w + divider_gap_logo
+                 + divider_width + divider_gap_text
+                 + text_block_w + padding_x)
+
+    # Canvas with shadow margin
+    shadow_margin = 14
+    canvas_w = badge_w + 2 * shadow_margin
+    canvas_h = badge_h + 2 * shadow_margin
+    canvas   = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+
+    # Drop shadow: rounded rect, offset +3px Y, gaussian blur
+    shadow_layer = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    sdraw = ImageDraw.Draw(shadow_layer)
+    sdraw.rounded_rectangle(
+        (shadow_margin,              shadow_margin + 3,
+         shadow_margin + badge_w,    shadow_margin + badge_h + 3),
+        radius=corner_radius,
+        fill=(0, 0, 0, 140),
     )
-    for path in candidates:
-        if os.path.isfile(path):
-            try:
-                return ImageFont.truetype(path, size)
-            except Exception:
-                continue
-    try:
-        return ImageFont.load_default(size=size)  # Pillow 10+
-    except TypeError:
-        return ImageFont.load_default()
+    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(radius=7))
+    canvas.alpha_composite(shadow_layer)
+
+    # Badge body (rounded rect)
+    body = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    bdraw = ImageDraw.Draw(body)
+    bdraw.rounded_rectangle(
+        (shadow_margin,              shadow_margin,
+         shadow_margin + badge_w,    shadow_margin + badge_h),
+        radius=corner_radius,
+        fill=badge_bg + (255,),
+    )
+    canvas.alpha_composite(body)
+
+    draw = ImageDraw.Draw(canvas)
+
+    # Logo (vertically centered in content area)
+    x0     = shadow_margin + padding_x
+    logo_y = shadow_margin + (badge_h - logo_h) // 2
+    canvas.alpha_composite(logo_scaled, (x0, logo_y))
+
+    # Divider (vertical accent bar)
+    div_x   = x0 + logo_w + divider_gap_logo
+    div_top = shadow_margin + padding_y + 3
+    div_bot = shadow_margin + badge_h - padding_y - 3
+    draw.rectangle(
+        (div_x, div_top, div_x + divider_width, div_bot),
+        fill=accent_rgb,
+    )
+
+    # Text block: each line centered within text_block_w
+    text_col_x      = div_x + divider_width + divider_gap_text
+    text_block_top  = shadow_margin + (badge_h - text_block_h) // 2
+
+    # Name — centered horizontally within text column
+    name_x = text_col_x + (text_block_w - name_w) // 2
+    draw.text(
+        (name_x - name_bbox[0], text_block_top - name_bbox[1]),
+        name,
+        font=name_font,
+        fill=name_color,
+    )
+
+    # Phone — centered horizontally within text column, with letter-spacing
+    phone_y = text_block_top + name_h + text_gap
+    phone_x = text_col_x + (text_block_w - phone_w) // 2
+    _draw_tracked(
+        draw,
+        (phone_x, phone_y),
+        phone_disp,
+        font=phone_font,
+        fill=phone_color,
+        tracking=phone_tracking,
+    )
+
+    return canvas
 
 
-# ── Public API ─────────────────────────────────────────────────────────────────
+# ─── Photo compositor (public API) ────────────────────────────────────────────
 
 def apply_badge_to_photo(
     photo_path: str,
-    logo_path: "str | None",
-    name: "str | None",
-    phone: "str | None",
+    logo_path: str,
+    name: str,
+    phone: str,
     accent: str = "yellow",
-    output_path: "str | None" = None,
-) -> bool:
+    output_path: Optional[str] = None,
+    margin_px: int = 28,
+) -> Image.Image:
     """
-    Stamp a light dealer badge onto a listing photo.
+    Paste the dealer badge at the bottom-left of the photo with `margin_px`
+    from the photo edges, then either save to `output_path` (if given) or
+    return the composited RGB image.
 
-    Parameters
-    ----------
-    photo_path  : Source photo (JPEG/PNG).
-    logo_path   : Dealer logo with transparency (PNG). Badge skipped if None/missing.
-    name        : Contact name shown in the badge.
-    phone       : Contact phone number.
-    accent      : Accent color key — "yellow" (default) or "red".
-    output_path : Write destination. Defaults to photo_path (in-place overwrite).
-
-    Returns
-    -------
-    True on success, False on any failure — never raises, never blocks pipeline.
+    `accent` must be one of ACCENTS keys ("yellow", "red"). Unknown values
+    fall back to "yellow".
     """
-    try:
-        if not logo_path or not os.path.isfile(logo_path):
-            return False
-        if not name and not phone:
-            return False
+    photo = Image.open(photo_path).convert("RGBA")
+    badge = build_badge(logo_path, name, phone, accent=accent)
 
-        out = output_path or photo_path
-        accent_rgb = _ACCENTS.get(accent, _ACCENT_DEFAULT)
+    pw, ph = photo.size
+    bw, bh = badge.size
 
-        photo    = Image.open(photo_path).convert("RGB")
-        photo_w, photo_h = photo.size
+    # The badge's shadow_margin is 14; we want the visible badge's
+    # bottom-left corner to sit margin_px from the photo's bottom-left.
+    shadow_margin = 14
+    x = margin_px - shadow_margin
+    y = ph - bh + shadow_margin - margin_px
 
-        logo_src  = Image.open(logo_path).convert("RGBA")
-        theme     = _detect_theme(logo_src)
-        tx, ty, tw, th = _trim_bounds(logo_src)
-        native_ar = tw / max(th, 1)
+    photo.alpha_composite(badge, (x, y))
+    final = photo.convert("RGB")
 
-        # ── Badge sizing (fixed spec) ─────────────────────────────────────────
-        badge_w  = min(700, max(400, round(photo_w * 0.45)))
-        logo_h   = 80
-        logo_w   = round(logo_h * native_ar)
-        badge_h  = logo_h + 24
+    if output_path:
+        final.save(output_path, quality=92)
+    return final
 
-        ps       = logo_h / 90.0   # proportional scale factor
-        pad_l    = 14
-        pad_v    = 12
-        gap      = 14
-        div_w    = 5
-        stripe_h = max(3, round(4  * ps))
-        radius   = max(4, round(6  * ps))
-        margin   = max(12, round(20 * ps))
 
-        name_sz  = max(9,  round(18 * ps))
-        phone_sz = max(8,  round(14 * ps))
-
-        # ── Text lines ────────────────────────────────────────────────────────
-        lines: list[tuple[str, int, tuple, bool]] = []
-        if name:  lines.append((name,  name_sz,  theme["text"],  True))
-        if phone: lines.append((phone, phone_sz, theme["muted"], False))
-        if not lines:
-            return False
-
-        # ── Build badge canvas ────────────────────────────────────────────────
-        badge = Image.new("RGBA", (badge_w, badge_h), (0, 0, 0, 0))
-        bd    = ImageDraw.Draw(badge)
-
-        # Background (rounded rect, semi-opaque)
-        bd.rounded_rectangle(
-            [0, 0, badge_w - 1, badge_h - 1],
-            radius=radius,
-            fill=(*theme["bg"], 230),
-        )
-
-        # Accent stripe — masked to rounded corners so top corners are clean
-        stripe_mask = Image.new("L", (badge_w, badge_h), 0)
-        smd = ImageDraw.Draw(stripe_mask)
-        smd.rounded_rectangle([0, 0, badge_w - 1, badge_h - 1], radius=radius, fill=255)
-        smd.rectangle([0, stripe_h, badge_w, badge_h], fill=0)
-        badge.paste(
-            Image.new("RGBA", (badge_w, badge_h), (*accent_rgb, 255)),
-            (0, 0),
-            stripe_mask,
-        )
-
-        # Logo — crop to artwork bounds, scale proportionally, no distortion
-        logo_crop  = logo_src.crop((tx, ty, tx + tw, ty + th))
-        logo_small = logo_crop.resize((logo_w, logo_h), Image.LANCZOS)
-        badge.paste(logo_small, (pad_l, pad_v), logo_small)
-
-        # Vertical accent divider
-        bd2   = ImageDraw.Draw(badge)
-        div_x = pad_l + logo_w + gap
-        div_y0 = round(pad_v * 0.667)
-        div_y1 = badge_h - round(pad_v * 1.333)
-        bd2.rectangle([div_x, div_y0, div_x + div_w, div_y1], fill=(*accent_rgb, 255))
-
-        # Text stack — vertically centered in badge
-        text_x    = div_x + div_w + gap
-        line_gap  = max(3, round(4 * ps))
-        content_h = sum(sz for _, sz, _, _ in lines) + (len(lines) - 1) * line_gap
-        text_y    = (badge_h - content_h) // 2
-
-        for text, sz, col, bold in lines:
-            bd2.text((text_x, text_y), text, fill=(*col, 255), font=_font(sz, bold=bold))
-            text_y += sz + line_gap
-
-        # ── Composite onto photo ───────────────────────────────────────────────
-        bx = margin
-        by = photo_h - margin - badge_h
-
-        photo_rgba = photo.convert("RGBA")
-        photo_rgba.paste(badge, (bx, by), badge)
-        photo_rgba.convert("RGB").save(
-            out,
-            format="JPEG",
-            quality=88,
-            optimize=True,
-            progressive=True,
-            subsampling=0,
-        )
-        return True
-
-    except Exception as exc:
-        print(f"  [badge] FAIL {os.path.basename(photo_path)}: {exc}")
-        return False
+__all__ = [
+    "apply_badge_to_photo",
+    "build_badge",
+    "ACCENTS",
+]
