@@ -13,12 +13,20 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from typing import Any
 
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError as exc:
     raise ImportError("Pillow is required: pip install Pillow") from exc
+
+
+def _format_phone(raw: str) -> str:
+    d = re.sub(r"\D", "", raw)[:10]
+    if len(d) >= 7: return f"({d[:3]}) {d[3:6]}-{d[6:]}"
+    if len(d) >= 4: return f"({d[:3]}) {d[3:]}"
+    return raw
 
 
 # ── Canvas & Layout ───────────────────────────────────────────────────────────
@@ -1479,7 +1487,8 @@ def _render_spec_sheet_to_image(
         draw.line((0, footer_y, SHEET_W, footer_y), fill=C_ACCENT, width=3)
 
         _cname  = _di.get("dealer_name") or _di.get("contact_name") or ""
-        _cphone = _di.get("phone") or _di.get("contact_phone") or ""
+        _cphone = _format_phone(_di.get("phone") or _di.get("contact_phone") or "")
+        print(">>> NEW PHONE FORMATTER ACTIVE (GENERATOR)", repr(_cphone))
 
         cy = footer_y + 18
         if _cname:
@@ -1733,7 +1742,8 @@ def _render_panel1(
     contact_x = (logo_zone_x + logo_max_w + 14) if has_logo else (II_X0 + 14)
     contact_y = ov_y0 + 8
     dealer_name = dealer_info.get("dealer_name") or dealer_info.get("contact_name") or ""
-    dealer_phone = dealer_info.get("phone") or dealer_info.get("contact_phone") or ""
+    dealer_phone = _format_phone(dealer_info.get("phone") or dealer_info.get("contact_phone") or "")
+    print(">>> NEW PHONE FORMATTER ACTIVE (GENERATOR/overlay)", repr(dealer_phone))
     if dealer_name:
         name_font = _font(16, bold=True)
         draw.text((contact_x, contact_y), dealer_name, font=name_font, fill=C_WHITE)

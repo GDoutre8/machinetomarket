@@ -3,31 +3,21 @@ card_renderer_adapter.py
 ========================
 Thin adapter between the MTM listing pipeline and card_renderer.render_card().
 
-Resolves 5 schema mismatches identified during integration audit (2026-04-17):
-
-  1. machine_record shape  — renderer expects the raw registry full_record dict
-                             (with 'specs', 'feature_flags', 'field_confidence'),
-                             not a MachineRecord scorer dataclass
-  2. make key name         — full_record uses 'manufacturer'; renderer calls .get('make')
-  3. price key name        — DealerInput uses 'asking_price'; renderer expects 'price'
-  4. photo_path source     — not on DealerInput; taken from image_input_paths[0]
-  5. high_flow type        — DealerInput stores "yes"/"no"/"optional"/None (str);
-                             renderer badge condition tests == True (bool)
+Bridges the existing pipeline data shapes (full_record dict + DealerInput) to
+the v10 renderer's structured { machine / dealer / listing } payload.
 
 Public API
 ----------
-adapt_dealer_input(dealer_input, image_input_paths) -> dict
-    Build the renderer's dealer dict from a DealerInput + photo path list.
-    Call this before passing to export_listing_card().
+adapt_dealer_input(dealer_input, image_input_paths, *, theme) -> dict
+    Build the renderer's listing + photo fields from a DealerInput + photo paths.
 
-export_listing_card(full_record, dealer_dict, output_path, fail_silently) -> Path | None
+export_listing_card(full_record, dealer_dict, output_path, *, fail_silently) -> Path | None
     Full render + Playwright PNG export. Returns output_path on success,
     None on failure when fail_silently=True (default).
 """
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -39,52 +29,84 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-_CONFIG_PATH = Path(__file__).with_name("card_spec_hierarchy.json")
-
-
-def _load_config() -> dict:
-    with open(_CONFIG_PATH, encoding="utf-8") as f:
-        return json.load(f)
-
-
-# Loaded once at import time; safe because the file is read-only at runtime.
-_CARD_CONFIG: dict = _load_config()
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Adapters
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _adapt_machine_record(full_record: dict) -> dict:
-    """Inject 'make' alias for 'manufacturer' so renderer .get('make') resolves."""
-    record = dict(full_record)
-    if "make" not in record:
-        record["make"] = record.get("manufacturer", "")
-    return record
-
-
-def adapt_dealer_input(dealer_input: "DealerInput", image_input_paths: list[str]) -> dict:
+def adapt_dealer_input(
+    dealer_input: "DealerInput",
+    image_input_paths: list[str],
+    *,
+    theme: str = "yellow",
+) -> dict:
     """
-    Build the renderer's dealer dict from a validated DealerInput object.
+    Build the renderer data dict from a validated DealerInput object.
 
     Parameters
     ----------
     dealer_input       : Validated DealerInput from the form.
     image_input_paths  : Ordered list of uploaded photo filesystem paths.
-                         First path is used as photo_path for the card.
+                         First path is used as the machine photo_path.
+    theme              : Dealer theme ("yellow" | "red" | "blue" | "green" | "orange").
+                         Sourced from dealer_info["accent_color"]; defaults to "yellow".
 
     Returns
     -------
-    dict with keys: year, hours, price, photo_path, high_flow
+    dict ready to pass as the 'dealer_dict' argument of export_listing_card().
+    Keys: photo_path, listing_price, listing_hours, theme, high_flow.
     """
     high_flow_raw: Any = getattr(dealer_input, "high_flow", None)
     return {
-        "year":       dealer_input.year,
-        "hours":      dealer_input.hours,
-        "price":      getattr(dealer_input, "asking_price", None),
-        "photo_path": image_input_paths[0] if image_input_paths else None,
-        # DealerInput.high_flow is Optional[str]: "yes"/"no"/"optional"/None
-        "high_flow":  (high_flow_raw == "yes"),
+        "photo_path":     image_input_paths[0] if image_input_paths else None,
+        "listing_price":  getattr(dealer_input, "asking_price", None),
+        "listing_hours":  dealer_input.hours,
+        "year":           dealer_input.year,
+        "theme":          theme,
+        # Kept for callers that still inspect this flag directly
+        "high_flow":      (high_flow_raw == "yes"),
+    }
+
+
+def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
+    """
+    Assemble the { machine / dealer / listing } dict expected by render_card().
+    """
+    specs = full_record.get("specs") or {}
+    flags = full_record.get("feature_flags") or {}
+
+    # high_flow_available: prefer registry feature flag; fall back to dealer-entered bool
+    high_flow_flag = flags.get("high_flow_available")
+    if high_flow_flag is None:
+        high_flow_flag = bool(dealer_dict.get("high_flow", False))
+
+    make = (
+        full_record.get("make")
+        or full_record.get("manufacturer")
+        or ""
+    ).upper()
+
+    return {
+        "machine": {
+            "year":                         dealer_dict.get("year") or full_record.get("year"),
+            "make":                         make,
+            "model":                        full_record.get("model") or "",
+            "horsepower_hp":                specs.get("horsepower_hp"),
+            "rated_operating_capacity_lbs": specs.get("rated_operating_capacity_lbs"),
+            "aux_flow_standard_gpm":        specs.get("aux_flow_standard_gpm"),
+            "aux_flow_high_gpm":            specs.get("aux_flow_high_gpm"),
+            "feature_flags": {
+                "high_flow_available": high_flow_flag,
+            },
+            "photo_path": dealer_dict.get("photo_path"),
+        },
+        "dealer": {
+            "theme": dealer_dict.get("theme") or "yellow",
+        },
+        "listing": {
+            "price_usd": dealer_dict.get("listing_price") or dealer_dict.get("price"),
+            "hours":     dealer_dict.get("listing_hours") or dealer_dict.get("hours"),
+        },
     }
 
 
@@ -100,26 +122,25 @@ def export_listing_card(
     fail_silently: bool = True,
 ) -> Path | None:
     """
-    Render the listing card HTML and export it to a PNG via Playwright.
+    Render the v10 hero listing card and export it to a PNG via Playwright.
 
     Parameters
     ----------
-    full_record     : Raw registry record from lookup_machine()['full_record'].
-                      Must have top-level keys: equipment_type, manufacturer,
-                      model, specs, feature_flags, field_confidence.
-    dealer_dict     : Pre-adapted dealer dict (from adapt_dealer_input()).
-                      Keys: year, hours, price, photo_path, high_flow.
-    output_path     : Destination path for the card PNG.
-    fail_silently   : If True (default), log errors and return None instead of
-                      raising. Set False in tests to surface full tracebacks.
+    full_record   : Raw registry record from lookup_machine()['full_record'].
+                    Must have top-level keys: manufacturer/make, model, specs,
+                    feature_flags.
+    dealer_dict   : Pre-adapted dealer dict (from adapt_dealer_input()).
+    output_path   : Destination path for the card PNG.
+    fail_silently : If True (default), log errors and return None instead of
+                    raising. Set False in tests to surface full tracebacks.
 
     Returns
     -------
     output_path on success, None on failure (when fail_silently=True).
     """
     try:
-        adapted_record = _adapt_machine_record(full_record)
-        html_str = render_card(adapted_record, _CARD_CONFIG, dealer_dict)
+        payload  = _build_render_payload(full_record, dealer_dict)
+        html_str = render_card(payload)
         _screenshot_card(html_str, output_path)
         log.info("[card] exported %s", output_path)
         return output_path
@@ -134,10 +155,12 @@ def _screenshot_card(html_str: str, output_path: Path) -> None:
     """
     Render HTML to PNG using Playwright headless Chromium.
 
-    Viewport 450x560 at device_scale_factor=2.4 produces ~1080x1344 output
-    (Facebook portrait format). Screenshot targets the .card selector only,
-    not the full page. Fonts load via Google Fonts CDN; wait_until="networkidle"
-    ensures they render before capture.
+    Card CSS is 540px wide with aspect-ratio 4/5 → 540×675 px element.
+    At device_scale_factor 2.0 the element screenshot is exactly 1080×1350 px
+    (Facebook portrait recommended size).
+
+    Fonts load via Google Fonts CDN; wait_until="networkidle" ensures they
+    render before capture.
     """
     import concurrent.futures
     from playwright.sync_api import sync_playwright
@@ -149,8 +172,8 @@ def _screenshot_card(html_str: str, output_path: Path) -> None:
             browser = pw.chromium.launch(headless=True)
             try:
                 page = browser.new_page(
-                    viewport={"width": 450, "height": 560},
-                    device_scale_factor=2.4,
+                    viewport={"width": 560, "height": 700},
+                    device_scale_factor=2.0,
                 )
                 page.set_content(html_str, wait_until="networkidle")
                 card_el = page.query_selector(".card")
@@ -161,8 +184,7 @@ def _screenshot_card(html_str: str, output_path: Path) -> None:
                 browser.close()
 
     # sync_playwright creates its own event loop internally and will raise
-    # "Please use the Async API instead" if called directly inside FastAPI's
-    # asyncio loop.  Running it in a ThreadPoolExecutor worker thread gives it
-    # a clean context with no active event loop.
+    # "Please use the Async API instead" if called inside FastAPI's asyncio loop.
+    # Running in a ThreadPoolExecutor worker gives it a clean, loop-free context.
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
         pool.submit(_playwright_render).result()

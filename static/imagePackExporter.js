@@ -23,7 +23,14 @@
     }
 
     var files = Array.isArray(photos) ? photos.filter(Boolean) : [];
-    if (!profile || !(profile.companyName || '').trim() || !files.length) {
+    if (!profile || !files.length) {
+      return files;
+    }
+    var hasAny = (profile.companyName || '').trim() ||
+                 (profile.contactName || '').trim() ||
+                 (profile.phone       || '').trim() ||
+                 profile.logoDataUrl;
+    if (!hasAny) {
       return files;
     }
 

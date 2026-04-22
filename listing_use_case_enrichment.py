@@ -1,9 +1,9 @@
 # =============================================================================
 # MTM LOCKED — DO NOT MODIFY WITHOUT VERSION INCREMENT
 # File:        listing_use_case_enrichment.py
-# Version:     v1.0
+# Version:     v1.1
 # Status:      LOCKED (Production Baseline)
-# Date Locked: 2026-04-15
+# Date Locked: 2026-04-20
 # Controls:    Use case payload bridge for all equipment types — routing,
 #              scorer calls, attachment detection, UC display label mapping,
 #              attachment/limitation sentence generation, and inline logic
@@ -12,6 +12,12 @@
 #              mini_excavator, backhoe_loader, telehandler, dozer, wheel_loader.
 # Change rule: Increment version comment and update this header for any
 #              logic change. Do NOT change scoring behavior silently.
+# v1.1 changes (2026-04-20):
+#   - Added _STUMP_NO_ATT_PENALTY: suppress Stump Grinding without stump_grinder
+#     attachment (analogous to _FORESTRY_NO_ATT_PENALTY, _DEMO_NO_ATT_PENALTY)
+#   - Replaced hardcoded 85-point 3rd-slot threshold with 7-point cluster rule:
+#     use cases within 7 points of the top score form the cluster; at most 3
+#     are shown (overlap pairs still gate the 3rd entry)
 # =============================================================================
 
 """
@@ -387,10 +393,6 @@ _ATTACHMENT_BOOSTS: dict[str, dict[str, int]] = {
     "compactor":     {"Concrete & Flatwork Prep": 12, "Utility Trenching": 6},
 }
 
-# Minimum score to include a use case; higher bar for the third slot.
-# 3rd only shows when it is genuinely strong — default should be 2.
-_SCORE_THRESHOLD_3RD = 85
-
 # Penalty applied to Forestry Mulching when no mulcher attachment is listed.
 # Prevents high-flow capability from surfacing as a primary output without
 # direct evidence that the machine is actually set up for mulching work.
@@ -401,6 +403,12 @@ _FORESTRY_NO_ATT_PENALTY = 18.0
 # without direct evidence the machine is configured for breaking work.
 # Not applied to backhoe or mini ex — both do demolition work with primary tools.
 _DEMO_NO_ATT_PENALTY = 15.0
+
+# Penalty applied to Stump Grinding when no stump_grinder attachment is listed.
+# High-flow capability alone is not enough — without a stump grinder confirmed
+# on this unit, showing Stump Grinding as a top use case overclaims.
+# Consistent with _FORESTRY_NO_ATT_PENALTY (-18) and _DEMO_NO_ATT_PENALTY (-15).
+_STUMP_NO_ATT_PENALTY = 18.0
 
 # Pairs of use case labels that overlap in meaning and should not both appear.
 # If the candidate 3rd use case overlaps with either top-2 entry, it is skipped.
@@ -566,6 +574,15 @@ def _build_ranked_use_cases(
             0.0, label_max["Demolition & Breaking"] - _DEMO_NO_ATT_PENALTY
         )
 
+    # Stump Grinding: require a confirmed stump grinder to surface as a top use case.
+    # High-flow compatibility alone (scored by the CTL/SSL scorers) is not enough —
+    # without a stump grinder listed, showing it overclaims. Not applied to backhoe
+    # or mini ex — neither is a stump grinder platform.
+    if equipment_type in (_SSL, _CTL) and "Stump Grinding" in label_max and "stump_grinder" not in detected_atts:
+        label_max["Stump Grinding"] = max(
+            0.0, label_max["Stump Grinding"] - _STUMP_NO_ATT_PENALTY
+        )
+
     # Mini ex: apply inherent priority boosts before sorting so that
     # Excavation & Digging and Utility Trenching lead ahead of use cases
     # that belong equally to other machine types (Truck Loading, Demolition).
@@ -604,18 +621,25 @@ def _build_ranked_use_cases(
             _MEX_SUPPRESS.add("Grading & Site Prep")
         ranked = [(lbl, sc) for lbl, sc in ranked if lbl not in _MEX_SUPPRESS]
 
-    # Select top 2 by default.
-    # Allow 3rd only if: score >= _SCORE_THRESHOLD_3RD AND it is clearly
-    # distinct (no semantic overlap with either of the top 2).
+    # Always show top 2. Apply the 7-point cluster rule only to the 3rd slot:
+    # the 3rd use case is shown only when its score is within 7 points of the top
+    # (i.e., genuinely tied) AND it has no semantic overlap with either top-2 entry.
+    # This prevents specialty use cases with moderate scores (e.g. 85) from sneaking
+    # in as a 3rd when the top-2 leaders are scoring 30+ points higher.
+    if not ranked:
+        return []
+
     result: list[str] = [lbl for lbl, _ in ranked[:2]]
     if len(ranked) >= 3:
+        top_score = ranked[0][1]
         third_label, third_score = ranked[2]
         top2_set = set(result)
         overlaps = any(
             frozenset({third_label, existing}) in _OVERLAP_PAIRS
             for existing in top2_set
         )
-        if third_score >= _SCORE_THRESHOLD_3RD and not overlaps:
+        in_cluster = third_score >= top_score - 7.0
+        if in_cluster and not overlaps:
             result.append(third_label)
 
     return result
@@ -721,7 +745,7 @@ def _payload_from_ssl_ctl_result(result, dealer_input, equipment_type: str) -> d
     return {
         "top_use_cases_for_listing": use_cases,
         "attachment_sentence":       attachment_sentence,
-        "limitation_sentence":       _limitation_from_ssl_ctl(result),
+        "limitation_sentence":       _limitation_from_ssl_ctl(result, dealer_input),
     }
 
 
@@ -986,7 +1010,7 @@ def _score_wheel_loader_inline(dealer_input, resolved_specs: dict) -> dict:
 # Limitation extraction helpers
 # ---------------------------------------------------------------------------
 
-def _limitation_from_ssl_ctl(result) -> str | None:
+def _limitation_from_ssl_ctl(result, dealer_input=None) -> str | None:
     """
     Derive at most one material limitation sentence from SSL/CTL scorer result.
     Only flags that materially affect buyer expectation.
@@ -1009,8 +1033,12 @@ def _limitation_from_ssl_ctl(result) -> str | None:
     # and buyers actively compare HF vs non-HF. Class A/B machines were never
     # marketed as forestry or cold-planing candidates; flagging the absence
     # reads as a defect rather than a feature gap.
+    # Suppressed when the dealer has confirmed high flow is installed ("yes") —
+    # the scorer may mark tier_3 as unknown due to missing spec data, but the
+    # dealer confirmation takes precedence.
+    dealer_confirmed_hf = getattr(dealer_input, "high_flow", None) == "yes"
     tier3 = compat.get("tier_3_high_demand", {})
-    if not tier3.get("compatible", True) and cap_class in ("C", "D"):
+    if not tier3.get("compatible", True) and cap_class in ("C", "D") and not dealer_confirmed_hf:
         return (
             "No high-flow package — forestry mulching, cold planing, "
             "and rotary cutting not supported."

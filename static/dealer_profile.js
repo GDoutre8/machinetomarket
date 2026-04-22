@@ -41,6 +41,7 @@
       phone:        profile.phone        || '',
       role:         profile.role         || '',
       logoDataUrl:  profile.logoDataUrl  || null,
+      accentColor:  profile.accentColor  || 'yellow',
     });
     try { localStorage.setItem(PRESETS_KEY, JSON.stringify(presets)); } catch (_) {}
     return presets;
@@ -70,13 +71,26 @@
     var companyEl = document.getElementById('dp-company');
     if (!companyEl) return null;
     var company = (companyEl.value || '').trim();
-    if (!company) return null;
+    var contact = ((document.getElementById('dp-contact') || {}).value || '').trim();
+    var phone   = ((document.getElementById('dp-phone')   || {}).value || '').trim();
+    var role    = ((document.getElementById('dp-role')    || {}).value || '').trim();
+    // Return null only when every field is blank — any single filled field
+    // is enough to render a badge. With the overlay gone this is the only
+    // branding path; silently skipping it when company is blank but contact
+    // or phone is set would produce unbranded photos with no warning.
+    var accentColor = 'yellow';
+    var swatchEls = document.querySelectorAll('[data-accent-swatch]');
+    swatchEls.forEach(function (el) {
+      if (el.getAttribute('aria-pressed') === 'true') accentColor = el.getAttribute('data-accent-swatch');
+    });
+    if (!company && !contact && !phone && !_logoDataUrl) return null;
     return {
       companyName:  company,
-      contactName:  ((document.getElementById('dp-contact') || {}).value || '').trim(),
-      phone:        ((document.getElementById('dp-phone')   || {}).value || '').trim(),
-      role:         ((document.getElementById('dp-role')    || {}).value || '').trim(),
+      contactName:  contact,
+      phone:        phone,
+      role:         role,
       logoDataUrl:  _logoDataUrl || null,
+      accentColor:  accentColor,
     };
   }
 
@@ -96,6 +110,13 @@
     if (phoneEl)   phoneEl.value   = profile.phone        || '';
 
     _logoDataUrl = profile.logoDataUrl || null;
+    var savedAccent = profile.accentColor || 'yellow';
+    document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
+      var active = el.getAttribute('data-accent-swatch') === savedAccent;
+      el.setAttribute('aria-pressed', active ? 'true' : 'false');
+      el.style.outline = active ? '2px solid #fff' : '2px solid transparent';
+      el.style.outlineOffset = '2px';
+    });
     if (logoDrop) {
       if (_logoDataUrl) {
         logoDrop.classList.add('has-files');
@@ -247,6 +268,18 @@
             '<input type="file" id="dp-logo-input" accept="image/png,image/jpeg,image/webp,image/*" style="display:none">',
           '</div>',
         '</div>',
+        '<div class="field-row single" style="margin-bottom:14px;margin-top:14px;">',
+          '<div class="field">',
+            '<label>Card Theme <span style="font-weight:400;color:var(--dim);font-size:11px;">Hero card accent color</span></label>',
+            '<div style="display:flex;gap:8px;align-items:center;margin-top:6px;">',
+              '<button type="button" data-accent-swatch="yellow" aria-pressed="true"  title="Yellow" style="width:22px;height:22px;border-radius:50%;background:#FFC20E;border:none;cursor:pointer;outline:2px solid #fff;outline-offset:2px;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="red"    aria-pressed="false" title="Red"    style="width:22px;height:22px;border-radius:50%;background:#C8102E;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="blue"   aria-pressed="false" title="Blue"   style="width:22px;height:22px;border-radius:50%;background:#1E4D8C;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="green"  aria-pressed="false" title="Green"  style="width:22px;height:22px;border-radius:50%;background:#2C5F3E;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="orange" aria-pressed="false" title="Orange" style="width:22px;height:22px;border-radius:50%;background:#D85A15;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
+            '</div>',
+          '</div>',
+        '</div>',
         '<div style="font-size:11px;color:var(--dim);">Changes save automatically.</div>',
         // ── Preset section ──────────────────────────────────────────────────
         '<div id="dp-preset-section" style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);">',
@@ -302,6 +335,14 @@
 
     // ── Save to localStorage ───────────────────────────────────────────────
 
+    function getSelectedAccent() {
+      var accent = 'yellow';
+      document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
+        if (el.getAttribute('aria-pressed') === 'true') accent = el.getAttribute('data-accent-swatch');
+      });
+      return accent;
+    }
+
     function save() {
       var company = (companyEl.value || '').trim();
       if (!company) {
@@ -315,6 +356,7 @@
         phone:        (phoneEl.value   || '').trim(),
         role:         (roleEl.value    || '').trim(),
         logoDataUrl:  _logoDataUrl,
+        accentColor:  getSelectedAccent(),
       });
       updateStatus();
     }
@@ -327,18 +369,38 @@
       companyEl.value = profile.companyName  || '';
       roleEl.value    = profile.role         || '';
       contactEl.value = profile.contactName  || '';
-      phoneEl.value   = profile.phone        || '';
+      phoneEl.value   = formatPhone(profile.phone || '');
       if (profile.logoDataUrl) {
         _logoDataUrl = profile.logoDataUrl;
         logoDrop.classList.add('has-files');
         logoLabel.innerHTML = '<strong>Logo loaded</strong> \u2014 click to replace';
       }
       updateStatus();
+      var savedAccent = profile.accentColor || 'yellow';
+      document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
+        var active = el.getAttribute('data-accent-swatch') === savedAccent;
+        el.setAttribute('aria-pressed', active ? 'true' : 'false');
+        el.style.outline = active ? '2px solid #fff' : '2px solid transparent';
+      });
       if ((profile.companyName || '').trim()) {
         fields.style.display = '';
         arrow.innerHTML      = '&#9650;';
       }
     }
+
+    // ── Swatch click handlers ──────────────────────────────────────────────
+
+    document.querySelectorAll('[data-accent-swatch]').forEach(function (swatch) {
+      swatch.addEventListener('click', function () {
+        document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
+          el.setAttribute('aria-pressed', 'false');
+          el.style.outline = '2px solid transparent';
+        });
+        swatch.setAttribute('aria-pressed', 'true');
+        swatch.style.outline = '2px solid #fff';
+        save();
+      });
+    });
 
     // ── Toggle collapse ────────────────────────────────────────────────────
 

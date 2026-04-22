@@ -405,12 +405,51 @@ def build_listing_pack(
             warnings.append(f"Card render failed: {exc}")
             print(f"  [Pack] card PNG           : FAIL ({exc})")
 
-    # ── 3d. Light badge overlay on listing photos ─────────────────────────────
+    # ── 3d. Spec sheet image — position _02 in Listing_Photos ────────────────
+    # Rendered at 1080×1350 (same format as hero card). Sits at _02 so that
+    # the pack order for Facebook posting is: hero → spec sheet → photos.
+    # Requires the same pipeline data as build_listing_pack_v1 passes through.
+    if dealer_input_dump is not None and enriched_resolved_specs is not None:
+        try:
+            from spec_sheet_renderer_adapter import build_spec_sheet_data, export_spec_sheet
+            listing_photos_dir = Path(os.path.join(pack_dir, "Listing_Photos"))
+            listing_photos_dir.mkdir(parents=True, exist_ok=True)
+            # Shift existing _listing photos up by 1 (02→03, 03→04…) to open slot _02.
+            _renumber_listing_photos(listing_photos_dir, machine_name)
+            # Locate first uploaded photo for the spec sheet image.
+            _ss_photo = valid_images[0] if valid_images else None
+            _ss_data = build_spec_sheet_data(
+                dealer_input_data       = dealer_input_dump,
+                enriched_resolved_specs = enriched_resolved_specs,
+                equipment_type          = eq_type,
+                dealer_contact          = {
+                    "dealer_name": dealer.get("dealer_name"),
+                    "phone":       dealer.get("phone"),
+                    "location":    dealer.get("location"),
+                },
+                dealer_info  = dealer,
+                full_record  = full_record,
+                photo_path   = _ss_photo,
+            )
+            ss_img_out = listing_photos_dir / f"{machine_name}_02_spec_sheet.png"
+            ss_result  = export_spec_sheet(_ss_data, ss_img_out)
+            if ss_result:
+                print(f"  [Pack] spec sheet img     : OK -> {ss_img_out.name}")
+            else:
+                warnings.append("Spec sheet image render failed — see logs.")
+                print("  [Pack] spec sheet img     : FAIL (see logs)")
+        except Exception as exc:
+            import traceback
+            warnings.append(f"Spec sheet image render failed: {exc}")
+            print(f"  [Pack] spec sheet img     : FAIL ({exc})")
+            print(traceback.format_exc())
+
+    # ── 3e. Light badge overlay on listing photos ─────────────────────────────
     # generate_image_pack() → APPLY BADGE → zip
     #
     # Targeting rules (non-negotiable):
     #   ONLY  *_listing.jpg  (glob pattern, applied after generate_image_pack)
-    #   NEVER *_01_card.png  (hero card — untouched)
+    #   NEVER *_01_card.png / *_02_spec_sheet.png  (generated assets — untouched)
     #
     # Skips silently when logo_path is absent — never blocks ZIP.
     _logo_path = (dealer or {}).get("logo_path")
@@ -805,7 +844,10 @@ def build_listing_pack_v1(
     card_dealer_data: "dict | None" = None
     if full_record is not None:
         from card_renderer_adapter import adapt_dealer_input
-        card_dealer_data = adapt_dealer_input(dealer_input, image_input_paths or [])
+        _theme = (dealer_info or {}).get("accent_color", "yellow")
+        card_dealer_data = adapt_dealer_input(
+            dealer_input, image_input_paths or [], theme=_theme
+        )
 
     # 5. Delegate to the full pack assembler
     return build_listing_pack(

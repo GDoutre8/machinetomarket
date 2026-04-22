@@ -355,7 +355,8 @@ async def index(request: Request):
 
 @app.get("/fix-listing", response_class=HTMLResponse)
 async def fix_listing_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    # Legacy route — redirect all traffic to the current flow.
+    return RedirectResponse(url="/build-listing", status_code=301)
 
 
 @app.get("/download-pack")
@@ -710,15 +711,10 @@ async def generate_listing_pack_endpoint(
     photos: List[UploadFile] = File(default=[]),
 ):
     """
-    Full listing-pack assembly endpoint.
-
-    Accepts multipart/form-data with:
-      - raw_text       : raw listing text
-      - photos         : zero or more image files
-      - dealer_*       : optional dealer contact fields
-      - generate_*     : optional output toggles
-
-    Returns JSON manifest with paths + download URL.
+    DEPRECATED — legacy endpoint used by app_v2.js / index.html.
+    The active flow is POST /build-listing (build_listing.html + build_listing_pack_v1).
+    This endpoint still functions for backward compatibility but is no longer
+    the primary path and does not generate a v10 hero card or spec sheet image.
     """
     raw = (raw_text or "").strip()
     if not raw:

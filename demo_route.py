@@ -48,6 +48,7 @@ DEMO_PRESETS: dict[str, dict] = {
         "hours": 1850,
         "price": 42900,
         "location": "Boston, MA",
+        "accent_color": "yellow",   # swap to "red"|"blue"|"green"|"orange" to test themes
 
         "high_flow": True,
         "two_speed": True,
@@ -206,7 +207,14 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
         )
 
     session_dir, session_web = _make_session_dir(parsed)
-    dealer_info = {"location": p.get("location")}
+    _logo = os.path.join(_BASE, "static", "assets", "yellow_iron_yard_logo.png")
+    dealer_info = {
+        "location":    p.get("location"),
+        "dealer_name": "Yellow Iron Yard",
+        "phone":       "(617) 555-0142",
+        "logo_path":   _logo if os.path.isfile(_logo) else None,
+        "accent_color": p.get("accent_color", "yellow"),
+    }
 
     try:
         _demo_images = [DEMO_IMAGE_PATH] if os.path.isfile(DEMO_IMAGE_PATH) else []
@@ -246,7 +254,10 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
     zip_abs = os.path.join(session_dir, "listing_output.zip")
     zip_url = f"/download-pack/{session_id}" if os.path.isfile(zip_abs) else None
 
-    # Listing photo URLs — JPEGs first (processed input photos), then PNGs (cards)
+    # Image pack preview priority:
+    #   1. PNGs from Listing_Photos (stamped/badged card outputs — final posting assets)
+    #   2. JPGs from Listing_Photos (processed source photos — fallback only)
+    # This reflects final image-pack deliverables, not raw input photos.
     import glob as _glob
     _lp_dir = os.path.join(pack_dir, "Listing_Photos")
     listing_photos: list[str] = []
@@ -255,9 +266,9 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
             _p for _p in sorted(_glob.glob(os.path.join(_lp_dir, "*")))
             if os.path.isfile(_p) and _p.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
         ]
-        _jpgs = [_p for _p in _all if _p.lower().endswith((".jpg", ".jpeg", ".webp"))]
         _pngs = [_p for _p in _all if _p.lower().endswith(".png")]
-        for _p in (_jpgs or _pngs) + (_pngs if _jpgs else []):
+        _jpgs = [_p for _p in _all if _p.lower().endswith((".jpg", ".jpeg", ".webp"))]
+        for _p in (_pngs or _jpgs) + (_jpgs if _pngs else []):
             listing_photos.append(f"{web_base}/Listing_Photos/{os.path.basename(_p)}")
 
     machine_label = (

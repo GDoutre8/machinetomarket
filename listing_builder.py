@@ -336,11 +336,31 @@ def _build_mini_ex_headline(dealer_input: DealerInput) -> str:
 
 
 def _build_mini_ex_opening(dealer_input: DealerInput) -> str:
-    """1–2 sentence dealer-quality opening paragraph for mini ex listings."""
-    model_id = f"{dealer_input.make} {dealer_input.model}"
+    """
+    1–2 sentence dealer-quality opening paragraph for mini ex listings.
 
-    # Sentence 1: cab configuration
-    if dealer_input.cab_type:
+    Sentence 1: hours-based condition + identity + cab config.
+    Sentence 2: key work features (thumb, aux hydraulics) — omitted if nothing notable.
+    No invented condition claims; condition word is derived from hours only.
+    """
+    make_model = f"{dealer_input.make} {dealer_input.model}"
+    hours_str  = f"{dealer_input.hours:,}"
+
+    if dealer_input.hours < 1000:
+        condition = "Low-hour"
+    elif dealer_input.hours < 2500:
+        condition = "Clean"
+    elif dealer_input.hours < 4500:
+        condition = "Well-used"
+    else:
+        condition = "High-hour working"
+
+    # Sentence 1: identity + cab
+    is_enclosed = (
+        dealer_input.cab_type
+        and dealer_input.cab_type.lower().strip() in _ENCLOSED_CAB_VALUES
+    )
+    if is_enclosed:
         extras: list[str] = []
         if dealer_input.heater:
             extras.append("heat")
@@ -348,24 +368,21 @@ def _build_mini_ex_opening(dealer_input: DealerInput) -> str:
             extras.append("A/C")
         cab_desc = "enclosed cab"
         if extras:
-            cab_desc += f", {' & '.join(extras)}"
-        s1 = f"Clean, well-maintained {model_id} with {cab_desc}."
+            cab_desc += f" with {' & '.join(extras)}"
+        s1 = f"{condition} {make_model} with {hours_str} hours, {cab_desc}."
     else:
-        s1 = f"Clean, well-maintained {model_id} with open canopy."
+        s1 = f"{condition} {make_model} with {hours_str} hours."
 
-    # Sentence 2: key work features
+    # Sentence 2: confirmed work features
     work_parts: list[str] = []
-    if dealer_input.thumb_type:
+    if dealer_input.thumb_type and dealer_input.thumb_type.lower() not in ("none", ""):
         work_parts.append("hydraulic thumb")
     if dealer_input.aux_hydraulics:
         work_parts.append("auxiliary hydraulics")
 
-    if work_parts:
-        s2 = f"Tight machine with {' and '.join(work_parts)} \u2014 ready to go straight to work."
-    else:
-        s2 = "Tight machine ready to go straight to work."
+    s2 = f"Equipped with {' and '.join(work_parts)}." if work_parts else ""
 
-    return f"{s1} {s2}"
+    return f"{s1} {s2}".strip() if s2 else s1
 
 
 def _build_mini_ex_key_features(dealer_input: DealerInput) -> list[str]:
@@ -611,6 +628,11 @@ def _build_mini_ex_listing(
     # 2. Asking price (if provided)
     if dealer_input.asking_price:
         sections.append(f"${dealer_input.asking_price:,}")
+
+    # 2.5. Opening paragraph — hours-based condition + confirmed cab/work features.
+    opening = _build_mini_ex_opening(dealer_input)
+    if opening:
+        sections.append(opening)
 
     # 3. Core Specs (OEM-backed)
     specs_block = _build_mini_ex_specs_block(resolved_specs, make=dealer_input.make)
@@ -1042,12 +1064,6 @@ def _build_key_details(
     for item in spec_items:
         lines.append(f"{item['label']}: {item['value']}")
 
-    # Confirmed configuration features (not already in spec items)
-    if dealer_input.high_flow == "yes":
-        lines.append("High-flow hydraulics")
-    if dealer_input.two_speed_travel == "yes":
-        lines.append("2-speed travel")
-
     if not lines:
         return ""
 
@@ -1105,6 +1121,12 @@ def build_listing_text(
     # 2. Asking price (if provided)
     if dealer_input.asking_price:
         sections.append(f"${dealer_input.asking_price:,}")
+
+    # 2.5. Opening paragraph — 1–2 sentences of machine identity prose.
+    # Grounded in hours and confirmed config only; no invented condition claims.
+    opening = _build_p1_identity(dealer_input)
+    if opening:
+        sections.append(opening)
 
     # 3. Core Specs (hours + OEM specs)
     key_details = _build_key_details(dealer_input, resolved_specs, equipment_type)

@@ -11,6 +11,7 @@ import base64
 import datetime
 import os
 import sys
+import re
 from pathlib import Path
 
 from spec_sheet_config import (
@@ -19,6 +20,13 @@ from spec_sheet_config import (
     photo_data_uri,
     find_first_photo,
 )
+
+def _format_phone(raw: str) -> str:
+    d = re.sub(r"\D", "", raw)[:10]
+    if len(d) >= 7: return f"({d[:3]}) {d[3:6]}-{d[6:]}"
+    if len(d) >= 4: return f"({d[:3]}) {d[3:]}"
+    return raw
+
 
 # ─── Display mappings ─────────────────────────────────────────────────────────
 
@@ -633,7 +641,8 @@ def build_spec_sheet_context(
 
     # ── Dealer footer ─────────────────────────────────────────────────────────
     contact_name  = dealer_contact.get("contact_name") or dealer_contact.get("dealer_name") or ""
-    contact_phone = dealer_contact.get("contact_phone") or dealer_contact.get("phone") or ""
+    contact_phone = _format_phone(dealer_contact.get("contact_phone") or dealer_contact.get("phone") or "")
+    print(">>> NEW PHONE FORMATTER ACTIVE", repr(contact_phone))
     dealer_role   = dealer_contact.get("dealer_role") or ""
 
     # Signature: "— Name, Role" or whichever parts are present
