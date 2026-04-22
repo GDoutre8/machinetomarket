@@ -435,8 +435,11 @@ def build_listing_pack(
             )
             print(f"  [Pack] badge stamp        : {_badged}/{len(_badge_targets)} listing photo(s)")
         except Exception as _badge_exc:
+            import traceback
+            _tb = traceback.format_exc()
             warnings.append(f"Badge stamping failed: {_badge_exc}")
             print(f"  [Pack] badge stamp        : FAIL ({_badge_exc})")
+            print(_tb)
 
     # ── 4. Walkaround video (lowest priority — failure never blocks ZIP) ───────
     if walkaround_requested:

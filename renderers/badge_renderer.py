@@ -29,7 +29,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 
@@ -94,28 +93,48 @@ def _format_phone_us(phone: str) -> str:
 
 
 def _detect_logo_bg(logo_img: Image.Image) -> str:
-    """Sample the four corners. Near-white + opaque -> 'white'. Else 'dark'."""
+    """Sample the four corners. Near-white + opaque -> 'white'. Else 'dark'.
+
+    Pillow-only implementation (no numpy dependency). Each corner is cropped,
+    pixels iterated with getdata(), and RGBA means computed in pure Python.
+    Corner patches are tiny (typically 2-20 px on a side) so this is fast.
+    """
     rgba = logo_img.convert("RGBA")
     w, h = rgba.size
-    arr = np.array(rgba)
 
     pw = max(2, min(w // 20, 20))
     ph = max(2, min(h // 20, 20))
 
-    corners = [
-        arr[0:ph,         0:pw],
-        arr[0:ph,         w - pw:w],
-        arr[h - ph:h,     0:pw],
-        arr[h - ph:h,     w - pw:w],
+    boxes = [
+        (0,          0,          pw,       ph),        # top-left
+        (w - pw,     0,          w,        ph),        # top-right
+        (0,          h - ph,     pw,       h),         # bottom-left
+        (w - pw,     h - ph,     w,        h),         # bottom-right
     ]
 
-    # Any transparent corner -> not on white
-    alphas = [c[..., 3].mean() for c in corners]
-    if min(alphas) < 200:
+    def _rgba_means(img: Image.Image) -> tuple[float, float, float, float]:
+        n = img.width * img.height
+        if n == 0:
+            return (0.0, 0.0, 0.0, 0.0)
+        r_sum = g_sum = b_sum = a_sum = 0
+        for (r, g, b, a) in img.getdata():
+            r_sum += r
+            g_sum += g
+            b_sum += b
+            a_sum += a
+        return (r_sum / n, g_sum / n, b_sum / n, a_sum / n)
+
+    corner_means = [_rgba_means(rgba.crop(b)) for b in boxes]
+
+    # Any meaningfully transparent corner -> logo is NOT on a white background
+    if min(m[3] for m in corner_means) < 200:
         return "dark"
 
-    rgbs = [c[..., :3].mean(axis=(0, 1)) for c in corners]
-    white_corners = sum(1 for rgb in rgbs if all(ch >= 240 for ch in rgb))
+    # Count corners where all three channels are >= 240 (near-white)
+    white_corners = sum(
+        1 for (r, g, b, _a) in corner_means
+        if r >= 240 and g >= 240 and b >= 240
+    )
     return "white" if white_corners >= 3 else "dark"
 
 
@@ -171,7 +190,7 @@ def build_badge(
     """
     Build the badge as an RGBA image with drop shadow baked in.
 
-    Returns a PIL Image sized canvas_w x canvas_h; shadow extends
+    Returns a PIL Image sized canvas_w × canvas_h; shadow extends
     `shadow_margin` pixels on each side of the visible badge.
     """
     # Logo
