@@ -230,11 +230,11 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives accent bar + phone color on charcoal
     *,
     force_variant: Optional[Literal["white", "charcoal"]] = None,  # QA override; None = auto-detect
-    target_logo_height: int = 93,   # logo box height; width = height * logo_box_ratio
-    logo_box_ratio: float = 1.5,
+    logo_box_w: int = 130,          # max logo bounding box width (horizontal baseline)
+    logo_box_h: int = 48,           # max logo bounding box height
     padding_x: int = 35,
     padding_y: int = 28,
-    gap: int = 33,                  # total gap between logo box right edge and text left edge
+    gap: int = 18,                  # gap between logo box right edge and text left edge
     sep_width: int = 2,
     text_gap: int = 8,
     corner_radius: int = 13,
@@ -252,6 +252,9 @@ def build_badge(
     `accent` is the dealer theme name (yellow/red/blue/green/orange).
     It controls the top accent bar and the phone color on the charcoal variant.
     Unknown values fall back to MTM yellow.
+
+    Logo is fit inside logo_box_w × logo_box_h preserving aspect ratio —
+    whichever constraint (width or height) is hit first governs the scale.
 
     Returns a PIL Image of size (badge_w + 2*shadow_margin) × (badge_h + 2*shadow_margin).
     """
@@ -272,10 +275,9 @@ def build_badge(
         phone_color = accent_rgb       # accent-colored phone on charcoal
         sep_color   = SEP_ON_CHARCOAL
 
-    # Logo: aspect-preserve fit within fixed box (logo_box_w × logo_box_h)
+    # Logo: fit inside bounding box (logo_box_w × logo_box_h), aspect-preserved.
+    # Horizontal logos hit the width constraint; tall logos hit the height constraint.
     # On charcoal badges, strip near-white bg pixels so no rectangular box shows.
-    logo_box_w = int(target_logo_height * logo_box_ratio)
-    logo_box_h = target_logo_height
     lw, lh  = logo.size
     scale   = min(logo_box_w / lw, logo_box_h / lh)
     logo_pw = int(lw * scale)      # actual pixel width of scaled logo
