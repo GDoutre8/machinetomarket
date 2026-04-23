@@ -38,7 +38,7 @@ ACCENT_YELLOW      = (244, 183, 26)           # #f4b71a — top bar, always cons
 
 NAME_ON_WHITE      = (31,  32,  36)           # #1f2024
 NAME_ON_CHARCOAL   = (255, 255, 255)          # #ffffff
-PHONE_ON_WHITE     = (31,  32,  36)           # #1f2024
+PHONE_ON_WHITE     = (107, 107, 107)          # #6b6b6b — muted, secondary to name
 PHONE_ON_CHARCOAL  = (244, 183, 26)           # #f4b71a (yellow)
 
 # Separator — pre-multiplied solid approximations of rgba alpha over badge bg
@@ -213,17 +213,18 @@ def build_badge(
     phone: str,
     accent: str = "yellow",        # theme name — drives accent bar + phone color on charcoal
     *,
-    target_logo_height: int = 240, # logo box height; width = height * logo_box_ratio
+    force_variant: Optional[Literal["white", "charcoal"]] = None,  # QA override; None = auto-detect
+    target_logo_height: int = 104,  # logo box height; width = height * logo_box_ratio
     logo_box_ratio: float = 1.5,
-    padding_x: int = 92,
-    padding_y: int = 76,
-    gap: int = 84,                 # total gap between logo box right edge and text left edge
-    sep_width: int = 4,
-    text_gap: int = 20,
-    corner_radius: int = 36,
-    accent_bar_h: int = 20,
-    name_size: int = 80,
-    phone_size: int = 56,
+    padding_x: int = 39,
+    padding_y: int = 32,
+    gap: int = 37,                  # total gap between logo box right edge and text left edge
+    sep_width: int = 2,
+    text_gap: int = 9,
+    corner_radius: int = 15,
+    accent_bar_h: int = 8,
+    name_size: int = 35,
+    phone_size: int = 24,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -239,7 +240,7 @@ def build_badge(
     Returns a PIL Image of size (badge_w + 2*shadow_margin) × (badge_h + 2*shadow_margin).
     """
     logo    = Image.open(logo_path).convert("RGBA")
-    bg_kind = detect_logo_background(logo)
+    bg_kind = force_variant if force_variant in ("white", "charcoal") else detect_logo_background(logo)
 
     # Resolve accent color from theme name — fallback to MTM yellow
     accent_rgb = ACCENTS.get((accent or "yellow").lower().strip(), ACCENT_YELLOW)
@@ -289,13 +290,15 @@ def build_badge(
     canvas_h = badge_h + 2 * sm
     canvas   = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
 
-    # Drop shadow — soft rounded rect, offset +3px Y, no stroke on badge itself
+    # Drop shadow — slightly stronger on white badges (contrast against bright photos),
+    # subtler on charcoal (self-sufficient dark bg needs less lift).
+    shadow_opacity = 135 if bg_kind == "white" else 88
     shadow_layer = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
     sdraw = ImageDraw.Draw(shadow_layer)
     sdraw.rounded_rectangle(
         (sm, sm + 3, sm + badge_w, sm + badge_h + 3),
         radius=corner_radius,
-        fill=(0, 0, 0, 110),
+        fill=(0, 0, 0, shadow_opacity),
     )
     shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(radius=6))
     canvas.alpha_composite(shadow_layer)
@@ -373,6 +376,7 @@ def apply_badge_to_photo(
     name: str,
     phone: str,
     accent: str = "yellow",
+    force_variant: Optional[Literal["white", "charcoal"]] = None,
     output_path: Optional[str] = None,
 ) -> Image.Image:
     """
@@ -382,7 +386,7 @@ def apply_badge_to_photo(
     Depth comes from the badge's baked-in drop shadow — no dark buffer is drawn.
     """
     photo = Image.open(photo_path).convert("RGBA")
-    badge = build_badge(logo_path, name, phone, accent=accent)
+    badge = build_badge(logo_path, name, phone, accent=accent, force_variant=force_variant)
 
     pw, ph = photo.size
     bw, bh = badge.size

@@ -184,3 +184,10 @@ templates/build_listing.tail.tmp
 # ── Stale spec_resolver __init__ backup ───────────────────────────────────────
 spec_resolver/_init_.py
 *.log
+
+# ── Badge QA outputs (generated locally, not deployment deps) ─────────────────
+badge_samples/
+tests/fixtures/
+static/assets/_*.png
+static/assets/_*.jpg
+static/verify_v10_hero.png
