@@ -36,7 +36,7 @@ ACCENT_YELLOW      = (244, 183, 26)           # #f4b71a — top bar, always cons
 
 NAME_ON_WHITE      = (31,  32,  36)           # #1f2024
 NAME_ON_CHARCOAL   = (255, 255, 255)          # #ffffff
-PHONE_ON_WHITE     = (107, 107, 107)          # #6b6b6b — muted, secondary to name
+PHONE_ON_WHITE     = (90,  90,  90)           # #5a5a5a — muted, secondary to name
 PHONE_ON_CHARCOAL  = (244, 183, 26)           # #f4b71a (yellow)
 
 # Separator — pre-multiplied solid approximations of rgba alpha over badge bg
@@ -230,17 +230,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives accent bar + phone color on charcoal
     *,
     force_variant: Optional[Literal["white", "charcoal"]] = None,  # QA override; None = auto-detect
-    logo_box_w: int = 130,          # max logo bounding box width (horizontal baseline)
-    logo_box_h: int = 48,           # max logo bounding box height
-    padding_x: int = 35,
-    padding_y: int = 28,
-    gap: int = 18,                  # gap between logo box right edge and text left edge
-    sep_width: int = 2,
-    text_gap: int = 8,
-    corner_radius: int = 13,
-    accent_bar_h: int = 7,
-    name_size: int = 31,
-    phone_size: int = 21,
+    logo_box_w: int = 160,          # max logo width — wider to favour horizontal logos
+    logo_box_h: int = 44,           # max logo height — reduced so width is more often the constraint
+    padding_x: int = 26,
+    padding_y: int = 20,
+    gap: int = 14,                  # gap between actual logo right edge and text column
+    sep_width: int = 1,
+    text_gap: int = 7,
+    corner_radius: int = 12,
+    accent_bar_h: int = 5,
+    name_size: int = 27,
+    phone_size: int = 15,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -253,8 +253,9 @@ def build_badge(
     It controls the top accent bar and the phone color on the charcoal variant.
     Unknown values fall back to MTM yellow.
 
-    Logo is fit inside logo_box_w × logo_box_h preserving aspect ratio —
-    whichever constraint (width or height) is hit first governs the scale.
+    Logo is fit inside logo_box_w × logo_box_h preserving aspect ratio.
+    Badge width is based on actual rendered logo width (logo_pw), not the fixed
+    box allocation, so wide logos fill their column and no dead space appears.
 
     Returns a PIL Image of size (badge_w + 2*shadow_margin) × (badge_h + 2*shadow_margin).
     """
@@ -300,10 +301,11 @@ def build_badge(
     text_block_w = max(name_w, phone_w)
     text_block_h = name_h + text_gap + phone_h
 
-    # Badge dimensions
-    content_h = max(logo_box_h, text_block_h)
+    # Badge dimensions — width uses actual logo_pw so no dead space is allocated
+    # around the logo; wide logos naturally fill their column.
+    content_h = max(logo_ph, text_block_h)
     badge_h   = accent_bar_h + content_h + 2 * padding_y
-    badge_w   = padding_x + logo_box_w + gap + text_block_w + padding_x
+    badge_w   = padding_x + logo_pw + gap + text_block_w + padding_x
 
     sm       = _BADGE_SHADOW_MARGIN
     canvas_w = badge_w + 2 * sm
@@ -349,35 +351,33 @@ def build_badge(
     # Content area origin
     content_top = sm + accent_bar_h + padding_y
 
-    # Logo — centered within its fixed box, then vertically centered in content
-    logo_x = sm + padding_x + (logo_box_w - logo_pw) // 2
+    # Logo — left-aligned in its column, vertically centered in content
+    logo_x = sm + padding_x
     logo_y = content_top + (content_h - logo_ph) // 2
     canvas.alpha_composite(logo_scaled, (logo_x, logo_y))
 
-    # Vertical separator — 1px, centered within gap, inset 1/5 content height top/bottom
-    sep_x      = sm + padding_x + logo_box_w + (gap - sep_width) // 2
+    # Vertical separator — centred within the gap between logo right edge and text column
+    sep_x      = sm + padding_x + logo_pw + (gap - sep_width) // 2
     sep_inset  = content_h // 5
     sep_top_y  = content_top + sep_inset
     sep_bot_y  = content_top + content_h - sep_inset
     draw.rectangle((sep_x, sep_top_y, sep_x + sep_width - 1, sep_bot_y), fill=sep_color)
 
-    # Text block — vertically centered in content area
-    text_col_x = sm + padding_x + logo_box_w + gap
+    # Text block — left-aligned, vertically centered in content area
+    text_col_x = sm + padding_x + logo_pw + gap
     text_top_y = content_top + (content_h - text_block_h) // 2
 
-    # Name (weight 500, letter-spacing -0.01em handled by font choice)
-    name_x = text_col_x + (text_block_w - name_w) // 2
+    # Name — left-aligned
     draw.text(
-        (name_x - name_bbox[0], text_top_y - name_bbox[1]),
+        (text_col_x - name_bbox[0], text_top_y - name_bbox[1]),
         name,
         font=name_font,
         fill=name_color,
     )
 
-    # Phone (mono, centered under name)
+    # Phone — left-aligned, clearly secondary via size
     phone_y_px = text_top_y + name_h + text_gap
-    phone_x    = text_col_x + (text_block_w - phone_w) // 2
-    _draw_tracked(draw, (phone_x, phone_y_px), phone_disp,
+    _draw_tracked(draw, (text_col_x, phone_y_px), phone_disp,
                   font=phone_font, fill=phone_color, tracking=phone_tracking)
 
     return canvas
