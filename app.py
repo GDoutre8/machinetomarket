@@ -1292,6 +1292,9 @@ async def spec_sheet_view(request: Request, session_id: str):
         with open(dc_path, encoding="utf-8") as f:
             dealer_contact = json.load(f)
 
+    # Dealer info: accent_color/logo_path stored in dealer_profile sub-dict of dealer_input.json
+    dealer_info: dict = di_data.get("dealer_profile") or {}
+
     # Scan session _uploads/ for machine photos to embed in the spec sheet
     _photo_paths: list[str] = []
     _uploads_dir = os.path.join(session_dir, "_uploads")
@@ -1306,7 +1309,7 @@ async def spec_sheet_view(request: Request, session_id: str):
         enriched_resolved_specs=rs_data,
         equipment_type=equipment_type,
         dealer_contact=dealer_contact,
-        dealer_info={},
+        dealer_info=dealer_info,
         full_record={},
         photo_path=_photo_paths[0] if _photo_paths else None,
     )
