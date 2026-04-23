@@ -593,12 +593,32 @@ def export_spec_sheet(
     Returns output_path on success, None on failure (when fail_silently=True).
     """
     try:
+        log.info("[spec_sheet_renderer] render_spec_sheet() start")
         html_str = render_spec_sheet(data)
+        log.info(
+            "[spec_sheet_renderer] HTML generated: %d chars | first 120: %s",
+            len(html_str),
+            html_str[:120].replace("\n", " "),
+        )
+        # Dump full HTML to a debug file alongside the output so it can be inspected.
+        _debug_html = Path(output_path).with_suffix(".debug.html")
+        try:
+            _debug_html.parent.mkdir(parents=True, exist_ok=True)
+            _debug_html.write_text(html_str, encoding="utf-8")
+            log.info("[spec_sheet_renderer] debug HTML written -> %s", _debug_html)
+        except Exception as _he:
+            log.warning("[spec_sheet_renderer] could not write debug HTML: %s", _he)
+
+        log.info("[spec_sheet_renderer] launching Playwright screenshot -> %s", output_path)
         _screenshot_spec_sheet(html_str, output_path)
-        log.info("[spec_sheet_renderer] exported %s", output_path)
+        log.info("[spec_sheet_renderer] screenshot SUCCESS -> %s", output_path)
         return output_path
     except Exception as exc:
-        log.warning("[spec_sheet_renderer] export failed: %s", exc, exc_info=True)
+        log.error(
+            "[spec_sheet_renderer] export FAILED: %s",
+            exc,
+            exc_info=True,
+        )
         if not fail_silently:
             raise
         return None
@@ -612,20 +632,40 @@ def _screenshot_spec_sheet(html_str: str, output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _render() -> None:
+        log.info("[spec_sheet_pw] sync_playwright() enter")
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
+            log.info("[spec_sheet_pw] launching Chromium headless")
+            try:
+                browser = pw.chromium.launch(headless=True)
+            except Exception as exc:
+                log.error("[spec_sheet_pw] Chromium launch FAILED: %s", exc)
+                raise
+            log.info("[spec_sheet_pw] Chromium launched OK")
             try:
                 page = browser.new_page(
                     viewport={"width": 560, "height": 700},
                     device_scale_factor=2.0,
                 )
-                page.set_content(html_str, wait_until="networkidle")
+                # Use "domcontentloaded" instead of "networkidle" to avoid hanging
+                # when the Google Fonts request stalls in a restricted environment.
+                log.info("[spec_sheet_pw] set_content() start (wait_until=domcontentloaded)")
+                page.set_content(html_str, wait_until="domcontentloaded")
+                log.info("[spec_sheet_pw] set_content() done")
                 el = page.query_selector(".sheet")
                 if el is None:
+                    # Log the first 300 chars of rendered body for diagnosis.
+                    body_text = page.evaluate("document.body && document.body.innerHTML.slice(0, 300)")
+                    log.error(
+                        "[spec_sheet_pw] '.sheet' selector NOT FOUND. Body preview: %s",
+                        body_text,
+                    )
                     raise RuntimeError("'.sheet' selector not found in rendered spec sheet HTML")
+                log.info("[spec_sheet_pw] '.sheet' element found, taking screenshot")
                 el.screenshot(path=str(output_path))
+                log.info("[spec_sheet_pw] screenshot written to %s", output_path)
             finally:
                 browser.close()
+                log.info("[spec_sheet_pw] browser closed")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
         pool.submit(_render).result()
