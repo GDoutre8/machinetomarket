@@ -68,12 +68,12 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 /* ── Header ── */
 .hdr {
   background: var(--accent);
-  padding: 13px 20px 11px;
+  padding: 17px 22px 15px;
   display: flex;
   justify-content: space-between;
   align-items: stretch;
   flex-shrink: 0;
-  min-height: 82px;
+  min-height: 98px;
 }
 .hdr-left {
   display: flex;
@@ -85,7 +85,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   font-size: 9px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--accent-muted);
-  margin-bottom: 3px;
+  margin-bottom: 5px;
 }
 .hdr-model {
   font-family: 'Archivo Black', sans-serif;
@@ -98,7 +98,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   font-size: 8px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--accent-muted);
-  margin-top: 5px;
+  margin-top: 8px;
 }
 .hdr-right {
   text-align: right;
@@ -130,17 +130,17 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 .photo-hero {
   display: grid;
   flex-shrink: 0;
-  background: #1A1A1A;
+  background: #C8C6C0;
 }
-/* has-photo: square image left 56%, vertical rail right 44% — height driven by image */
-.photo-hero.has-photo { grid-template-columns: 56% 44%; }
+/* has-photo: 60% image left, 40% light rail right */
+.photo-hero.has-photo { grid-template-columns: 60% 40%; }
 .photo-hero.no-photo  { grid-template-columns: 1fr; }
 
 .photo-img { overflow: hidden; background: #E0DED9; }
 /*
  * Square fix: align-self:start prevents the default grid stretch from overriding
- * aspect-ratio. With start, the image column sizes itself to width×width (302×302px),
- * which then becomes the row height. The hero-rail (default stretch) fills that height.
+ * aspect-ratio. With start, the image column sizes itself to width×width, which
+ * then becomes the row height. The hero-rail (default stretch) fills that height.
  */
 .photo-hero.has-photo .photo-img {
   aspect-ratio: 1 / 1;
@@ -165,7 +165,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 .hero-rail {
   display: grid;
   gap: 1px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.07);
   min-height: 0;
 }
 /* has-photo: vertical stack — 4 equal rows filling the image height */
@@ -176,53 +176,52 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 .photo-hero.no-photo .hero-rail {
   grid-template-columns: repeat(2, 1fr);
 }
-/* Default tile style (no-photo: centered column layout) */
+/* Default tile style */
 .hero-tile {
-  background: #1A1A1A;
-  padding: 0 12px;
+  background: #F4F3EF;
+  padding: 0 16px;
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;
   text-align: center;
 }
-/* has-photo: icon left + text right, row layout, row dividers */
+/* has-photo: icon left + text right, row layout */
 .photo-hero.has-photo .hero-tile {
   flex-direction: row;
   align-items: center;
   text-align: left;
-  gap: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  gap: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 .photo-hero.has-photo .hero-tile:last-child { border-bottom: none; }
 .hero-tile-icon { flex-shrink: 0; line-height: 0; }
 .hero-tile-text { display: flex; flex-direction: column; }
-/* In no-photo mode hide icon and unwrap tile-text so children are direct flex items */
 .photo-hero.no-photo .hero-tile-icon { display: none; }
 .photo-hero.no-photo .hero-tile-text { display: contents; }
 .hero-val {
   font-family: 'Archivo Black', sans-serif;
-  font-size: 19px; color: #FFFFFF; line-height: 1;
+  font-size: 22px; color: #1A1A1A; line-height: 1;
 }
 .hero-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 7.5px; color: rgba(255,255,255,0.38);
+  font-size: 7.5px; color: #999;
   margin-left: 2px;
 }
 .hero-lbl {
   font-family: 'JetBrains Mono', monospace;
   font-size: 7px; font-weight: 700;
   letter-spacing: 0.13em; text-transform: uppercase;
-  color: var(--accent);
-  margin-top: 4px;
+  color: #7A7875;
+  margin-top: 3px;
 }
 
 /* ── Main body (sections) ── */
 .main {
   flex: 1;
   overflow: hidden;
-  padding: 10px 20px 8px;
+  padding: 12px 22px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 9px;
 }
 
 /* ── Section block ── */
@@ -231,10 +230,12 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   font-family: 'JetBrains Mono', monospace;
   font-size: 7px; font-weight: 700;
   letter-spacing: 0.20em; text-transform: uppercase;
-  color: #8A8780;
-  padding-bottom: 4px;
+  color: #6B6967;
+  padding-bottom: 5px;
+  padding-left: 8px;
   border-bottom: 1px solid rgba(13,13,13,0.10);
-  margin-bottom: 5px;
+  border-left: 3px solid var(--accent);
+  margin-bottom: 6px;
 }
 
 /* ── Spec rows (dotted leaders) ── */
@@ -269,14 +270,14 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 }
 .spec-null { color: #C5C2BB; font-weight: 400; }
 
-/* ── Feature list (bullets) ── */
+/* ── Feature list ── */
 .feat-list { display: flex; flex-direction: column; }
 .feat-item {
   display: flex; align-items: baseline; gap: 7px;
   font-size: 9.5px; font-weight: 500; color: #1E1E1E;
-  padding: 1.5px 0;
+  padding: 3px 0;
 }
-.feat-bullet { font-size: 11px; line-height: 0.9; color: #555; flex-shrink: 0; }
+.feat-bullet { font-size: 9px; line-height: 1; color: #2C8A48; flex-shrink: 0; }
 
 /* ── Condition & Service (flat key: value) ── */
 .cond-list { display: flex; flex-direction: column; }
@@ -291,18 +292,18 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 /* ── Footer ── */
 .footer {
   border-top: 1px solid #D5D2CC;
-  padding: 7px 20px;
-  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  display: flex; align-items: center; gap: 12px;
   flex-shrink: 0; background: #FFFFFF;
-  min-height: 48px;
+  min-height: 50px;
 }
 .logo-box {
-  width: 50px; height: 38px;
+  width: 52px; height: 40px;
   border: 1.5px solid #D5D2CC; border-radius: 3px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; overflow: hidden; background: #fff;
 }
-.logo-box img { max-width: 44px; max-height: 32px; object-fit: contain; display: block; }
+.logo-box img { max-width: 46px; max-height: 34px; object-fit: contain; display: block; }
 .logo-placeholder {
   font-size: 7px; font-weight: 700; color: #CACAC5;
   letter-spacing: 0.06em; text-transform: uppercase;
@@ -367,7 +368,7 @@ def _esc(s: Any) -> str:
 _HERO_ICONS: dict[str, str] = {
     "LB": (
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
-        ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8"'
+        ' fill="none" stroke="#AAAAAA" stroke-width="1.8"'
         ' stroke-linecap="round" stroke-linejoin="round">'
         '<path d="M6 7h12l-1.5-4h-9L6 7z"/>'
         '<rect x="4" y="7" width="16" height="12" rx="1"/>'
@@ -375,7 +376,7 @@ _HERO_ICONS: dict[str, str] = {
     ),
     "HP": (
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
-        ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8"'
+        ' fill="none" stroke="#AAAAAA" stroke-width="1.8"'
         ' stroke-linecap="round" stroke-linejoin="round">'
         '<path d="M5 4a7 7 0 0 0 0 14h2"/>'
         '<path d="M19 4a7 7 0 0 1 0 14h-2"/>'
@@ -383,14 +384,14 @@ _HERO_ICONS: dict[str, str] = {
     ),
     "GPM": (
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
-        ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8"'
+        ' fill="none" stroke="#AAAAAA" stroke-width="1.8"'
         ' stroke-linecap="round" stroke-linejoin="round">'
         '<path d="M12 2c-4 5-6 9-6 12a6 6 0 0 0 12 0c0-3-2-7-6-12z"/></svg>'
     ),
 }
 _HERO_ICON_DEFAULT = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
-    ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8">'
+    ' fill="none" stroke="#AAAAAA" stroke-width="1.8">'
     '<circle cx="12" cy="12" r="8"/></svg>'
 )
 
@@ -513,7 +514,7 @@ def render_spec_sheet(data: dict) -> str:
     for feat in (features or [])[:8]:
         feat_items += (
             f'<div class="feat-item">'
-            f'<span class="feat-bullet">&bull;</span>'
+            f'<span class="feat-bullet">✓</span>'
             f'{_esc(feat)}'
             f'</div>'
         )
