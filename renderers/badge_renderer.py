@@ -17,10 +17,8 @@ Design spec (Concept B — logo-adaptive):
 - No outer stroke or border — drop shadow only for depth
 - Positioned bottom-left with fixed margin
 
-Required apt packages on Railway/Debian/Ubuntu:
-    fonts-montserrat        (.otf under /usr/share/fonts/opentype/montserrat/)
-    fonts-crosextra-carlito (fallback)
-    fonts-dejavu-core       (final fallback)
+Font: Inter Medium (bundled at static/fonts/Inter-Medium.ttf)
+Fallbacks: Montserrat → Calibri/Segoe → DejaVu
 """
 from __future__ import annotations
 
@@ -63,44 +61,44 @@ _BADGE_SHADOW_MARGIN = 14
 
 # ─── Font loading ─────────────────────────────────────────────────────────────
 #
-# CRITICAL: Debian's fonts-montserrat package installs OTF files under
-# /usr/share/fonts/opentype/montserrat/ — not TTF, not truetype/.
-# Using the wrong path silently falls through to DejaVu and looks wrong.
+# Primary: Inter Medium bundled at static/fonts/Inter-Medium.ttf (name + phone).
+# Both weights map to Inter Medium — phone is distinguished by size, not weight.
+# Fallback chain: Montserrat → Calibri/Segoe → DejaVu.
+
+_BUNDLED_INTER = str(Path(__file__).parent.parent / "static" / "fonts" / "Inter-Medium.ttf")
 
 _FONT_CANDIDATES = {
     "medium": [
-        # Linux (Railway/Debian)
+        # Bundled Inter (always first — works on Railway and local dev)
+        _BUNDLED_INTER,
+        # Linux (Railway/Debian) — Montserrat fallback
         "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
         "/usr/share/fonts/opentype/montserrat/Montserrat-Regular.otf",
         "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        # Windows (local dev)
+        # Windows (local dev fallback)
+        "C:/Windows/Fonts/segoeui.ttf",
         "C:/Windows/Fonts/calibri.ttf",
         "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/segoeui.ttf",
     ],
     "mono": [
-        # Linux
-        "/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Medium.ttf",
+        # Inter Medium for phone (proportional, not monospace — matches design intent)
+        _BUNDLED_INTER,
+        "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
-        "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        # Windows
-        "C:/Windows/Fonts/consola.ttf",
-        "C:/Windows/Fonts/cour.ttf",
+        "C:/Windows/Fonts/segoeui.ttf",
         "C:/Windows/Fonts/calibri.ttf",
+        "C:/Windows/Fonts/consola.ttf",
     ],
     "black": [
-        # Linux
+        _BUNDLED_INTER,
         "/usr/share/fonts/opentype/montserrat/Montserrat-Black.otf",
-        "/usr/share/fonts/opentype/montserrat/Montserrat-ExtraBold.otf",
         "/usr/share/fonts/opentype/montserrat/Montserrat-Bold.otf",
-        "/usr/share/fonts/truetype/crosextra/Carlito-Bold.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        # Windows
         "C:/Windows/Fonts/calibrib.ttf",
         "C:/Windows/Fonts/arialbd.ttf",
     ],
@@ -205,6 +203,24 @@ def _draw_tracked(
         x += (bbox[2] - bbox[0]) + tracking
 
 
+def _strip_white_bg(logo: Image.Image, threshold: int = 230) -> Image.Image:
+    """Convert near-white opaque pixels to transparent.
+
+    Used when placing a logo onto a dark (charcoal) badge so a rectangular
+    white bounding box doesn't create a "box within a box" effect.
+    Only touches pixels whose RGB channels are all >= threshold AND alpha == 255.
+    """
+    rgba = logo.convert("RGBA")
+    data = rgba.load()
+    w, h = rgba.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = data[x, y]
+            if a == 255 and r >= threshold and g >= threshold and b >= threshold:
+                data[x, y] = (r, g, b, 0)
+    return rgba
+
+
 # ─── Badge builder ────────────────────────────────────────────────────────────
 
 def build_badge(
@@ -214,17 +230,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives accent bar + phone color on charcoal
     *,
     force_variant: Optional[Literal["white", "charcoal"]] = None,  # QA override; None = auto-detect
-    target_logo_height: int = 104,  # logo box height; width = height * logo_box_ratio
+    target_logo_height: int = 93,   # logo box height; width = height * logo_box_ratio
     logo_box_ratio: float = 1.5,
-    padding_x: int = 39,
-    padding_y: int = 32,
-    gap: int = 37,                  # total gap between logo box right edge and text left edge
+    padding_x: int = 35,
+    padding_y: int = 28,
+    gap: int = 33,                  # total gap between logo box right edge and text left edge
     sep_width: int = 2,
-    text_gap: int = 9,
-    corner_radius: int = 15,
-    accent_bar_h: int = 8,
-    name_size: int = 35,
-    phone_size: int = 24,
+    text_gap: int = 8,
+    corner_radius: int = 13,
+    accent_bar_h: int = 7,
+    name_size: int = 31,
+    phone_size: int = 21,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -257,13 +273,15 @@ def build_badge(
         sep_color   = SEP_ON_CHARCOAL
 
     # Logo: aspect-preserve fit within fixed box (logo_box_w × logo_box_h)
+    # On charcoal badges, strip near-white bg pixels so no rectangular box shows.
     logo_box_w = int(target_logo_height * logo_box_ratio)
     logo_box_h = target_logo_height
     lw, lh  = logo.size
     scale   = min(logo_box_w / lw, logo_box_h / lh)
     logo_pw = int(lw * scale)      # actual pixel width of scaled logo
     logo_ph = int(lh * scale)      # actual pixel height of scaled logo
-    logo_scaled = logo.resize((logo_pw, logo_ph), Image.LANCZOS)
+    logo_src = _strip_white_bg(logo) if bg_kind != "white" else logo
+    logo_scaled = logo_src.resize((logo_pw, logo_ph), Image.LANCZOS)
 
     # Fonts
     name_font  = _load_font(name_size,  "medium")

@@ -214,14 +214,21 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   margin-top: 3px;
 }
 
-/* ── Main body (sections) ── */
+/* ── Main body (two-column layout) ── */
 .main {
   flex: 1;
   overflow: hidden;
   padding: 12px 22px 10px;
   display: flex;
+  flex-direction: row;
+  gap: 14px;
+}
+.main-col {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   gap: 9px;
+  min-width: 0;
 }
 
 /* ── Section block ── */
@@ -498,9 +505,13 @@ def render_spec_sheet(data: dict) -> str:
             f'</div>'
         )
 
-    # ── Specifications section (non-hero additional specs) ──
+    # ── Specifications section — split into primary (left) + secondary (right) ──
+    additional = specs.get("additional") or []
+    primary_specs   = additional[:4]
+    secondary_specs = additional[4:8]
+
     add_rows_html = ""
-    for row in (specs.get("additional") or [])[:8]:
+    for row in primary_specs:
         add_rows_html += _spec_row_html(
             row.get("label", ""), row.get("value"), row.get("unit", "")
         )
@@ -508,6 +519,16 @@ def render_spec_sheet(data: dict) -> str:
         "SPECIFICATIONS",
         f'<div class="spec-rows">{add_rows_html}</div>',
     ) if add_rows_html else ""
+
+    sec_rows_html = ""
+    for row in secondary_specs:
+        sec_rows_html += _spec_row_html(
+            row.get("label", ""), row.get("value"), row.get("unit", "")
+        )
+    sec_section = _section(
+        "SECONDARY SPECS",
+        f'<div class="spec-rows">{sec_rows_html}</div>',
+    ) if sec_rows_html else ""
 
     # ── Key Features section ──
     feat_items = ""
@@ -571,8 +592,13 @@ def render_spec_sheet(data: dict) -> str:
   </div>
 
   <div class="main">
-    {add_section}
-    {feat_section}
+    <div class="main-col">
+      {add_section}
+      {feat_section}
+    </div>
+    <div class="main-col">
+      {sec_section}
+    </div>
   </div>
 
   <div class="footer">
