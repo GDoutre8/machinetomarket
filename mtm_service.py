@@ -2527,35 +2527,10 @@ def fix_listing_service(
                 f"(threshold: {_sheet_threshold} for {_eq_spec_key})"
             )
 
-    # ── Spec sheet — TECHNICAL tier; skipped when toggle is off, no resolved specs,
-    #               or technical-spec count is below the launch threshold
+    # ── Spec sheet — old PIL/yellow renderer removed 2026-04-23.
+    # The new gray Playwright renderer runs inside build_listing_pack_v1 (POST /build-listing).
     spec_sheet_path:     str  | None = None
     spec_sheet_variants: dict | None = None
-    if (generate_spec_sheet
-            and added_specs and added_specs.get("resolved_specs")
-            and not _sheet_suppressed):
-        try:
-            _entries  = build_spec_sheet_entries(
-                added_specs["resolved_specs"],
-                added_specs.get("ui_hints") or {},
-                _canonical_eq_type,
-            )
-            _eq_label = (
-                _canonical_eq_type.replace("_", " ").title()
-                if _canonical_eq_type else None
-            )
-            spec_sheet_path = _gen_spec_sheet(
-                make           = listing_data.get("make") or "",
-                model          = listing_data.get("model") or "",
-                year           = listing_data.get("year"),
-                equipment_type = _eq_label,
-                spec_sheet     = _entries,
-                output_path    = os.path.join(session_dir, "spec_sheet.png"),
-            )
-            if generate_variants:
-                spec_sheet_variants = generate_spec_sheet_variants(spec_sheet_path)
-        except Exception as exc:
-            print(f"[MTM] spec_sheet generation failed: {exc}")
 
     # ── Listing package ZIP — uses whatever assets exist; skipped when toggle is off
     listing_package_path: str | None = None

@@ -317,7 +317,7 @@ def _additional_specs(
                 _row("Hyd Pressure", str(psi), "PSI")
 
     def _track_info() -> None:
-        tw = specs.get("track_width_in")
+        tw = specs.get("track_width_in") or specs.get("track_shoe_width_in")
         if tw:
             try:
                 _row("Track Width", f'{int(float(tw))}"')
@@ -379,6 +379,9 @@ def _additional_specs(
         _width()
         _hyd_pressure()
         _weight_row()
+        bt = di.get("blade_type") or specs.get("blade_type")
+        if bt and str(bt).lower() not in ("none", ""):
+            _row("Blade", str(bt).title())
         _serial()
 
     elif eq in ("large_excavator", "excavator"):
@@ -393,6 +396,21 @@ def _additional_specs(
                 except (TypeError, ValueError):
                     pass
         _track_info()
+        sl = specs.get("stick_arm_length_ft")
+        if sl is not None:
+            try:
+                _row("Stick Length", f"{float(sl):.1f}'")
+            except (TypeError, ValueError):
+                _row("Stick Length", str(sl))
+        bl = specs.get("boom_length_ft")
+        if bl is not None:
+            try:
+                _row("Boom Length", f"{float(bl):.1f}'")
+            except (TypeError, ValueError):
+                _row("Boom Length", str(bl))
+        uc = specs.get("undercarriage_condition_pct")
+        if uc is not None:
+            _row("Undercarriage", f"{uc}%")
         _hpp()
         _width()
         _weight_row()
@@ -419,6 +437,11 @@ def _additional_specs(
         _weight_row()
         _width()
         _hp_row()
+        ct = di.get("cab_type")
+        if ct:
+            _row("Cab Type", str(ct).title())
+        if specs.get("has_stabilizers"):
+            _row("Stabilizers", "Yes")
         _serial()
 
     elif eq == "backhoe_loader":
