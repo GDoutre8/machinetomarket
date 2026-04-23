@@ -36,7 +36,13 @@ _EQ_TYPE_DISPLAY = {
     "mini_excavator":       "Mini Excavator",
     "backhoe_loader":       "Backhoe Loader",
     "large_excavator":      "Large Excavator",
+    "excavator":            "Excavator",
     "telehandler":          "Telehandler",
+    "wheel_loader":         "Wheel Loader",
+    "dozer":                "Dozer",
+    "crawler_dozer":        "Crawler Dozer",
+    "boom_lift":            "Boom Lift",
+    "scissor_lift":         "Scissor Lift",
 }
 
 _LIFT_PATH_DISPLAY = {
@@ -131,7 +137,7 @@ HERO_SPECS: dict[str, list[dict]] = {
     ],
     "telehandler": [
         {
-            "field": "lift_capacity_lbs", "aliases": ["lift_capacity_at_full_height_lbs", "lift_capacity_lb"],
+            "field": "lift_capacity_lb", "aliases": ["lift_capacity_lbs", "max_lift_capacity_lbs"],
             "label": "Lift Cap", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
         },
         {
@@ -145,6 +151,118 @@ HERO_SPECS: dict[str, list[dict]] = {
         {
             "field": "horsepower_hp", "aliases": ["net_hp"],
             "label": "HP", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+    ],
+    "wheel_loader": [
+        {
+            "field": "net_hp", "aliases": ["horsepower_hp"],
+            "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "operating_weight_lb", "aliases": ["operating_weight_lbs"],
+            "label": "Op Weight", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "bucket_capacity_yd3", "aliases": [],
+            "label": "Bucket Cap", "unit": "YD³", "fmt": "dec1", "req_conf": "MEDIUM",
+        },
+    ],
+    "excavator": [
+        {
+            "field": "net_hp", "aliases": ["horsepower_hp"],
+            "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "operating_weight_lb", "aliases": ["operating_weight_lbs"],
+            "label": "Op Weight", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "max_dig_depth", "aliases": ["max_dig_depth_ft"],
+            "label": "Dig Depth", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
+        },
+    ],
+    "large_excavator": [
+        {
+            "field": "net_hp", "aliases": ["horsepower_hp"],
+            "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "operating_weight_lb", "aliases": ["operating_weight_lbs"],
+            "label": "Op Weight", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "max_dig_depth", "aliases": ["max_dig_depth_ft"],
+            "label": "Dig Depth", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
+        },
+    ],
+    "dozer": [
+        {
+            "field": "net_hp", "aliases": ["horsepower_hp"],
+            "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "operating_weight_lb", "aliases": ["operating_weight_lbs"],
+            "label": "Op Weight", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "blade_capacity_yd3", "aliases": [],
+            "label": "Blade Cap", "unit": "YD³", "fmt": "dec1", "req_conf": "MEDIUM",
+        },
+    ],
+    "crawler_dozer": [
+        {
+            "field": "net_hp", "aliases": ["horsepower_hp"],
+            "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "operating_weight_lb", "aliases": ["operating_weight_lbs"],
+            "label": "Op Weight", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "blade_capacity_yd3", "aliases": [],
+            "label": "Blade Cap", "unit": "YD³", "fmt": "dec1", "req_conf": "MEDIUM",
+        },
+    ],
+    "backhoe_loader": [
+        {
+            "field": "net_hp", "aliases": ["horsepower_hp"],
+            "label": "Net Power", "unit": "HP", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "operating_weight_lb", "aliases": ["operating_weight_lbs"],
+            "label": "Op Weight", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "max_dig_depth", "aliases": ["max_dig_depth_ft"],
+            "label": "Dig Depth", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
+        },
+    ],
+    "boom_lift": [
+        {
+            "field": "platform_height_ft", "aliases": [],
+            "label": "Platform Ht", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
+        },
+        {
+            "field": "horizontal_reach_ft", "aliases": [],
+            "label": "Horiz Reach", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
+        },
+        {
+            "field": "platform_capacity_lbs", "aliases": [],
+            "label": "Platform Cap", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+    ],
+    "scissor_lift": [
+        {
+            "field": "platform_height_ft", "aliases": [],
+            "label": "Platform Ht", "unit": None, "fmt": "feet_inches", "req_conf": "HIGH",
+        },
+        {
+            "field": "platform_capacity_lbs", "aliases": [],
+            "label": "Platform Cap", "unit": "LB", "fmt": "int", "req_conf": "HIGH",
+        },
+        {
+            "field": "platform_width_ft", "aliases": [],
+            "label": "Platform W", "unit": None, "fmt": "feet_inches", "req_conf": "MEDIUM",
         },
     ],
 }
@@ -235,6 +353,75 @@ FEATURE_GROUPS: dict[str, dict[str, list[tuple[str, str]]]] = {
         "Utility": [
             ("backup_camera", "Backup Camera"),
             ("grade_control", "Grade Control"),
+        ],
+    },
+    "excavator": {
+        "Cab & Comfort": [
+            ("enclosed_cab", "Enclosed Cab"),
+            ("ac",           "A/C + Heat"),
+            ("heat_only",    "Heat"),
+        ],
+        "Attachments": [
+            ("hyd_quick_attach", "Hyd Quick Attach"),
+            ("hammer_plumbing",  "Hammer Plumbing"),
+            ("thumb",            "Thumb"),
+        ],
+        "Utility": [
+            ("backup_camera", "Backup Camera"),
+            ("grade_control", "Grade Control"),
+        ],
+    },
+    "wheel_loader": {
+        "Cab & Comfort": [
+            ("enclosed_cab", "Enclosed Cab"),
+            ("ac",           "A/C + Heat"),
+            ("heat_only",    "Heat"),
+        ],
+        "Utility": [
+            ("backup_camera", "Backup Camera"),
+            ("grade_control", "Grade Control"),
+        ],
+    },
+    "dozer": {
+        "Cab & Comfort": [
+            ("enclosed_cab", "Enclosed Cab"),
+            ("ac",           "A/C + Heat"),
+            ("heat_only",    "Heat"),
+        ],
+        "Utility": [
+            ("backup_camera", "Backup Camera"),
+            ("grade_control", "Grade Control"),
+        ],
+    },
+    "crawler_dozer": {
+        "Cab & Comfort": [
+            ("enclosed_cab", "Enclosed Cab"),
+            ("ac",           "A/C + Heat"),
+            ("heat_only",    "Heat"),
+        ],
+        "Utility": [
+            ("backup_camera", "Backup Camera"),
+            ("grade_control", "Grade Control"),
+        ],
+    },
+    "boom_lift": {
+        "Cab & Comfort": [
+            ("enclosed_cab", "Enclosed Cab"),
+            ("ac",           "A/C + Heat"),
+            ("heat_only",    "Heat"),
+        ],
+        "Utility": [
+            ("backup_camera", "Backup Camera"),
+        ],
+    },
+    "scissor_lift": {
+        "Cab & Comfort": [
+            ("enclosed_cab", "Enclosed Cab"),
+            ("ac",           "A/C + Heat"),
+            ("heat_only",    "Heat"),
+        ],
+        "Utility": [
+            ("backup_camera", "Backup Camera"),
         ],
     },
 }
@@ -448,35 +635,13 @@ def build_feature_groups(
 
 # ─── Context builder ──────────────────────────────────────────────────────────
 
-def build_spec_sheet_context(
-    dealer_input_data: dict,
-    resolved_specs: dict,
-    ui_hints: dict,
-    equipment_type: str,
-    dealer_contact: dict,
-    session_id: str,
-    outputs_dir: str = "",
-    logo_as_data_uri: bool = False,
-    field_confidence: dict | None = None,
-    image_input_paths: list[str] | None = None,
-) -> dict:
-    """
-    Assemble the full Jinja2 context dict for spec_sheet.html.
-
-    Parameters
-    ----------
-    logo_as_data_uri
-        When True the dealer logo is embedded as a base64 data URI.
-        Use this for offline Playwright export so no live server is required.
-    outputs_dir
-        Absolute path to the outputs/ directory (needed for logo path lookup
-        and auto-discovery of session _uploads/ when image_input_paths is None).
-    field_confidence
-        Per-field confidence dict from the registry record.
-    image_input_paths
-        Ordered list of absolute photo paths.  The first valid image is embedded
-        as a base64 data URI.  When None, no machine photo is shown.
-    """
+def build_spec_sheet_context(*args, **kwargs) -> dict:
+    """DEPRECATED — dark spec sheet removed. Use spec_sheet_renderer.render_spec_sheet() instead."""
+    raise RuntimeError(
+        "build_spec_sheet_context() is deprecated. "
+        "Use spec_sheet_renderer_adapter.build_spec_sheet_data() instead."
+    )
+    # dead code below kept as reference — remove in next cleanup pass
     di = dealer_input_data
     rs = resolved_specs
     fc = field_confidence or {}
@@ -534,7 +699,11 @@ def build_spec_sheet_context(
         pass  # lift_path is already in hero strip for skid steer
 
     op_weight = rs.get("operating_weight_lb") or rs.get("operating_weight_lbs")
-    if op_weight is not None and _eq not in ("mini_excavator",):
+    _OP_WEIGHT_IN_HERO = frozenset({
+        "mini_excavator", "wheel_loader", "excavator", "large_excavator",
+        "dozer", "crawler_dozer", "backhoe_loader",
+    })
+    if op_weight is not None and _eq not in _OP_WEIGHT_IN_HERO:
         spec_rows.append({"key": "Op Weight", "value": _fmt_number(op_weight), "unit": "LB"})
 
     hinge_pin = rs.get("bucket_hinge_pin_height_in")
@@ -754,11 +923,13 @@ def screenshot_spec_sheet(
     Viewport 500×900 at device_scale_factor=2 captures the 440 px wide .sheet
     element at high resolution (~880 px effective width).
     """
+    raise RuntimeError(
+        "screenshot_spec_sheet() is deprecated. "
+        "Use spec_sheet_renderer_adapter.export_spec_sheet() instead."
+    )
     import concurrent.futures
     import jinja2
     from playwright.sync_api import sync_playwright
-
-    print(">>> USING NEW SPEC SHEET PIPELINE")
 
     # Auto-discover photo from session uploads when caller doesn't pass paths
     if image_input_paths is None and outputs_dir and session_id:

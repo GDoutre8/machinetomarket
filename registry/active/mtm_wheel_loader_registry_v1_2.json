@@ -9,15 +9,15 @@
     "created": "2026-03-18",
     "schema_version": "mtm_registry_schema_v1",
     "notes": [
-      "Top 25 models by MachineryTrader listing frequency — 78.1% marketplace coverage.",
+      "Top 25 models by MachineryTrader listing frequency \u00e2\u20ac\u201d 78.1% marketplace coverage.",
       "8 FAMILY/SERIES records (manual_review, no auto-fill). 17 EXACT model records (locked specs where available).",
       "Family models: John Deere 624, CAT 966, Volvo L70, Volvo L90, Volvo L60, Komatsu WA320, Komatsu WA380, Case 721.",
       "Bucket capacity marked manual_review across all records due to multi-config variation.",
       "Source: marketplace listing aggregation + OEM spec sheets. Verify against serial decode before listing.",
       "v1.0.2 (2026-03-19): Full validation pass. 6 records patched: caterpillar_950m, volvo_l70h, case_621g, volvo_l60h, hyundai_hl940, komatsu_wa320_8, komatsu_wa380_8. Major issues: cross-model contamination (521G specs in 621G, D4D/wrong HP in L60H, WA320 bucket in WA380-8), wrong HP/OW values (950M, HL940, WA320-8), wrong transmission type (WA320-8 HST not Powershift), wrong engine (L60H/L70H D4D/D4J vs D6J). All incorrect locked values either corrected or demoted to manual_review.",
-      "v1.0.3 (2026-03-19): Final pre-lock pass on 3 records: volvo_l70h, case_621g, komatsu_wa380_8. volvo_l70h: HP locked at 170 (OEM PDF confirmed gross=net=170), OW corrected to 30,880 lb, bucket corrected 2.1m3→2.75yd3, fuel/hydraulic flow corrected from OEM. case_621g: CRITICAL — net_power_hp corrected 172→151 (172 is gross, not net), gross_power_hp=172 now locked, bucket restored to 2.75 yd3, secondary specs restored from OEM source. komatsu_wa380_8: net_power_hp corrected 190→191 (exact OEM), OW corrected to 40,532 lb (OEM base), bucket_capacity_cy restored to 4.3 yd3 (OEM standard GP), non-OEM-confirmed secondary specs nulled.",
+      "v1.0.3 (2026-03-19): Final pre-lock pass on 3 records: volvo_l70h, case_621g, komatsu_wa380_8. volvo_l70h: HP locked at 170 (OEM PDF confirmed gross=net=170), OW corrected to 30,880 lb, bucket corrected 2.1m3\u00e2\u2020\u20192.75yd3, fuel/hydraulic flow corrected from OEM. case_621g: CRITICAL \u00e2\u20ac\u201d net_power_hp corrected 172\u00e2\u2020\u2019151 (172 is gross, not net), gross_power_hp=172 now locked, bucket restored to 2.75 yd3, secondary specs restored from OEM source. komatsu_wa380_8: net_power_hp corrected 190\u00e2\u2020\u2019191 (exact OEM), OW corrected to 40,532 lb (OEM base), bucket_capacity_cy restored to 4.3 yd3 (OEM standard GP), non-OEM-confirmed secondary specs nulled.",
       "v1.1.0 (schema normalization pass): Added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields. No records added or removed. No existing values modified.",
-      "v1.2.0 (2026-04-09): Full dataset quality pass. Removed 4 duplicate/legacy fields (operating_weight_lb, net_power_hp, bucket_capacity_cu_yd_std, hinge_pin_height_in) and renamed 4 legacy fields to canonical pipeline names (bucket_capacity_cy→bucket_capacity_yd3, breakout_force_lbf→breakout_force_lbs, engine_manufacturer→engine_make, gross_power_hp→horsepower_gross_hp). All 25 records updated. No spec values modified. See patch log v1_2 for full detail."
+      "v1.2.0 (2026-04-09): Full dataset quality pass. Removed 4 duplicate/legacy fields (operating_weight_lb, net_power_hp, bucket_capacity_cu_yd_std, hinge_pin_height_in) and renamed 4 legacy fields to canonical pipeline names (bucket_capacity_cy\u00e2\u2020\u2019bucket_capacity_yd3, breakout_force_lbf\u00e2\u2020\u2019breakout_force_lbs, engine_manufacturer\u00e2\u2020\u2019engine_make, gross_power_hp\u00e2\u2020\u2019horsepower_gross_hp). All 25 records updated. No spec values modified. See patch log v1_2 for full detail."
     ],
     "locked_date": "2026-03-19",
     "final_lock_notes": [
@@ -87,7 +87,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "JD 624K (most common 624-family variant) — 162 hp SAE net; stub profile",
+          "ref": "JD 624K (most common 624-family variant) \u00e2\u20ac\u201d 162 hp SAE net; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -95,12 +95,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "JD 624K standard bucket ~2.7 yd³; stub profile",
+          "ref": "JD 624K standard bucket ~2.7 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — '624' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d '624' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -166,7 +166,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "CAT 966GC (common 966-family variant) — 265 hp SAE net; stub profile",
+          "ref": "CAT 966GC (common 966-family variant) \u00e2\u20ac\u201d 265 hp SAE net; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -174,12 +174,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "CAT 966GC standard bucket ~4.25 yd³; stub profile",
+          "ref": "CAT 966GC standard bucket ~4.25 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — '966' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d '966' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -245,7 +245,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "Volvo L70G (representative L70-family variant) — 161 hp; stub profile",
+          "ref": "Volvo L70G (representative L70-family variant) \u00e2\u20ac\u201d 161 hp; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -253,12 +253,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "Volvo L70G standard bucket ~2.75 yd³; stub profile",
+          "ref": "Volvo L70G standard bucket ~2.75 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — 'L70' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d 'L70' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -335,11 +335,11 @@
       ],
       "notes": [
         "Bucket capacity varies by configuration (GP, rock, light material). Default 3.5 CY GP bucket.",
-        "Production years ~2013–2019. Succeeded by 950 GC / 950 MC.",
-        "950M XE variant has modified hydraulic and load ratings — do not auto-fill tipping_load_straight_lb or hydraulic_flow_gpm on XE-designated units.",
+        "Production years ~2013\u00e2\u20ac\u201c2019. Succeeded by 950 GC / 950 MC.",
+        "950M XE variant has modified hydraulic and load ratings \u00e2\u20ac\u201d do not auto-fill tipping_load_straight_lb or hydraulic_flow_gpm on XE-designated units.",
         "gross_power_hp nulled - 213hp was incorrect (Cat 950M net is 230hp per OEM). Lock gross_power_hp only when OEM gross figure is confirmed.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 23.5R25 — Ritchie Specs (Michelin 23.5R25 XHA2 L3 radial, from CAT spec sheet)"
+        "tire_size_std patch (v1.1 tire pass): 23.5R25 \u00e2\u20ac\u201d Ritchie Specs (Michelin 23.5R25 XHA2 L3 radial, from CAT spec sheet)"
       ]
     },
     {
@@ -428,7 +428,7 @@
         "transmission_type aligned to OEM label: 'Volvo Automatic Power Shift (APS) gear shifting system with fully automatic shifting 1-4 and mode selector'.",
         "breakout_force_lbf, hinge_pin_height_ft, travel_speed_mph, tipping_load_straight_lb: nulled to manual_review. Not confirmed from OEM product guide; prior values were from contaminated spec set.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — Volvo product guide PDF (L60H-L70H-L90H): 20.5R25 L3"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d Volvo product guide PDF (L60H-L70H-L90H): 20.5R25 L3"
       ]
     },
     {
@@ -502,9 +502,9 @@
       ],
       "notes": [
         "P-TIER launched 2022. Current production model as of 2024.",
-        "Bucket capacity varies by application: 2.5–3.0 CY GP range.",
+        "Bucket capacity varies by application: 2.5\u00e2\u20ac\u201c3.0 CY GP range.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — JD spec sheet lineage + MT listing data (20.5R25)"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d JD spec sheet lineage + MT listing data (20.5R25)"
       ]
     },
     {
@@ -567,7 +567,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "Volvo L90H (representative L90-family variant) — 228 hp; stub profile",
+          "ref": "Volvo L90H (representative L90-family variant) \u00e2\u20ac\u201d 228 hp; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -575,12 +575,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "Volvo L90H standard bucket ~3.5 yd³; stub profile",
+          "ref": "Volvo L90H standard bucket ~3.5 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — 'L90' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d 'L90' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -657,10 +657,10 @@
       ],
       "notes": [
         "950GC is the value/work-ready variant vs 950M performance variant. Same engine platform, lower standard payload rating.",
-        "Production ~2016–2021.",
-        "Operating weight of 39,900 lb may reflect base/stripped config. Standard-equipped units with counterweight run ~42,000–43,000 lb. Verify against window sticker or OEM config sheet.",
+        "Production ~2016\u00e2\u20ac\u201c2021.",
+        "Operating weight of 39,900 lb may reflect base/stripped config. Standard-equipped units with counterweight run ~42,000\u00e2\u20ac\u201c43,000 lb. Verify against window sticker or OEM config sheet.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 23.5R25 — Ritchie Specs (MAXAM MS302 23.5R25 L3 radial, from CAT spec sheet)"
+        "tire_size_std patch (v1.1 tire pass): 23.5R25 \u00e2\u20ac\u201d Ritchie Specs (MAXAM MS302 23.5R25 L3 radial, from CAT spec sheet)"
       ]
     },
     {
@@ -723,7 +723,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "Komatsu WA320-6 (representative WA320-family) — 152 hp; stub profile",
+          "ref": "Komatsu WA320-6 (representative WA320-family) \u00e2\u20ac\u201d 152 hp; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -731,12 +731,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "Komatsu WA320-6 standard bucket ~2.4 yd³; stub profile",
+          "ref": "Komatsu WA320-6 standard bucket ~2.4 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — 'WA320' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d 'WA320' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -813,9 +813,9 @@
       ],
       "notes": [
         "P-TIER launched 2022. Compact wheel loader class.",
-        "Bucket capacity varies 1.75–2.1 CY by config.",
+        "Bucket capacity varies 1.75\u00e2\u20ac\u201c2.1 CY by config.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — JD 524K spec sheet (20.5R25); 524 P-Tier is same size class"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d JD 524K spec sheet (20.5R25); 524 P-Tier is same size class"
       ]
     },
     {
@@ -888,10 +888,10 @@
         }
       ],
       "notes": [
-        "Production ~2011–2017. Succeeded by 544L.",
-        "iT4 emissions — verify compliance status for certain state resales. Early production units (~2011–2013) are Tier 3. Confirm year before emissions entry.",
+        "Production ~2011\u00e2\u20ac\u201c2017. Succeeded by 544L.",
+        "iT4 emissions \u00e2\u20ac\u201d verify compliance status for certain state resales. Early production units (~2011\u00e2\u20ac\u201c2013) are Tier 3. Confirm year before emissions entry.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — skidsteerloaderspecs.com (from JD spec sheet): 20.5R25"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d skidsteerloaderspecs.com (from JD spec sheet): 20.5R25"
       ]
     },
     {
@@ -954,7 +954,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "Volvo L60G (representative L60-family variant) — 150 hp; stub profile",
+          "ref": "Volvo L60G (representative L60-family variant) \u00e2\u20ac\u201d 150 hp; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -962,12 +962,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "Volvo L60G standard bucket ~2.1 yd³; stub profile",
+          "ref": "Volvo L60G standard bucket ~2.1 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — 'L60' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d 'L60' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -1033,7 +1033,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "Komatsu WA380-6 (representative WA380-family) — 218 hp; stub profile",
+          "ref": "Komatsu WA380-6 (representative WA380-family) \u00e2\u20ac\u201d 218 hp; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -1041,12 +1041,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "Komatsu WA380-6 standard bucket ~2.9 yd³; stub profile",
+          "ref": "Komatsu WA380-6 standard bucket ~2.9 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — 'WA380' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d 'WA380' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -1128,11 +1128,11 @@
         "CRITICAL HP NOTE: gross_power_hp = 172 hp (128.3 kW). net_power_hp = 151 hp (112.7 kW). These are distinct. The figure '172 hp' appearing in dealer listings and marketing refers to GROSS, not net. Both are now correctly locked.",
         "operating_weight_lb = 28,159 lb (12,773 kg). OEM confirmed. Config variations exist with optional counterweight; 28,159 is the standard equipped base weight.",
         "bucket_capacity_cy = 2.75 yd3 (2.1 m3) is the standard GP bucket. Config range runs from ~1.75 yd3 (light material) to ~3.5+ yd3 (rehandling). manual_review required.",
-        "engine_model = FPT F4HFE613W. Suffix 'W' denotes Tier 4 Final SCR variant. Prior bad record used 'B' suffix (different emissions variant). MEDIUM confidence — verify suffix via serial decode before locking further.",
+        "engine_model = FPT F4HFE613W. Suffix 'W' denotes Tier 4 Final SCR variant. Prior bad record used 'B' suffix (different emissions variant). MEDIUM confidence \u00e2\u20ac\u201d verify suffix via serial decode before locking further.",
         "tipping_load_straight_lb = 21,189 lb listed as 'Tipping Load' in source without straight/full-turn qualifier. Set MEDIUM / manual_review until qualification confirmed.",
-        "breakout_force_lbf = 25,471 lb (113.3 kN). OEM confirmed. Note: some dealer specs cite 24,942 lbf — minor config variation likely. 25,471 from structured OEM source preferred.",
+        "breakout_force_lbf = 25,471 lb (113.3 kN). OEM confirmed. Note: some dealer specs cite 24,942 lbf \u00e2\u20ac\u201d minor config variation likely. 25,471 from structured OEM source preferred.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — skidsteerloaderspecs.com (from Case spec sheet): 20.5R25 std"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d skidsteerloaderspecs.com (from Case spec sheet): 20.5R25 std"
       ]
     },
     {
@@ -1213,11 +1213,11 @@
         }
       ],
       "notes": [
-        "H-series ~2013–2017. Compact wheel loader class.",
-        "Bucket capacity 1.6–2.0 CY by config.",
+        "H-series ~2013\u00e2\u20ac\u201c2017. Compact wheel loader class.",
+        "Bucket capacity 1.6\u00e2\u20ac\u201c2.0 CY by config.",
         "PATCH 2026-03-19: Engine corrected to D6J (was D4D). net_power_hp corrected to 164hp (was 114hp). OW corrected to 29,980 lb (was 24,600 lb). Majority of secondary specs nulled to manual_review due to contamination from wrong spec set. Verify breakout force, tipping load, and ancillary specs against Volvo spec sheet PV776-88049474.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — Volvo product guide PDF (L60H-L70H-L90H): 20.5R25 L3"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d Volvo product guide PDF (L60H-L70H-L90H): 20.5R25 L3"
       ]
     },
     {
@@ -1291,10 +1291,10 @@
       ],
       "notes": [
         "8th generation (-8 suffix). Tier 4 Final. Introduced ~2015.",
-        "Bucket capacity varies 2.2–2.7 CY by application.",
+        "Bucket capacity varies 2.2\u00e2\u20ac\u201c2.7 CY by application.",
         "PATCH 2026-03-19: net_power_hp corrected to 165hp (was 155hp). Transmission corrected to Hydrostatic/HST (was Powershift - wrong). gross_power_hp nulled pending OEM spec sheet AESS005008 confirmation.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — LECTURA (WA320-8E0): 20.5R25"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d LECTURA (WA320-8E0): 20.5R25"
       ]
     },
     {
@@ -1357,7 +1357,7 @@
       "spec_confidence": "LOW",
       "source_refs": [
         {
-          "ref": "Case 721G (representative 721-family variant) — 173 hp; stub profile",
+          "ref": "Case 721G (representative 721-family variant) \u00e2\u20ac\u201d 173 hp; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
@@ -1365,12 +1365,12 @@
           "patch": "pass2_b1b2 2026-03-27"
         },
         {
-          "ref": "Case 721G standard bucket ~2.9 yd³; stub profile",
+          "ref": "Case 721G standard bucket ~2.9 yd\u00c2\u00b3; stub profile",
           "patch": "pass2_b1b2 2026-03-27"
         }
       ],
       "notes": [
-        "FAMILY/SERIES identifier — '721' spans multiple generations and configurations.",
+        "FAMILY/SERIES identifier \u00e2\u20ac\u201d '721' spans multiple generations and configurations.",
         "Specs vary significantly across model years. Do not auto-fill without serial decode.",
         "Requires manual spec entry or serial-number-driven registry lookup before listing.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill."
@@ -1450,7 +1450,7 @@
         "Note: Now branded HD Hyundai Construction Equipment.",
         "PATCH 2026-03-19: net_power_hp corrected to 156hp (was 134hp, OEM confirmed). OW corrected to 29,321 lb (was 27,600 lb). Engine model nulled - Cummins QSB6.7 unconfirmed at this output level. Breakout force nulled pending re-derivation from correct spec baseline.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — LECTURA (HL940): 20.5R25"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d LECTURA (HL940): 20.5R25"
       ]
     },
     {
@@ -1518,7 +1518,7 @@
         "Komatsu OEM spec sheet PDF: AESS882_0225_EV5 (komatsu.com/en-us, fetched 2026-03-19)",
         "MachineryTrader listing aggregation (cross-reference)",
         {
-          "ref": "SMS Equipment WA380-8 spec (24.5 MPa = 3555 psi / 54.15 gpm); CONFLICT with RitchieSpecs (4550/36.2) — manual_review recommended",
+          "ref": "SMS Equipment WA380-8 spec (24.5 MPa = 3555 psi / 54.15 gpm); CONFLICT with RitchieSpecs (4550/36.2) \u00e2\u20ac\u201d manual_review recommended",
           "patch": "backfill_pass1 2026-03-26"
         },
         {
@@ -1530,12 +1530,12 @@
         "8th generation (-8 suffix). EPA Tier 4 Final. Introduced ~2015.",
         "Source: Komatsu OEM spec sheet PDF AESS882_0225_EV5 (komatsu.com/en-us, fetched 2026-03-19).",
         "HP normalization: OEM states NET 191 HP @ 2100 rpm (143 kW). Previous registry value of 190 was a 1 hp rounding approximation with no OEM basis; corrected to exact OEM value of 191.",
-        "operating_weight_lb = 40,532 lb (18,385 kg): OEM base/minimum config. OEM range is 40,532–41,932 lb depending on configuration. Locked at base; verify config before auto-fill on heavy-spec units.",
-        "bucket_capacity_cy = 4.3 yd3: standard GP bucket per OEM upper bound. OEM range 3.5–4.3 yd3 (2.7–3.3 m3). manual_review: confirm config before locking in listing.",
+        "operating_weight_lb = 40,532 lb (18,385 kg): OEM base/minimum config. OEM range is 40,532\u00e2\u20ac\u201c41,932 lb depending on configuration. Locked at base; verify config before auto-fill on heavy-spec units.",
+        "bucket_capacity_cy = 4.3 yd3: standard GP bucket per OEM upper bound. OEM range 3.5\u00e2\u20ac\u201c4.3 yd3 (2.7\u00e2\u20ac\u201c3.3 m3). manual_review: confirm config before locking in listing.",
         "transmission_type: Komatsu Automatic Powershift with lock-up torque converter (2nd/3rd/4th gear lock-up). Updated from generic 'Komatsu Powershift'.",
         "breakout_force_lbf, hinge_pin_height_ft, travel_speed_mph, hydraulic_flow_gpm, fuel_capacity_gal: nulled to manual_review. Not present in fetched OEM spec sheet. Re-lock only after confirming against full spec sheet pages not retrieved.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 23.5R25 — LECTURA (WA380-8E0): 23.5R25"
+        "tire_size_std patch (v1.1 tire pass): 23.5R25 \u00e2\u20ac\u201d LECTURA (WA380-8E0): 23.5R25"
       ]
     },
     {
@@ -1603,15 +1603,15 @@
         "John Deere 544L spec sheet OMLT399197",
         "MachineryTrader listing aggregation",
         {
-          "ref": "Inferred from JD 544K/KII family (same 3650 psi platform); no direct 544L spec sheet found — manual_review recommended",
+          "ref": "Inferred from JD 544K/KII family (same 3650 psi platform); no direct 544L spec sheet found \u00e2\u20ac\u201d manual_review recommended",
           "patch": "backfill_pass1 2026-03-26"
         }
       ],
       "notes": [
-        "Production ~2017–2021. Bridged 544K and 544 P-TIER.",
-        "Bucket capacity varies 2.5–3.0 CY by config.",
+        "Production ~2017\u00e2\u20ac\u201c2021. Bridged 544K and 544 P-TIER.",
+        "Bucket capacity varies 2.5\u00e2\u20ac\u201c3.0 CY by config.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — JD spec sheet (20.5R25, same generation as 544K)"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d JD spec sheet (20.5R25, same generation as 544K)"
       ]
     },
     {
@@ -1679,16 +1679,16 @@
         "John Deere 544KII spec sheet",
         "MachineryTrader listing aggregation",
         {
-          "ref": "RitchieSpecs JD 544K-II (251.7 bar → 3650 psi unit-corrected / 50 gal/min)",
+          "ref": "RitchieSpecs JD 544K-II (251.7 bar \u00e2\u2020\u2019 3650 psi unit-corrected / 50 gal/min)",
           "patch": "backfill_pass1 2026-03-26"
         }
       ],
       "notes": [
-        "544K Series II — interim FT4 update. Production ~2015–2017.",
+        "544K Series II \u00e2\u20ac\u201d interim FT4 update. Production ~2015\u00e2\u20ac\u201c2017.",
         "Mechanically near-identical to 544K with emissions update.",
-        "544KII is the Final Tier 4 transition of the 544K — same mechanical platform, updated emissions system. Distinguish clearly from 544K (iT4/T3) on listings.",
+        "544KII is the Final Tier 4 transition of the 544K \u00e2\u20ac\u201d same mechanical platform, updated emissions system. Distinguish clearly from 544K (iT4/T3) on listings.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — JD spec sheet lineage (same size class as 544K): 20.5R25"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d JD spec sheet lineage (same size class as 544K): 20.5R25"
       ]
     },
     {
@@ -1765,7 +1765,7 @@
         "Note: Now branded Develon DL250-7 for current production.",
         "Plain 'DL250' marketplace label spans -3 (Tier 3) and -5 (Tier 4 Final) generations. Specs reflect -5 only. Auto-fill must not fire without confirming generation via serial decode.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available. Normalized fields added for schema alignment only. Record remains FAMILY/SERIES manual_review and not safe for auto-fill.",
-        "tire_size_std patch (v1.1 tire pass): 20.5R25 — LECTURA (DL250-5): 20.5R25"
+        "tire_size_std patch (v1.1 tire pass): 20.5R25 \u00e2\u20ac\u201d LECTURA (DL250-5): 20.5R25"
       ]
     },
     {
@@ -1840,9 +1840,9 @@
       "notes": [
         "Mid-large class loader. ~950M competitor class.",
         "Now branded HD Hyundai CE HL960 XT in current production.",
-        "Engine model requires verification — QSB6.7 is likely incorrect for 218 hp gross output. Probable candidates: Cummins QSC8.3 or QSL9. Do not auto-fill engine_model until confirmed.",
+        "Engine model requires verification \u00e2\u20ac\u201d QSB6.7 is likely incorrect for 218 hp gross output. Probable candidates: Cummins QSC8.3 or QSL9. Do not auto-fill engine_model until confirmed.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 23.5R25 — LECTURA (HL960): 23.5R25"
+        "tire_size_std patch (v1.1 tire pass): 23.5R25 \u00e2\u20ac\u201d LECTURA (HL960): 23.5R25"
       ]
     },
     {
@@ -1916,10 +1916,10 @@
       ],
       "notes": [
         "Large class loader. 8th generation, Tier 4 Final.",
-        "Bucket capacity 4.9–6.5 CY by application. Quarry/aggregate configured units common.",
-        "tipping_load_straight_lb value of 42,000 lb may reflect full-turn figure rather than straight-tipping. Straight tipping load on WA500-8 is typically higher (~44,000–46,000 lb). Verify against OEM config sheet before auto-fill.",
+        "Bucket capacity 4.9\u00e2\u20ac\u201c6.5 CY by application. Quarry/aggregate configured units common.",
+        "tipping_load_straight_lb value of 42,000 lb may reflect full-turn figure rather than straight-tipping. Straight tipping load on WA500-8 is typically higher (~44,000\u00e2\u20ac\u201c46,000 lb). Verify against OEM config sheet before auto-fill.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 29.5R25 — LECTURA (WA500-8): 29.5R25"
+        "tire_size_std patch (v1.1 tire pass): 29.5R25 \u00e2\u20ac\u201d LECTURA (WA500-8): 29.5R25"
       ]
     },
     {
@@ -1992,11 +1992,133 @@
         }
       ],
       "notes": [
-        "Production ~2010–2015. Preceded by 950H, succeeded by 950M.",
-        "Emissions tier varies by production year — early units T3, later iT4.",
-        "Bucket capacity varies 3.0–3.75 CY by configuration.",
+        "Production ~2010\u00e2\u20ac\u201c2015. Preceded by 950H, succeeded by 950M.",
+        "Emissions tier varies by production year \u00e2\u20ac\u201d early units T3, later iT4.",
+        "Bucket capacity varies 3.0\u00e2\u20ac\u201c3.75 CY by configuration.",
         "Schema normalization pass v1.1: added Wheel Loader V1 normalized fields (horsepower_hp, operating_weight_lbs, bucket_capacity_cu_yd_std, hinge_pin_height_in, tire_size_std, engine_manufacturer) mapped from legacy fields where available.",
-        "tire_size_std patch (v1.1 tire pass): 23.5R25 — MT active listings; consistent with CAT 950 family standard (23.5R25)"
+        "tire_size_std patch (v1.1 tire pass): 23.5R25 \u00e2\u20ac\u201d MT active listings; consistent with CAT 950 family standard (23.5R25)"
+      ]
+    },
+    {
+      "model_slug": "caterpillar_966_gc",
+      "manufacturer": "Caterpillar",
+      "model": "966 GC",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "hinge_pin_height_ft": 13.96,
+        "travel_speed_mph": 22.9,
+        "fuel_capacity_gal": 84.5,
+        "transmission_type": "Automatic Powershift",
+        "emissions_tier": "MAR-1 / Tier 3 Equivalent",
+        "horsepower_hp": 263,
+        "operating_weight_lbs": 47569,
+        "bucket_capacity_yd3": 5.25,
+        "breakout_force_lbs": 36869,
+        "horsepower_gross_hp": 299
+      },
+      "field_confidence": {
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "emissions_tier": "HIGH",
+        "horsepower_hp": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "bucket_capacity_yd3": "HIGH",
+        "breakout_force_lbs": "HIGH",
+        "horsepower_gross_hp": "HIGH"
+      },
+      "field_behavior": {
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "emissions_tier": "locked",
+        "horsepower_hp": "locked",
+        "operating_weight_lbs": "locked",
+        "bucket_capacity_yd3": "locked",
+        "breakout_force_lbs": "locked",
+        "horsepower_gross_hp": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "Cat 966 GC Technical Specifications PDF \u2014 direct OEM spec sheet (teknoxgroup.com/fileadmin/user_upload/966_GC.pdf)",
+        "WL OEM research triage pass 2026-04-22"
+      ],
+      "notes": [
+        "Exact-model record for Cat 966 GC. Must not be conflated with or overwrite the caterpillar_966 family stub.",
+        "HP detail: horsepower_hp = 263 = SAE J1349 rated net @ 2,200 rpm. Net peak = 292 hp @ 1,600 rpm. Gross (SAE J1995) = 299 hp. MTM stores rated net.",
+        "GC variant uses Brazil MAR-1 / Tier 3-equivalent engine \u2014 intentionally de-rated vs. Cat 966 performance model. Do not conflate specs with 966H or 966M.",
+        "Operating weight: 47,569 lb with Triangle 26.5R25 L3 tires, standard counterweight, full fluids, operator, 5.25 yd3 GP bucket with BOCE.",
+        "Hinge pin (B-Pin) height: 4,256 mm per OEM spec = 13.96 ft (OEM states ~14 ft 0 in).",
+        "Travel speed: 22.9 mph = R4 max (36.9 km/h). Forward F4 = 34.8 km/h = 21.6 mph.",
+        "dump_clearance_ft and reach_at_dump_ft: present in OEM spec table but not retrieved this pass. Require second fetch targeting OEM spec pages 7+."
+      ]
+    },
+    {
+      "model_slug": "case_721g",
+      "manufacturer": "Case",
+      "model": "721G",
+      "category": "wheel_loader",
+      "equipment_type": "wheel_loader",
+      "specs": {
+        "hinge_pin_height_ft": 13.05,
+        "travel_speed_mph": 23.5,
+        "fuel_capacity_gal": 65,
+        "transmission_type": "Powershift",
+        "engine_model": "FPT F4HFE613T",
+        "emissions_tier": "Tier 4 Final",
+        "horsepower_hp": 179,
+        "operating_weight_lbs": 32492,
+        "bucket_capacity_yd3": 3.27,
+        "breakout_force_lbs": 32148,
+        "reach_at_dump_ft": 3.69,
+        "engine_make": "FPT",
+        "horsepower_gross_hp": 195
+      },
+      "field_confidence": {
+        "hinge_pin_height_ft": "HIGH",
+        "travel_speed_mph": "HIGH",
+        "fuel_capacity_gal": "HIGH",
+        "transmission_type": "HIGH",
+        "engine_model": "HIGH",
+        "emissions_tier": "HIGH",
+        "horsepower_hp": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "bucket_capacity_yd3": "HIGH",
+        "breakout_force_lbs": "HIGH",
+        "reach_at_dump_ft": "MEDIUM",
+        "engine_make": "HIGH",
+        "horsepower_gross_hp": "HIGH"
+      },
+      "field_behavior": {
+        "hinge_pin_height_ft": "locked",
+        "travel_speed_mph": "locked",
+        "fuel_capacity_gal": "locked",
+        "transmission_type": "locked",
+        "engine_model": "locked",
+        "emissions_tier": "locked",
+        "horsepower_hp": "locked",
+        "operating_weight_lbs": "locked",
+        "bucket_capacity_yd3": "locked",
+        "breakout_force_lbs": "locked",
+        "reach_at_dump_ft": "manual_review",
+        "engine_make": "locked",
+        "horsepower_gross_hp": "locked"
+      },
+      "spec_confidence": "HIGH",
+      "source_refs": [
+        "RitchieSpecs Case 721G (ritchiespecs.com/model/case-721g-wheel-loader) \u2014 OEM spec basis",
+        "WL OEM research triage pass 2026-04-22"
+      ],
+      "notes": [
+        "Exact-model record for Case 721G (G-series, Tier 4 Final, 2017-2020). Must not be conflated with or overwrite the case_721 family stub.",
+        "HP detail: horsepower_hp = 179 = net HP (SAE J1349). Gross = 195 hp. MTM stores net.",
+        "Engine: FPT F4HFE613T (411 cu in / 6.7L, 6-cylinder, Tier 4 Final SCR).",
+        "reach_at_dump_ft = 3.69 ft is MEDIUM confidence \u2014 RitchieSpecs shows this as 'Dump Reach @ Full Height, 45 deg'. May reflect reach at full height, not standard 45-deg/7 ft clearance. Manual review required before locking.",
+        "dump_clearance_ft: not retrieved this pass. Require targeted OEM spec sheet fetch.",
+        "Follows same generation-specific slug convention as case_621g. The case_721 family stub remains unchanged."
       ]
     }
   ]

@@ -263,7 +263,6 @@ def _make_dirs(output_folder: str) -> dict:
         "root":     output_folder,
         "listing":  os.path.join(output_folder, "Listing_Photos"),
         "original": os.path.join(output_folder, "Original_Photos"),
-        "spec":     os.path.join(output_folder, "spec_sheet"),
     }
     for d in dirs.values():
         os.makedirs(d, exist_ok=True)

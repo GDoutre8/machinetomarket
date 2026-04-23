@@ -208,10 +208,10 @@ def build_badge(
 
     accent_rgb = ACCENTS.get(accent, ACCENTS["yellow"])
 
-    # Scale logo to fixed target height; width flexes with aspect ratio
+    # Scale logo to fixed target height; width flexes with aspect ratio, capped at 2× height
     lw, lh = logo.size
     scale   = target_logo_height / lh
-    logo_w  = int(lw * scale)
+    logo_w  = min(int(lw * scale), target_logo_height * 2)
     logo_h  = target_logo_height
     logo_scaled = logo.resize((logo_w, logo_h), Image.LANCZOS)
 
@@ -312,6 +312,15 @@ def build_badge(
 
 # ─── Photo compositor (public API) ────────────────────────────────────────────
 
+# Fixed placement constants — badge is always anchored bottom-left with these
+# pixel gaps between the visible badge edge and the photo border.
+_PLACEMENT_PADDING_X = 24
+_PLACEMENT_PADDING_Y = 24
+
+# Shadow margin baked into the badge canvas by build_badge — must stay in sync.
+_BADGE_SHADOW_MARGIN = 14
+
+
 def apply_badge_to_photo(
     photo_path: str,
     logo_path: str,
@@ -319,12 +328,14 @@ def apply_badge_to_photo(
     phone: str,
     accent: str = "yellow",
     output_path: Optional[str] = None,
-    margin_px: int = 28,
 ) -> Image.Image:
     """
-    Paste the dealer badge at the bottom-left of the photo with `margin_px`
-    from the photo edges, then either save to `output_path` (if given) or
-    return the composited RGB image.
+    Paste the dealer badge at the bottom-left of the photo, then either save
+    to `output_path` (if given) or return the composited RGB image.
+
+    Placement is fixed: _PLACEMENT_PADDING_X / _PLACEMENT_PADDING_Y pixels
+    from the photo edge to the visible badge body.  A semi-transparent dark
+    buffer is drawn behind the badge for readability on bright photos.
 
     `accent` must be one of ACCENTS keys ("yellow", "red"). Unknown values
     fall back to "yellow".
@@ -334,12 +345,36 @@ def apply_badge_to_photo(
 
     pw, ph = photo.size
     bw, bh = badge.size
+    sm = _BADGE_SHADOW_MARGIN
 
-    # The badge's shadow_margin is 14; we want the visible badge's
-    # bottom-left corner to sit margin_px from the photo's bottom-left.
-    shadow_margin = 14
-    x = margin_px - shadow_margin
-    y = ph - bh + shadow_margin - margin_px
+    # Anchor visible badge body to bottom-left with fixed padding.
+    # The badge canvas extends sm px beyond the visible body on every side,
+    # so offset the canvas paste position by -sm to align the body edge.
+    x = _PLACEMENT_PADDING_X - sm
+    y = ph - bh - _PLACEMENT_PADDING_Y + sm
+
+    # Clamp so badge canvas never leaves the photo bounds.
+    x = max(0, min(x, pw - bw))
+    y = max(0, min(y, ph - bh))
+
+    # Semi-transparent background buffer drawn on the photo before the badge.
+    # Positioned around the visible badge body (inside the shadow region) for
+    # contrast on bright or busy images.
+    bg_pad = 12
+    vis_x1 = x + sm - bg_pad
+    vis_y1 = y + sm - bg_pad
+    vis_x2 = x + bw - sm + bg_pad
+    vis_y2 = y + bh - sm + bg_pad
+    # Keep buffer within photo bounds
+    vis_x1 = max(0, vis_x1)
+    vis_y1 = max(0, vis_y1)
+    vis_x2 = min(pw, vis_x2)
+    vis_y2 = min(ph, vis_y2)
+    ImageDraw.Draw(photo).rounded_rectangle(
+        [vis_x1, vis_y1, vis_x2, vis_y2],
+        radius=12,
+        fill=(0, 0, 0, 100),
+    )
 
     photo.alpha_composite(badge, (x, y))
     final = photo.convert("RGB")

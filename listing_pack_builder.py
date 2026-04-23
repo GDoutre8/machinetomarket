@@ -11,9 +11,10 @@ Output structure:
         START_HERE.txt
         listing_description.txt
         Listing_Photos/
+            {machine}_01_card.png
+            {machine}_02_spec_sheet.png
+            {machine}_NN_listing.jpg  (per uploaded photo)
         Original_Photos/
-        spec_sheet/
-            machine_spec_sheet.png
         metadata_internal.json
         walkaround.mp4   (only if generated or provided)
     {session_dir}/listing_output.zip
@@ -38,7 +39,6 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from spec_sheet_context    import screenshot_spec_sheet
 from image_pack_generator  import generate_image_pack, SUPPORTED_EXTENSIONS
 from walkaround_generator  import generate_walkaround_video
 from dealer_input          import DealerInput
@@ -188,7 +188,6 @@ _ZIP_ORDER = [
     "listing_description.txt",
     "Listing_Photos",
     "Original_Photos",
-    "spec_sheet",
     "walkaround.mp4",
 ]
 
@@ -302,8 +301,7 @@ def build_listing_pack(
 
     # ── Create listing_output/ folder ─────────────────────────────────────────
     pack_dir = os.path.join(session_dir, "listing_output")
-    spec_dir = os.path.join(pack_dir, "spec_sheet")
-    os.makedirs(spec_dir, exist_ok=True)
+    os.makedirs(pack_dir, exist_ok=True)
 
     # ── 1. listing_description.txt  (highest priority — always attempted) ──────
     listing_txt_path = os.path.join(pack_dir, "listing_description.txt")
@@ -314,37 +312,7 @@ def build_listing_pack(
     except Exception as exc:
         warnings.append(f"listing_description.txt write failed: {exc}")
 
-    # ── 2. Spec sheet PNG ─────────────────────────────────────────────────────
     spec_count = len(spec_sheet_entries)
-    spec_sheet_path = None
-
-    if dealer_input_dump is not None and enriched_resolved_specs is not None:
-        spec_sheet_out = os.path.join(spec_dir, "machine_spec_sheet.png")
-        # Remove any stale artifact before writing so re-downloads never serve old output
-        if os.path.isfile(spec_sheet_out):
-            os.remove(spec_sheet_out)
-        session_id = os.path.basename(session_dir) if session_dir else ""
-        dealer_contact = {
-            "dealer_name": dealer.get("dealer_name"),
-            "phone":       dealer.get("phone"),
-            "location":    dealer.get("location"),
-        }
-        screenshot_spec_sheet(
-            dealer_input_data=dealer_input_dump,
-            resolved_specs=enriched_resolved_specs,
-            ui_hints=(resolved_machine or {}).get("ui_hints") or {},
-            equipment_type=eq_type or "",
-            dealer_contact=dealer_contact,
-            session_id=session_id,
-            outputs_dir=_OUTPUTS_DIR,
-            output_path=spec_sheet_out,
-            field_confidence=(full_record or {}).get("field_confidence") or {},
-        )
-        print(f"  [Pack] spec_sheet path    : {spec_sheet_out}")
-        spec_sheet_path = spec_sheet_out
-        outputs["spec_sheet_png"] = spec_sheet_out
-    else:
-        warnings.append("No dealer input — spec sheet skipped.")
 
     # ── 3. Image pack ─────────────────────────────────────────────────────────
     valid_images = [
@@ -432,6 +400,9 @@ def build_listing_pack(
                 photo_path   = _ss_photo,
             )
             ss_img_out = listing_photos_dir / f"{machine_name}_02_spec_sheet.png"
+            # Remove any stale artifact before writing so regeneration never serves old output.
+            if ss_img_out.exists():
+                ss_img_out.unlink()
             ss_result  = export_spec_sheet(_ss_data, ss_img_out)
             if ss_result:
                 print(f"  [Pack] spec sheet img     : OK -> {ss_img_out.name}")
@@ -531,7 +502,6 @@ def build_listing_pack(
 
     included_outputs = []
     if outputs["listing_txt"]:       included_outputs.append("listing_description.txt")
-    if outputs["spec_sheet_png"]:    included_outputs.append("spec_sheet/machine_spec_sheet.png")
     if outputs["image_pack_folder"]: included_outputs.append("images_*")
     if walkaround_included:          included_outputs.append("walkaround.mp4")
 
@@ -607,7 +577,7 @@ Use these if you need to re-edit or upload to platforms with their own crop tool
     wk_tag = "OK" if walkaround_included else ("SKIP" if not walkaround_requested else f"FAIL ({walkaround_status})")
     print(f"\n  [Pack] {machine_match}")
     print(f"  [Pack] listing_description.txt : {'OK' if outputs['listing_txt'] else 'FAIL'}")
-    print(f"  [Pack] spec_sheet.png : {'OK' if outputs['spec_sheet_png'] else 'SKIP'} ({spec_count} specs)")
+    print(f"  [Pack] spec_sheet img : see Listing_Photos/_02_spec_sheet.png ({spec_count} specs)")
     print(f"  [Pack] image_pack     : {'OK' if outputs['image_pack_folder'] else 'SKIP'} ({len(valid_images)} photos)")
     print(f"  [Pack] walkaround.mp4 : {wk_tag}")
     print(f"  [Pack] ZIP            : {_fmt_size(zip_size) if zip_size else 'FAILED'}")

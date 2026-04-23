@@ -68,7 +68,7 @@
     .match-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.03))}.match-banner-left{display:flex;align-items:center;gap:12px;min-width:0}.match-icon{width:34px;height:34px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);flex-shrink:0}.match-icon.match-found{color:#3db87a;border-color:rgba(61,184,122,.45);background:rgba(61,184,122,.12)}.match-icon.match-unknown{color:#ff6b6b;border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.12)}.match-label{font-size:15px;font-weight:600;color:var(--text);word-break:break-word}
     .match-warning-card,.no-match-notice{padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:18px;font-size:13px;line-height:1.6}.match-warning-card{border:1px solid rgba(232,169,32,.5);background:rgba(232,169,32,.1);color:#f4d483}.no-match-notice{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04)}
     .spec-preview-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}.spec-pill{min-width:104px;padding:12px 16px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025))}.spec-pill-val{font-family:var(--body);font-size:20px;font-weight:600;letter-spacing:0;color:var(--text);white-space:nowrap}.spec-pill-lbl{margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-    .toggles-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.toggle-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));color:var(--text);font-size:14px;cursor:pointer}.toggle-check:hover{border-color:rgba(232,169,32,.34);background:rgba(232,169,32,.06)}.toggle-check input[type="checkbox"]{width:16px;height:16px;accent-color:var(--mtm-yellow);flex-shrink:0}.toggle-check.checked{border-color:rgba(232,169,32,.45);background:linear-gradient(180deg,rgba(232,169,32,.13),rgba(232,169,32,.08))}
+    .toggles-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.feature-select-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));grid-column:span 2}.feature-select-label{color:var(--text);font-size:14px;white-space:nowrap}.feature-select{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:4px;color:var(--text);font-size:14px;padding:4px 8px;cursor:pointer}.feature-select:focus{outline:none;border-color:rgba(232,169,32,.6)}.toggle-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));color:var(--text);font-size:14px;cursor:pointer}.toggle-check:hover{border-color:rgba(232,169,32,.34);background:rgba(232,169,32,.06)}.toggle-check input[type="checkbox"]{width:16px;height:16px;accent-color:var(--mtm-yellow);flex-shrink:0}.toggle-check.checked{border-color:rgba(232,169,32,.45);background:linear-gradient(180deg,rgba(232,169,32,.13),rgba(232,169,32,.08))}
     .photo-drop{border:1px dashed rgba(255,255,255,.22);border-radius:4px;padding:24px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));cursor:pointer}.photo-drop:hover,.photo-drop.drag-over,.photo-drop.has-files{border-color:rgba(232,169,32,.5);background:linear-gradient(180deg,rgba(232,169,32,.11),rgba(255,255,255,.035))}.photo-drop-label{color:var(--muted);font-size:13px;line-height:1.65;pointer-events:none}.photo-drop-label strong{color:var(--text)}#photo-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.photo-thumb{width:76px;height:76px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,.12)}
     .uc-preview-card.has-content{border-color:rgba(232,169,32,.4);box-shadow:0 18px 48px rgba(232,169,32,.08)}.uc-preview-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.1)}.uc-best-for-list{list-style:none;padding:0;margin:0 0 10px}.uc-best-for-list li{position:relative;padding:4px 0 4px 18px;color:var(--text);font-size:14px}.uc-best-for-list li::before{content:"";position:absolute;left:2px;top:12px;width:8px;height:8px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}.uc-limit-sentence{border-left:2px solid rgba(232,169,32,.3);padding-left:12px;margin-top:8px}
     #step2{padding:28px 0 8px}
@@ -219,7 +219,7 @@
     <input type="hidden" name="year" id="h-year"><input type="hidden" name="make" id="h-make"><input type="hidden" name="model" id="h-model"><input type="hidden" name="asking_price" id="h-asking-price"><input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none">
   </form>
 </main>
-<script src="/static/dealer_profile.js"></script>
+<script src="/static/dealer_profile.js?v=2"></script>
 <script src="/static/dealer_badge_renderer.js"></script>
 <script src="/static/imagePackExporter.js"></script>
 <script>
@@ -509,19 +509,47 @@
       specPreviewCard.classList.add('hidden');
     }
 
-    // Equipment-type-specific feature checkboxes
+    // Equipment-type-specific feature checkboxes / selects
     featuresContainer.innerHTML = '';
     const features = data.features || [];
     features.forEach(feat => {
-      const lbl = document.createElement('label');
-      lbl.className = 'toggle-check';
-      lbl.id = `lbl-${feat.name}`;
-      lbl.innerHTML = `<input type="checkbox" name="${escAttr(feat.name)}" value="true"> ${escHtml(feat.label)}`;
-      lbl.querySelector('input').addEventListener('change', e => {
-        lbl.classList.toggle('checked', e.target.checked);
-        schedulePreview();
-      });
-      featuresContainer.appendChild(lbl);
+      if (feat.type === 'select' && Array.isArray(feat.options)) {
+        // Render as a labeled inline select (e.g. Cab Type)
+        const wrapper = document.createElement('div');
+        wrapper.className = 'feature-select-row';
+        wrapper.id = `row-${feat.name}`;
+        const selectLbl = document.createElement('span');
+        selectLbl.className = 'feature-select-label';
+        selectLbl.textContent = feat.label;
+        const sel = document.createElement('select');
+        sel.name = feat.name;
+        sel.className = 'feature-select';
+        // Blank "not specified" option
+        const blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = '—';
+        sel.appendChild(blank);
+        feat.options.forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.value;
+          o.textContent = opt.label;
+          sel.appendChild(o);
+        });
+        sel.addEventListener('change', () => schedulePreview());
+        wrapper.appendChild(selectLbl);
+        wrapper.appendChild(sel);
+        featuresContainer.appendChild(wrapper);
+      } else {
+        const lbl = document.createElement('label');
+        lbl.className = 'toggle-check';
+        lbl.id = `lbl-${feat.name}`;
+        lbl.innerHTML = `<input type="checkbox" name="${escAttr(feat.name)}" value="true"> ${escHtml(feat.label)}`;
+        lbl.querySelector('input').addEventListener('change', e => {
+          lbl.classList.toggle('checked', e.target.checked);
+          schedulePreview();
+        });
+        featuresContainer.appendChild(lbl);
+      }
     });
 
     if (features.length === 0) {

@@ -40,14 +40,8 @@ from listing_use_case_enrichment import build_use_case_payload
 from listing_builder import build_listing_text, build_use_case_ui_items
 from dealer_input import DealerInput
 from fastapi.responses import JSONResponse
-from spec_sheet_context import (
-    build_spec_sheet_context as _build_spec_sheet_context_impl,
-    _fmt_number,
-    _EQ_TYPE_DISPLAY,
-    _LIFT_PATH_DISPLAY,
-    _CONTROL_DISPLAY,
-    _logo_is_light,
-)
+from spec_sheet_renderer_adapter import build_spec_sheet_data as _build_ss_data
+from spec_sheet_renderer import render_spec_sheet as _render_spec_sheet
 
 # ── Session cleanup ───────────────────────────────────────────────────────────
 _SESSION_MAX_AGE_SECS = 86400 * 7  # 7 days
@@ -139,32 +133,6 @@ app.mount("/outputs", StaticFiles(directory=_OUTPUTS_DIR), name="outputs")
 templates = Jinja2Templates(directory=os.path.join(_BASE, "templates"))
 
 
-templates.env.filters["format_number"] = _fmt_number
-
-
-def _build_spec_sheet_context(
-    dealer_input_data: dict,
-    resolved_specs: dict,
-    ui_hints: dict,
-    equipment_type: str,
-    dealer_contact: dict,
-    session_id: str,
-    image_input_paths: "list[str] | None" = None,
-) -> dict:
-    """Assemble the full Jinja2 context dict for spec_sheet.html."""
-    return _build_spec_sheet_context_impl(
-        dealer_input_data=dealer_input_data,
-        resolved_specs=resolved_specs,
-        ui_hints=ui_hints,
-        equipment_type=equipment_type,
-        dealer_contact=dealer_contact,
-        session_id=session_id,
-        outputs_dir=_OUTPUTS_DIR,
-        logo_as_data_uri=False,
-        image_input_paths=image_input_paths,
-    )
-
-
 # ── Equipment-type feature config ─────────────────────────────────────────────
 # Defines which feature checkboxes appear in Step 2 for each equipment type.
 # Each entry: {"name": DealerInput field name, "label": display label}
@@ -172,7 +140,8 @@ def _build_spec_sheet_context(
 _FEATURE_CONFIG: dict[str, list[dict]] = {
     "compact_track_loader": [
         # ── Primary machine features ──────────────────────────────────────────
-        {"name": "cab_type",          "label": "Cab Type"},
+        {"name": "cab_type", "label": "Cab Type", "type": "select",
+         "options": [{"value": "enclosed", "label": "Enclosed"}, {"value": "open", "label": "Open"}, {"value": "canopy", "label": "Canopy"}]},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
         {"name": "high_flow",         "label": "High Flow"},
@@ -188,7 +157,8 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "reversing_fan",     "label": "Reversing Fan"},
     ],
     "skid_steer": [
-        {"name": "cab_type",          "label": "Cab Type"},
+        {"name": "cab_type", "label": "Cab Type", "type": "select",
+         "options": [{"value": "enclosed", "label": "Enclosed"}, {"value": "open", "label": "Open"}, {"value": "canopy", "label": "Canopy"}]},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
         {"name": "high_flow",         "label": "High Flow"},
@@ -201,7 +171,8 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
     ],
     "mini_excavator": [
         # ── Mini ex CORE OUTPUT (locked standard 2026-04-10) ─────────────────
-        {"name": "cab_type",             "label": "Cab Type"},
+        {"name": "cab_type", "label": "Cab Type", "type": "select",
+         "options": [{"value": "enclosed", "label": "Enclosed"}, {"value": "open", "label": "Open"}, {"value": "canopy", "label": "Canopy"}]},
         {"name": "heater",               "label": "Heater"},
         {"name": "ac",                   "label": "A/C"},
         {"name": "aux_hydraulics",       "label": "Aux Hydraulics"},
@@ -216,14 +187,16 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "one_owner",            "label": "One Owner"},
     ],
     "backhoe_loader": [
-        {"name": "cab_type",          "label": "Cab Type"},
+        {"name": "cab_type", "label": "Cab Type", "type": "select",
+         "options": [{"value": "enclosed", "label": "Enclosed"}, {"value": "open", "label": "Open"}, {"value": "canopy", "label": "Canopy"}]},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
         {"name": "backup_camera",     "label": "Backup Camera"},
         {"name": "one_owner",         "label": "One Owner"},
     ],
     "wheel_loader": [
-        {"name": "cab_type",          "label": "Cab Type"},
+        {"name": "cab_type", "label": "Cab Type", "type": "select",
+         "options": [{"value": "enclosed", "label": "Enclosed"}, {"value": "open", "label": "Open"}, {"value": "canopy", "label": "Canopy"}]},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
         {"name": "backup_camera",     "label": "Backup Camera"},
@@ -242,7 +215,8 @@ _FEATURE_CONFIG: dict[str, list[dict]] = {
         {"name": "radio",             "label": "Radio"},
     ],
     "_default": [
-        {"name": "cab_type",          "label": "Cab Type"},
+        {"name": "cab_type", "label": "Cab Type", "type": "select",
+         "options": [{"value": "enclosed", "label": "Enclosed"}, {"value": "open", "label": "Open"}, {"value": "canopy", "label": "Canopy"}]},
         {"name": "heater",            "label": "Heat"},
         {"name": "ac",                "label": "A/C"},
         {"name": "backup_camera",     "label": "Backup Camera"},
@@ -280,6 +254,9 @@ _IDENTIFY_SPEC_FIELDS: list[tuple[str, str, str]] = [
     ("roc_lb",              "Op. Cap.",  "lbs"),
     ("operating_weight_lb", "Weight",    "lbs"),
     ("hydraulic_flow_gpm",  "Aux Flow",  "gpm"),
+    # Wheel loader — only populated for wheel_loader records; silently absent for other types
+    ("bucket_capacity_yd3", "Bucket",    "yd\u00b3"),
+    ("breakout_force_lbs",  "Breakout",  "lbs"),
 ]
 
 
@@ -431,13 +408,14 @@ async def build_listing_result(request: Request, session_id: str):
         except Exception:
             pass
 
-    # Spec sheet web URL — single source: machine_spec_sheet.png written by screenshot_spec_sheet()
-    _spec_sheet_abs = os.path.join(pack_dir, "spec_sheet", "machine_spec_sheet.png")
-    spec_sheet_abs  = _spec_sheet_abs
-    if os.path.isfile(_spec_sheet_abs):
-        spec_sheet_url = f"{web_base}/spec_sheet/machine_spec_sheet.png"
+    # Spec sheet web URL — v2 spec sheet lives in Listing_Photos/ as _02_spec_sheet.png
+    _ss_matches = sorted(_glob.glob(
+        os.path.join(pack_dir, "Listing_Photos", "*_02_spec_sheet.png")
+    ))
+    if _ss_matches:
+        spec_sheet_url = f"{web_base}/Listing_Photos/{os.path.basename(_ss_matches[0])}"
     else:
-        print(f"  [Result] WARNING: spec sheet not found at {_spec_sheet_abs}")
+        print(f"  [Result] WARNING: spec sheet not found in {pack_dir}/Listing_Photos/")
         spec_sheet_url = None
 
     def _load_image_urls(subfolder: str) -> list[str]:
@@ -1290,7 +1268,6 @@ async def spec_sheet_view(request: Request, session_id: str):
 
     di_path   = os.path.join(session_dir, "dealer_input.json")
     rs_path   = os.path.join(session_dir, "resolved_specs.json")
-    ui_path   = os.path.join(session_dir, "ui_hints.json")
     meta_path = os.path.join(session_dir, "listing_output", "metadata_internal.json")
     dc_path   = os.path.join(session_dir, "dealer_contact.json")
 
@@ -1304,11 +1281,6 @@ async def spec_sheet_view(request: Request, session_id: str):
     if os.path.isfile(rs_path):
         with open(rs_path, encoding="utf-8") as f:
             rs_data = json.load(f)
-
-    ui_hints: dict = {}
-    if os.path.isfile(ui_path):
-        with open(ui_path, encoding="utf-8") as f:
-            ui_hints = json.load(f)
 
     equipment_type = ""
     if os.path.isfile(meta_path):
@@ -1329,17 +1301,16 @@ async def spec_sheet_view(request: Request, session_id: str):
             if os.path.splitext(_fname)[1].lower() in _supported:
                 _photo_paths.append(os.path.join(_uploads_dir, _fname))
 
-    ctx = _build_spec_sheet_context(
+    data = _build_ss_data(
         dealer_input_data=di_data,
-        resolved_specs=rs_data,
-        ui_hints=ui_hints,
+        enriched_resolved_specs=rs_data,
         equipment_type=equipment_type,
         dealer_contact=dealer_contact,
-        session_id=session_id,
-        image_input_paths=_photo_paths or None,
+        dealer_info={},
+        full_record={},
+        photo_path=_photo_paths[0] if _photo_paths else None,
     )
-    ctx["request"] = request
-    return templates.TemplateResponse("spec_sheet.html", ctx)
+    return HTMLResponse(_render_spec_sheet(data))
 
 
 @app.post("/build-listing/preview")

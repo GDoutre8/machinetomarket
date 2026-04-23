@@ -147,7 +147,7 @@ def _registry_path(filename: str) -> str:
 REGISTRY_FILENAMES = {
     EQ_SKID_STEER:   "mtm_skid_steer_registry_v1_18.json",
     EQ_CTL:          "mtm_ctl_registry_v1_24.json",
-    EQ_MINI_EX:      "mtm_mini_ex_registry_v2_1.json",
+    EQ_MINI_EX:      "mtm_mini_ex_registry_v2_2.json",
     EQ_BACKHOE:      "mtm_backhoe_loader_registry_v1.json",
     EQ_DOZER:        "mtm_dozer_registry_v1.json",
     EQ_SCISSOR_LIFT: "mtm_scissor_lift_registry_v1.json",
@@ -276,12 +276,6 @@ MODEL_BRIDGE_ALIASES: dict[str, str] = {
     # via containment (0.95).  Bridge covers the common "580N" and "580SN" inputs.
     "580n":  "580N / 580 Super N",
     "580sn": "580N / 580 Super N",
-    # Caterpillar wheel loader family stub — the wheel loader registry currently
-    # stores 966 as a family/series record rather than exact generation records.
-    # Bridge common marketplace inputs so 966M/966GC resolve deterministically to
-    # the existing family record instead of failing the Tier 1 exact/slug gate.
-    "966m":  "966",
-    "966gc": "966",
 }
 
 # ---------------------------------------------------------------------------

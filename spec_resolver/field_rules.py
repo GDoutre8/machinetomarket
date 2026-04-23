@@ -106,7 +106,7 @@ _BACKHOE_DEFAULTS: Dict[str, FieldBehavior] = {
     "net_hp":               FieldBehavior.LOCKED,
     "operating_weight_lb":  FieldBehavior.RANGE,    # varies 2wd vs 4wd
     "max_dig_depth":        FieldBehavior.PACKAGE_DEPENDENT,  # std vs extendahoe
-    "loader_bucket_cap_yd3":FieldBehavior.LOCKED,
+    "loader_bucket_capacity_yd3": FieldBehavior.LOCKED,
     "bucket_breakout_lb":   FieldBehavior.LOCKED,   # canonical key used by breakout_force.resolve
     "travel_speed_mph":     FieldBehavior.LOCKED,
     "fuel_type":            FieldBehavior.LOCKED,

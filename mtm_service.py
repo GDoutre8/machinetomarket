@@ -39,7 +39,8 @@ logger = logging.getLogger(__name__)
 
 # ── Spec resolver ─────────────────────────────────────────────────────────────
 from spec_resolver.spec_resolver import resolve as _spec_resolve
-from spec_resolver.types         import MatchType, ResolverInput
+from spec_resolver.types         import MatchType, ResolverInput, FieldBehavior
+from spec_resolver.field_rules   import CATEGORY_DEFAULTS as _RESOLVER_CATEGORY_DEFAULTS
 
 # ── Spec sheet generator ───────────────────────────────────────────────────────
 from spec_sheet_generator import (
@@ -262,6 +263,8 @@ _EQ_TYPE_TO_CATEGORY: dict[str, str] = {
     "backhoe_loader":       "BH",
     "dozer":                "DOZ",
     "crawler_dozer":        "DOZ",  # alias — registry uses "dozer"
+    "boom_lift":            "BOOM",
+    "scissor_lift":         "SCIS",
 }
 
 # Maps registry JSON spec key names → spec_resolver canonical field names.
@@ -1487,11 +1490,19 @@ def _normalize_registry_record(record: dict, category: str) -> dict:
             v = v * 12
         translated_specs[canonical_key] = v
 
-    # Translate field_behavior → field_behaviors with the same key renames
+    # Translate field_behavior → field_behaviors with the same key renames.
+    # Registry entries may have blanket "manual_review" placeholders on fields
+    # that the category defaults define as LOCKED (e.g. all WL fields marked
+    # manual_review during initial data entry). Drop those overrides so the
+    # category default (LOCKED) takes effect and core fields can be injected.
     raw_behaviors = record.get("field_behaviors") or record.get("field_behavior") or {}
+    _cat_defaults  = _RESOLVER_CATEGORY_DEFAULTS.get(category.upper(), {})
     translated_behaviors: dict = {}
     for k, v in raw_behaviors.items():
-        translated_behaviors[_SPEC_KEY_MAP.get(k, k)] = v
+        canonical_k = _SPEC_KEY_MAP.get(k, k)
+        if v == "manual_review" and _cat_defaults.get(canonical_k) not in (None, FieldBehavior.MANUAL_REVIEW):
+            continue   # let category default (LOCKED / PACKAGE_DEPENDENT / RANGE) take effect
+        translated_behaviors[canonical_k] = v
 
     # year_range from years_supported — use `or` fallback so explicit null values
     # in the registry (e.g. "end": null for still-produced models) get defaults.
@@ -1848,6 +1859,15 @@ def safe_parse_listing(raw_text: str) -> dict:
                 if not result.get("equipment_type"):
                     result["equipment_type"] = inferred_type
 
+        # Equipment-type keyword gap-fill ─────────────────────────────────────
+        # Fires only when alias / bare-model / make-inference paths all missed.
+        # Scans the raw text for unambiguous category words (e.g. "excavator",
+        # "wheel loader") so inputs like "Cat 336 excavator" still classify.
+        if not result.get("equipment_type"):
+            kw_type = _infer_eq_type_from_text(t)
+            if kw_type:
+                result["equipment_type"] = kw_type
+
         # Attachments & Features — frozen module ──────────────────────────────
         att_result = extract_attachments(t)
         result["attachments"] = att_result.get("attachments", [])
@@ -1881,16 +1901,17 @@ def safe_lookup_machine(parsed: dict) -> tuple[dict | None, float]:
     Bare model inference (make_source == "inferred") does NOT qualify.
     "t770" alone → no specs. "bobcat t770" → specs allowed.
     """
-    make        = parsed.get("make") or ""
-    model       = parsed.get("model") or ""
-    make_source = parsed.get("make_source") or ""
+    make           = parsed.get("make") or ""
+    model          = parsed.get("model") or ""
+    make_source    = parsed.get("make_source") or ""
+    equipment_type = parsed.get("equipment_type") or ""
 
     # Gate: make must be explicit (from listing text) AND model must be present
     if not make or not model or make_source != "explicit":
         return None, 0.0
 
     try:
-        result = lookup_machine(manufacturer=make, model=model)
+        result = lookup_machine(manufacturer=make, model=model, equipment_type=equipment_type)
     except Exception as exc:
         print(f"[MTM] lookup_machine error: {exc}")
         return None, 0.0
@@ -2646,7 +2667,7 @@ _WEB_EQ_KEYWORD_MAP: list[tuple[list[str], str]] = [
     (["compact track loader", "track loader", " ctl "],         "compact_track_loader"),
     (["skid steer", "skid-steer", " ssl "],                     "skid_steer"),
     (["mini excavator", "mini ex", "mini-ex"],                  "mini_excavator"),
-    (["excavator"],                                              "mini_excavator"),
+    (["excavator"],                                              "excavator"),
     (["telehandler", "telescopic handler", "telescopic boom"],  "telehandler"),
     (["backhoe loader", "backhoe"],                             "backhoe_loader"),
     (["dozer", "bulldozer", "crawler dozer"],                   "dozer"),

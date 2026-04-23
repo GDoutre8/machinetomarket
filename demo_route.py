@@ -242,11 +242,14 @@ async def demo_preview(request: Request, preset: str = _DEFAULT_PRESET):
         with open(lt_path, encoding="utf-8") as f:
             listing_text = f.read()
 
-    # Spec sheet PNG URL
-    ss_path = os.path.join(pack_dir, "spec_sheet", "machine_spec_sheet.png")
+    # Spec sheet PNG URL — v2 spec sheet lives in Listing_Photos/ as _02_spec_sheet.png
+    import glob as _demo_glob
+    _ss_matches = sorted(_demo_glob.glob(
+        os.path.join(pack_dir, "Listing_Photos", "*_02_spec_sheet.png")
+    ))
     spec_sheet_url = (
-        f"{web_base}/spec_sheet/machine_spec_sheet.png"
-        if os.path.isfile(ss_path)
+        f"{web_base}/Listing_Photos/{os.path.basename(_ss_matches[0])}"
+        if _ss_matches
         else None
     )
 

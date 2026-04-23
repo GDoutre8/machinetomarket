@@ -1,23 +1,17 @@
 """
-MTM Spec Sheet Renderer — v1
+MTM Spec Sheet Renderer — v2 (clean document style)
 
-Renders 4:5 Facebook-format spec sheet images (1080×1350 px output).
-Image #2 in the listing pack — lighter and more document-like than the hero card.
+Clean, flat, single-column document spec sheet (1080×1350 px output).
+Image #2 in the listing pack — lighter and calmer than the hero card.
 
-Consumes a structured data dict:
-  machine  : year / make / model / category / photo_path
-  listing  : price_usd / hours
-  specs    : core / secondary row lists
-  features : list of feature label strings
-  condition: grade / ownership / notes
-  dealer   : name / phone / location / logo_data_uri / theme
-
-Returns self-contained HTML string ready for Playwright Chromium PNG export.
+Public API: render_spec_sheet(data: dict) -> str
+Data schema unchanged from v1 (adapter-compatible).
 """
 
 from __future__ import annotations
 
 import base64
+import concurrent.futures
 import html
 from pathlib import Path
 from typing import Any
@@ -34,9 +28,303 @@ _EQ_TYPE_DISPLAY = {
     "telehandler":          "Telehandler",
 }
 
+_GOOGLE_FONTS = (
+    "https://fonts.googleapis.com/css2?"
+    "family=Archivo+Black"
+    "&family=JetBrains+Mono:wght@400;500;700"
+    "&family=Inter:wght@400;500;600;700;800"
+    "&display=swap"
+)
+
+_OEM_CHECK_SVG = (
+    '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" '
+    'xmlns="http://www.w3.org/2000/svg">'
+    '<path d="M2.5 6.5L5 9L9.5 3.5" stroke="#2C8A48" stroke-width="1.8" '
+    'stroke-linecap="round" stroke-linejoin="round"/></svg>'
+)
+
+_CSS = """
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #fff; display: flex; justify-content: center; align-items: flex-start; }
+
+.theme-yellow { --accent: #FFC20E; --accent-text: #0D0D0D; --accent-muted: rgba(13,13,13,0.40); }
+.theme-red    { --accent: #C8102E; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.60); }
+.theme-blue   { --accent: #1E4D8C; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.60); }
+.theme-green  { --accent: #2C5F3E; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.60); }
+.theme-orange { --accent: #D85A15; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.60); }
+
+/* ── Sheet container ── */
+.sheet {
+  width: 540px;
+  height: 675px;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #F8F6F2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.hdr {
+  background: var(--accent);
+  padding: 13px 20px 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  flex-shrink: 0;
+  min-height: 82px;
+}
+.hdr-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.hdr-year-make {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent-muted);
+  margin-bottom: 3px;
+}
+.hdr-model {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 40px; line-height: 0.92;
+  color: var(--accent-text);
+  letter-spacing: -0.02em;
+}
+.hdr-category {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent-muted);
+  margin-top: 5px;
+}
+.hdr-right {
+  text-align: right;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 2px;
+  gap: 6px;
+}
+.hdr-price {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 26px; line-height: 1;
+  color: var(--accent-text);
+}
+.hdr-hours-val {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 20px; line-height: 1;
+  color: var(--accent-text);
+}
+.hdr-hours-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  margin-left: 3px;
+  color: var(--accent-muted);
+}
+
+/* ── Photo + Hero Rail ── */
+.photo-hero {
+  display: grid;
+  flex-shrink: 0;
+  background: #1A1A1A;
+}
+/* has-photo: square image left 56%, vertical rail right 44% — height driven by image */
+.photo-hero.has-photo { grid-template-columns: 56% 44%; }
+.photo-hero.no-photo  { grid-template-columns: 1fr; }
+
+.photo-img { overflow: hidden; background: #E0DED9; }
+/*
+ * Square fix: align-self:start prevents the default grid stretch from overriding
+ * aspect-ratio. With start, the image column sizes itself to width×width (302×302px),
+ * which then becomes the row height. The hero-rail (default stretch) fills that height.
+ */
+.photo-hero.has-photo .photo-img {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  align-self: start;
+}
+.photo-img img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  display: block;
+}
+.photo-pending-bg {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: #E0DED9;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #B8B5AE;
+}
+
+.hero-rail {
+  display: grid;
+  gap: 1px;
+  background: rgba(255,255,255,0.06);
+  min-height: 0;
+}
+/* has-photo: vertical stack — 4 equal rows filling the image height */
+.photo-hero.has-photo .hero-rail {
+  grid-template-rows: repeat(4, 1fr);
+  align-self: stretch;
+}
+.photo-hero.no-photo .hero-rail {
+  grid-template-columns: repeat(2, 1fr);
+}
+/* Default tile style (no-photo: centered column layout) */
+.hero-tile {
+  background: #1A1A1A;
+  padding: 0 12px;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+}
+/* has-photo: icon left + text right, row layout, row dividers */
+.photo-hero.has-photo .hero-tile {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.photo-hero.has-photo .hero-tile:last-child { border-bottom: none; }
+.hero-tile-icon { flex-shrink: 0; line-height: 0; }
+.hero-tile-text { display: flex; flex-direction: column; }
+/* In no-photo mode hide icon and unwrap tile-text so children are direct flex items */
+.photo-hero.no-photo .hero-tile-icon { display: none; }
+.photo-hero.no-photo .hero-tile-text { display: contents; }
+.hero-val {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 19px; color: #FFFFFF; line-height: 1;
+}
+.hero-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5px; color: rgba(255,255,255,0.38);
+  margin-left: 2px;
+}
+.hero-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+/* ── Main body (sections) ── */
+.main {
+  flex: 1;
+  overflow: hidden;
+  padding: 10px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Section block ── */
+.sec { flex-shrink: 0; }
+.sec-hdr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px; font-weight: 700;
+  letter-spacing: 0.20em; text-transform: uppercase;
+  color: #8A8780;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(13,13,13,0.10);
+  margin-bottom: 5px;
+}
+
+/* ── Spec rows (dotted leaders) ── */
+.spec-rows { display: flex; flex-direction: column; }
+.spec-row {
+  display: flex;
+  align-items: baseline;
+  padding: 2px 0;
+}
+.spec-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px; font-weight: 500;
+  color: #555;
+  white-space: nowrap; flex-shrink: 0;
+}
+.spec-fill {
+  flex: 1;
+  border-bottom: 1px dotted #C5C2BB;
+  margin: 0 5px 3px;
+  min-width: 4px;
+}
+.spec-val {
+  font-size: 10px; font-weight: 700;
+  color: #1A1A1A;
+  white-space: nowrap; flex-shrink: 0;
+}
+.spec-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5px; font-weight: 600;
+  color: #999; text-transform: uppercase;
+  letter-spacing: 0.04em; margin-left: 2px;
+}
+.spec-null { color: #C5C2BB; font-weight: 400; }
+
+/* ── Feature list (bullets) ── */
+.feat-list { display: flex; flex-direction: column; }
+.feat-item {
+  display: flex; align-items: baseline; gap: 7px;
+  font-size: 9.5px; font-weight: 500; color: #1E1E1E;
+  padding: 1.5px 0;
+}
+.feat-bullet { font-size: 11px; line-height: 0.9; color: #555; flex-shrink: 0; }
+
+/* ── Condition & Service (flat key: value) ── */
+.cond-list { display: flex; flex-direction: column; }
+.cond-item {
+  font-size: 9px; color: #444; line-height: 1.55;
+}
+.cond-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px; font-weight: 700; color: #1A1A1A;
+}
+
+/* ── Footer ── */
+.footer {
+  border-top: 1px solid #D5D2CC;
+  padding: 7px 20px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; background: #FFFFFF;
+  min-height: 48px;
+}
+.logo-box {
+  width: 50px; height: 38px;
+  border: 1.5px solid #D5D2CC; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden; background: #fff;
+}
+.logo-box img { max-width: 44px; max-height: 32px; object-fit: contain; display: block; }
+.logo-placeholder {
+  font-size: 7px; font-weight: 700; color: #CACAC5;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  text-align: center; line-height: 1.4;
+}
+.dealer-info { flex: 1; min-width: 0; }
+.dealer-name {
+  font-size: 11px; font-weight: 700; color: #1A1A1A;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dealer-sub { font-size: 8px; color: #888; margin-top: 2px; line-height: 1.4; }
+.oem-badge { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.oem-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px; font-weight: 700; color: #2C8A48;
+  letter-spacing: 0.03em; white-space: nowrap;
+}
+"""
+
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Photo embedding
+# Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _photo_data_uri(photo_path: str | None) -> str | None:
@@ -54,10 +342,6 @@ def _photo_data_uri(photo_path: str | None) -> str | None:
     return f"data:{mime};base64,{data}"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Formatting helpers
-# ─────────────────────────────────────────────────────────────────────────────
-
 def _fmt_price(val: Any) -> str | None:
     if val is None:
         return None
@@ -71,7 +355,7 @@ def _fmt_hours(val: Any) -> str | None:
     if val is None:
         return None
     try:
-        return f"{int(val):,} HRS"
+        return f"{int(val):,}"
     except (TypeError, ValueError):
         return str(val)
 
@@ -80,392 +364,163 @@ def _esc(s: Any) -> str:
     return html.escape(str(s)) if s is not None else ""
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HTML builder
-# ─────────────────────────────────────────────────────────────────────────────
-
-_CSS = """
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #fff; display: flex; justify-content: center; align-items: flex-start; }
-
-.theme-yellow { --accent: #FFC20E; --accent-text: #0D0D0D; --accent-muted: rgba(13,13,13,0.42); }
-.theme-red    { --accent: #C8102E; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.55); }
-.theme-blue   { --accent: #1E4D8C; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.55); }
-.theme-green  { --accent: #2C5F3E; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.55); }
-.theme-orange { --accent: #D85A15; --accent-text: #fff;    --accent-muted: rgba(255,255,255,0.55); }
-
-.sheet {
-  width: 540px;
-  height: 675px;
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  background: #F8F7F5;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+_HERO_ICONS: dict[str, str] = {
+    "LB": (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
+        ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8"'
+        ' stroke-linecap="round" stroke-linejoin="round">'
+        '<path d="M6 7h12l-1.5-4h-9L6 7z"/>'
+        '<rect x="4" y="7" width="16" height="12" rx="1"/>'
+        '<path d="M9 12h6"/></svg>'
+    ),
+    "HP": (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
+        ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8"'
+        ' stroke-linecap="round" stroke-linejoin="round">'
+        '<path d="M5 4a7 7 0 0 0 0 14h2"/>'
+        '<path d="M19 4a7 7 0 0 1 0 14h-2"/>'
+        '<path d="M9 18v2m6-2v2M9 4V2m6 2V2"/></svg>'
+    ),
+    "GPM": (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
+        ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8"'
+        ' stroke-linecap="round" stroke-linejoin="round">'
+        '<path d="M12 2c-4 5-6 9-6 12a6 6 0 0 0 12 0c0-3-2-7-6-12z"/></svg>'
+    ),
 }
-
-/* ── Header ── */
-.hdr {
-  background: var(--accent);
-  padding: 14px 20px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  flex-shrink: 0;
-  min-height: 116px;
-}
-.hdr-left {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.hdr-year-make {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: var(--accent-muted);
-}
-.hdr-model {
-  font-family: 'Oswald', sans-serif;
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 0.92;
-  color: var(--accent-text);
-  letter-spacing: -0.5px;
-}
-.hdr-category {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-muted);
-}
-.hdr-right {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-.hdr-price-val {
-  font-family: 'Oswald', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--accent-text);
-  letter-spacing: -0.5px;
-}
-.hdr-price-lbl {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--accent-muted);
-  margin-top: 1px;
-}
-.hdr-hours-val {
-  font-family: 'Oswald', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--accent-text);
-  letter-spacing: -0.5px;
-}
-.hdr-hours-unit {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  margin-left: 2px;
-}
-.hdr-hours-lbl {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--accent-muted);
-  margin-top: 1px;
-}
-
-/* ── Photo ── */
-.photo {
-  height: 190px;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: #E0DED9;
-}
-.photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-.photo-pending {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Oswald', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  color: #B8B5AE;
-  text-transform: uppercase;
-}
-
-/* ── Body: 2-column grid ── */
-.body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 16px;
-  padding: 11px 18px 0;
-  overflow: hidden;
-  min-height: 0;
-}
-.col { display: flex; flex-direction: column; gap: 9px; overflow: hidden; }
-
-/* ── Section title ── */
-.sec-title {
-  font-size: 7.5px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #1A1A1A;
-  padding-bottom: 4px;
-  border-bottom: 2px solid var(--accent);
-  margin-bottom: 3px;
-  flex-shrink: 0;
-}
-
-/* ── Dotted spec rows (Core Specs + Specifications) ── */
-.spec-rows { display: flex; flex-direction: column; }
-.spec-row { display: flex; align-items: baseline; padding: 3px 0; }
-.spec-lbl {
-  font-size: 9px;
-  font-weight: 500;
-  color: #555;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.spec-fill {
-  flex: 1;
-  border-bottom: 1px dotted #C0BDB7;
-  margin: 0 5px 3px;
-  min-width: 6px;
-}
-.spec-val {
-  font-size: 10px;
-  font-weight: 700;
-  color: #1A1A1A;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.spec-unit {
-  font-size: 7.5px;
-  font-weight: 600;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-left: 2px;
-}
-.spec-null { color: #C8C6C1; font-weight: 400; }
-
-/* ── Features (bullets) ── */
-.feat-list { display: flex; flex-direction: column; gap: 0; }
-.feat-item {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 9.5px;
-  font-weight: 500;
-  color: #222;
-  padding: 2.5px 0;
-}
-.feat-bullet {
-  font-size: 13px;
-  line-height: 0.85;
-  color: #1A1A1A;
-  flex-shrink: 0;
-}
-
-/* ── Condition & Service (inline key: value) ── */
-.cond-list { display: flex; flex-direction: column; gap: 3px; }
-.cond-item { font-size: 9px; color: #333; line-height: 1.4; }
-.cond-key { font-weight: 700; color: #1A1A1A; }
-
-/* ── Footer ── */
-.footer {
-  border-top: 1px solid #D5D3CE;
-  padding: 8px 18px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  background: #fff;
-}
-.logo-box {
-  width: 54px;
-  height: 42px;
-  border: 1.5px solid #C8C6C1;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: #fff;
-}
-.logo-box img { max-width: 48px; max-height: 36px; object-fit: contain; display: block; }
-.logo-placeholder {
-  font-size: 7px;
-  font-weight: 700;
-  color: #C8C6C1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.4;
-}
-.dealer-info { flex: 1; min-width: 0; }
-.dealer-name { font-size: 11px; font-weight: 700; color: #1A1A1A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dealer-sub { font-size: 8.5px; color: #7A7875; margin-top: 2px; line-height: 1.5; }
-.footer-divider { width: 1px; height: 36px; background: #D5D3CE; flex-shrink: 0; }
-.oem-badge { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-.oem-text { font-size: 9.5px; font-weight: 700; color: #2C8A48; letter-spacing: 0.03em; white-space: nowrap; }
-"""
-
-_GOOGLE_FONTS = (
-    "https://fonts.googleapis.com/css2?"
-    "family=Oswald:wght@400;500;600;700"
-    "&family=Inter:wght@400;500;600;700;800;900"
-    "&display=swap"
+_HERO_ICON_DEFAULT = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"'
+    ' fill="none" stroke="rgba(255,194,14,0.45)" stroke-width="1.8">'
+    '<circle cx="12" cy="12" r="8"/></svg>'
 )
 
-_OEM_CHECK_SVG = (
-    '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">'
-    '<path d="M2.5 6.5L5 9L9.5 3.5" stroke="#2C8A48" stroke-width="1.8" '
-    'stroke-linecap="round" stroke-linejoin="round"/></svg>'
-)
 
+def _icon_svg(unit: str) -> str:
+    return _HERO_ICONS.get((unit or "").upper(), _HERO_ICON_DEFAULT)
+
+
+def _spec_row_html(label: str, value: Any, unit: str = "") -> str:
+    if value is None or value == "":
+        val_html = '<span class="spec-val spec-null">\u2014</span>'
+    else:
+        unit_html = f'<span class="spec-unit">{_esc(unit)}</span>' if unit else ""
+        val_html = f'<span class="spec-val">{_esc(str(value))}{unit_html}</span>'
+    return (
+        f'<div class="spec-row">'
+        f'<span class="spec-lbl">{_esc(label)}</span>'
+        f'<span class="spec-fill"></span>'
+        f'{val_html}'
+        f'</div>'
+    )
+
+
+def _section(title: str, inner_html: str) -> str:
+    return (
+        f'<div class="sec">'
+        f'<div class="sec-hdr">{_esc(title)}</div>'
+        f'{inner_html}'
+        f'</div>'
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main renderer
+# ─────────────────────────────────────────────────────────────────────────────
 
 def render_spec_sheet(data: dict) -> str:
     machine   = data.get("machine")   or {}
     listing   = data.get("listing")   or {}
     specs     = data.get("specs")     or {}
     features  = data.get("features")  or []
-    condition = data.get("condition") or {}
     dealer    = data.get("dealer")    or {}
 
     # ── Theme ──
     theme = (dealer.get("theme") or "yellow").lower().strip()
     if theme not in _VALID_THEMES:
         theme = "yellow"
-    theme_cls = f"theme-{theme}"
 
     # ── Header ──
     year  = machine.get("year")
     make  = (machine.get("make") or "").upper()
     model = machine.get("model") or ""
-    cat_raw = machine.get("category") or ""
-    cat   = _EQ_TYPE_DISPLAY.get(cat_raw, cat_raw)
+    cat   = machine.get("category") or ""
 
-    year_make = f"{year} \u00b7 {make}" if year and make else str(year or make or "")
+    year_make = " \u00b7 ".join(x for x in [str(year) if year else "", make] if x)
 
-    price_block = ""
+    price_html = ""
     p = _fmt_price(listing.get("price_usd"))
     if p:
-        price_block = (
-            f'<div>'
-            f'<div class="hdr-price-val">{_esc(p)}</div>'
-            f'<div class="hdr-price-lbl">Asking Price</div>'
-            f'</div>'
-        )
+        price_html = f'<div class="hdr-price">{_esc(p)}</div>'
 
-    hours_block = ""
+    hours_html = ""
     raw_hrs = listing.get("hours")
     if raw_hrs is not None:
-        try:
-            hrs_fmt = f"{int(raw_hrs):,}"
-        except (TypeError, ValueError):
-            hrs_fmt = str(raw_hrs)
-        hours_block = (
+        hrs = _fmt_hours(raw_hrs)
+        hours_html = (
             f'<div>'
-            f'<div class="hdr-hours-val">{_esc(hrs_fmt)}<span class="hdr-hours-unit">HRS</span></div>'
-            f'<div class="hdr-hours-lbl">Hours</div>'
+            f'<span class="hdr-hours-val">{_esc(hrs)}</span>'
+            f'<span class="hdr-hours-unit">HRS</span>'
             f'</div>'
         )
 
-    # ── Photo ──
-    photo_uri = _photo_data_uri(machine.get("photo_path"))
+    # ── Photo + Hero Rail ──
+    photo_uri   = _photo_data_uri(machine.get("photo_path"))
+    hero_tiles  = specs.get("hero") or []
+    photo_cls   = "has-photo" if photo_uri else "no-photo"
+
     if photo_uri:
-        photo_content = f'<img src="{photo_uri}" alt="machine photo">'
+        photo_cell = (
+            f'<div class="photo-img">'
+            f'<img src="{photo_uri}" alt="machine photo">'
+            f'</div>'
+        )
     else:
-        photo_content = '<div class="photo-pending">Photo Pending</div>'
+        photo_cell = (
+            '<div class="photo-img">'
+            '<div class="photo-pending-bg">Photo Pending</div>'
+            '</div>'
+        )
 
-    # ── Core spec rows (dotted leaders) ──
-    def _spec_row(label: str, value: Any, unit: str = "") -> str:
-        if value is None or value == "":
-            val_html = '<span class="spec-val spec-null">—</span>'
-        else:
-            unit_html = f'<span class="spec-unit">{_esc(unit)}</span>' if unit else ""
-            val_html = f'<span class="spec-val">{_esc(str(value))}{unit_html}</span>'
-        return (
-            f'<div class="spec-row">'
-            f'<span class="spec-lbl">{_esc(label)}</span>'
-            f'<span class="spec-fill"></span>'
-            f'{val_html}'
+    tile_cells = ""
+    for t in hero_tiles[:4]:
+        val  = _esc(str(t.get("value", "\u2014")))
+        unit = t.get("unit", "")
+        lbl  = _esc(str(t.get("label", "")))
+        unit_html = f'<span class="hero-unit">{_esc(unit)}</span>' if unit else ""
+        tile_cells += (
+            f'<div class="hero-tile">'
+            f'<div class="hero-tile-icon">{_icon_svg(unit)}</div>'
+            f'<div class="hero-tile-text">'
+            f'<div class="hero-val">{val}{unit_html}</div>'
+            f'<div class="hero-lbl">{lbl}</div>'
+            f'</div>'
             f'</div>'
         )
 
-    core_rows_html = ""
-    for row in (specs.get("core") or []):
-        core_rows_html += _spec_row(
+    # ── Specifications section (non-hero additional specs) ──
+    add_rows_html = ""
+    for row in (specs.get("additional") or [])[:8]:
+        add_rows_html += _spec_row_html(
             row.get("label", ""), row.get("value"), row.get("unit", "")
         )
+    add_section = _section(
+        "SPECIFICATIONS",
+        f'<div class="spec-rows">{add_rows_html}</div>',
+    ) if add_rows_html else ""
 
-    # ── Features (bullet list) ──
-    feat_html = ""
+    # ── Key Features section ──
+    feat_items = ""
     for feat in (features or [])[:8]:
-        feat_html += (
+        feat_items += (
             f'<div class="feat-item">'
             f'<span class="feat-bullet">&bull;</span>'
             f'{_esc(feat)}'
             f'</div>'
         )
-    if not feat_html:
-        feat_html = '<div class="feat-item" style="color:#bbb">—</div>'
-
-    # ── Condition & Service (inline key: value) ──
-    cond_html = ""
-    for lbl, key in [("Condition", "grade"), ("Ownership", "ownership")]:
-        val = condition.get(key)
-        if val:
-            cond_html += (
-                f'<div class="cond-item">'
-                f'<span class="cond-key">{_esc(lbl)}:</span> {_esc(val)}'
-                f'</div>'
-            )
-    notes = condition.get("notes")
-    if notes:
-        short = notes[:90] + ("\u2026" if len(notes) > 90 else "")
-        cond_html += (
-            f'<div class="cond-item">'
-            f'<span class="cond-key">Notes:</span> {_esc(short)}'
-            f'</div>'
-        )
-    if not cond_html:
-        cond_html = '<div class="cond-item" style="color:#bbb">—</div>'
-
-    # ── Secondary / Specifications rows ──
-    sec_rows_html = ""
-    for row in (specs.get("secondary") or [])[:6]:
-        sec_rows_html += _spec_row(
-            row.get("label", ""), row.get("value"), row.get("unit", "")
-        )
+    feat_section = _section(
+        "KEY FEATURES",
+        f'<div class="feat-list">{feat_items}</div>',
+    ) if feat_items else ""
 
     # ── Dealer footer ──
     d_name  = dealer.get("name")          or ""
@@ -479,7 +534,11 @@ def render_spec_sheet(data: dict) -> str:
         logo_inner = '<div class="logo-placeholder">YOUR<br>LOGO</div>'
 
     sub_parts = [x for x in [d_phone, d_loc] if x]
-    sub_html = "<br>".join(_esc(x) for x in sub_parts)
+    sub_html = (
+        f'<div class="dealer-sub">'
+        + " &nbsp;&middot;&nbsp; ".join(_esc(x) for x in sub_parts)
+        + '</div>'
+    ) if sub_parts else ""
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -491,7 +550,7 @@ def render_spec_sheet(data: dict) -> str:
 <style>{_CSS}</style>
 </head>
 <body>
-<div class="sheet {theme_cls}">
+<div class="sheet theme-{theme}">
 
   <div class="hdr">
     <div class="hdr-left">
@@ -500,40 +559,24 @@ def render_spec_sheet(data: dict) -> str:
       {'<div class="hdr-category">' + _esc(cat) + '</div>' if cat else ''}
     </div>
     <div class="hdr-right">
-      {price_block}
-      {hours_block}
+      {price_html}
+      {hours_html}
     </div>
   </div>
 
-  <div class="photo">{photo_content}</div>
+  <div class="photo-hero {photo_cls}">
+    {photo_cell}
+    <div class="hero-rail">{tile_cells}</div>
+  </div>
 
-  <div class="body">
-    <div class="col">
-      <div>
-        <div class="sec-title">Core Specs &mdash; Verified Against OEM</div>
-        <div class="spec-rows">{core_rows_html}</div>
-      </div>
-      <div>
-        <div class="sec-title">Condition &amp; Service</div>
-        <div class="cond-list">{cond_html}</div>
-      </div>
-    </div>
-    <div class="col">
-      <div>
-        <div class="sec-title">Key Features</div>
-        <div class="feat-list">{feat_html}</div>
-      </div>
-      {'<div><div class="sec-title">Specifications</div><div class="spec-rows">' + sec_rows_html + '</div></div>' if sec_rows_html else ''}
-    </div>
+  <div class="main">
+    {add_section}
+    {feat_section}
   </div>
 
   <div class="footer">
     <div class="logo-box">{logo_inner}</div>
-    <div class="dealer-info">
-      {'<div class="dealer-name">' + _esc(d_name) + '</div>' if d_name else ''}
-      {'<div class="dealer-sub">' + sub_html + '</div>' if sub_html else ''}
-    </div>
-    {'<div class="footer-divider"></div>' if (d_name or sub_html) else ''}
+    {'<div class="dealer-info"><div class="dealer-name">' + _esc(d_name) + '</div>' + sub_html + '</div>' if d_name else ''}
     <div class="oem-badge">
       {_OEM_CHECK_SVG}
       <span class="oem-text">OEM Verified Specs</span>

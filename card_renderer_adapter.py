@@ -31,6 +31,41 @@ log = logging.getLogger(__name__)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Spec formatting helpers (adapter-local)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fmt_ft_in(feet: float | None) -> str | None:
+    """Convert decimal feet to a display string like 9' 11\" or 19'."""
+    if feet is None:
+        return None
+    f_int = int(feet)
+    inches = round((feet - f_int) * 12)
+    if inches == 12:
+        f_int += 1
+        inches = 0
+    return f"{f_int}' {inches}\"" if inches else f"{f_int}'"
+
+
+def _dig_depth_str(specs: dict) -> str | None:
+    """Return formatted dig depth string from raw registry specs."""
+    val_in = specs.get("max_dig_depth_in")   # excavator / mini_ex: stored in inches
+    if val_in is not None:
+        return _fmt_ft_in(float(val_in) / 12.0)
+    val_ft = specs.get("max_dig_depth_ft")   # backhoe_loader: stored in feet
+    if val_ft is not None:
+        return _fmt_ft_in(float(val_ft))
+    return None
+
+
+def _fmt_yd3_str(v: float | None) -> str | None:
+    """Format a cubic-yard capacity value as a short display string (e.g. 1.75 → '1.75')."""
+    if v is None:
+        return None
+    fv = float(v)
+    return str(int(fv)) if fv == int(fv) else f"{fv:.2f}".rstrip("0")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Adapters
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -86,11 +121,15 @@ def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
         or ""
     ).upper()
 
+    eq_type = (full_record.get("equipment_type") or "").lower()
+
     return {
         "machine": {
             "year":                         dealer_dict.get("year") or full_record.get("year"),
             "make":                         make,
             "model":                        full_record.get("model") or "",
+            "equipment_type":               eq_type,
+            # CTL / SSL columns
             "horsepower_hp":                specs.get("horsepower_hp"),
             "rated_operating_capacity_lbs": specs.get("rated_operating_capacity_lbs"),
             "aux_flow_standard_gpm":        specs.get("aux_flow_standard_gpm"),
@@ -98,6 +137,19 @@ def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
             "feature_flags": {
                 "high_flow_available": high_flow_flag,
             },
+            # Non-CTL columns (pre-formatted where needed)
+            "net_hp":                   specs.get("horsepower_hp") or specs.get("net_power_hp"),
+            "operating_weight_lb":      specs.get("operating_weight_lbs"),
+            "lift_capacity_lb":         specs.get("lift_capacity_lbs") or specs.get("max_lift_capacity_lbs"),
+            "max_lift_height_ft_str":   _fmt_ft_in(specs.get("lift_height_ft")),
+            "max_forward_reach_ft_str": _fmt_ft_in(specs.get("forward_reach_ft")),
+            "max_dig_depth_str":        _dig_depth_str(specs),
+            "bucket_capacity_yd3":      _fmt_yd3_str(specs.get("bucket_capacity_yd3")),
+            "blade_capacity_yd3":       _fmt_yd3_str(specs.get("blade_capacity_yd3")),
+            "platform_height_ft_str":   _fmt_ft_in(specs.get("platform_height_ft")),
+            "platform_capacity_lbs":    specs.get("platform_capacity_lbs"),
+            "platform_width_ft_str":    _fmt_ft_in(specs.get("platform_width_ft")),
+            "horizontal_reach_ft_str":  _fmt_ft_in(specs.get("horizontal_reach_ft")),
             "photo_path": dealer_dict.get("photo_path"),
         },
         "dealer": {

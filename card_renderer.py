@@ -90,6 +90,100 @@ def _spec_col(label: str, value: Any, unit: str, comma: bool = False, raw_label:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Type-aware spec column dispatch
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _build_spec_cols(machine: dict, eq_type: str) -> tuple[str, str, str]:
+    """Return (col1_html, col2_html, col3_html) keyed to equipment type."""
+    hp = machine.get("net_hp") or machine.get("horsepower_hp")
+
+    if eq_type in ("mini_excavator", "excavator", "large_excavator"):
+        weight = machine.get("operating_weight_lb")
+        dig    = machine.get("max_dig_depth_str")
+        return (
+            _spec_col("OP WEIGHT", weight, "LB", comma=True),
+            _spec_col("NET HP",    hp,     "HP"),
+            _spec_col("DIG DEPTH", dig,    ""),
+        )
+
+    if eq_type == "backhoe_loader":
+        weight = machine.get("operating_weight_lb")
+        dig    = machine.get("max_dig_depth_str")
+        return (
+            _spec_col("OP WEIGHT", weight, "LB", comma=True),
+            _spec_col("NET HP",    hp,     "HP"),
+            _spec_col("DIG DEPTH", dig,    ""),
+        )
+
+    if eq_type == "telehandler":
+        cap    = machine.get("lift_capacity_lb")
+        height = machine.get("max_lift_height_ft_str")
+        return (
+            _spec_col("LIFT CAP", cap,    "LB", comma=True),
+            _spec_col("NET HP",   hp,     "HP"),
+            _spec_col("LIFT HT",  height, ""),
+        )
+
+    if eq_type == "wheel_loader":
+        weight = machine.get("operating_weight_lb")
+        bucket = machine.get("bucket_capacity_yd3")
+        return (
+            _spec_col("OP WEIGHT", weight, "LB", comma=True),
+            _spec_col("NET HP",    hp,     "HP"),
+            _spec_col("BUCKET",    bucket, "YD\u00b3"),
+        )
+
+    if eq_type in ("dozer", "crawler_dozer"):
+        weight = machine.get("operating_weight_lb")
+        blade  = machine.get("blade_capacity_yd3")
+        return (
+            _spec_col("OP WEIGHT", weight, "LB", comma=True),
+            _spec_col("NET HP",    hp,     "HP"),
+            _spec_col("BLADE",     blade,  "YD\u00b3"),
+        )
+
+    if eq_type == "boom_lift":
+        ph    = machine.get("platform_height_ft_str")
+        reach = machine.get("horizontal_reach_ft_str")
+        cap   = machine.get("platform_capacity_lbs")
+        return (
+            _spec_col("PLATFORM HT",  ph,    ""),
+            _spec_col("HORIZ REACH",  reach, ""),
+            _spec_col("PLATFORM CAP", cap,   "LB", comma=True),
+        )
+
+    if eq_type == "scissor_lift":
+        ph    = machine.get("platform_height_ft_str")
+        width = machine.get("platform_width_ft_str")
+        cap   = machine.get("platform_capacity_lbs")
+        return (
+            _spec_col("PLATFORM HT",  ph,    ""),
+            _spec_col("PLATFORM W",   width, ""),
+            _spec_col("PLATFORM CAP", cap,   "LB", comma=True),
+        )
+
+    # Default: CTL / SSL
+    roc       = machine.get("rated_operating_capacity_lbs")
+    flags     = machine.get("feature_flags") or {}
+    high_flow = bool(flags.get("high_flow_available", False))
+    flow_high = machine.get("aux_flow_high_gpm")
+    flow_std  = machine.get("aux_flow_standard_gpm")
+    if high_flow and flow_high is not None:
+        flow_val   = flow_high
+        flow_label = "AUX FLOW<br>HIGH FLOW"
+        flow_raw   = True
+    else:
+        flow_val   = flow_std
+        flow_label = "AUX FLOW"
+        flow_raw   = False
+    return (
+        _spec_col("ROC",      roc,      "LB",  comma=True),
+        _spec_col("NET HP",   hp,       "HP"),
+        _spec_col(flow_label, flow_val, "GPM", raw_label=flow_raw),
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Main entry point
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -133,12 +227,6 @@ def render_card(data: dict) -> str:
     year       = machine.get("year")
     make       = (machine.get("make") or "").upper()
     model      = machine.get("model") or ""
-    roc        = machine.get("rated_operating_capacity_lbs")
-    hp         = machine.get("horsepower_hp")
-    flags      = machine.get("feature_flags") or {}
-    high_flow  = bool(flags.get("high_flow_available", False))
-    flow_high  = machine.get("aux_flow_high_gpm")
-    flow_std   = machine.get("aux_flow_standard_gpm")
     photo_path = machine.get("photo_path")
 
     # --- Theme ---
@@ -193,22 +281,8 @@ def render_card(data: dict) -> str:
     else:
         hours_html = ""
 
-    # --- Flow: prefer high-flow value when flag is set and value exists ---
-    if high_flow and flow_high is not None:
-        flow_val = flow_high
-    else:
-        flow_val = flow_std
-
-    if high_flow and flow_high is not None:
-        flow_label     = "AUX FLOW<br>HIGH FLOW"
-        flow_raw_label = True
-    else:
-        flow_label     = "AUX FLOW"
-        flow_raw_label = False
-
-    roc_html  = _spec_col("ROC",      roc,      "LB",  comma=True)
-    hp_html   = _spec_col("NET HP",   hp,       "HP")
-    flow_html = _spec_col(flow_label, flow_val, "GPM", raw_label=flow_raw_label)
+    eq_type = (machine.get("equipment_type") or "").lower()
+    roc_html, hp_html, flow_html = _build_spec_cols(machine, eq_type)
 
     return _build_html(
         theme_classes = theme_classes,
