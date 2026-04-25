@@ -84,6 +84,30 @@ def _fmt_yd3(raw) -> str | None:
         return str(raw)
 
 
+# ── CTL readiness guard ───────────────────────────────────────────────────────
+_CTL_REQUIRED_FIELDS = [
+    "horsepower_hp",
+    "rated_operating_capacity_lbs",
+    "operating_weight_lbs",
+    "aux_flow_standard_gpm",
+    "lift_path",
+    "width_over_tires_in",
+    "bucket_hinge_pin_height_in",
+]
+
+
+def _ctl_is_spec_ready(specs: dict, full_record: dict | None) -> bool:
+    """
+    Return True when all 7 CTL required fields are present and the record is not
+    a coverage stub or seed-only placeholder.  Returns False for any weak record
+    that should not produce a full OEM-style spec sheet.
+    """
+    fr = full_record or {}
+    if fr.get("coverage_stub") or fr.get("seed_only"):
+        return False
+    return all(specs.get(f) is not None for f in _CTL_REQUIRED_FIELDS)
+
+
 def _logo_data_uri(logo_path: str | None) -> str | None:
     if not logo_path:
         return None
@@ -232,8 +256,20 @@ def _hero_specs(
         _push("Operating Weight", _weight(), "LB", "weight")       # slot 1
         _push("Max Dig Depth", _dig_depth(), "", "dig_depth")       # slot 2
 
-        # slot 3: ROPS Type — DealerInput overrides registry cab_type
-        cab_raw = (di.get("cab_type") or specs.get("cab_type") or "").lower().strip()
+        # slot 3: ROPS Type — fallback: cab_type (di → specs) → rops_type (di → specs) → registry
+        # full_record may be the raw lookup result (full_record["full_record"]["specs"])
+        # or the nested record directly (full_record["specs"]); check both.
+        _fr_rec   = (full_record or {})
+        _fr_specs = (
+            _fr_rec.get("specs")
+            or (_fr_rec.get("full_record") or {}).get("specs")
+            or {}
+        )
+        cab_raw = (
+            di.get("cab_type") or specs.get("cab_type") or
+            di.get("rops_type") or specs.get("rops_type") or
+            _fr_specs.get("cab_type") or _fr_specs.get("rops_type") or ""
+        ).lower().strip()
         _ROPS = {
             "enclosed": "Enclosed Cab", "erops": "Enclosed Cab", "cab": "Enclosed Cab",
             "canopy": "Open Canopy", "open": "Open Canopy", "rops": "Open Canopy",
@@ -489,17 +525,11 @@ def _additional_specs(
     elif eq == "mini_excavator":
         _dig_depth_row()
         _track_info()
-        if "bucket_breakout" not in hero_keys:
-            bbf = specs.get("bucket_breakout_force_lbs") or specs.get("breakout_force_lbs")
-            _row("Bucket Breakout", _fmt_int(bbf), "LB")
         _hpp()
-        _width()
-        _hyd_pressure()
         _weight_row()
         bt = di.get("blade_type") or specs.get("blade_type")
         if bt and str(bt).lower() not in ("none", ""):
             _row("Blade", str(bt).title())
-        _serial()
 
     elif eq in ("large_excavator", "excavator"):
         # Dig depth, arm length, boom type, max reach, operating weight are in core/hero/performance.
@@ -523,8 +553,6 @@ def _additional_specs(
         _hyd_pressure()
 
     elif eq == "wheel_loader":
-        if "tipping_load" not in hero_keys:
-            _row("Tipping Load", _fmt_int(specs.get("tipping_load_lbs")), "LB")
         spd = specs.get("travel_speed_mph")
         if spd is not None:
             try:
@@ -534,8 +562,14 @@ def _additional_specs(
         xmit = specs.get("transmission_type")
         if xmit:
             _row("Transmission", str(xmit))
-        _hpp()
         _width()
+        bw = specs.get("bucket_width_in")
+        if bw is not None:
+            try:
+                _row("Bucket Width", f'{int(float(bw))}"')
+            except (TypeError, ValueError):
+                _row("Bucket Width", str(bw))
+        _hyd_pressure()
         _weight_row()
         _serial()
 
@@ -653,7 +687,11 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         dd_ft = specs.get("max_dig_depth_ft") or specs.get("dig_depth_ft")
         if dd_ft is None:
             _dd_in = specs.get("max_dig_depth") or specs.get("max_dig_depth_in")
-            dd_ft = float(_dd_in) / 12.0 if _dd_in is not None else None
+            if _dd_in is not None:
+                try:
+                    dd_ft = float(_dd_in) / 12.0
+                except (TypeError, ValueError):
+                    dd_ft = _dd_in  # pre-formatted string; _fmt_ft_in handles it as-is
         if dd_ft is not None:
             _row("Max Dig Depth", _fmt_ft_in(dd_ft))
 
@@ -669,7 +707,7 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
-    # ── Mini Ex locked core — do not alter ───────────────────────────────────────
+    # ── Mini Ex core specs ───────────────────────────────────────────────────────
     if eq == "mini_excavator":
         _row("Hours", hours_fmt)
 
@@ -677,6 +715,18 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
             specs.get("horsepower_hp") or specs.get("net_hp") or specs.get("engine_hp")
         )
         _row("Horsepower", hp, "HP")
+
+        w = specs.get("width_in") or specs.get("overall_width_in")
+        if w is not None:
+            try:
+                _row("Machine Width", f'{int(float(w))}"')
+            except (TypeError, ValueError):
+                _row("Machine Width", str(w))
+
+        flow = (specs.get("aux_flow_standard_gpm") or specs.get("hydraulic_flow_gpm")
+                or specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm"))
+        if flow is not None:
+            _row("Aux Hydraulic Flow", _fmt_int(flow), "GPM")
 
         arm_raw = di.get("arm_length")
         if arm_raw:
@@ -698,8 +748,24 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
-    # ── CTL locked core — do not alter ───────────────────────────────────────────
+    # ── Wheel Loader core specs ───────────────────────────────────────────────────
+    if eq == "wheel_loader":
+        _row("Hours", hours_fmt)
+        _row("Serial #", di.get("serial_number"))
+        _row("Stock #", di.get("stock_number"))
+        return rows
+
+    # ── CTL core ─────────────────────────────────────────────────────────────────
     _row("Hours", hours_fmt)
+
+    # Machine Width — CTL registry field is width_over_tires_in, not width_in
+    w = specs.get("width_over_tires_in") or specs.get("width_in") or specs.get("overall_width_in")
+    if w is not None:
+        try:
+            _row("Machine Width", f'{int(float(w))}"')
+        except (TypeError, ValueError):
+            _row("Machine Width", str(w))
+
     _row("Serial #", di.get("serial_number"))
     _row("Stock #", di.get("stock_number"))
 
@@ -752,7 +818,7 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
         _row("Bucket Breakout Force", _fmt_int(bbf), "LB")
         return rows
 
-    # ── Mini Ex performance — locked: Max Reach + Bucket Breakout ────────────
+    # ── Mini Ex performance: Max Reach / Breakout / Arm Force / Pressure / Speed ─
     if eq == "mini_excavator":
         reach = specs.get("max_reach_ft") or specs.get("reach_ft")
         if reach is not None:
@@ -762,6 +828,29 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
                 _row("Max Reach", str(reach))
         bbf = specs.get("bucket_breakout_force_lbs") or specs.get("breakout_force_lbs")
         _row("Bucket Breakout Force", _fmt_int(bbf), "LB")
+        adf = (specs.get("arm_digging_force_lbs") or specs.get("arm_dig_force_lbs")
+               or specs.get("arm_breakout_force_lbf") or specs.get("arm_breakout_force_lbs"))
+        _row("Arm Digging Force", _fmt_int(adf), "LB")
+        psi = (specs.get("hydraulic_pressure_psi") or specs.get("aux_pressure_psi")
+               or specs.get("main_relief_pressure_psi"))
+        if psi is not None:
+            try:
+                _row("Hydraulic Pressure", f"{int(float(psi)):,}", "PSI")
+            except (TypeError, ValueError):
+                _row("Hydraulic Pressure", str(psi), "PSI")
+        ts_high = (specs.get("travel_speed_high_mph") or specs.get("max_travel_speed_mph")
+                   or specs.get("travel_speed_mph"))
+        if ts_high is not None:
+            try:
+                _row("Travel Speed (High)", f"{float(ts_high):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed (High)", str(ts_high), "MPH")
+        ts_low = specs.get("travel_speed_low_mph")
+        if ts_low is not None:
+            try:
+                _row("Travel Speed (Low)", f"{float(ts_low):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed (Low)", str(ts_low), "MPH")
         return rows
 
     # ── CTL + SSL shared row 1: Tipping Load ────────────────────────────────────
@@ -781,7 +870,15 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
         elif hpp_ft is not None:
             _row("Hinge Pin Height", _fmt_ft_in(hpp_ft))
     else:
-        # ── CTL locked performance row 2: High Flow Output — do not alter ────────
+        # CTL row 2: Hinge Pin Height — bucket_hinge_pin_height_in is the CTL registry field
+        hpp_in = (specs.get("bucket_hinge_pin_height_in") or specs.get("hinge_pin_height_in")
+                  or specs.get("dump_height_in"))
+        if hpp_in is not None:
+            try:
+                _row("Hinge Pin Height", f'{int(float(hpp_in))}"')
+            except (TypeError, ValueError):
+                _row("Hinge Pin Height", str(hpp_in))
+        # CTL row 3: High Flow Output — only shown when this unit has high flow active
         hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
         if hfo is not None and di.get("high_flow") == "yes":
             _row("High Flow Output", _fmt_int(hfo), "GPM")
@@ -843,7 +940,8 @@ def _features(di: dict, eq_type: str) -> list[str]:
         # 3. Blade Type
         blade_raw = (di.get("blade_type") or "").lower().strip()
         _BLADE = {
-            "straight": "Standard Blade", "standard": "Standard Blade", "dozer": "Standard Blade",
+            "straight": "Standard Blade", "standard": "Standard Blade",
+            "dozer":    "Dozer Blade",
             "angle":    "Angle Blade",
             "6-way":    "6-Way Blade",    "6way": "6-Way Blade", "6_way": "6-Way Blade",
         }
@@ -867,7 +965,16 @@ def _features(di: dict, eq_type: str) -> list[str]:
         if di.get("pattern_changer"):
             feats.append("ISO/SAE Pattern Changer")
 
-        # Attachments excluded. Tail Swing excluded (already in hero).
+        # 8. Standard Bucket — only when bucket_type explicitly provided by dealer
+        bucket_raw = (di.get("bucket_type") or "").lower().strip()
+        if bucket_raw and bucket_raw not in ("none", ""):
+            feats.append("Standard Bucket")
+
+        # 9. One Owner — from dealer input flag
+        if di.get("one_owner"):
+            feats.append("One Owner")
+
+        # Tail Swing excluded (already in hero).
         return feats[:8]
 
     # ── Large Excavator locked feature set ───────────────────────────────────
@@ -973,6 +1080,35 @@ def _features(di: dict, eq_type: str) -> list[str]:
             feats.append("Backup Camera")
         if di.get("radio"):
             feats.append("Radio")
+        return feats[:8]
+
+    # ── Wheel Loader feature set ──────────────────────────────────────────────────
+    if eq == "wheel_loader":
+        cab_raw = (di.get("cab_type") or "").lower().strip()
+        if cab_raw in ("enclosed", "erops", "cab"):
+            feats.append("Enclosed Cab")
+        if di.get("ac") and di.get("heater"):
+            feats.append("A/C + Heat")
+        elif di.get("ac"):
+            feats.append("A/C")
+        elif di.get("heater"):
+            feats.append("Heat")
+        if di.get("ride_control"):
+            feats.append("Ride Control")
+        coupler_raw = (di.get("coupler_type") or "").lower().strip()
+        if coupler_raw and coupler_raw not in ("none", ""):
+            feats.append("Quick Coupler")
+        if di.get("backup_camera") or di.get("rear_camera"):
+            feats.append("Backup Camera")
+        if di.get("radio"):
+            feats.append("Radio")
+        if di.get("air_ride_seat"):
+            feats.append("Air Ride Seat")
+        aux_type = (di.get("aux_hydraulics_type") or "").lower().strip()
+        if aux_type and aux_type not in ("none", ""):
+            feats.append("Auxiliary Hydraulics")
+        elif di.get("aux_hydraulics"):
+            feats.append("Auxiliary Hydraulics")
         return feats[:8]
 
     # ── CTL locked feature set — do not alter ────────────────────────────────────
@@ -1085,12 +1221,20 @@ def build_spec_sheet_data(
     core_rows = _core_specs(di, specs, eq, hours_fmt)
     perf_rows = _performance_specs(di, specs, eq)
 
+    # CTL readiness guard — flag weak/stub records so callers can suppress the OEM badge
+    oem_verified = True
+    ctl_spec_sheet_confidence: str | None = None
+    if eq == "compact_track_loader":
+        ready = _ctl_is_spec_ready(specs, fr)
+        ctl_spec_sheet_confidence = "full" if ready else "limited"
+        oem_verified = ready
+
     # Condition section: undercarriage % for excavators, track % for others
     if eq in ("large_excavator", "excavator"):
         uc_pct = di.get("undercarriage_percent_remaining")
         track_pct_val  = f"{uc_pct}%" if uc_pct is not None else None
         track_label_val = "Undercarriage % Remaining"
-    elif eq == "skid_steer":
+    elif eq in ("skid_steer", "wheel_loader"):
         _tp = di.get("track_percent_remaining")
         track_pct_val  = f"{_tp}%" if _tp is not None else None
         track_label_val = "Tire % Remaining"
@@ -1132,6 +1276,8 @@ def build_spec_sheet_data(
             "logo_data_uri": logo_uri,
             "theme":         theme,
         },
+        "oem_verified":              oem_verified,
+        "ctl_spec_sheet_confidence": ctl_spec_sheet_confidence,
     }
 
 

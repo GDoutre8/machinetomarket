@@ -259,7 +259,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   min-height: 0;
 }
 .photo-hero.has-photo .hero-rail {
-  grid-template-rows: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
   align-self: stretch;
 }
 .photo-hero.no-photo .hero-rail {
@@ -597,11 +597,12 @@ _FEAT_CHECK_SVG = (
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_spec_sheet(data: dict) -> str:
-    machine   = data.get("machine")   or {}
-    listing   = data.get("listing")   or {}
-    specs     = data.get("specs")     or {}
-    features  = data.get("features")  or []
-    dealer    = data.get("dealer")    or {}
+    machine      = data.get("machine")      or {}
+    listing      = data.get("listing")      or {}
+    specs        = data.get("specs")        or {}
+    features     = data.get("features")     or []
+    dealer       = data.get("dealer")       or {}
+    oem_verified = data.get("oem_verified", True)
 
     # ── Theme ──
     theme = (dealer.get("theme") or "yellow").lower().strip()
@@ -846,13 +847,7 @@ def render_spec_sheet(data: dict) -> str:
       {footer_mid_rows}
     </div>
     <div class="footer-right">
-      <div class="oem-badge">
-        <div class="oem-badge-row">
-          {_OEM_CHECK_SVG}
-          <span class="oem-text">OEM Verified Specs</span>
-        </div>
-        <div class="oem-sub">Sourced from manufacturer data</div>
-      </div>
+      {'<div class="oem-badge"><div class="oem-badge-row">' + _OEM_CHECK_SVG + '<span class="oem-text">OEM Verified Specs</span></div><div class="oem-sub">Sourced from manufacturer data</div></div>' if oem_verified else '<div class="oem-badge"><div class="oem-sub" style="color:#CCC;font-style:italic">Specs may be incomplete</div></div>'}
     </div>
   </div>
 
