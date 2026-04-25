@@ -159,7 +159,7 @@ def _hero_specs(
 
     eq = (eq_type or "").lower()
 
-    if eq in ("compact_track_loader", "skid_steer"):
+    if eq == "compact_track_loader":
         _push("Rated Op Capacity", _roc(), "LB", "roc")
         _push("Net Power", _hp(), "HP", "hp")
         flow_val, is_high = _aux_flow()
@@ -167,13 +167,33 @@ def _hero_specs(
             tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Standard)",
                           "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
-        # 4th slot: Lift Path (locked architecture); fallback to Operating Weight
+        # 4th slot: Lift Path (locked CTL architecture); fallback to Operating Weight
         lp_raw = specs.get("lift_path") or specs.get("lift_type")
         if lp_raw and len(tiles) < 4:
             _LP = {"vertical": "Vertical", "radial": "Radial",
                    "high": "Vertical", "locked": "Vertical"}
             lp_display = _LP.get(str(lp_raw).lower(), str(lp_raw).title())
             tiles.append({"label": "Lift Path", "value": lp_display,
+                          "unit": "", "icon": "lift_path"})
+            hero_keys.add("lift_path")
+        elif len(tiles) < 4:
+            _push("Operating Weight", _weight(), "LB", "weight")
+
+    elif eq == "skid_steer":
+        _push("Rated Op Capacity", _roc(), "LB", "roc")
+        _push("Net Power", _hp(), "HP", "hp")
+        flow_val, is_high = _aux_flow()
+        if flow_val and len(tiles) < 4:
+            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Standard)",
+                          "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
+            hero_keys.add("aux_flow")
+        # 4th slot: Lift Type (locked SSL architecture); fallback to Operating Weight
+        lp_raw = specs.get("lift_path") or specs.get("lift_type")
+        if lp_raw and len(tiles) < 4:
+            _LP = {"vertical": "Vertical", "radial": "Radial",
+                   "high": "Vertical", "locked": "Vertical"}
+            lp_display = _LP.get(str(lp_raw).lower(), str(lp_raw).title())
+            tiles.append({"label": "Lift Type", "value": lp_display,
                           "unit": "", "icon": "lift_path"})
             hero_keys.add("lift_path")
         elif len(tiles) < 4:
@@ -367,7 +387,7 @@ def _additional_specs(
 
     # ── Per equipment type ────────────────────────────────────────────────────
 
-    if eq in ("compact_track_loader", "skid_steer"):
+    if eq == "compact_track_loader":
         lp_raw = specs.get("lift_path") or specs.get("lift_type")
         if lp_raw:
             _LP = {"vertical": "Vertical", "radial": "Radial",
@@ -377,6 +397,19 @@ def _additional_specs(
         _width()
         _hyd_pressure()
         _track_info()
+        _weight_row()
+        _serial()
+
+    elif eq == "skid_steer":
+        # Hinge Pin Height moves to Performance Data for SSL — excluded here.
+        # Track Info not applicable (SSL = tires).
+        lp_raw = specs.get("lift_path") or specs.get("lift_type")
+        if lp_raw and "lift_path" not in hero_keys:
+            _LP = {"vertical": "Vertical", "radial": "Radial",
+                   "high": "Vertical", "locked": "Vertical"}
+            _row("Lift Path", _LP.get(str(lp_raw).lower(), str(lp_raw).title()))
+        _width()
+        _hyd_pressure()
         _weight_row()
         _serial()
 
@@ -543,7 +576,10 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
 
 
 def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
-    """Build Performance Data rows: Tipping Load + High Flow Output."""
+    """Build Performance Data rows.
+    SSL locked arch: Tipping Load + Hinge Pin Height.
+    CTL/others: Tipping Load + High Flow Output.
+    """
     rows: list[dict] = []
 
     def _row(label: str, value, unit: str = "") -> None:
@@ -557,9 +593,21 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
     tl = specs.get("tipping_load_lbs") or specs.get("tipping_load_lb")
     _row("Tipping Load", _fmt_int(tl), "LB")
 
-    hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
-    if hfo is not None and di.get("high_flow") == "yes":
-        _row("High Flow Output", _fmt_int(hfo), "GPM")
+    if eq == "skid_steer":
+        hpp_in = (specs.get("hinge_pin_height_in") or specs.get("bucket_hinge_pin_height_in")
+                  or specs.get("dump_height_in"))
+        hpp_ft = specs.get("hinge_pin_height_ft") if not hpp_in else None
+        if hpp_in:
+            try:
+                _row("Hinge Pin Height", f'{int(float(hpp_in))}"')
+            except (TypeError, ValueError):
+                _row("Hinge Pin Height", str(hpp_in))
+        elif hpp_ft is not None:
+            _row("Hinge Pin Height", _fmt_ft_in(hpp_ft))
+    else:
+        hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
+        if hfo is not None and di.get("high_flow") == "yes":
+            _row("High Flow Output", _fmt_int(hfo), "GPM")
 
     return rows
 
@@ -567,8 +615,9 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
 def _features(di: dict, eq_type: str) -> list[str]:
     """Build a flat list of confirmed feature labels (max 8)."""
     feats: list[str] = []
+    eq = (eq_type or "").lower()
 
-    # Cab — separate entries per locked architecture
+    # Cab
     if (di.get("cab_type") or "").lower() == "enclosed":
         feats.append("Enclosed Cab")
 
@@ -580,9 +629,10 @@ def _features(di: dict, eq_type: str) -> list[str]:
     elif di.get("heater"):
         feats.append("Heat")
 
-    # Hydraulics/drive — locked labels
-    if di.get("high_flow") == "yes":
+    # High Flow — excluded from SSL locked key features
+    if eq != "skid_steer" and di.get("high_flow") == "yes":
         feats.append("High Flow Equipped")
+
     if di.get("two_speed_travel") == "yes":
         feats.append("2-Speed")
 
@@ -590,18 +640,36 @@ def _features(di: dict, eq_type: str) -> list[str]:
     if di.get("coupler_type"):
         feats.append("Quick Attach")
 
-    # Comfort/utility
+    # Comfort
     if di.get("air_ride_seat"):
         feats.append("Air Ride Seat")
-    if di.get("ride_control"):
-        feats.append("Ride Control")
+
+    if eq == "skid_steer":
+        # SSL locked arch: Control Type; Ride Control as fallback if absent
+        ct = di.get("control_type")
+        if ct:
+            _CT_LABELS = {
+                "hand_foot": "Hand & Foot Controls",
+                "hand foot": "Hand & Foot Controls",
+                "hand-foot": "Hand & Foot Controls",
+                "joystick":  "Joystick Controls",
+                "eh":        "EH Controls",
+                "sjc":       "SJC Controls",
+            }
+            feats.append(_CT_LABELS.get(str(ct).lower().strip(), str(ct).replace("_", " ").title()))
+        elif di.get("ride_control"):
+            feats.append("Ride Control")
+    else:
+        if di.get("ride_control"):
+            feats.append("Ride Control")
+
     if di.get("backup_camera") or di.get("rear_camera"):
         feats.append("Backup Camera")
     if di.get("radio"):
         feats.append("Radio")
 
-    # Attachments included
-    if di.get("attachments_included"):
+    # Attachments — excluded from SSL key features per locked arch
+    if eq != "skid_steer" and di.get("attachments_included"):
         for att in str(di["attachments_included"]).split(",")[:2]:
             att = att.strip()
             if att:
@@ -691,6 +759,7 @@ def build_spec_sheet_data(
             "hours_qualifier": None,   # reserved — no DealerInput field yet
             "condition":       di.get("condition_grade"),
             "track_pct":       (f"{v}%" if (v := di.get("track_percent_remaining")) is not None else None),
+            "track_label":     "Tire % Remaining" if eq == "skid_steer" else "Track % Remaining",
             "notes":           di.get("condition_notes") or di.get("additional_details"),
             "stock_number":    di.get("stock_number"),  # not in DealerInput v1 — None
         },

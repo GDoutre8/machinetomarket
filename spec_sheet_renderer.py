@@ -721,9 +721,10 @@ def render_spec_sheet(data: dict) -> str:
             f'</div>'
         )
     if track_pct is not None:
+        track_label = listing.get("track_label") or "Track % Remaining"
         cond_rows_html += (
             f'<div class="cond-row">'
-            f'<span class="cond-lbl">Track % Remaining</span>'
+            f'<span class="cond-lbl">{_esc(track_label)}</span>'
             f'<span class="cond-val">{_esc(str(track_pct))}</span>'
             f'</div>'
         )
