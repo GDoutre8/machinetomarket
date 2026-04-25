@@ -304,8 +304,8 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 
 /* ── Mid body: core specs + features ── */
 .main {
-  flex: 1;
-  overflow: hidden;
+  flex: 0 0 auto;
+  overflow: visible;
   padding: 9px 22px 0;
   display: flex;
   flex-direction: row;
@@ -402,7 +402,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   font-size: 7.5px; font-weight: 600;
   color: #999; white-space: nowrap; flex-shrink: 0;
   text-transform: uppercase; letter-spacing: 0.09em;
-  width: 56px;
+  width: 72px;
 }
 .cond-val {
   font-size: 8.5px; font-weight: 600; color: #1A1A1A;
@@ -429,6 +429,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 
 /* ── Footer — 3-column grid ── */
 .footer {
+  margin-top: auto;
   border-top: 1px solid rgba(0,0,0,0.08);
   padding: 6px 22px 5px;
   display: grid;
@@ -621,7 +622,6 @@ def render_spec_sheet(data: dict) -> str:
         price_html = (
             f'<div class="hdr-price-block">'
             f'<div class="hdr-price">{_esc(p)}</div>'
-            f'<div class="hdr-sublabel">Asking Price</div>'
             f'</div>'
         )
 
@@ -631,11 +631,8 @@ def render_spec_sheet(data: dict) -> str:
     if hrs:
         hours_html = (
             f'<div class="hdr-hours-block">'
-            f'<div>'
             f'<span class="hdr-hours-val">{_esc(hrs)}</span>'
             f'<span class="hdr-hours-unit">HRS</span>'
-            f'</div>'
-            f'<div class="hdr-sublabel">Hours</div>'
             f'</div>'
         )
 
@@ -687,8 +684,7 @@ def render_spec_sheet(data: dict) -> str:
         )
     core_section = _section(
         "CORE SPECS \u2014 OEM VERIFIED",
-        f'<div class="spec-rows">{core_rows_html}</div>'
-        + '<div class="sec-footnote">*Sourced from OEM publications. May vary with options.</div>',
+        f'<div class="spec-rows">{core_rows_html}</div>',
     ) if core_rows_html else ""
 
     # ── Key Features ──
@@ -724,10 +720,10 @@ def render_spec_sheet(data: dict) -> str:
             f'<span class="cond-val">{hrs_display}</span>'
             f'</div>'
         )
-    if track_pct:
+    if track_pct is not None:
         cond_rows_html += (
             f'<div class="cond-row">'
-            f'<span class="cond-lbl">Track</span>'
+            f'<span class="cond-lbl">Track Rem.</span>'
             f'<span class="cond-val">{_esc(str(track_pct))}</span>'
             f'</div>'
         )

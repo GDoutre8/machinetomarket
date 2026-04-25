@@ -1008,6 +1008,7 @@ async def build_listing_endpoint(
     # CTL core output fields (locked standard 2026-04-10)
     serial_number:          Optional[str]        = Form(None),
     stock_number:           Optional[str]        = Form(None),
+    track_percent_remaining: Optional[int]       = Form(None),
     # CTL feature fields (locked standard 2026-04-10)
     air_ride_seat:          str                  = Form("false"),
     self_leveling:          str                  = Form("false"),
@@ -1073,6 +1074,7 @@ async def build_listing_endpoint(
             ),
             tire_condition=tire_condition.strip() or None if tire_condition else None,
             track_condition=track_condition.strip() or None if track_condition else None,
+            track_percent_remaining=track_percent_remaining,
             attachments_included=attachments_included.strip() or None if attachments_included else None,
             condition_notes=condition_notes.strip() or None if condition_notes else None,
             condition_grade=condition_grade.strip() or None if condition_grade else None,
@@ -1375,6 +1377,7 @@ async def build_listing_preview(
     # CTL core output fields (locked standard 2026-04-10)
     serial_number:        Optional[str] = Form(None),
     stock_number:         Optional[str] = Form(None),
+    track_percent_remaining: Optional[int] = Form(None),
     # CTL feature fields (locked standard 2026-04-10)
     air_ride_seat:        str           = Form("false"),
     self_leveling:        str           = Form("false"),
@@ -1423,6 +1426,7 @@ async def build_listing_preview(
             ),
             tire_condition=tire_condition.strip() or None if tire_condition else None,
             track_condition=track_condition.strip() or None if track_condition else None,
+            track_percent_remaining=track_percent_remaining,
             attachments_included=attachments_included.strip() or None if attachments_included else None,
             condition_notes=condition_notes.strip() or None if condition_notes else None,
             condition_grade=condition_grade.strip() or None if condition_grade else None,

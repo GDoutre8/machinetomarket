@@ -690,7 +690,7 @@ def build_spec_sheet_data(
             "hours":           hours_raw,
             "hours_qualifier": None,   # reserved — no DealerInput field yet
             "condition":       di.get("condition_grade"),
-            "track_pct":       di.get("track_condition"),
+            "track_pct":       (f"{v}%" if (v := di.get("track_percent_remaining")) is not None else None),
             "notes":           di.get("condition_notes") or di.get("additional_details"),
             "stock_number":    di.get("stock_number"),  # not in DealerInput v1 — None
         },

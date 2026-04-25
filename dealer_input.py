@@ -132,6 +132,11 @@ class DealerInput(BaseModel):
     #   e.g. "70%", "Good", "Just replaced", "Worn — needs replacement"
     #   None = not provided.
     track_condition: Optional[str] = None
+    # track_percent_remaining: integer estimate of track life remaining (0–100).
+    #   Rendered on spec sheet as "Track % Remaining: 85%".
+    #   Separate from track_condition grade — never converted from grade text.
+    #   None = not provided by dealer.
+    track_percent_remaining: Optional[int] = None
     # condition_grade: structured overall condition rating for spec sheet display.
     #   Allowed values: "Excellent", "Good", "Fair" (case-sensitive).
     #   None = dealer did not select a grade.
@@ -174,6 +179,13 @@ class DealerInput(BaseModel):
         if s in ("yes", "no", "optional"):
             return s
         raise ValueError(f"must be 'yes', 'no', or 'optional'; got '{v}'")
+
+    @field_validator("track_percent_remaining")
+    @classmethod
+    def track_percent_in_range(cls, v: "Optional[int]") -> "Optional[int]":
+        if v is not None and not (0 <= v <= 100):
+            raise ValueError("track_percent_remaining must be between 0 and 100")
+        return v
 
     @field_validator("year")
     @classmethod
