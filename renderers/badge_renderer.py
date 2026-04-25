@@ -61,16 +61,35 @@ _BADGE_SHADOW_MARGIN = 14
 
 # ─── Font loading ─────────────────────────────────────────────────────────────
 #
-# Primary: Inter Medium bundled at static/fonts/Inter-Medium.ttf (name + phone).
-# Both weights map to Inter Medium — phone is distinguished by size, not weight.
-# Fallback chain: Montserrat → Calibri/Segoe → DejaVu.
+# Name: Inter SemiBold (600 weight) — bundled at static/fonts/Inter-SemiBold.ttf.
+# Phone: Inter Medium (500 weight)  — bundled at static/fonts/Inter-Medium.ttf.
+# Both weights share the same fallback chain so typography degrades gracefully.
 
-_BUNDLED_INTER = str(Path(__file__).parent.parent / "static" / "fonts" / "Inter-Medium.ttf")
+_BUNDLED_INTER_MEDIUM   = str(Path(__file__).parent.parent / "static" / "fonts" / "Inter-Medium.ttf")
+_BUNDLED_INTER_SEMIBOLD = str(Path(__file__).parent.parent / "static" / "fonts" / "Inter-SemiBold.ttf")
+
+# Legacy alias — existing callers that reference _BUNDLED_INTER still work
+_BUNDLED_INTER = _BUNDLED_INTER_MEDIUM
 
 _FONT_CANDIDATES = {
+    "semibold": [
+        # Bundled Inter SemiBold (primary — works on Railway and local dev)
+        _BUNDLED_INTER_SEMIBOLD,
+        # Fallback to Medium if SemiBold unavailable
+        _BUNDLED_INTER_MEDIUM,
+        # Linux (Railway/Debian)
+        "/usr/share/fonts/opentype/montserrat/Montserrat-SemiBold.otf",
+        "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        # Windows
+        "C:/Windows/Fonts/calibrib.ttf",
+        "C:/Windows/Fonts/segoeui.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+    ],
     "medium": [
-        # Bundled Inter (always first — works on Railway and local dev)
-        _BUNDLED_INTER,
+        # Bundled Inter Medium
+        _BUNDLED_INTER_MEDIUM,
         # Linux (Railway/Debian) — Montserrat fallback
         "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
         "/usr/share/fonts/opentype/montserrat/Montserrat-Regular.otf",
@@ -84,7 +103,7 @@ _FONT_CANDIDATES = {
     ],
     "mono": [
         # Inter Medium for phone (proportional, not monospace — matches design intent)
-        _BUNDLED_INTER,
+        _BUNDLED_INTER_MEDIUM,
         "/usr/share/fonts/opentype/montserrat/Montserrat-Medium.otf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
@@ -94,7 +113,7 @@ _FONT_CANDIDATES = {
         "C:/Windows/Fonts/consola.ttf",
     ],
     "black": [
-        _BUNDLED_INTER,
+        _BUNDLED_INTER_MEDIUM,
         "/usr/share/fonts/opentype/montserrat/Montserrat-Black.otf",
         "/usr/share/fonts/opentype/montserrat/Montserrat-Bold.otf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
@@ -305,7 +324,7 @@ def build_badge(
     padding_y: int = 20,
     gap: int = 10,                  # gap between actual logo right edge and text column
     sep_width: int = 1,
-    text_gap: int = 7,
+    text_gap: int = 5,
     corner_radius: int = 12,
     accent_bar_h: int = 5,
     name_size: int = 24,
@@ -365,8 +384,8 @@ def build_badge(
         logo_src = _strip_white_bg(logo)         # white canvas fill or transparent bg
     logo_scaled = logo_src.resize((logo_pw, logo_ph), Image.LANCZOS)
 
-    # Fonts
-    name_font  = _load_font(name_size,  "medium")
+    # Fonts — name: Inter SemiBold (600), phone: Inter Medium (500)
+    name_font  = _load_font(name_size,  "semibold")
     phone_font = _load_font(phone_size, "mono")
     phone_disp = _format_phone_us(phone)
 
@@ -442,21 +461,26 @@ def build_badge(
     sep_bot_y  = content_top + content_h - sep_inset
     draw.rectangle((sep_x, sep_top_y, sep_x + sep_width - 1, sep_bot_y), fill=sep_color)
 
-    # Text block — left-aligned, vertically centered in content area
+    # Text block — centered within its column, vertically centered in content area.
+    # Each line is independently centered on text_block_w so name and phone align
+    # to the same optical midpoint regardless of their individual widths.
+    # Same logic runs for both white and dark variants.
     text_col_x = sm + padding_x + logo_pw + gap
     text_top_y = content_top + (content_h - text_block_h) // 2
 
-    # Name — left-aligned
+    # Name — centered in text block
+    name_offset_x = (text_block_w - name_w) // 2
     draw.text(
-        (text_col_x - name_bbox[0], text_top_y - name_bbox[1]),
+        (text_col_x + name_offset_x - name_bbox[0], text_top_y - name_bbox[1]),
         name,
         font=name_font,
         fill=name_color,
     )
 
-    # Phone — left-aligned, clearly secondary via size
+    # Phone — centered in text block, clearly secondary via size and weight
+    phone_offset_x = (text_block_w - phone_w) // 2
     phone_y_px = text_top_y + name_h + text_gap
-    _draw_tracked(draw, (text_col_x, phone_y_px), phone_disp,
+    _draw_tracked(draw, (text_col_x + phone_offset_x, phone_y_px), phone_disp,
                   font=phone_font, fill=phone_color, tracking=phone_tracking)
 
     return canvas
