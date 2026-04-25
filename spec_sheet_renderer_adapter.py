@@ -108,6 +108,13 @@ def _hero_specs(
     Returns (tiles[:4], hero_key_set).
     hero_key_set contains logical field names to exclude from additional specs.
     Rules: hard cap 4, null-safe promotion, no duplication with additional.
+
+    CTL BENCHMARK (compact_track_loader) — locked reference implementation:
+      Slot 1: Rated Operating Capacity (LB)
+      Slot 2: Net Power (HP)
+      Slot 3: Aux Hydraulic Flow — Standard or High label based on unit config
+      Slot 4: Lift Path (Vertical / Radial); fallback to Operating Weight if absent
+    All other equipment types derive from this pattern with type-specific substitutions.
     """
     tiles: list[dict] = []
     hero_keys: set[str] = set()
@@ -159,15 +166,16 @@ def _hero_specs(
 
     eq = (eq_type or "").lower()
 
+    # ── CTL benchmark — locked field order, do not alter ─────────────────────
     if eq == "compact_track_loader":
-        _push("Rated Op Capacity", _roc(), "LB", "roc")
-        _push("Net Power", _hp(), "HP", "hp")
+        _push("Rated Op Capacity", _roc(), "LB", "roc")   # slot 1: ROC at 35% tip
+        _push("Net Power", _hp(), "HP", "hp")              # slot 2: net engine power
         flow_val, is_high = _aux_flow()
-        if flow_val and len(tiles) < 4:
+        if flow_val and len(tiles) < 4:                    # slot 3: aux flow, Standard or High
             tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Standard)",
                           "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
-        # 4th slot: Lift Path (locked CTL architecture); fallback to Operating Weight
+        # slot 4: Lift Path — Vertical or Radial; Operating Weight only if lift_path absent
         lp_raw = specs.get("lift_path") or specs.get("lift_type")
         if lp_raw and len(tiles) < 4:
             _LP = {"vertical": "Vertical", "radial": "Radial",
@@ -525,9 +533,19 @@ def _additional_specs(
 
 def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[dict]:
     """
-    Build the explicit locked core spec rows.
-    Fields: Hours, Rated Op Capacity, Net Power, Aux Hydraulic Flow,
-            Operating Weight, Serial #, Stock #.
+    Build the locked core spec rows (OEM VERIFIED section).
+
+    CTL BENCHMARK — 7-field locked order (all equipment types share this structure):
+      1. Hours            — listing-driven
+      2. Rated Op Capacity — registry-driven (LB)
+      3. Net Power        — registry-driven (HP)
+      4. Aux Hydraulic Flow (Standard / High) — registry-driven; label reflects active config
+      5. Operating Weight — registry-driven (LB)
+      6. Serial #         — listing-driven; hidden if blank
+      7. Stock #          — listing-driven; hidden if blank
+
+    Rules: Standard vs High wording is explicit. Operating Weight appears here only
+    (not in hero unless Lift Path is absent). Serial/Stock hidden when blank.
     Empty/missing fields are omitted.
     """
     rows: list[dict] = []
@@ -576,9 +594,16 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
 
 
 def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
-    """Build Performance Data rows.
-    SSL locked arch: Tipping Load + Hinge Pin Height.
-    CTL/others: Tipping Load + High Flow Output.
+    """
+    Build Performance Data rows.
+
+    CTL BENCHMARK (compact_track_loader) — locked reference:
+      Row 1: Tipping Load (LB) — always shown when available
+      Row 2: High Flow Output (GPM) — shown only when high_flow confirmed on unit
+      "High Flow Output" is distinct from "High Flow Equipped" (capability) in features
+      and "Aux Hydraulic Flow (High)" (spec rate) in core. No other Performance rows for CTL.
+
+    SSL deviation: row 2 is Hinge Pin Height instead of High Flow Output.
     """
     rows: list[dict] = []
 
@@ -613,7 +638,21 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
 
 
 def _features(di: dict, eq_type: str) -> list[str]:
-    """Build a flat list of confirmed feature labels (max 8)."""
+    """
+    Build a flat list of confirmed feature labels (max 8).
+
+    CTL BENCHMARK (compact_track_loader) — locked feature set:
+      - Cab Type       → "Enclosed Cab" when enclosed (Open not surfaced)
+      - A/C + Heat     → combined label when both present
+      - High Flow Equipped → capability label (distinct from "High Flow Output" in performance)
+      - 2-Speed        → confirmed two_speed_travel
+      - Quick Attach   → any coupler_type present
+      - Ride Control   → optional, shown when confirmed
+
+    Rules (universal, derived from CTL benchmark):
+      - Attachments do NOT belong in Key Features for any equipment type
+      - "High Flow Equipped" (capability) vs "High Flow Output" (GPM) are never conflated
+    """
     feats: list[str] = []
     eq = (eq_type or "").lower()
 
@@ -629,7 +668,7 @@ def _features(di: dict, eq_type: str) -> list[str]:
     elif di.get("heater"):
         feats.append("Heat")
 
-    # High Flow — excluded from SSL locked key features
+    # High Flow capability — CTL benchmark label; excluded from SSL (not a key feature there)
     if eq != "skid_steer" and di.get("high_flow") == "yes":
         feats.append("High Flow Equipped")
 
@@ -668,12 +707,7 @@ def _features(di: dict, eq_type: str) -> list[str]:
     if di.get("radio"):
         feats.append("Radio")
 
-    # Attachments — excluded from SSL key features per locked arch
-    if eq != "skid_steer" and di.get("attachments_included"):
-        for att in str(di["attachments_included"]).split(",")[:2]:
-            att = att.strip()
-            if att:
-                feats.append(att.title())
+    # Attachments excluded from Key Features for all equipment types per CTL benchmark rule.
 
     # Excavator-specific
     if di.get("thumb_type") and di.get("thumb_type") not in ("none", ""):
