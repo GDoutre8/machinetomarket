@@ -182,6 +182,7 @@ def _renumber_listing_photos(listing_dir: Path, machine_name: str) -> None:
 # Desired top-level entry order in the ZIP (lower index = earlier)
 # Files written to pack_dir for server-side use but excluded from the user ZIP
 _ZIP_EXCLUDE = {"metadata_internal.json"}
+_ZIP_EXCLUDE_SUFFIXES = {".debug.html"}
 
 _ZIP_ORDER = [
     "START_HERE.txt",
@@ -205,7 +206,9 @@ def _zip_sort_key(rel_path: Path) -> tuple:
 def _zip_folder(folder_path: str, zip_path: str) -> int:
     root = Path(folder_path)
     files = sorted(
-        (fp for fp in root.rglob("*") if fp.is_file() and fp.name not in _ZIP_EXCLUDE),
+        (fp for fp in root.rglob("*") if fp.is_file()
+         and fp.name not in _ZIP_EXCLUDE
+         and not any(fp.name.endswith(s) for s in _ZIP_EXCLUDE_SUFFIXES)),
         key=lambda fp: _zip_sort_key(fp.relative_to(root.parent)),
     )
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
@@ -278,12 +281,15 @@ def build_listing_pack(
     """
     warnings: list[str] = []
     outputs: dict = {
-        "listing_txt":       None,
-        "spec_sheet_png":    None,
-        "brochure_png":      None,
-        "image_pack_folder": None,
-        "walkaround_mp4":    None,
-        "zip_file":          None,
+        "listing_txt":           None,
+        "spec_sheet_png":        None,
+        "card_png":              None,
+        "brochure_png":          None,
+        "image_pack_folder":     None,
+        "listing_photos":        None,   # list[str] of *_listing.jpg absolute paths
+        "primary_preview_image": None,   # first *_listing.jpg; used by result page
+        "walkaround_mp4":        None,
+        "zip_file":              None,
     }
 
     dealer      = dealer_info or {}
@@ -366,6 +372,7 @@ def build_listing_pack(
             result = export_listing_card(full_record, card_dealer_data, card_out)
             if result:
                 print(f"  [Pack] card PNG           : OK -> {card_out.name}")
+                outputs["card_png"] = str(card_out)
             else:
                 warnings.append("Card render failed — see logs for details.")
                 print("  [Pack] card PNG           : FAIL (see logs)")
@@ -406,6 +413,7 @@ def build_listing_pack(
             ss_result  = export_spec_sheet(_ss_data, ss_img_out)
             if ss_result:
                 print(f"  [Pack] spec sheet img     : OK -> {ss_img_out.name}")
+                outputs["spec_sheet_png"] = str(ss_img_out)
             else:
                 warnings.append("Spec sheet image render failed — see logs.")
                 print("  [Pack] spec sheet img     : FAIL (see logs)")
@@ -450,6 +458,23 @@ def build_listing_pack(
             warnings.append(f"Badge stamping failed: {_badge_exc}")
             print(f"  [Pack] badge stamp        : FAIL ({_badge_exc})")
             print(_tb)
+
+    # ── 3f. Explicit output index ─────────────────────────────────────────────
+    # Collect the actual *_listing.jpg paths produced this run so the result
+    # page can use them directly instead of re-discovering by folder sort order.
+    _lp_dir = Path(os.path.join(pack_dir, "Listing_Photos"))
+    _explicit_listing = sorted(str(p) for p in _lp_dir.glob("*_listing.jpg")) if _lp_dir.is_dir() else []
+    outputs["listing_photos"]         = _explicit_listing
+    outputs["primary_preview_image"]  = _explicit_listing[0] if _explicit_listing else None
+
+    try:
+        _explicit_payload = {k: outputs[k] for k in (
+            "spec_sheet_png", "card_png", "listing_photos", "primary_preview_image"
+        )}
+        with open(os.path.join(pack_dir, "outputs_explicit.json"), "w", encoding="utf-8") as _ef:
+            json.dump(_explicit_payload, _ef, indent=2)
+    except Exception as _oe:
+        warnings.append(f"outputs_explicit.json write failed (non-fatal): {_oe}")
 
     # ── 4. Walkaround video (lowest priority — failure never blocks ZIP) ───────
     if walkaround_requested:
