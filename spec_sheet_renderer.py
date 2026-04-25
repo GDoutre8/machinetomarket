@@ -285,15 +285,15 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 .photo-hero.no-photo .hero-tile-icon { display: none; }
 .photo-hero.no-photo .hero-tile-text { display: contents; }
 .hero-val {
-  font-size: 17px; font-weight: 800; color: #1A1A1A; line-height: 1;
+  font-size: 19.5px; font-weight: 800; color: #1A1A1A; line-height: 1;
   white-space: nowrap;
 }
 .hero-unit {
-  font-size: 8px; font-weight: 600; color: #AAAAAA;
+  font-size: 9.5px; font-weight: 600; color: #AAAAAA;
   margin-left: 2px; letter-spacing: 0.04em;
 }
 .hero-lbl {
-  font-size: 6.5px; font-weight: 700;
+  font-size: 7.5px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase;
   color: #8A8784;
   margin-top: 2px;
@@ -337,7 +337,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 /* ── Section block ── */
 .sec { flex-shrink: 0; }
 .sec-hdr {
-  font-size: 6.5px; font-weight: 700;
+  font-size: 7.5px; font-weight: 700;
   letter-spacing: 0.20em; text-transform: uppercase;
   color: #6B6967;
   padding-bottom: 5px;
@@ -359,7 +359,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   padding: 1.5px 0;
 }
 .spec-lbl {
-  font-size: 8px; font-weight: 400;
+  font-size: 9.5px; font-weight: 400;
   color: #888888;
   white-space: nowrap; flex-shrink: 0;
 }
@@ -370,12 +370,12 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   min-width: 4px;
 }
 .spec-val {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   color: #1A1A1A;
   white-space: nowrap; flex-shrink: 0;
 }
 .spec-unit {
-  font-size: 7px; font-weight: 600;
+  font-size: 8.5px; font-weight: 600;
   color: #AAAAAA; text-transform: uppercase;
   letter-spacing: 0.04em; margin-left: 2px;
 }
@@ -384,7 +384,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 .feat-list { display: flex; flex-direction: column; }
 .feat-item {
   display: flex; align-items: baseline; gap: 6px;
-  font-size: 8.5px; font-weight: 500; color: #1E1E1E;
+  font-size: 10px; font-weight: 500; color: #1E1E1E;
   padding: 2px 0;
 }
 .feat-bullet {
@@ -399,13 +399,13 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   padding: 1.5px 0;
 }
 .cond-lbl {
-  font-size: 7.5px; font-weight: 600;
+  font-size: 9px; font-weight: 600;
   color: #999; white-space: nowrap; flex-shrink: 0;
   text-transform: uppercase; letter-spacing: 0.09em;
-  width: 72px;
+  margin-right: 5px;
 }
 .cond-val {
-  font-size: 8.5px; font-weight: 600; color: #1A1A1A;
+  font-size: 10.5px; font-weight: 600; color: #1A1A1A;
 }
 
 /* ── Notes inset block ── */
@@ -723,7 +723,7 @@ def render_spec_sheet(data: dict) -> str:
     if track_pct is not None:
         cond_rows_html += (
             f'<div class="cond-row">'
-            f'<span class="cond-lbl">Track Rem.</span>'
+            f'<span class="cond-lbl">Track % Remaining</span>'
             f'<span class="cond-val">{_esc(str(track_pct))}</span>'
             f'</div>'
         )
