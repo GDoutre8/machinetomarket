@@ -208,7 +208,9 @@ def _zip_folder(folder_path: str, zip_path: str) -> int:
     files = sorted(
         (fp for fp in root.rglob("*") if fp.is_file()
          and fp.name not in _ZIP_EXCLUDE
-         and not any(fp.name.endswith(s) for s in _ZIP_EXCLUDE_SUFFIXES)),
+         and not any(fp.name.endswith(s) for s in _ZIP_EXCLUDE_SUFFIXES)
+         and "brochure" not in fp.name.lower()
+         and not (len(fp.relative_to(root).parts) == 1 and "_spec_sheet" in fp.name.lower())),
         key=lambda fp: _zip_sort_key(fp.relative_to(root.parent)),
     )
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:

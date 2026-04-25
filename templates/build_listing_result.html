@@ -866,13 +866,21 @@
     {% set any_images = image_packs | selectattr("urls") | list %}
     {% if any_images %}
     {% set preview_ns = namespace(url=None, label='', tag='') %}
-    {% for pack in image_packs %}
-      {% if (not preview_ns.url) and pack.urls %}
-        {% set preview_ns.url = pack.urls[0] %}
-        {% set preview_ns.label = pack.label %}
-        {% set preview_ns.tag = pack.tag %}
-      {% endif %}
-    {% endfor %}
+    {% if primary_preview_image %}
+      {# Explicit first listing photo recorded at build time — no guessing by sort order #}
+      {% set preview_ns.url = primary_preview_image %}
+      {% set preview_ns.label = 'Listing Photos' %}
+      {% set preview_ns.tag = 'Ready to Post' %}
+    {% else %}
+      {# Fallback for sessions built before outputs_explicit.json existed #}
+      {% for pack in image_packs %}
+        {% if (not preview_ns.url) and pack.urls %}
+          {% set preview_ns.url = pack.urls[0] %}
+          {% set preview_ns.label = pack.label %}
+          {% set preview_ns.tag = pack.tag %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
     <div class="result-card result-card-secondary">
       <div class="result-card-header">Image Pack</div>
       <div class="result-card-body">

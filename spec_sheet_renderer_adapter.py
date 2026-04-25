@@ -109,12 +109,24 @@ def _hero_specs(
     hero_key_set contains logical field names to exclude from additional specs.
     Rules: hard cap 4, null-safe promotion, no duplication with additional.
 
-    CTL BENCHMARK (compact_track_loader) — locked reference implementation:
+    CTL (compact_track_loader) — locked reference implementation, do not alter:
       Slot 1: Rated Operating Capacity (LB)
       Slot 2: Net Power (HP)
-      Slot 3: Aux Hydraulic Flow — Standard or High label based on unit config
-      Slot 4: Lift Path (Vertical / Radial); fallback to Operating Weight if absent
-    All other equipment types derive from this pattern with type-specific substitutions.
+      Slot 3: Aux Hydraulic Flow — "Aux Flow (Standard)" or "Aux Flow (High)" per unit config
+      Slot 4: Lift Path — Vertical / Radial; fallback to Operating Weight if lift_path absent
+
+    SSL (skid_steer) — locked, derived from CTL benchmark, do not alter:
+      Slot 1: Rated Operating Capacity (LB)          [same as CTL]
+      Slot 2: Net Power (HP)                          [same as CTL]
+      Slot 3: Aux Hydraulic Flow — Standard or High   [same as CTL]
+      Slot 4: Lift Type — Vertical / Radial; fallback to Operating Weight if absent
+      NOTE: label is "Lift Type" (not "Lift Path") per SSL locked architecture.
+
+    Mini Ex (mini_excavator) — locked, do not alter:
+      Slot 1: Operating Weight (LB)
+      Slot 2: Max Dig Depth (ft + in display)
+      Slot 3: ROPS Type — DealerInput cab_type overrides registry value
+      Slot 4: Tail Swing — Zero Tail / Reduced Tail / Conventional
     """
     tiles: list[dict] = []
     hero_keys: set[str] = set()
@@ -163,8 +175,12 @@ def _hero_specs(
 
     def _dig_depth():
         _dd_in = specs.get("max_dig_depth") or specs.get("max_dig_depth_in")
-        dd = (specs.get("dig_depth_ft") or specs.get("max_dig_depth_ft")
-              or (float(_dd_in) / 12.0 if _dd_in is not None else None))
+        dd = specs.get("dig_depth_ft") or specs.get("max_dig_depth_ft")
+        if dd is None and _dd_in is not None:
+            try:
+                dd = float(_dd_in) / 12.0
+            except (TypeError, ValueError):
+                dd = _dd_in   # resolver pre-formatted string; _fmt_ft_in returns it as-is
         return _fmt_ft_in(dd)
 
     eq = (eq_type or "").lower()
@@ -190,15 +206,16 @@ def _hero_specs(
         elif len(tiles) < 4:
             _push("Operating Weight", _weight(), "LB", "weight")
 
+    # ── SSL locked hero — do not alter ───────────────────────────────────────────
     elif eq == "skid_steer":
-        _push("Rated Op Capacity", _roc(), "LB", "roc")
-        _push("Net Power", _hp(), "HP", "hp")
+        _push("Rated Op Capacity", _roc(), "LB", "roc")   # slot 1: ROC at 35% tip
+        _push("Net Power", _hp(), "HP", "hp")              # slot 2: net engine power
         flow_val, is_high = _aux_flow()
-        if flow_val and len(tiles) < 4:
+        if flow_val and len(tiles) < 4:                    # slot 3: aux flow, Standard or High
             tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Standard)",
                           "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
-        # 4th slot: Lift Type (locked SSL architecture); fallback to Operating Weight
+        # slot 4: Lift Type — Vertical or Radial; Operating Weight only if lift_path absent
         lp_raw = specs.get("lift_path") or specs.get("lift_type")
         if lp_raw and len(tiles) < 4:
             _LP = {"vertical": "Vertical", "radial": "Radial",
@@ -414,8 +431,12 @@ def _additional_specs(
         if "dig_depth" in hero_keys:
             return
         _dd_in = specs.get("max_dig_depth") or specs.get("max_dig_depth_in")
-        dd = (specs.get("dig_depth_ft") or specs.get("max_dig_depth_ft")
-              or (float(_dd_in) / 12.0 if _dd_in is not None else None))
+        dd = specs.get("dig_depth_ft") or specs.get("max_dig_depth_ft")
+        if dd is None and _dd_in is not None:
+            try:
+                dd = float(_dd_in) / 12.0
+            except (TypeError, ValueError):
+                dd = _dd_in   # resolver pre-formatted string; _fmt_ft_in returns it as-is
         if dd:
             _row("Max Dig Depth", _fmt_ft_in(dd))
 
@@ -568,18 +589,40 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
     """
     Build the locked core spec rows (OEM VERIFIED section).
 
-    CTL BENCHMARK — 7-field locked order (all equipment types share this structure):
-      1. Hours            — listing-driven
-      2. Rated Op Capacity — registry-driven (LB)
-      3. Net Power        — registry-driven (HP)
-      4. Aux Hydraulic Flow (Standard / High) — registry-driven; label reflects active config
-      5. Operating Weight — registry-driven (LB)
-      6. Serial #         — listing-driven; hidden if blank
-      7. Stock #          — listing-driven; hidden if blank
+    Hero carries the four substantive specs for CTL and SSL, so core shows
+    identity fields only. Mini Ex and Large Ex retain additional core rows
+    because their hero slots use different fields.
 
-    Rules: Standard vs High wording is explicit. Operating Weight appears here only
-    (not in hero unless Lift Path is absent). Serial/Stock hidden when blank.
-    Empty/missing fields are omitted.
+    CTL (compact_track_loader) — locked, do not alter:
+      1. Hours    — listing-driven
+      2. Serial # — listing-driven; hidden if blank
+      3. Stock #  — listing-driven; hidden if blank
+      Hero carries: ROC / Net Power / Aux Flow / Lift Path (or Operating Weight).
+
+    SSL (skid_steer) — locked, identical structure to CTL, do not alter:
+      1. Hours
+      2. Serial #
+      3. Stock #
+      Hero carries: ROC / Net Power / Aux Flow / Lift Type (or Operating Weight).
+
+    Mini Ex (mini_excavator) — locked, do not alter:
+      1. Hours
+      2. Horsepower (HP) — registry-driven
+      3. Arm Config      — DealerInput arm_length; omitted if not supplied
+      4. Serial #
+      5. Stock #
+      Hero carries: Operating Weight / Max Dig Depth / ROPS Type / Tail Swing.
+
+    Large Excavator (large_excavator) — locked, up to 7 rows:
+      1. Hours
+      2. Operating Weight (LB)
+      3. Horsepower (HP)
+      4. Max Dig Depth
+      5. Pad Width — DealerInput track_shoe_width_in preferred over registry
+      6. Serial #
+      7. Stock #
+
+    Serial/Stock hidden when blank. Empty/missing fields are omitted.
     """
     rows: list[dict] = []
 
@@ -626,24 +669,14 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
-    # ── Mini Ex core specs — locked 7-field order ─────────────────────────────
+    # ── Mini Ex locked core — do not alter ───────────────────────────────────────
     if eq == "mini_excavator":
         _row("Hours", hours_fmt)
-
-        w = _fmt_int(
-            specs.get("operating_weight_lbs") or specs.get("operating_weight_lb")
-            or specs.get("machine_weight_lbs")
-        )
-        _row("Operating Weight", w, "LB")
 
         hp = _fmt_int(
             specs.get("horsepower_hp") or specs.get("net_hp") or specs.get("engine_hp")
         )
         _row("Horsepower", hp, "HP")
-
-        dd_ft = specs.get("max_dig_depth_ft") or specs.get("dig_depth_ft")
-        if dd_ft is not None:
-            _row("Max Dig Depth", _fmt_ft_in(dd_ft))
 
         arm_raw = di.get("arm_length")
         if arm_raw:
@@ -658,36 +691,15 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
-    # ── CTL benchmark core — locked 7-field order (all non-Mini-Ex types) ────
+    # ── SSL locked core — do not alter ───────────────────────────────────────────
+    if eq == "skid_steer":
+        _row("Hours", hours_fmt)
+        _row("Serial #", di.get("serial_number"))
+        _row("Stock #", di.get("stock_number"))
+        return rows
+
+    # ── CTL locked core — do not alter ───────────────────────────────────────────
     _row("Hours", hours_fmt)
-
-    roc = _fmt_int(
-        specs.get("roc_lb") or specs.get("rated_operating_capacity_lbs")
-        or specs.get("operating_capacity_lbs")
-    )
-    _row("Rated Op Capacity", roc, "LB")
-
-    hp = _fmt_int(
-        specs.get("net_hp") or specs.get("horsepower_hp") or specs.get("engine_hp")
-    )
-    _row("Net Power", hp, "HP")
-
-    high_flow_active = (di.get("high_flow") == "yes")
-    flow_high = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
-    flow_std  = specs.get("aux_flow_standard_gpm") or specs.get("hydraulic_flow_gpm")
-    if high_flow_active and flow_high is not None:
-        _row("Aux Hydraulic Flow (High)", _fmt_int(flow_high), "GPM")
-    elif flow_std is not None:
-        _row("Aux Hydraulic Flow (Standard)", _fmt_int(flow_std), "GPM")
-    elif flow_high is not None:
-        _row("Aux Hydraulic Flow (High)", _fmt_int(flow_high), "GPM")
-
-    w = _fmt_int(
-        specs.get("operating_weight_lb") or specs.get("operating_weight_lbs")
-        or specs.get("machine_weight_lbs")
-    )
-    _row("Operating Weight", w, "LB")
-
     _row("Serial #", di.get("serial_number"))
     _row("Stock #", di.get("stock_number"))
 
@@ -698,14 +710,20 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
     """
     Build Performance Data rows.
 
-    CTL BENCHMARK (compact_track_loader) — locked reference:
+    CTL (compact_track_loader) — locked, do not alter:
       Row 1: Tipping Load (LB) — always shown when available
-      Row 2: High Flow Output (GPM) — shown only when high_flow confirmed on unit
-      "High Flow Output" is distinct from "High Flow Equipped" (capability) in features
-      and "Aux Hydraulic Flow (High)" (spec rate) in core. No other Performance rows for CTL.
+      Row 2: High Flow Output (GPM) — only when high_flow == "yes" on unit
+      "High Flow Output" (GPM rate) is distinct from "High Flow Equipped" (capability
+      in features) and "Aux Hydraulic Flow (High)" (spec sheet core rate).
 
-    SSL deviation: row 2 is Hinge Pin Height instead of High Flow Output.
-    Mini Ex deviation: rows are Max Reach + Bucket Breakout Force (no tipping load).
+    SSL (skid_steer) — locked, do not alter:
+      Row 1: Tipping Load (LB) — always shown when available  [same as CTL]
+      Row 2: Hinge Pin Height  — replaces High Flow Output for SSL
+
+    Mini Ex (mini_excavator) — locked, do not alter:
+      Row 1: Max Reach (ft)
+      Row 2: Bucket Breakout Force (LB)
+      No tipping load for Mini Ex.
     """
     rows: list[dict] = []
 
@@ -746,10 +764,11 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
         _row("Bucket Breakout Force", _fmt_int(bbf), "LB")
         return rows
 
-    # ── SSL performance ───────────────────────────────────────────────────────
+    # ── CTL + SSL shared row 1: Tipping Load ────────────────────────────────────
     tl = specs.get("tipping_load_lbs") or specs.get("tipping_load_lb")
     _row("Tipping Load", _fmt_int(tl), "LB")
 
+    # ── SSL locked performance row 2: Hinge Pin Height — do not alter ────────────
     if eq == "skid_steer":
         hpp_in = (specs.get("hinge_pin_height_in") or specs.get("bucket_hinge_pin_height_in")
                   or specs.get("dump_height_in"))
@@ -762,7 +781,7 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
         elif hpp_ft is not None:
             _row("Hinge Pin Height", _fmt_ft_in(hpp_ft))
     else:
-        # ── CTL benchmark performance ─────────────────────────────────────────
+        # ── CTL locked performance row 2: High Flow Output — do not alter ────────
         hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
         if hfo is not None and di.get("high_flow") == "yes":
             _row("High Flow Output", _fmt_int(hfo), "GPM")
@@ -774,17 +793,26 @@ def _features(di: dict, eq_type: str) -> list[str]:
     """
     Build a flat list of confirmed feature labels (max 8).
 
-    CTL BENCHMARK (compact_track_loader) — locked feature set:
-      - Cab Type       → "Enclosed Cab" when enclosed (Open not surfaced)
-      - A/C + Heat     → combined label when both present
-      - High Flow Equipped → capability label (distinct from "High Flow Output" in performance)
-      - 2-Speed        → confirmed two_speed_travel
-      - Quick Attach   → any coupler_type present
-      - Ride Control   → optional, shown when confirmed
+    CTL (compact_track_loader) — locked feature set, do not alter:
+      Enclosed Cab / A/C + Heat / High Flow Equipped / 2-Speed /
+      Quick Attach / Air Ride Seat / Ride Control / Backup Camera / Radio
+      NOTE: "High Flow Equipped" (capability) is CTL-only.
+            It is never conflated with "High Flow Output" (GPM in performance).
 
-    Rules (universal, derived from CTL benchmark):
-      - Attachments do NOT belong in Key Features for any equipment type
-      - "High Flow Equipped" (capability) vs "High Flow Output" (GPM) are never conflated
+    SSL (skid_steer) — locked feature set, isolated branch, do not alter:
+      Enclosed Cab / A/C + Heat / 2-Speed / Quick Attach / Air Ride Seat /
+      Control Type (Hand & Foot / Joystick / EH / SJC) / Ride Control fallback /
+      Backup Camera / Radio
+      NOTE: "High Flow Equipped" is excluded — not a buyer-facing feature for SSL.
+
+    Mini Ex (mini_excavator) — locked feature set, do not alter:
+      Enclosed Cab (with A/C / Heat inline) / Thumb Config / Blade Type /
+      Hydraulic Coupler / Aux Hydraulics / 2-Speed / ISO/SAE Pattern Changer
+      NOTE: Tail Swing excluded here (already in hero slot 4).
+
+    Universal rules:
+      - Attachments do NOT belong in Key Features for any equipment type.
+      - Each branch returns independently — no cross-type fallthrough.
     """
     feats: list[str] = []
     eq = (eq_type or "").lower()
@@ -912,36 +940,22 @@ def _features(di: dict, eq_type: str) -> list[str]:
         # Attachments excluded. High Flow, Ride Control, Air Ride excluded for excavator.
         return feats[:8]
 
-    # ── CTL benchmark feature set ─────────────────────────────────────────────
-    # Cab
-    if (di.get("cab_type") or "").lower() == "enclosed":
-        feats.append("Enclosed Cab")
-
-    # Climate
-    if di.get("ac") and di.get("heater"):
-        feats.append("A/C + Heat")
-    elif di.get("ac"):
-        feats.append("A/C")
-    elif di.get("heater"):
-        feats.append("Heat")
-
-    # High Flow capability — CTL benchmark label; excluded from SSL (not a key feature there)
-    if eq != "skid_steer" and di.get("high_flow") == "yes":
-        feats.append("High Flow Equipped")
-
-    if di.get("two_speed_travel") == "yes":
-        feats.append("2-Speed")
-
-    # Coupler — always "Quick Attach" per locked architecture
-    if di.get("coupler_type"):
-        feats.append("Quick Attach")
-
-    # Comfort
-    if di.get("air_ride_seat"):
-        feats.append("Air Ride Seat")
-
+    # ── SSL locked feature set — do not alter ────────────────────────────────────
     if eq == "skid_steer":
-        # SSL locked arch: Control Type; Ride Control as fallback if absent
+        if (di.get("cab_type") or "").lower() == "enclosed":
+            feats.append("Enclosed Cab")
+        if di.get("ac") and di.get("heater"):
+            feats.append("A/C + Heat")
+        elif di.get("ac"):
+            feats.append("A/C")
+        elif di.get("heater"):
+            feats.append("Heat")
+        if di.get("two_speed_travel") == "yes":
+            feats.append("2-Speed")
+        if di.get("coupler_type"):
+            feats.append("Quick Attach")
+        if di.get("air_ride_seat"):
+            feats.append("Air Ride Seat")
         ct = di.get("control_type")
         if ct:
             _CT_LABELS = {
@@ -955,9 +969,42 @@ def _features(di: dict, eq_type: str) -> list[str]:
             feats.append(_CT_LABELS.get(str(ct).lower().strip(), str(ct).replace("_", " ").title()))
         elif di.get("ride_control"):
             feats.append("Ride Control")
-    else:
-        if di.get("ride_control"):
-            feats.append("Ride Control")
+        if di.get("backup_camera") or di.get("rear_camera"):
+            feats.append("Backup Camera")
+        if di.get("radio"):
+            feats.append("Radio")
+        return feats[:8]
+
+    # ── CTL locked feature set — do not alter ────────────────────────────────────
+    # Cab
+    if (di.get("cab_type") or "").lower() == "enclosed":
+        feats.append("Enclosed Cab")
+
+    # Climate
+    if di.get("ac") and di.get("heater"):
+        feats.append("A/C + Heat")
+    elif di.get("ac"):
+        feats.append("A/C")
+    elif di.get("heater"):
+        feats.append("Heat")
+
+    # High Flow capability — CTL benchmark label
+    if di.get("high_flow") == "yes":
+        feats.append("High Flow Equipped")
+
+    if di.get("two_speed_travel") == "yes":
+        feats.append("2-Speed")
+
+    # Coupler — always "Quick Attach" per locked architecture
+    if di.get("coupler_type"):
+        feats.append("Quick Attach")
+
+    # Comfort
+    if di.get("air_ride_seat"):
+        feats.append("Air Ride Seat")
+
+    if di.get("ride_control"):
+        feats.append("Ride Control")
 
     if di.get("backup_camera") or di.get("rear_camera"):
         feats.append("Backup Camera")
@@ -1004,13 +1051,14 @@ def build_spec_sheet_data(
     eq    = (equipment_type or "").lower()
     # Normalize short-code aliases to canonical registry eq types.
     _EQ_NORMALIZE = {
-        "ctl":      "compact_track_loader",
-        "ssl":      "skid_steer",
-        "mini ex":  "mini_excavator",
-        "mini_ex":  "mini_excavator",
-        "backhoe":  "backhoe_loader",
-        "large ex": "large_excavator",
-        "large_ex": "large_excavator",
+        "ctl":               "compact_track_loader",
+        "ssl":               "skid_steer",
+        "skid_steer_loader": "skid_steer",
+        "mini ex":           "mini_excavator",
+        "mini_ex":           "mini_excavator",
+        "backhoe":           "backhoe_loader",
+        "large ex":          "large_excavator",
+        "large_ex":          "large_excavator",
     }
     eq = _EQ_NORMALIZE.get(eq, eq)
 
