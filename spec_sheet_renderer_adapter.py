@@ -207,21 +207,37 @@ def _hero_specs(
         elif len(tiles) < 4:
             _push("Operating Weight", _weight(), "LB", "weight")
 
+    # ── Mini Ex locked hero — do not alter ───────────────────────────────────
     elif eq == "mini_excavator":
-        _push("Operating Weight", _weight(), "LB", "weight")
-        _push("Max Dig Depth", _dig_depth(), "", "dig_depth")
-        _push("Engine HP", _hp(), "HP", "hp")
-        ts = specs.get("tail_swing_type") or specs.get("tail_swing")
-        if ts is None and di.get("zero_tail_swing"):
-            ts = "Zero"
-        if ts and len(tiles) < 4:
-            val = str(ts).lower()
-            display = "Zero" if "zero" in val else ("Conventional" if "conv" in val else str(ts).title())
-            tiles.append({"label": "Tail Swing", "value": display, "unit": "", "icon": "default"})
+        _push("Operating Weight", _weight(), "LB", "weight")       # slot 1
+        _push("Max Dig Depth", _dig_depth(), "", "dig_depth")       # slot 2
+
+        # slot 3: ROPS Type — DealerInput overrides registry cab_type
+        cab_raw = (di.get("cab_type") or specs.get("cab_type") or "").lower().strip()
+        _ROPS = {
+            "enclosed": "Enclosed Cab", "erops": "Enclosed Cab", "cab": "Enclosed Cab",
+            "canopy": "Open Canopy", "open": "Open Canopy", "rops": "Open Canopy",
+            "orops": "Open Canopy",
+        }
+        rops_display = _ROPS.get(cab_raw, str(cab_raw).title() if cab_raw else None)
+        if rops_display and len(tiles) < 4:
+            tiles.append({"label": "ROPS Type", "value": rops_display, "unit": "", "icon": "default"})
+            hero_keys.add("rops_type")
+
+        # slot 4: Tail Swing Type — Zero Tail / Reduced Tail / Conventional
+        ts_raw = specs.get("tail_swing_type") or specs.get("tail_swing") or di.get("tail_swing_type")
+        if ts_raw is None and di.get("zero_tail_swing"):
+            ts_raw = "zero"
+        if ts_raw and len(tiles) < 4:
+            ts_val = str(ts_raw).lower()
+            if "zero" in ts_val:
+                ts_display = "Zero Tail"
+            elif any(x in ts_val for x in ("reduced", "minimal", "short")):
+                ts_display = "Reduced Tail"
+            else:
+                ts_display = "Conventional"
+            tiles.append({"label": "Tail Swing", "value": ts_display, "unit": "", "icon": "default"})
             hero_keys.add("tail_swing")
-        if len(tiles) < 4:
-            bbf = specs.get("bucket_breakout_force_lbs") or specs.get("breakout_force_lbs")
-            _push("Bucket Breakout", _fmt_int(bbf), "LB", "bucket_breakout")
 
     elif eq in ("large_excavator", "excavator"):
         _push("Operating Weight", _weight(), "LB", "weight")
@@ -558,6 +574,39 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
             entry["unit"] = unit
         rows.append(entry)
 
+    # ── Mini Ex core specs — locked 7-field order ─────────────────────────────
+    if eq == "mini_excavator":
+        _row("Hours", hours_fmt)
+
+        w = _fmt_int(
+            specs.get("operating_weight_lbs") or specs.get("operating_weight_lb")
+            or specs.get("machine_weight_lbs")
+        )
+        _row("Operating Weight", w, "LB")
+
+        hp = _fmt_int(
+            specs.get("horsepower_hp") or specs.get("net_hp") or specs.get("engine_hp")
+        )
+        _row("Horsepower", hp, "HP")
+
+        dd_ft = specs.get("max_dig_depth_ft") or specs.get("dig_depth_ft")
+        if dd_ft is not None:
+            _row("Max Dig Depth", _fmt_ft_in(dd_ft))
+
+        arm_raw = di.get("arm_length")
+        if arm_raw:
+            _ARM = {
+                "standard": "Standard Arm", "std": "Standard Arm",
+                "long":     "Long Arm",
+                "extenda":  "Extenda Arm",
+            }
+            _row("Arm Config", _ARM.get(str(arm_raw).lower().strip(), str(arm_raw).title()))
+
+        _row("Serial #", di.get("serial_number"))
+        _row("Stock #", di.get("stock_number"))
+        return rows
+
+    # ── CTL benchmark core — locked 7-field order (all non-Mini-Ex types) ────
     _row("Hours", hours_fmt)
 
     roc = _fmt_int(
@@ -604,6 +653,7 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
       and "Aux Hydraulic Flow (High)" (spec rate) in core. No other Performance rows for CTL.
 
     SSL deviation: row 2 is Hinge Pin Height instead of High Flow Output.
+    Mini Ex deviation: rows are Max Reach + Bucket Breakout Force (no tipping load).
     """
     rows: list[dict] = []
 
@@ -615,6 +665,19 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
             entry["unit"] = unit
         rows.append(entry)
 
+    # ── Mini Ex performance — locked: Max Reach + Bucket Breakout ────────────
+    if eq == "mini_excavator":
+        reach = specs.get("max_reach_ft") or specs.get("reach_ft")
+        if reach is not None:
+            try:
+                _row("Max Reach", f"{float(reach):.1f}'")
+            except (TypeError, ValueError):
+                _row("Max Reach", str(reach))
+        bbf = specs.get("bucket_breakout_force_lbs") or specs.get("breakout_force_lbs")
+        _row("Bucket Breakout Force", _fmt_int(bbf), "LB")
+        return rows
+
+    # ── SSL performance ───────────────────────────────────────────────────────
     tl = specs.get("tipping_load_lbs") or specs.get("tipping_load_lb")
     _row("Tipping Load", _fmt_int(tl), "LB")
 
@@ -630,6 +693,7 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
         elif hpp_ft is not None:
             _row("Hinge Pin Height", _fmt_ft_in(hpp_ft))
     else:
+        # ── CTL benchmark performance ─────────────────────────────────────────
         hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
         if hfo is not None and di.get("high_flow") == "yes":
             _row("High Flow Output", _fmt_int(hfo), "GPM")
@@ -656,6 +720,60 @@ def _features(di: dict, eq_type: str) -> list[str]:
     feats: list[str] = []
     eq = (eq_type or "").lower()
 
+    # ── Mini Ex locked feature set ────────────────────────────────────────────
+    if eq == "mini_excavator":
+        # 1. Cab Type / HVAC — combine into one entry
+        cab_raw = (di.get("cab_type") or "").lower().strip()
+        if cab_raw in ("enclosed", "erops", "cab"):
+            if di.get("ac") and di.get("heater"):
+                feats.append("Enclosed Cab — A/C + Heat")
+            elif di.get("ac"):
+                feats.append("Enclosed Cab — A/C")
+            else:
+                feats.append("Enclosed Cab")
+
+        # 2. Thumb Configuration — hydraulic thumb is a machine config, not an attachment
+        thumb_raw = (di.get("thumb_type") or "").lower().strip()
+        _THUMB = {
+            "hydraulic": "Hydraulic Thumb", "hyd": "Hydraulic Thumb",
+            "pin":       "Pin-On Thumb",    "pin-on": "Pin-On Thumb",
+            "manual":    "Pin-On Thumb",
+        }
+        thumb_label = _THUMB.get(thumb_raw)
+        if thumb_label:
+            feats.append(thumb_label)
+
+        # 3. Blade Type
+        blade_raw = (di.get("blade_type") or "").lower().strip()
+        _BLADE = {
+            "straight": "Standard Blade", "standard": "Standard Blade", "dozer": "Standard Blade",
+            "angle":    "Angle Blade",
+            "6-way":    "6-Way Blade",    "6way": "6-Way Blade", "6_way": "6-Way Blade",
+        }
+        blade_label = _BLADE.get(blade_raw)
+        if blade_label:
+            feats.append(blade_label)
+
+        # 4. Hydraulic Coupler
+        if (di.get("coupler_type") or "").lower() == "hydraulic":
+            feats.append("Hydraulic Coupler")
+
+        # 5. Aux Hydraulics
+        if di.get("aux_hydraulics"):
+            feats.append("Aux Hydraulics")
+
+        # 6. 2-Speed Travel (optional)
+        if di.get("two_speed_travel") == "yes":
+            feats.append("2-Speed")
+
+        # 7. Pattern Changer (optional) — do not duplicate Tail Swing from hero
+        if di.get("pattern_changer"):
+            feats.append("ISO/SAE Pattern Changer")
+
+        # Attachments excluded. Tail Swing excluded (already in hero).
+        return feats[:8]
+
+    # ── CTL benchmark feature set ─────────────────────────────────────────────
     # Cab
     if (di.get("cab_type") or "").lower() == "enclosed":
         feats.append("Enclosed Cab")
@@ -709,11 +827,12 @@ def _features(di: dict, eq_type: str) -> list[str]:
 
     # Attachments excluded from Key Features for all equipment types per CTL benchmark rule.
 
-    # Excavator-specific
-    if di.get("thumb_type") and di.get("thumb_type") not in ("none", ""):
-        feats.append("Thumb")
-    if di.get("hammer_plumbing"):
-        feats.append("Hammer Plumbing")
+    # Large excavator thumb/hammer — only for non-mini-ex excavators
+    if eq in ("large_excavator", "excavator", "backhoe_loader"):
+        if di.get("thumb_type") and di.get("thumb_type") not in ("none", ""):
+            feats.append("Thumb")
+        if di.get("hammer_plumbing"):
+            feats.append("Hammer Plumbing")
 
     return feats[:8]
 
