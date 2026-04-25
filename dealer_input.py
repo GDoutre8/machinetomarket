@@ -108,14 +108,23 @@ class DealerInput(BaseModel):
     # undercarriage_condition_pct: free text — preserves raw dealer language.
     #   e.g. "75%", "60%+", "good", "new rails", "rebuilt"
     undercarriage_condition_pct: Optional[str] = None
+    # undercarriage_percent_remaining: numeric estimate of undercarriage life remaining (0–100).
+    #   Rendered on spec sheet as "Undercarriage % Remaining: 75%".
+    #   Never converted from free-text grade — numeric only.
+    undercarriage_percent_remaining: Optional[int] = None
     stick_arm_length_ft:         Optional[float] = None
     track_shoe_width_in:         Optional[float] = None
     boom_length_ft:              Optional[float] = None
+    boom_type:                   Optional[str] = None   # reach / standard / mass_excavation
     rear_camera:                 Optional[bool] = None
     grade_control_type:          Optional[str] = None   # none / 2D / 3D
     hammer_plumbing:             Optional[bool] = None
     heated_seat:                 Optional[bool] = None
     track_type:                  Optional[str] = None   # rubber / steel / double_grouser
+    # tail_swing_type: machine swing class (cross-type: large_excavator + mini_excavator)
+    tail_swing_type:             Optional[str] = None   # standard / reduced / zero
+    # hours_qualifier: free text for hours condition note (e.g. "Low Hours", "Since Rebuild")
+    hours_qualifier:             Optional[str] = None
 
     # ── Cross-type ────────────────────────────────────────────────────────────
     # coupler_type: attachment coupler style; None = not equipped / unknown
@@ -279,6 +288,37 @@ class DealerInput(BaseModel):
             if v not in _ALLOWED:
                 raise ValueError(
                     f"aux_hydraulics_type must be 'standard', 'high_pressure', 'combined', or 'hammer'; got '{v}'"
+                )
+        return v or None
+
+    @field_validator("undercarriage_percent_remaining")
+    @classmethod
+    def undercarriage_percent_in_range(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and not (0 <= v <= 100):
+            raise ValueError("undercarriage_percent_remaining must be between 0 and 100")
+        return v
+
+    @field_validator("boom_type")
+    @classmethod
+    def boom_type_valid(cls, v: Optional[str]) -> Optional[str]:
+        _ALLOWED = {"reach", "standard", "mass_excavation"}
+        if v is not None:
+            v = v.strip().lower()
+            if v not in _ALLOWED:
+                raise ValueError(
+                    f"boom_type must be 'reach', 'standard', or 'mass_excavation'; got '{v}'"
+                )
+        return v or None
+
+    @field_validator("tail_swing_type")
+    @classmethod
+    def tail_swing_type_valid(cls, v: Optional[str]) -> Optional[str]:
+        _ALLOWED = {"standard", "reduced", "zero"}
+        if v is not None:
+            v = v.strip().lower()
+            if v not in _ALLOWED:
+                raise ValueError(
+                    f"tail_swing_type must be 'standard', 'reduced', or 'zero'; got '{v}'"
                 )
         return v or None
 
