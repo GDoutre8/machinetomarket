@@ -112,12 +112,12 @@ def _hero_specs(
     tiles: list[dict] = []
     hero_keys: set[str] = set()
 
-    def _push(label: str, value, unit: str, key: str) -> bool:
+    def _push(label: str, value, unit: str, key: str, icon: str = "") -> bool:
         if len(tiles) >= 4:
             return False
         if value is None or (isinstance(value, str) and not value.strip()):
             return False
-        tiles.append({"label": label, "value": str(value), "unit": unit})
+        tiles.append({"label": label, "value": str(value), "unit": unit, "icon": icon or key})
         hero_keys.add(key)
         return True
 
@@ -141,7 +141,7 @@ def _hero_specs(
             (di.get("high_flow") == "yes")
             or bool((full_record.get("feature_flags") or {}).get("high_flow_available"))
         )
-        flow_high = specs.get("aux_flow_high_gpm")
+        flow_high = (specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm"))
         flow_std  = specs.get("aux_flow_standard_gpm") or specs.get("hydraulic_flow_gpm")
         if high_flow_active and flow_high is not None:
             return _fmt_int(flow_high), True
@@ -164,10 +164,20 @@ def _hero_specs(
         _push("Net Power", _hp(), "HP", "hp")
         flow_val, is_high = _aux_flow()
         if flow_val and len(tiles) < 4:
-            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow",
-                          "value": flow_val, "unit": "GPM"})
+            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Std)",
+                          "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
-        _push("Operating Weight", _weight(), "LB", "weight")
+        # 4th slot: Lift Path (locked architecture); fallback to Operating Weight
+        lp_raw = specs.get("lift_path") or specs.get("lift_type")
+        if lp_raw and len(tiles) < 4:
+            _LP = {"vertical": "Vertical", "radial": "Radial",
+                   "high": "Vertical", "locked": "Vertical"}
+            lp_display = _LP.get(str(lp_raw).lower(), str(lp_raw).title())
+            tiles.append({"label": "Lift Path", "value": lp_display,
+                          "unit": "", "icon": "lift_path"})
+            hero_keys.add("lift_path")
+        elif len(tiles) < 4:
+            _push("Operating Weight", _weight(), "LB", "weight")
 
     elif eq == "mini_excavator":
         _push("Operating Weight", _weight(), "LB", "weight")
@@ -179,7 +189,7 @@ def _hero_specs(
         if ts and len(tiles) < 4:
             val = str(ts).lower()
             display = "Zero" if "zero" in val else ("Conventional" if "conv" in val else str(ts).title())
-            tiles.append({"label": "Tail Swing", "value": display, "unit": ""})
+            tiles.append({"label": "Tail Swing", "value": display, "unit": "", "icon": "default"})
             hero_keys.add("tail_swing")
         if len(tiles) < 4:
             bbf = specs.get("bucket_breakout_force_lbs") or specs.get("breakout_force_lbs")
@@ -253,7 +263,7 @@ def _hero_specs(
         _push("Platform Capacity", _fmt_int(pc), "LB", "platform_capacity")
         bt = specs.get("boom_type")
         if bt and len(tiles) < 4:
-            tiles.append({"label": "Boom Type", "value": str(bt).title(), "unit": ""})
+            tiles.append({"label": "Boom Type", "value": str(bt).title(), "unit": "", "icon": "default"})
             hero_keys.add("boom_type")
 
     else:
@@ -263,7 +273,8 @@ def _hero_specs(
         _push("Rated Op Capacity", _roc(), "LB", "roc")
         flow_val, is_high = _aux_flow()
         if flow_val and len(tiles) < 4:
-            tiles.append({"label": "Aux Flow", "value": flow_val, "unit": "GPM"})
+            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Std)",
+                          "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
 
     return tiles[:4], hero_keys
@@ -479,33 +490,104 @@ def _additional_specs(
     return rows
 
 
+def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[dict]:
+    """
+    Build the explicit locked core spec rows.
+    Fields: Hours, Rated Op Capacity, Net Power, Aux Hydraulic Flow,
+            Operating Weight, Serial #, Stock #.
+    Empty/missing fields are omitted.
+    """
+    rows: list[dict] = []
+
+    def _row(label: str, value, unit: str = "") -> None:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return
+        entry: dict = {"label": label, "value": str(value)}
+        if unit:
+            entry["unit"] = unit
+        rows.append(entry)
+
+    _row("Hours", hours_fmt)
+
+    roc = _fmt_int(
+        specs.get("roc_lb") or specs.get("rated_operating_capacity_lbs")
+        or specs.get("operating_capacity_lbs")
+    )
+    _row("Rated Op Capacity", roc, "LB")
+
+    hp = _fmt_int(
+        specs.get("net_hp") or specs.get("horsepower_hp") or specs.get("engine_hp")
+    )
+    _row("Net Power", hp, "HP")
+
+    high_flow_active = (di.get("high_flow") == "yes")
+    flow_high = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
+    flow_std  = specs.get("aux_flow_standard_gpm") or specs.get("hydraulic_flow_gpm")
+    if high_flow_active and flow_high is not None:
+        _row("Aux Hydraulic Flow (High)", _fmt_int(flow_high), "GPM")
+    elif flow_std is not None:
+        _row("Aux Hydraulic Flow (Std)", _fmt_int(flow_std), "GPM")
+    elif flow_high is not None:
+        _row("Aux Hydraulic Flow (High)", _fmt_int(flow_high), "GPM")
+
+    w = _fmt_int(
+        specs.get("operating_weight_lb") or specs.get("operating_weight_lbs")
+        or specs.get("machine_weight_lbs")
+    )
+    _row("Operating Weight", w, "LB")
+
+    _row("Serial #", di.get("serial_number"))
+    _row("Stock #", di.get("stock_number"))
+
+    return rows
+
+
+def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
+    """Build Performance Data rows: Tipping Load + High Flow Output."""
+    rows: list[dict] = []
+
+    def _row(label: str, value, unit: str = "") -> None:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return
+        entry: dict = {"label": label, "value": str(value)}
+        if unit:
+            entry["unit"] = unit
+        rows.append(entry)
+
+    tl = specs.get("tipping_load_lbs") or specs.get("tipping_load_lb")
+    _row("Tipping Load", _fmt_int(tl), "LB")
+
+    hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
+    if hfo is not None and di.get("high_flow") == "yes":
+        _row("High Flow Output", _fmt_int(hfo), "GPM")
+
+    return rows
+
+
 def _features(di: dict, eq_type: str) -> list[str]:
     """Build a flat list of confirmed feature labels (max 8)."""
     feats: list[str] = []
 
-    # Cab
+    # Cab — separate entries per locked architecture
     if (di.get("cab_type") or "").lower() == "enclosed":
-        if di.get("ac"):
-            feats.append("Enclosed Cab, A/C + Heat" if di.get("heater") else "Enclosed Cab, A/C")
-        elif di.get("heater"):
-            feats.append("Enclosed Cab, Heat")
-        else:
-            feats.append("Enclosed Cab")
+        feats.append("Enclosed Cab")
+
+    # Climate
+    if di.get("ac") and di.get("heater"):
+        feats.append("A/C + Heat")
     elif di.get("ac"):
-        feats.append("A/C + Heat" if di.get("heater") else "A/C")
+        feats.append("A/C")
     elif di.get("heater"):
         feats.append("Heat")
 
-    # Hydraulics/drive
+    # Hydraulics/drive — locked labels
     if di.get("high_flow") == "yes":
-        feats.append("High Flow Hydraulics")
+        feats.append("High Flow Equipped")
     if di.get("two_speed_travel") == "yes":
-        feats.append("2-Speed Travel")
+        feats.append("2-Speed")
 
-    # Attachments
-    if di.get("coupler_type") == "hydraulic":
-        feats.append("Hydraulic Quick Attach")
-    elif di.get("coupler_type"):
+    # Coupler — always "Quick Attach" per locked architecture
+    if di.get("coupler_type"):
         feats.append("Quick Attach")
 
     # Comfort/utility
@@ -520,7 +602,7 @@ def _features(di: dict, eq_type: str) -> list[str]:
 
     # Attachments included
     if di.get("attachments_included"):
-        for att in str(di["attachments_included"]).split(",")[:3]:
+        for att in str(di["attachments_included"]).split(",")[:2]:
             att = att.strip()
             if att:
                 feats.append(att.title())
@@ -560,6 +642,17 @@ def build_spec_sheet_data(
     specs = enriched_resolved_specs or {}
     fr    = full_record or {}
     eq    = (equipment_type or "").lower()
+    # Normalize short-code aliases to canonical registry eq types.
+    _EQ_NORMALIZE = {
+        "ctl":      "compact_track_loader",
+        "ssl":      "skid_steer",
+        "mini ex":  "mini_excavator",
+        "mini_ex":  "mini_excavator",
+        "backhoe":  "backhoe_loader",
+        "large ex": "large_excavator",
+        "large_ex": "large_excavator",
+    }
+    eq = _EQ_NORMALIZE.get(eq, eq)
 
     cat = _EQ_TYPE_DISPLAY.get(eq, eq.replace("_", " ").title()) if eq else ""
     theme = ((dealer_info or {}).get("accent_color") or "yellow").lower()
@@ -570,12 +663,19 @@ def build_spec_sheet_data(
 
     # Contact
     raw_phone = (dealer_contact or {}).get("phone") or ""
-    phone = _fmt_phone(raw_phone) if raw_phone else ""
+    phone    = _fmt_phone(raw_phone) if raw_phone else ""
     location = (dealer_contact or {}).get("location") or ""
-    d_name = (dealer_contact or {}).get("dealer_name") or ""
+    d_name   = (dealer_contact or {}).get("dealer_name") or ""
+    website  = (dealer_info or {}).get("website") or ""
+
+    # Hours (pre-formatted for reuse in core specs and condition section)
+    hours_raw = di.get("hours")
+    hours_fmt = _fmt_int(hours_raw) if hours_raw is not None else None
 
     hero_tiles, hero_keys = _hero_specs(di, specs, eq, fr)
-    add_rows = _additional_specs(di, specs, eq, hero_keys)
+    add_rows  = _additional_specs(di, specs, eq, hero_keys)
+    core_rows = _core_specs(di, specs, eq, hours_fmt)
+    perf_rows = _performance_specs(di, specs, eq)
 
     return {
         "machine": {
@@ -586,17 +686,25 @@ def build_spec_sheet_data(
             "photo_path": photo_path,
         },
         "listing": {
-            "price_usd": di.get("asking_price"),
-            "hours":     di.get("hours"),
+            "price_usd":       di.get("asking_price"),
+            "hours":           hours_raw,
+            "hours_qualifier": None,   # reserved — no DealerInput field yet
+            "condition":       di.get("condition_grade"),
+            "track_pct":       di.get("track_condition"),
+            "notes":           di.get("condition_notes") or di.get("additional_details"),
+            "stock_number":    di.get("stock_number"),  # not in DealerInput v1 — None
         },
         "specs": {
-            "hero":       hero_tiles,
-            "additional": add_rows,
+            "hero":        hero_tiles,
+            "core":        core_rows,
+            "additional":  add_rows,
+            "performance": perf_rows,
         },
         "features": _features(di, eq),
         "dealer": {
             "name":          d_name,
             "phone":         phone,
+            "website":       website,
             "location":      location,
             "logo_data_uri": logo_uri,
             "theme":         theme,

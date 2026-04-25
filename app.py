@@ -408,15 +408,31 @@ async def build_listing_result(request: Request, session_id: str):
         except Exception:
             pass
 
-    # Spec sheet web URL — v2 spec sheet lives in Listing_Photos/ as _02_spec_sheet.png
-    _ss_matches = sorted(_glob.glob(
-        os.path.join(pack_dir, "Listing_Photos", "*_02_spec_sheet.png")
-    ))
-    if _ss_matches:
-        spec_sheet_url = f"{web_base}/Listing_Photos/{os.path.basename(_ss_matches[0])}"
+    # Load explicit output paths written at build time (new sessions only).
+    # Old sessions without this file fall back to the glob paths below.
+    _explicit_path = os.path.join(pack_dir, "outputs_explicit.json")
+    _explicit_outputs: dict = {}
+    if os.path.isfile(_explicit_path):
+        try:
+            with open(_explicit_path, encoding="utf-8") as _ef:
+                _explicit_outputs = json.load(_ef)
+        except Exception:
+            pass
+
+    # Spec sheet URL: prefer the explicit path recorded at build time.
+    # Fall back to glob for sessions built before outputs_explicit.json existed.
+    _ss_explicit = _explicit_outputs.get("spec_sheet_png")
+    if _ss_explicit and os.path.isfile(_ss_explicit):
+        spec_sheet_url = f"{web_base}/Listing_Photos/{os.path.basename(_ss_explicit)}"
     else:
-        print(f"  [Result] WARNING: spec sheet not found in {pack_dir}/Listing_Photos/")
-        spec_sheet_url = None
+        _ss_matches = sorted(_glob.glob(
+            os.path.join(pack_dir, "Listing_Photos", "*_02_spec_sheet.png")
+        ))
+        if _ss_matches:
+            spec_sheet_url = f"{web_base}/Listing_Photos/{os.path.basename(_ss_matches[0])}"
+        else:
+            print(f"  [Result] WARNING: spec sheet not found in {pack_dir}/Listing_Photos/")
+            spec_sheet_url = None
 
     def _load_image_urls(subfolder: str) -> list[str]:
         img_dir = os.path.join(pack_dir, subfolder)
@@ -444,6 +460,14 @@ async def build_listing_result(request: Request, session_id: str):
             "urls":     _load_image_urls("Original_Photos"),
         },
     ]
+
+    # Primary preview image: use the first *_listing.jpg recorded at build time.
+    # New sessions have outputs_explicit.json; old sessions get None here and the
+    # template falls back to its pack.urls[0] logic.
+    _primary_explicit = _explicit_outputs.get("primary_preview_image")
+    primary_preview_image: str | None = None
+    if _primary_explicit and os.path.isfile(_primary_explicit):
+        primary_preview_image = f"{web_base}/Listing_Photos/{os.path.basename(_primary_explicit)}"
 
     # Walkaround video
     walkaround_abs = os.path.join(pack_dir, "walkaround.mp4")
@@ -502,12 +526,13 @@ async def build_listing_result(request: Request, session_id: str):
         "listing_text":   listing_text,
         "listing_title":  listing_title,
         "spec_tiers":     spec_tiers,
-        "spec_sheet_url": spec_sheet_url,
-        "image_packs":    image_packs,
-        "walkaround_url": walkaround_url,
-        "zip_url":        zip_url,
-        "can_refine":     can_refine,
-        "best_for_ui":    best_for_ui,
+        "spec_sheet_url":        spec_sheet_url,
+        "image_packs":           image_packs,
+        "primary_preview_image": primary_preview_image,
+        "walkaround_url":        walkaround_url,
+        "zip_url":               zip_url,
+        "can_refine":            can_refine,
+        "best_for_ui":           best_for_ui,
     })
 
 
@@ -837,7 +862,7 @@ async def generate_listing_pack_endpoint(
         "rewritten_listing":  pack_rewritten,
         "outputs": {
             "listing_txt":       _asset_url(pack["outputs"].get("listing_txt"),    session_web),
-            "spec_sheet_png":    _asset_url(pack["outputs"].get("spec_sheet_png"), session_web + "/listing_output/spec_sheet"),
+            "spec_sheet_png":    _asset_url(pack["outputs"].get("spec_sheet_png"), session_web + "/listing_output/Listing_Photos"),
             "image_pack_folder": session_web + "/listing_output" if pack["outputs"].get("image_pack_folder") else None,
             "walkaround_mp4":    _asset_url(wk_path, session_web + "/listing_output") if wk_path else None,
             "zip_file":          pack.get("zip_web_url"),
@@ -980,8 +1005,9 @@ async def build_listing_endpoint(
     attachments_included: Optional[str]  = Form(None),
     condition_notes:        Optional[str]        = Form(None),
     condition_grade:        Optional[str]        = Form(None),
-    # CTL core output field (locked standard 2026-04-10)
+    # CTL core output fields (locked standard 2026-04-10)
     serial_number:          Optional[str]        = Form(None),
+    stock_number:           Optional[str]        = Form(None),
     # CTL feature fields (locked standard 2026-04-10)
     air_ride_seat:          str                  = Form("false"),
     self_leveling:          str                  = Form("false"),
@@ -1051,6 +1077,7 @@ async def build_listing_endpoint(
             condition_notes=condition_notes.strip() or None if condition_notes else None,
             condition_grade=condition_grade.strip() or None if condition_grade else None,
             serial_number=serial_number.strip() or None if serial_number else None,
+            stock_number=stock_number.strip() or None if stock_number else None,
             air_ride_seat=_bool(air_ride_seat),
             self_leveling=_bool(self_leveling),
             reversing_fan=_bool(reversing_fan),
@@ -1345,8 +1372,9 @@ async def build_listing_preview(
     attachments_included: Optional[str] = Form(None),
     condition_notes:      Optional[str] = Form(None),
     condition_grade:      Optional[str] = Form(None),
-    # CTL core output field (locked standard 2026-04-10)
+    # CTL core output fields (locked standard 2026-04-10)
     serial_number:        Optional[str] = Form(None),
+    stock_number:         Optional[str] = Form(None),
     # CTL feature fields (locked standard 2026-04-10)
     air_ride_seat:        str           = Form("false"),
     self_leveling:        str           = Form("false"),
@@ -1399,6 +1427,7 @@ async def build_listing_preview(
             condition_notes=condition_notes.strip() or None if condition_notes else None,
             condition_grade=condition_grade.strip() or None if condition_grade else None,
             serial_number=serial_number.strip() or None if serial_number else None,
+            stock_number=stock_number.strip() or None if stock_number else None,
             air_ride_seat=_bool(air_ride_seat),
             self_leveling=_bool(self_leveling),
             reversing_fan=_bool(reversing_fan),

@@ -70,6 +70,9 @@ class DealerInput(BaseModel):
     # serial_number: unit-level identifier; core output per locked CTL standard.
     #   None = not provided by dealer.
     serial_number:   Optional[str] = None
+    # stock_number: dealer internal stock/inventory number.
+    #   None = not provided by dealer.
+    stock_number:    Optional[str] = None
 
     # ── CTL feature toggles (secondary output / listing features) ─────────────
     # These appear in listing text and are part of the locked CTL feature set.
