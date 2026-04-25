@@ -164,7 +164,7 @@ def _hero_specs(
         _push("Net Power", _hp(), "HP", "hp")
         flow_val, is_high = _aux_flow()
         if flow_val and len(tiles) < 4:
-            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Std)",
+            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Standard)",
                           "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
         # 4th slot: Lift Path (locked architecture); fallback to Operating Weight
@@ -273,7 +273,7 @@ def _hero_specs(
         _push("Rated Op Capacity", _roc(), "LB", "roc")
         flow_val, is_high = _aux_flow()
         if flow_val and len(tiles) < 4:
-            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Std)",
+            tiles.append({"label": "Aux Flow (High)" if is_high else "Aux Flow (Standard)",
                           "value": flow_val, "unit": "GPM", "icon": "aux_flow"})
             hero_keys.add("aux_flow")
 
@@ -526,7 +526,7 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
     if high_flow_active and flow_high is not None:
         _row("Aux Hydraulic Flow (High)", _fmt_int(flow_high), "GPM")
     elif flow_std is not None:
-        _row("Aux Hydraulic Flow (Std)", _fmt_int(flow_std), "GPM")
+        _row("Aux Hydraulic Flow (Standard)", _fmt_int(flow_std), "GPM")
     elif flow_high is not None:
         _row("Aux Hydraulic Flow (High)", _fmt_int(flow_high), "GPM")
 
