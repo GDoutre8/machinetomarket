@@ -221,6 +221,75 @@ def _strip_white_bg(logo: Image.Image, threshold: int = 230) -> Image.Image:
     return rgba
 
 
+def _has_dark_opaque_background(logo: Image.Image, threshold: int = 40) -> bool:
+    """Return True if 3+ corners are near-black and opaque (dark canvas background)."""
+    rgba = logo.convert("RGBA")
+    w, h = rgba.size
+    pw = max(2, min(w // 20, 20))
+    ph = max(2, min(h // 20, 20))
+    boxes = [
+        (0,      0,      pw,  ph),
+        (w - pw, 0,      w,   ph),
+        (0,      h - ph, pw,  h),
+        (w - pw, h - ph, w,   h),
+    ]
+    dark_corners = 0
+    for box in boxes:
+        patch = rgba.crop(box)
+        n = patch.width * patch.height
+        if n == 0:
+            continue
+        r_sum = g_sum = b_sum = a_sum = 0
+        for (r, g, b, a) in patch.getdata():
+            r_sum += r; g_sum += g; b_sum += b; a_sum += a
+        rm, gm, bm, am = r_sum / n, g_sum / n, b_sum / n, a_sum / n
+        if am >= 200 and rm <= threshold and gm <= threshold and bm <= threshold:
+            dark_corners += 1
+    return dark_corners >= 3
+
+
+def _strip_outer_dark_bg(logo: Image.Image, threshold: int = 40) -> Image.Image:
+    """Convert connected near-black background pixels to transparent via corner flood-fill.
+
+    Flood-fills from the four image corners treating near-black pixels (all RGB <= threshold)
+    as background. Only the contiguous region reachable from the edges is cleared — interior
+    black artwork (text, lines, icons) that is not edge-connected is preserved.
+
+    NOTE: Only call this when the logo has a dark/black canvas background. Do NOT chain
+    after _strip_white_bg — that zeroes white interior pixels whose alpha < 20 would then
+    be treated as passable by this flood-fill, corrupting interior white artwork.
+    """
+    rgba = logo.convert("RGBA")
+    data = rgba.load()
+    w, h = rgba.size
+
+    def _is_bg(x: int, y: int) -> bool:
+        r, g, b, a = data[x, y]
+        # Only treat opaque near-black pixels as background — do NOT propagate through
+        # already-transparent pixels, which may be interior artwork stripped by an
+        # earlier pass.
+        return a >= 200 and r <= threshold and g <= threshold and b <= threshold
+
+    visited: set[tuple[int, int]] = set()
+    queue: list[tuple[int, int]] = []
+
+    for sx, sy in ((0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)):
+        if (sx, sy) not in visited and _is_bg(sx, sy):
+            visited.add((sx, sy))
+            queue.append((sx, sy))
+
+    while queue:
+        cx, cy = queue.pop()
+        r, g, b, _a = data[cx, cy]
+        data[cx, cy] = (r, g, b, 0)
+        for nx, ny in ((cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)):
+            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in visited and _is_bg(nx, ny):
+                visited.add((nx, ny))
+                queue.append((nx, ny))
+
+    return rgba
+
+
 # ─── Badge builder ────────────────────────────────────────────────────────────
 
 def build_badge(
@@ -230,17 +299,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives accent bar + phone color on charcoal
     *,
     force_variant: Optional[Literal["white", "charcoal"]] = None,  # QA override; None = auto-detect
-    logo_box_w: int = 160,          # max logo width — wider to favour horizontal logos
-    logo_box_h: int = 44,           # max logo height — reduced so width is more often the constraint
-    padding_x: int = 26,
+    logo_box_w: int = 200,          # max logo width — wider to favour horizontal logos
+    logo_box_h: int = 52,           # max logo height
+    padding_x: int = 22,
     padding_y: int = 20,
-    gap: int = 14,                  # gap between actual logo right edge and text column
+    gap: int = 10,                  # gap between actual logo right edge and text column
     sep_width: int = 1,
     text_gap: int = 7,
     corner_radius: int = 12,
     accent_bar_h: int = 5,
-    name_size: int = 27,
-    phone_size: int = 15,
+    name_size: int = 24,
+    phone_size: int = 13,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -283,7 +352,17 @@ def build_badge(
     scale   = min(logo_box_w / lw, logo_box_h / lh)
     logo_pw = int(lw * scale)      # actual pixel width of scaled logo
     logo_ph = int(lh * scale)      # actual pixel height of scaled logo
-    logo_src = _strip_white_bg(logo) if bg_kind != "white" else logo
+    # Strip background fill from the logo so it composites cleanly onto the charcoal badge.
+    # The two strippers are mutually exclusive — chaining them corrupts logos whose
+    # interior artwork matches the opposite color (e.g. white text on a dark bg logo
+    # would be zeroed by _strip_white_bg, then treated as passable background by the
+    # flood-fill in _strip_outer_dark_bg).
+    if bg_kind == "white":
+        logo_src = logo
+    elif _has_dark_opaque_background(logo):
+        logo_src = _strip_outer_dark_bg(logo)   # dark canvas bg → flood-fill from corners
+    else:
+        logo_src = _strip_white_bg(logo)         # white canvas fill or transparent bg
     logo_scaled = logo_src.resize((logo_pw, logo_ph), Image.LANCZOS)
 
     # Fonts
