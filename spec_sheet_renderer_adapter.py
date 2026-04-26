@@ -376,6 +376,26 @@ def _hero_specs(
                   or specs.get("breakout_force_lbs"))
             _push("Loader Breakout", _fmt_int(bf), "LB", "breakout_force")
 
+    elif eq == "scissor_lift":
+        # slot 1: Platform Height (deck height)
+        ph = specs.get("platform_height_ft")
+        if ph is not None:
+            try:
+                _push("Platform Height", f"{float(ph):.0f}'", "", "platform_height")
+            except (TypeError, ValueError):
+                _push("Platform Height", str(ph), "", "platform_height")
+        # slot 2: Working Height — ANSI = platform + 6 ft; derived, not in registry
+        if ph is not None and len(tiles) < 4:
+            try:
+                _push("Working Height", f"{float(ph) + 6.0:.0f}'", "", "working_height")
+            except (TypeError, ValueError):
+                pass
+        # slot 3: Capacity
+        cap = specs.get("platform_capacity_lbs") or specs.get("platform_capacity_lb")
+        _push("Capacity", _fmt_int(cap), "LB", "capacity")
+        # slot 4: Machine Weight
+        _push("Machine Weight", _weight(), "LB", "weight")
+
     elif eq in ("dozer", "crawler_dozer"):
         _push("Horsepower", _hp(), "HP", "hp")                                     # slot 1
         _push("Operating Weight", _weight(), "LB", "weight")                       # slot 2
@@ -623,6 +643,9 @@ def _additional_specs(
         _weight_row()
         _serial()
 
+    elif eq == "scissor_lift":
+        _serial()
+
     elif eq in ("dozer", "crawler_dozer"):
         ft = specs.get("fuel_type")
         if ft:
@@ -789,6 +812,13 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
+    # ── Scissor Lift core specs ──────────────────────────────────────────────────
+    if eq == "scissor_lift":
+        _row("Hours", hours_fmt)
+        _row("Serial #", di.get("serial_number"))
+        _row("Stock #", di.get("stock_number"))
+        return rows
+
     # ── Dozer core specs ────────────────────────────────────────────────────────
     if eq in ("dozer", "crawler_dozer"):
         _row("Hours", hours_fmt)
@@ -892,6 +922,43 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
                 _row("Travel Speed (Low)", f"{float(ts_low):.1f}", "MPH")
             except (TypeError, ValueError):
                 _row("Travel Speed (Low)", str(ts_low), "MPH")
+        return rows
+
+    # ── Scissor Lift performance: dimensions + drive + power ────────────────────
+    if eq == "scissor_lift":
+        pw = specs.get("platform_width_ft")
+        if pw is not None:
+            try:
+                _row("Machine Width", _fmt_ft_in(float(pw)))
+            except (TypeError, ValueError):
+                _row("Machine Width", str(pw))
+        pl = specs.get("platform_length_ft")
+        if pl is not None:
+            try:
+                _row("Machine Length", _fmt_ft_in(float(pl)))
+            except (TypeError, ValueError):
+                _row("Machine Length", str(pl))
+        sh = specs.get("stowed_height_in")
+        if sh is not None:
+            try:
+                _row("Stowed Height", f'{int(float(sh))}"')
+            except (TypeError, ValueError):
+                _row("Stowed Height", str(sh))
+        ds = specs.get("drive_speed_stowed_mph")
+        if ds is not None:
+            try:
+                _row("Drive Speed (Stowed)", f"{float(ds):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Drive Speed (Stowed)", str(ds), "MPH")
+        ps = specs.get("power_source")
+        if ps:
+            _PS = {
+                "electric_ac": "Electric (AC)",
+                "electric_dc": "Electric (DC)",
+                "diesel":      "Diesel",
+                "gas":         "Gas",
+            }
+            _row("Power Source", _PS.get(str(ps).lower(), str(ps).replace("_", " ").title()))
         return rows
 
     # ── Dozer performance: Ground Pressure / Travel Speed / Fuel / Hydraulic Flow ─

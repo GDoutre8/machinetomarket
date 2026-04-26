@@ -212,6 +212,7 @@ _PASSTHROUGH_FIELDS = [
     "drive_speed_stowed_mph",     # boom_lift, scissor_lift
     "platform_length_ft",         # scissor_lift
     "platform_width_ft",          # scissor_lift
+    "stowed_height_in",           # scissor_lift — physical clearance spec
     # Dozer blade width — direct registry key
     "blade_width_ft",             # crawler_dozer
     # Dozer fuel tank — direct registry key

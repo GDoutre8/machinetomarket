@@ -84,13 +84,16 @@ _BOOM_LIFT_DEFAULTS: Dict[str, FieldBehavior] = {
 }
 
 _SCISSOR_LIFT_DEFAULTS: Dict[str, FieldBehavior] = {
-    "platform_height_ft":   FieldBehavior.LOCKED,
-    "working_height_ft":    FieldBehavior.LOCKED,
-    "platform_capacity_lb": FieldBehavior.LOCKED,
-    "machine_width_in":     FieldBehavior.LOCKED,
-    "machine_weight_lb":    FieldBehavior.LOCKED,
-    "power_type":           FieldBehavior.LOCKED,
-    "indoor_outdoor":       FieldBehavior.LOCKED,
+    "platform_height_ft":     FieldBehavior.LOCKED,
+    "platform_capacity_lbs":  FieldBehavior.LOCKED,   # registry uses 'lbs'
+    "platform_length_ft":     FieldBehavior.LOCKED,
+    "platform_width_ft":      FieldBehavior.LOCKED,
+    "operating_weight_lb":    FieldBehavior.LOCKED,   # canonical key after _SPEC_KEY_MAP
+    "power_source":           FieldBehavior.LOCKED,   # registry uses 'power_source'
+    "stowed_height_in":       FieldBehavior.LOCKED,
+    "drive_speed_stowed_mph": FieldBehavior.LOCKED,   # registry marks manual_review; LOCKED
+                                                       # causes suppression to drop that
+                                                       # override so passthrough injects it
 }
 
 _DOZER_DEFAULTS: Dict[str, FieldBehavior] = {
