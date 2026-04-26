@@ -1,0 +1,714 @@
+{
+  "_patch_meta": {
+    "patch_name": "jd_ctl_oem_patch",
+    "created": "2026-04-26",
+    "status": "PENDING_REVIEW",
+    "target_registry": "mtm_ctl_registry_v1_28.json",
+    "scope": "JD CTL D-Series adds/fixes + ROC policy corrections + invalid record tombstones",
+    "author": "Claude Code — diagnostic-only pass, OEM-sourced",
+    "apply_script_note": "Do not apply until reviewed. Use patch_ctl_v1_28.py or equivalent.",
+    "sources": [
+      "John Deere D-Series CTL brochure DKADCTLCWP (deere.com)",
+      "John Deere 325G OEM spec sheet DKAGCTL325 rev 24-03 (deere.com)",
+      "John Deere 331G OEM spec sheet DKAGCTL331 rev 22-10 (deere.com)",
+      "John Deere 333G OEM spec sheet DKAGCTL333 rev 22-10 (deere.com)",
+      "John Deere CT-Series CTL brochure DKACTLCWP rev 09-06 (deere.com)"
+    ],
+    "policy_notes": [
+      "MTM ROC normalization: rated_operating_capacity_lbs = OEM-published 50% of tipping load value. All OEM PDFs publish both 35% and 50% values explicitly; 50% values used directly, no back-calculation.",
+      "tipping_load_lbs always reflects OEM-published full tipping load; unchanged in ROC-only fixes.",
+      "No values inferred. Every change traces to a published OEM number from a primary Deere source."
+    ],
+    "operation_summary": {
+      "tombstones": 2,
+      "adds": 2,
+      "updates": 7,
+      "total_operations": 11
+    }
+  },
+
+  "tombstones": [
+    {
+      "model_slug": "jd_322d",
+      "operation": "tombstone",
+      "reason": "John Deere 322D is a wheeled skid steer (300-Series SSL), not a CTL. OEM D-Series CTL brochure lists exactly four CTL models: 319D, 323D, 329D, 333D. In JD's naming convention, the middle digit '2' denotes wheeled (SSL) and '3' denotes tracked (CTL); the 322D is the wheeled analogue of the 323D. This record was added to the CTL registry in error via Excel market volume expansion.",
+      "source": "John Deere D-Series CTL brochure DKADCTLCWP — lineup confirmed as 319D/323D/329D/333D only",
+      "confidence": "HIGH",
+      "changes": {
+        "status": { "from": "active_used_market", "to": "invalid_not_a_ctl" },
+        "registry_tier": { "from": "coverage_stub", "to": "tombstone" }
+      },
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] TOMBSTONED: John Deere 322D is a wheeled skid steer, not a CTL. OEM D-Series CTL brochure confirms the D-Series CTL lineup is 319D, 323D, 329D, 333D only. Record retained as tombstone to prevent future re-stubbing."
+      ],
+      "alias_redirect": "If SSL registry is missing a 322D entry, add it there as a separate task."
+    },
+    {
+      "model_slug": "jd_335g",
+      "operation": "tombstone",
+      "reason": "No production John Deere 335G CTL exists. JD G-Series CTL lineup is: 317G, 319G, 325G, 331G, 333G. The 333G successor in the large-frame slot is the 335 P-Tier (introduced ~2024), which JD designated '335' not '335G'. JD skipped the 335G generation entirely. The correct successor model is jd_335_p_tier already in the registry.",
+      "source": "John Deere G-Series CTL OEM spec sheets confirm G-Series ends at 333G; JD 335 launched as P-Tier designation",
+      "confidence": "HIGH",
+      "changes": {
+        "status": { "from": "active_used_market", "to": "invalid_not_a_ctl" },
+        "registry_tier": { "from": "coverage_stub", "to": "tombstone" }
+      },
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] TOMBSTONED: No production John Deere 335G CTL exists. Successor model is the 335 P-Tier (see jd_335_p_tier). JD G-Series lineup ends at 333G. Record retained as tombstone to prevent future re-stubbing.",
+        "If market listings appear tagged '335G', add alias_hint '335G' to jd_335_p_tier."
+      ]
+    }
+  ],
+
+  "adds": [
+    {
+      "model_slug": "jd_319d",
+      "operation": "add",
+      "reason": "319D is a production D-Series CTL missing from the registry. OEM D-Series brochure confirms it as the small-frame CTL in the D-Series lineup alongside 323D/329D/333D.",
+      "source": "John Deere D-Series CTL brochure DKADCTLCWP",
+      "confidence": "HIGH",
+      "record": {
+        "model_slug": "jd_319d",
+        "model": "319D",
+        "manufacturer": "John Deere",
+        "equipment_type": "compact_track_loader",
+        "registry_tier": "production",
+        "status": "active_used_market",
+        "model_family": "D Series",
+        "years_supported": {
+          "start": 2007,
+          "end": 2014
+        },
+        "alias_hints": [],
+        "feature_flags": {
+          "enclosed_cab_available": true,
+          "high_flow_available": false,
+          "joystick_controls_available": true,
+          "ride_control_available": null,
+          "two_speed_available": false
+        },
+        "specs": {
+          "horsepower_hp": 63,
+          "horsepower_gross_hp": 68,
+          "engine_manufacturer": "John Deere",
+          "engine_model": "PowerTech E 4024HT",
+          "engine_displacement_cu_in": 149,
+          "engine_cylinders": 4,
+          "engine_aspiration": "turbocharged",
+          "emissions_tier": "Tier 4 Interim",
+          "fuel_type": "diesel",
+          "fuel_capacity_gal": 18.5,
+          "rated_operating_capacity_lbs": 2800,
+          "tipping_load_lbs": 5600,
+          "operating_weight_lbs": 8550,
+          "aux_flow_standard_gpm": 15.5,
+          "aux_flow_high_gpm": null,
+          "travel_speed_high_mph": 6.1,
+          "travel_speed_low_mph": null,
+          "hydraulic_pressure_standard_psi": 3100,
+          "hydraulic_pressure_high_psi": 3100,
+          "hydraulic_pump_type": "axial_piston",
+          "width_over_tires_in": 71.7,
+          "bucket_hinge_pin_height_in": 118.1,
+          "frame_size": "small",
+          "lift_path": "vertical",
+          "dump_height_in": 94.5,
+          "dump_reach_in": 28.4,
+          "standard_tire_size": null,
+          "wheelbase_in": null
+        },
+        "field_confidence": {
+          "horsepower_hp": "HIGH",
+          "horsepower_gross_hp": "HIGH",
+          "engine_manufacturer": "HIGH",
+          "engine_model": "HIGH",
+          "engine_displacement_cu_in": "HIGH",
+          "engine_cylinders": "HIGH",
+          "engine_aspiration": "HIGH",
+          "emissions_tier": "HIGH",
+          "fuel_type": "HIGH",
+          "fuel_capacity_gal": "HIGH",
+          "rated_operating_capacity_lbs": "HIGH",
+          "tipping_load_lbs": "HIGH",
+          "operating_weight_lbs": "HIGH",
+          "aux_flow_standard_gpm": "HIGH",
+          "aux_flow_high_gpm": "HIGH",
+          "travel_speed_high_mph": "HIGH",
+          "travel_speed_low_mph": "HIGH",
+          "hydraulic_pressure_standard_psi": "HIGH",
+          "hydraulic_pressure_high_psi": "HIGH",
+          "hydraulic_pump_type": "LOW",
+          "width_over_tires_in": "HIGH",
+          "bucket_hinge_pin_height_in": "HIGH",
+          "frame_size": "HIGH",
+          "lift_path": "HIGH",
+          "dump_height_in": "HIGH",
+          "dump_reach_in": "HIGH",
+          "standard_tire_size": "LOW",
+          "wheelbase_in": "LOW"
+        },
+        "field_behavior": {
+          "horsepower_hp": "locked",
+          "horsepower_gross_hp": "locked",
+          "engine_manufacturer": "locked",
+          "engine_model": "locked",
+          "engine_displacement_cu_in": "locked",
+          "engine_cylinders": "locked",
+          "engine_aspiration": "locked",
+          "emissions_tier": "locked",
+          "fuel_type": "locked",
+          "fuel_capacity_gal": "locked",
+          "rated_operating_capacity_lbs": "locked",
+          "tipping_load_lbs": "locked",
+          "operating_weight_lbs": "locked",
+          "aux_flow_standard_gpm": "locked",
+          "aux_flow_high_gpm": "locked",
+          "travel_speed_high_mph": "locked",
+          "travel_speed_low_mph": "locked",
+          "hydraulic_pressure_standard_psi": "locked",
+          "hydraulic_pressure_high_psi": "locked",
+          "hydraulic_pump_type": "locked",
+          "width_over_tires_in": "locked",
+          "bucket_hinge_pin_height_in": "locked",
+          "frame_size": "locked",
+          "lift_path": "locked",
+          "dump_height_in": "locked",
+          "dump_reach_in": "locked",
+          "standard_tire_size": "manual_review",
+          "wheelbase_in": "manual_review"
+        },
+        "source_refs": [
+          "John Deere D-Series CTL brochure DKADCTLCWP (deere.com)"
+        ],
+        "notes": [
+          "John Deere 319D — D-Series compact track loader. Small-frame, Tier 4 Interim variant. Shares PowerTech E 4024HT engine with 323D but at lower output.",
+          "Engine: JD PowerTech E 4024HT, 4-cyl turbocharged, 2.4L (149 cu in).",
+          "horsepower_hp = 63 SAE net. horsepower_gross_hp = 68.",
+          "rated_operating_capacity_lbs = 2800 lb (50% of 5600 lb tipping load per MTM policy). OEM brochure publishes both 35% and 50% values; 50% stored here.",
+          "width_over_tires_in = 71.7in using 320mm (12.6in) standard track. OEM D-Series standard track for small-frame.",
+          "High-flow NOT available on 319D per OEM spec table (shown as dash). 2-speed NOT available on 319D per OEM spec table (shown as dash). 319D is the only D-Series CTL without these options.",
+          "aux_flow_high_gpm null — high-flow not available on this model (OEM: not offered).",
+          "travel_speed_low_mph null — single-speed transmission only on 319D.",
+          "years_supported 2007-2014 spans full D-Series production window (Tier 3 and Tier 4 Interim variants); OEM brochure sourced is Tier 4 Interim spec. Confirm year range against serial number records if precision required.",
+          "[jd_ctl_oem_patch 2026-04-26] New production record. Source: JD D-Series CTL brochure DKADCTLCWP."
+        ]
+      }
+    },
+    {
+      "model_slug": "jd_329d",
+      "operation": "add",
+      "reason": "329D is a production D-Series CTL missing from the registry. OEM D-Series brochure confirms it as the large-frame CTL in the D-Series lineup alongside 319D/323D/333D.",
+      "source": "John Deere D-Series CTL brochure DKADCTLCWP",
+      "confidence": "HIGH",
+      "record": {
+        "model_slug": "jd_329d",
+        "model": "329D",
+        "manufacturer": "John Deere",
+        "equipment_type": "compact_track_loader",
+        "registry_tier": "production",
+        "status": "active_used_market",
+        "model_family": "D Series",
+        "years_supported": {
+          "start": 2007,
+          "end": 2014
+        },
+        "alias_hints": [],
+        "feature_flags": {
+          "enclosed_cab_available": true,
+          "high_flow_available": true,
+          "joystick_controls_available": true,
+          "ride_control_available": null,
+          "two_speed_available": true
+        },
+        "specs": {
+          "horsepower_hp": 80,
+          "horsepower_gross_hp": 85,
+          "engine_manufacturer": "John Deere",
+          "engine_model": "PowerTech E 5030HT",
+          "engine_displacement_cu_in": 186,
+          "engine_cylinders": 5,
+          "engine_aspiration": "turbocharged",
+          "emissions_tier": "Tier 3",
+          "fuel_type": "diesel",
+          "fuel_capacity_gal": 29.3,
+          "rated_operating_capacity_lbs": 4150,
+          "tipping_load_lbs": 8300,
+          "operating_weight_lbs": 10830,
+          "aux_flow_standard_gpm": 21.0,
+          "aux_flow_high_gpm": 33.0,
+          "travel_speed_high_mph": 7.8,
+          "travel_speed_low_mph": 5.3,
+          "hydraulic_pressure_standard_psi": 3450,
+          "hydraulic_pressure_high_psi": 3450,
+          "hydraulic_pump_type": "axial_piston",
+          "width_over_tires_in": 78.7,
+          "bucket_hinge_pin_height_in": 126.0,
+          "frame_size": "large",
+          "lift_path": "vertical",
+          "dump_height_in": 102.0,
+          "dump_reach_in": 32.2,
+          "standard_tire_size": null,
+          "wheelbase_in": null
+        },
+        "field_confidence": {
+          "horsepower_hp": "HIGH",
+          "horsepower_gross_hp": "HIGH",
+          "engine_manufacturer": "HIGH",
+          "engine_model": "HIGH",
+          "engine_displacement_cu_in": "HIGH",
+          "engine_cylinders": "HIGH",
+          "engine_aspiration": "HIGH",
+          "emissions_tier": "HIGH",
+          "fuel_type": "HIGH",
+          "fuel_capacity_gal": "HIGH",
+          "rated_operating_capacity_lbs": "HIGH",
+          "tipping_load_lbs": "HIGH",
+          "operating_weight_lbs": "HIGH",
+          "aux_flow_standard_gpm": "HIGH",
+          "aux_flow_high_gpm": "HIGH",
+          "travel_speed_high_mph": "HIGH",
+          "travel_speed_low_mph": "HIGH",
+          "hydraulic_pressure_standard_psi": "HIGH",
+          "hydraulic_pressure_high_psi": "HIGH",
+          "hydraulic_pump_type": "LOW",
+          "width_over_tires_in": "HIGH",
+          "bucket_hinge_pin_height_in": "HIGH",
+          "frame_size": "HIGH",
+          "lift_path": "HIGH",
+          "dump_height_in": "HIGH",
+          "dump_reach_in": "HIGH",
+          "standard_tire_size": "LOW",
+          "wheelbase_in": "LOW"
+        },
+        "field_behavior": {
+          "horsepower_hp": "locked",
+          "horsepower_gross_hp": "locked",
+          "engine_manufacturer": "locked",
+          "engine_model": "locked",
+          "engine_displacement_cu_in": "locked",
+          "engine_cylinders": "locked",
+          "engine_aspiration": "locked",
+          "emissions_tier": "locked",
+          "fuel_type": "locked",
+          "fuel_capacity_gal": "locked",
+          "rated_operating_capacity_lbs": "locked",
+          "tipping_load_lbs": "locked",
+          "operating_weight_lbs": "locked",
+          "aux_flow_standard_gpm": "locked",
+          "aux_flow_high_gpm": "package_dependent",
+          "travel_speed_high_mph": "locked",
+          "travel_speed_low_mph": "locked",
+          "hydraulic_pressure_standard_psi": "locked",
+          "hydraulic_pressure_high_psi": "locked",
+          "hydraulic_pump_type": "locked",
+          "width_over_tires_in": "locked",
+          "bucket_hinge_pin_height_in": "locked",
+          "frame_size": "locked",
+          "lift_path": "locked",
+          "dump_height_in": "locked",
+          "dump_reach_in": "locked",
+          "standard_tire_size": "manual_review",
+          "wheelbase_in": "manual_review"
+        },
+        "source_refs": [
+          "John Deere D-Series CTL brochure DKADCTLCWP (deere.com)"
+        ],
+        "notes": [
+          "John Deere 329D — D-Series compact track loader. Large-frame, sister model to 333D with lower HP output. Shares PowerTech E 5030HT 5-cyl engine platform with 333D.",
+          "Engine: JD PowerTech E 5030HT, 5-cyl turbocharged, 3.0L (186 cu in).",
+          "horsepower_hp = 80 SAE net. horsepower_gross_hp = 85.",
+          "rated_operating_capacity_lbs = 4150 lb (50% of 8300 lb tipping load per MTM policy). OEM brochure publishes both 35% and 50% values; 50% stored here.",
+          "width_over_tires_in = 78.7in using 400mm (15.7in) standard track. OEM D-Series standard track for large-frame.",
+          "travel_speed values reflect 2-speed transmission: high = 7.8 mph, low = 5.3 mph. Single-speed also available (6.2 mph).",
+          "aux_flow_high_gpm = 33.0 (125 L/min total) per OEM; package_dependent — confirm on unit record.",
+          "years_supported 2007-2014 spans full D-Series production window. Confirm precise range against serial number records if needed.",
+          "[jd_ctl_oem_patch 2026-04-26] New production record. Source: JD D-Series CTL brochure DKADCTLCWP."
+        ]
+      }
+    }
+  ],
+
+  "updates": [
+    {
+      "model_slug": "jd_323d",
+      "operation": "update",
+      "reason": "Multiple OEM corrections: ROC policy violation (35% stored instead of 50%), width error (400mm optional track stored as standard instead of 320mm standard track), plus null fields filled from D-Series OEM brochure.",
+      "source": "John Deere D-Series CTL brochure DKADCTLCWP",
+      "confidence": "HIGH",
+      "changes": {
+        "specs.rated_operating_capacity_lbs": {
+          "from": 2295,
+          "to": 3600,
+          "reason": "ROC policy: registry stored OEM 35% value (2295 lb). OEM brochure explicitly publishes 50% value as 3600 lb. MTM policy = store 50%."
+        },
+        "specs.width_over_tires_in": {
+          "from": 75.2,
+          "to": 71.7,
+          "reason": "Width error: prior note claimed '400mm standard track' but OEM D-Series specifies 320mm (12.6in) as standard for 323D. 400mm is optional. 320mm = 71.7in."
+        },
+        "specs.aux_flow_high_gpm": {
+          "from": null,
+          "to": 29.0,
+          "reason": "OEM confirms: high-flow option provides 29 GPM (110 L/min total) on 323D."
+        },
+        "specs.travel_speed_low_mph": {
+          "from": null,
+          "to": 5.5,
+          "reason": "OEM D-Series spec table: 2-speed transmission low = 5.5 mph on 323D. 2-speed is optional (not standard). Only populated for 2-speed equipped units."
+        },
+        "specs.fuel_capacity_gal": {
+          "from": 19.0,
+          "to": 18.5,
+          "reason": "OEM: 70.0L = 18.49 gal. 18.5 is the correct rounded value. Prior 19.0 was a rounding error."
+        },
+        "specs.dump_height_in": {
+          "from": null,
+          "to": 94.5,
+          "reason": "OEM D-Series: dump height 2.40m = 94.5in."
+        },
+        "specs.dump_reach_in": {
+          "from": null,
+          "to": 28.4,
+          "reason": "OEM D-Series: dump reach (foundry bucket) = 28.4in."
+        },
+        "feature_flags.two_speed_available": {
+          "from": false,
+          "to": true,
+          "reason": "2-speed IS available as an option on 323D per OEM. Prior false was incorrect."
+        },
+        "field_confidence.rated_operating_capacity_lbs": {
+          "from": "HIGH",
+          "to": "HIGH",
+          "reason": "Remains HIGH; value corrected to OEM 50%."
+        },
+        "field_confidence.width_over_tires_in": {
+          "from": "HIGH",
+          "to": "HIGH",
+          "reason": "Remains HIGH; value corrected to 320mm standard track."
+        },
+        "field_confidence.aux_flow_high_gpm": {
+          "from": "LOW",
+          "to": "HIGH"
+        },
+        "field_confidence.travel_speed_low_mph": {
+          "from": "LOW",
+          "to": "HIGH"
+        },
+        "field_confidence.fuel_capacity_gal": {
+          "from": "HIGH",
+          "to": "HIGH"
+        },
+        "field_confidence.dump_height_in": {
+          "from": "LOW",
+          "to": "HIGH"
+        },
+        "field_confidence.dump_reach_in": {
+          "from": "LOW",
+          "to": "HIGH"
+        },
+        "field_behavior.aux_flow_high_gpm": {
+          "from": "manual_review",
+          "to": "package_dependent"
+        },
+        "field_behavior.travel_speed_low_mph": {
+          "from": "manual_review",
+          "to": "locked"
+        },
+        "field_behavior.dump_height_in": {
+          "from": "manual_review",
+          "to": "locked"
+        },
+        "field_behavior.dump_reach_in": {
+          "from": "manual_review",
+          "to": "locked"
+        }
+      },
+      "notes_to_replace": [
+        "REPLACE: 'width_over_tires_in = 75.2in using 15.8in (400mm) standard track per registry Deere track width rule.'",
+        "WITH: 'width_over_tires_in = 71.7in using 320mm (12.6in) standard track per OEM D-Series brochure DKADCTLCWP. 400mm is optional track — prior record incorrectly stored the optional track width as standard.'"
+      ],
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] ROC corrected 2295 → 3600: registry stored 35% OEM value; corrected to OEM-published 50% value (MTM policy). OEM brochure DKADCTLCWP explicitly lists both: 35% = 2295 lb, 50% = 3600 lb.",
+        "[jd_ctl_oem_patch 2026-04-26] Width corrected 75.2 → 71.7in: OEM standard track is 320mm (71.7in). Prior note was wrong to claim 400mm as standard.",
+        "[jd_ctl_oem_patch 2026-04-26] aux_flow_high_gpm filled: 29.0 GPM (110 L/min) per OEM. feature_flags.two_speed_available corrected false → true (2-speed optional). travel_speed_low_mph filled: 5.5 mph (2-speed low). fuel_capacity_gal corrected 19.0 → 18.5 (70.0L). dump_height_in/dump_reach_in filled from OEM."
+      ]
+    },
+    {
+      "model_slug": "jd_333d",
+      "operation": "update",
+      "reason": "Promote coverage_stub to production; fill all null OEM fields from D-Series brochure; correct ROC (35% stored), operating weight, and width from OEM.",
+      "source": "John Deere D-Series CTL brochure DKADCTLCWP",
+      "confidence": "HIGH",
+      "changes": {
+        "registry_tier": {
+          "from": "coverage_stub",
+          "to": "production"
+        },
+        "model_family": {
+          "from": null,
+          "to": "D Series"
+        },
+        "years_supported": {
+          "from": { "start": null, "end": null },
+          "to": { "start": 2007, "end": 2014 }
+        },
+        "specs.horsepower_gross_hp": {
+          "from": null,
+          "to": 95
+        },
+        "specs.engine_manufacturer": {
+          "from": null,
+          "to": "John Deere"
+        },
+        "specs.engine_model": {
+          "from": "JD PowerTech E 5030HT",
+          "to": "PowerTech E 5030HT",
+          "reason": "Normalize: drop 'JD' prefix. Convention across all other JD records."
+        },
+        "specs.engine_displacement_cu_in": {
+          "from": null,
+          "to": 186
+        },
+        "specs.engine_aspiration": {
+          "from": null,
+          "to": "turbocharged"
+        },
+        "specs.emissions_tier": {
+          "from": null,
+          "to": "Tier 3"
+        },
+        "specs.fuel_capacity_gal": {
+          "from": null,
+          "to": 29.3
+        },
+        "specs.rated_operating_capacity_lbs": {
+          "from": 3300,
+          "to": 4725,
+          "reason": "ROC policy: 3300 lb is OEM 35% value. MTM policy = 50%. OEM tipping = 9425 lb; 50% = 4725 lb (per OEM D-Series brochure published value)."
+        },
+        "specs.operating_weight_lbs": {
+          "from": 10130,
+          "to": 11100,
+          "reason": "OEM D-Series: 333D operating weight with 450mm standard track = 11,100 lb. Prior 10130 does not appear in OEM documentation — likely sourced from low-quality aggregator. 11100 is the correct 450mm std track value per OEM brochure."
+        },
+        "specs.aux_flow_high_gpm": {
+          "from": null,
+          "to": 34.0
+        },
+        "specs.travel_speed_low_mph": {
+          "from": null,
+          "to": 5.3
+        },
+        "specs.frame_size": {
+          "from": null,
+          "to": "large"
+        },
+        "specs.width_over_tires_in": {
+          "from": 78.7,
+          "to": 80.7,
+          "reason": "OEM D-Series: 333D standard track is 450mm (17.7in) = 80.7in total width. Prior 78.7 reflects 400mm optional track — wrong standard."
+        },
+        "specs.dump_height_in": {
+          "from": null,
+          "to": 102.0
+        },
+        "specs.dump_reach_in": {
+          "from": null,
+          "to": 32.2
+        },
+        "feature_flags.high_flow_available": {
+          "from": null,
+          "to": true
+        },
+        "feature_flags.two_speed_available": {
+          "from": null,
+          "to": true
+        },
+        "feature_flags.enclosed_cab_available": {
+          "from": null,
+          "to": true
+        },
+        "feature_flags.joystick_controls_available": {
+          "from": null,
+          "to": true
+        },
+        "field_confidence.horsepower_hp": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.horsepower_gross_hp": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.engine_manufacturer": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.engine_model": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.engine_displacement_cu_in": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.engine_cylinders": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.engine_aspiration": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.fuel_type": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.emissions_tier": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.rated_operating_capacity_lbs": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.tipping_load_lbs": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.operating_weight_lbs": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.bucket_hinge_pin_height_in": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.dump_height_in": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.dump_reach_in": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.travel_speed_low_mph": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.travel_speed_high_mph": { "from": "HIGH", "to": "HIGH" },
+        "field_confidence.aux_flow_standard_gpm": { "from": "HIGH", "to": "HIGH" },
+        "field_confidence.aux_flow_high_gpm": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.fuel_capacity_gal": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.lift_path": { "from": "MEDIUM", "to": "HIGH" },
+        "field_confidence.frame_size": { "from": "LOW", "to": "HIGH" },
+        "field_confidence.width_over_tires_in": { "from": "MEDIUM", "to": "HIGH" },
+        "field_behavior.horsepower_hp": { "from": "locked", "to": "locked" },
+        "field_behavior.horsepower_gross_hp": { "from": "manual_review", "to": "locked" },
+        "field_behavior.engine_manufacturer": { "from": "manual_review", "to": "locked" },
+        "field_behavior.engine_model": { "from": "locked", "to": "locked" },
+        "field_behavior.engine_displacement_cu_in": { "from": "manual_review", "to": "locked" },
+        "field_behavior.engine_cylinders": { "from": "locked", "to": "locked" },
+        "field_behavior.engine_aspiration": { "from": "manual_review", "to": "locked" },
+        "field_behavior.fuel_type": { "from": "manual_review", "to": "locked" },
+        "field_behavior.emissions_tier": { "from": "manual_review", "to": "locked" },
+        "field_behavior.rated_operating_capacity_lbs": { "from": "locked", "to": "locked" },
+        "field_behavior.tipping_load_lbs": { "from": "locked", "to": "locked" },
+        "field_behavior.operating_weight_lbs": { "from": "manual_review", "to": "locked" },
+        "field_behavior.bucket_hinge_pin_height_in": { "from": "manual_review", "to": "locked" },
+        "field_behavior.dump_height_in": { "from": "manual_review", "to": "locked" },
+        "field_behavior.dump_reach_in": { "from": "manual_review", "to": "locked" },
+        "field_behavior.travel_speed_low_mph": { "from": "manual_review", "to": "locked" },
+        "field_behavior.aux_flow_standard_gpm": { "from": "locked", "to": "locked" },
+        "field_behavior.aux_flow_high_gpm": { "from": "manual_review", "to": "package_dependent" },
+        "field_behavior.fuel_capacity_gal": { "from": "manual_review", "to": "locked" },
+        "field_behavior.lift_path": { "from": "manual_review", "to": "locked" },
+        "field_behavior.frame_size": { "from": "manual_review", "to": "locked" },
+        "field_behavior.width_over_tires_in": { "from": "manual_review", "to": "locked" }
+      },
+      "source_refs_to_replace": [
+        "John Deere D-Series CTL brochure DKADCTLCWP (deere.com)"
+      ],
+      "notes_to_replace_all": [
+        "John Deere 333D — D-Series compact track loader. Large-frame, Tier 3. Shares PowerTech E 5030HT 5-cyl engine platform with 329D at higher output.",
+        "Engine: JD PowerTech E 5030HT, 5-cyl turbocharged, 3.0L (186 cu in), Tier 3.",
+        "horsepower_hp = 89 SAE net. horsepower_gross_hp = 95.",
+        "rated_operating_capacity_lbs = 4725 lb (50% of 9425 lb tipping load per MTM policy). OEM brochure publishes 50% value; 35% OEM value was 3300 lb (prior stored value).",
+        "operating_weight_lbs = 11100 lb with 450mm standard track per OEM D-Series brochure. Prior value 10130 lb not traceable to OEM source — likely aggregator error.",
+        "width_over_tires_in = 80.7in using 450mm (17.7in) standard track per OEM D-Series brochure. Prior 78.7in reflected 400mm optional track.",
+        "bucket_hinge_pin_height_in = 126.0in (3.20m) at full lift per OEM.",
+        "travel_speed values: high = 7.8 mph, low = 5.3 mph (2-speed transmission standard on 333D).",
+        "aux_flow_high_gpm = 34.0 GPM (129 L/min) per OEM; package_dependent — confirm on unit record.",
+        "years_supported 2007-2014 spans full D-Series production window. Confirm precise range if needed.",
+        "[jd_ctl_oem_patch 2026-04-26] Promoted from coverage_stub to production. All fields OEM-sourced from JD D-Series CTL brochure DKADCTLCWP. ROC corrected 3300 → 4725 (35% → 50% MTM policy). Weight corrected 10130 → 11100. Width corrected 78.7 → 80.7."
+      ]
+    },
+    {
+      "model_slug": "jd_325g",
+      "operation": "update",
+      "reason": "ROC policy violation: registry stores OEM 35% value (2590 lb). MTM policy requires 50% of tipping load. OEM spec sheet explicitly publishes both values.",
+      "source": "John Deere 325G OEM spec sheet DKAGCTL325 rev 24-03 (deere.com)",
+      "confidence": "HIGH",
+      "changes": {
+        "specs.rated_operating_capacity_lbs": {
+          "from": 2590,
+          "to": 3700,
+          "reason": "OEM 35% = 2590 lb (stored in error). OEM 50% = 3700 lb (MTM policy value). Tipping load 7400 lb unchanged."
+        }
+      },
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] ROC corrected 2590 → 3700: registry stored OEM 35% convention value. Corrected to OEM-published 50% value per MTM policy. Source: JD 325G spec sheet DKAGCTL325. Tipping load 7400 lb unchanged.",
+        "REMOVE prior note: 'Tipping load reflects CTL OEM/MTM 35% ROC convention. Prior 50% correction note removed.'"
+      ]
+    },
+    {
+      "model_slug": "jd_331g",
+      "operation": "update",
+      "reason": "ROC policy violation: registry stores OEM 35% value (3100 lb). MTM policy requires 50% of tipping load. OEM spec sheet explicitly publishes both values.",
+      "source": "John Deere 331G OEM spec sheet DKAGCTL331 rev 22-10 (deere.com)",
+      "confidence": "HIGH",
+      "changes": {
+        "specs.rated_operating_capacity_lbs": {
+          "from": 3100,
+          "to": 4429,
+          "reason": "OEM 35% = 3100 lb (stored in error). OEM 50% = 4429 lb (MTM policy value; 50% of 8857 lb tipping = 4428.5, OEM rounds to 4429). Tipping load 8857 lb unchanged."
+        }
+      },
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] ROC corrected 3100 → 4429: registry stored OEM 35% convention value. Corrected to OEM-published 50% value per MTM policy. Source: JD 331G spec sheet DKAGCTL331. Tipping load 8857 lb unchanged."
+      ]
+    },
+    {
+      "model_slug": "jd_333g",
+      "operation": "update",
+      "reason": "ROC policy violation: registry stores OEM 35% value (3700 lb). MTM policy requires 50% of tipping load. OEM spec sheet explicitly publishes both values.",
+      "source": "John Deere 333G OEM spec sheet DKAGCTL333 rev 22-10 (deere.com)",
+      "confidence": "HIGH",
+      "changes": {
+        "specs.rated_operating_capacity_lbs": {
+          "from": 3700,
+          "to": 5285,
+          "reason": "OEM 35% = 3700 lb (stored in error). OEM 50% = 5285 lb (MTM policy value; 50% of 10570 lb tipping). Tipping load 10570 lb unchanged."
+        }
+      },
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] ROC corrected 3700 → 5285: registry stored OEM 35% convention value. Corrected to OEM-published 50% value per MTM policy. Source: JD 333G spec sheet DKAGCTL333. Tipping load 10570 lb unchanged."
+      ]
+    },
+    {
+      "model_slug": "jd_ct322",
+      "operation": "update",
+      "reason": "Two fixes: (1) ROC policy violation — registry stores OEM 35% value (2200 lb); (2) Width error — registry stores optional 400mm track width (75.0in) instead of standard 320mm track width (71.7in).",
+      "source": "John Deere CT-Series CTL brochure DKACTLCWP rev 09-06 (deere.com)",
+      "confidence": "HIGH",
+      "changes": {
+        "specs.rated_operating_capacity_lbs": {
+          "from": 2200,
+          "to": 3200,
+          "reason": "OEM CT-Series brochure explicitly states: 'CT322: 2,200-lb SAE ROC @ 35% of tipping load / 3,200-lb SAE ROC @ 50% of tipping load'. 2200 lb stored in error; MTM policy = 50% = 3200 lb. Tipping load 6400 lb unchanged."
+        },
+        "specs.width_over_tires_in": {
+          "from": 75.0,
+          "to": 71.7,
+          "reason": "Width error: prior note claimed 'small frame = 15.8in/400mm track' but OEM CT-Series standard for CT322 is 320mm (12.6in) = 71.7in. 400mm is optional. Same bug class as jd_323d."
+        },
+        "field_confidence.width_over_tires_in": {
+          "from": "HIGH",
+          "to": "HIGH"
+        }
+      },
+      "notes_to_replace": [
+        "REPLACE: 'width_over_tires_in = 75.0in using standard track configuration per registry Deere track width rule (small frame = 15.8in/400mm track).'",
+        "WITH: 'width_over_tires_in = 71.7in using 320mm (12.6in) standard track per OEM CT-Series brochure DKACTLCWP. 400mm is optional track — prior note was incorrect.'"
+      ],
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] ROC corrected 2200 → 3200: OEM CT-Series brochure explicitly states both values on cover page. 2200 lb = 35% OEM convention (stored in error); 3200 lb = 50% MTM policy. Tipping load 6400 lb unchanged.",
+        "[jd_ctl_oem_patch 2026-04-26] Width corrected 75.0 → 71.7in: OEM standard track is 320mm (71.7in). Prior width was for optional 400mm track."
+      ]
+    },
+    {
+      "model_slug": "jd_ct332",
+      "operation": "update",
+      "reason": "ROC policy violation: registry stores OEM 35% value (3200 lb). MTM policy requires 50% of tipping load. OEM brochure explicitly publishes both values on cover page.",
+      "source": "John Deere CT-Series CTL brochure DKACTLCWP rev 09-06 (deere.com)",
+      "confidence": "HIGH",
+      "changes": {
+        "specs.rated_operating_capacity_lbs": {
+          "from": 3200,
+          "to": 4600,
+          "reason": "OEM CT-Series brochure explicitly states: 'CT332: 3,200-lb SAE ROC @ 35% of tipping load / 4,600-lb SAE ROC @ 50% of tipping load'. 3200 lb stored in error; MTM policy = 50% = 4600 lb. Tipping load 9200 lb unchanged. Verify: 9200 * 0.50 = 4600 — exact match."
+        }
+      },
+      "notes_to_add": [
+        "[jd_ctl_oem_patch 2026-04-26] ROC corrected 3200 → 4600: OEM CT-Series brochure explicitly states both values. 3200 lb = 35% OEM convention (stored in error); 4600 lb = 50% MTM policy. Tipping load 9200 lb unchanged."
+      ]
+    }
+  ],
+
+  "_reviewer_checklist": {
+    "before_apply": [
+      "Verify ROC direction: all 6 ROC updates increase the value (35% → 50%). If any entry shows a decrease, reject.",
+      "Verify tipping_load_lbs is NOT changed in any ROC-only fix (325G, 331G, 333G, CT322, CT332).",
+      "Verify 323D width: 71.7 = 320mm track (correct for small-frame D-Series). Confirm with team that 320mm is standard.",
+      "Verify 333D operating weight: prior 10130 had no OEM provenance. New 11100 is OEM. Accept 11100.",
+      "Verify 333D ROC: 4725 against tipping 9425 — 4725/9425 = 50.1%. Accept (OEM-published rounding).",
+      "Verify 329D ROC: 4150 against tipping 8300 — 4150/8300 = 50.0%. Exact.",
+      "Verify 319D ROC: 2800 against tipping 5600 — 2800/5600 = 50.0%. Exact.",
+      "Confirm tombstone approach (not hard-delete) for jd_322d and jd_335g — records remain in registry with status=invalid_not_a_ctl, registry_tier=tombstone.",
+      "Check that jd_335_p_tier is in good shape before tombstoning jd_335g (it is in registry as coverage_stub).",
+      "Run scorer validation after apply to confirm no regressions on 323D/333D spec sheets."
+    ]
+  }
+}
