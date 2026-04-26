@@ -276,6 +276,9 @@ MODEL_BRIDGE_ALIASES: dict[str, str] = {
     # via containment (0.95).  Bridge covers the common "580N" and "580SN" inputs.
     "580n":  "580N / 580 Super N",
     "580sn": "580N / 580 Super N",
+    # JLG boom lift — 600AJ fuzzy score is too low against the representative record name.
+    # Bridge covers the common "600AJ" / "600 AJ" / "600-AJ" inputs.
+    "600aj": "600AJ (450AJ/600AJ Representative)",
 }
 
 # ---------------------------------------------------------------------------

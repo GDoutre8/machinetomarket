@@ -61,6 +61,7 @@ _WHEEL_LOADER_DEFAULTS: Dict[str, FieldBehavior] = {
     "operating_weight_lb":  FieldBehavior.LOCKED,
     "bucket_capacity_yd3":  FieldBehavior.PACKAGE_DEPENDENT,
     "breakout_force_lb":    FieldBehavior.LOCKED,
+    "hinge_pin_height_ft":  FieldBehavior.LOCKED,
     "travel_speed_mph":     FieldBehavior.LOCKED,
     "fuel_type":            FieldBehavior.LOCKED,
 }
@@ -116,7 +117,8 @@ _BACKHOE_DEFAULTS: Dict[str, FieldBehavior] = {
     "operating_weight_lb":  FieldBehavior.RANGE,    # varies 2wd vs 4wd
     "max_dig_depth":        FieldBehavior.PACKAGE_DEPENDENT,  # std vs extendahoe
     "loader_bucket_capacity_yd3": FieldBehavior.LOCKED,
-    "bucket_breakout_lb":   FieldBehavior.LOCKED,   # canonical key used by breakout_force.resolve
+    "bucket_breakout_lb":         FieldBehavior.LOCKED,   # canonical key used by breakout_force.resolve
+    "loader_breakout_force_lb":   FieldBehavior.LOCKED,   # front loader breakout force
     "travel_speed_mph":     FieldBehavior.LOCKED,
     "fuel_type":            FieldBehavior.LOCKED,
 }

@@ -217,6 +217,11 @@ _PASSTHROUGH_FIELDS = [
     "blade_width_ft",             # crawler_dozer
     # Dozer fuel tank — direct registry key
     "fuel_capacity_gal",          # crawler_dozer
+    # Wheel loader breakout force and hinge pin height — direct registry keys
+    "breakout_force_lb",          # wheel_loader (renamed from breakout_force_lbs by _SPEC_KEY_MAP)
+    "hinge_pin_height_ft",        # wheel_loader
+    # Backhoe front loader breakout force — direct registry key
+    "loader_breakout_force_lb",   # backhoe_loader (renamed from loader_breakout_force_lbf by _SPEC_KEY_MAP)
 ]
 
 

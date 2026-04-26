@@ -299,6 +299,7 @@ _SPEC_KEY_MAP: dict[str, str] = {
     "bucket_dig_force_lbf":         "bucket_breakout_lb",   # excavator, mini_ex
     "backhoe_bucket_force_lbf":     "bucket_breakout_lb",   # backhoe_loader — backhoe dig force
     "loader_breakout_force_lbf":    "loader_breakout_force_lb",  # backhoe_loader — front loader force
+    "breakout_force_lbs":           "breakout_force_lb",    # wheel_loader registry key → canonical
     # Bucket/blade capacity: source registries use 'cy' suffix; canonical is 'yd3'
     "bucket_capacity_cy":           "bucket_capacity_yd3",  # excavator, wheel_loader
 }
