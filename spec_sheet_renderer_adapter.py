@@ -37,6 +37,8 @@ _EQ_TYPE_DISPLAY = {
     "excavator":            "Excavator",
     "telehandler":          "Telehandler",
     "wheel_loader":         "Wheel Loader",
+    "dozer":                "Dozer",
+    "crawler_dozer":        "Crawler Dozer",
 }
 
 
@@ -374,6 +376,24 @@ def _hero_specs(
                   or specs.get("breakout_force_lbs"))
             _push("Loader Breakout", _fmt_int(bf), "LB", "breakout_force")
 
+    elif eq in ("dozer", "crawler_dozer"):
+        _push("Horsepower", _hp(), "HP", "hp")                                     # slot 1
+        _push("Operating Weight", _weight(), "LB", "weight")                       # slot 2
+        _push("Blade Capacity", _fmt_yd3(specs.get("blade_capacity_yd3")), "YD\u00b3", "blade_capacity")  # slot 3
+        # slot 4: blade width — prefer ft, fall back to blade_width_in → convert
+        bw_ft = specs.get("blade_width_ft")
+        bw_in = specs.get("blade_width_in")
+        if bw_ft is not None and len(tiles) < 4:
+            try:
+                _push("Blade Width", _fmt_ft_in(float(bw_ft)), "", "blade_width")
+            except (TypeError, ValueError):
+                _push("Blade Width", str(bw_ft), "", "blade_width")
+        elif bw_in is not None and len(tiles) < 4:
+            try:
+                _push("Blade Width", _fmt_ft_in(float(bw_in) / 12.0), "", "blade_width")
+            except (TypeError, ValueError):
+                _push("Blade Width", str(bw_in), "", "blade_width")
+
     elif eq == "boom_lift":
         ph = specs.get("platform_height_ft") or specs.get("max_platform_height_ft")
         if ph is not None:
@@ -603,6 +623,13 @@ def _additional_specs(
         _weight_row()
         _serial()
 
+    elif eq in ("dozer", "crawler_dozer"):
+        ft = specs.get("fuel_type")
+        if ft:
+            _row("Fuel Type", str(ft).title())
+        _weight_row()
+        _serial()
+
     elif eq == "boom_lift":
         _weight_row()
         ft = specs.get("fuel_type")
@@ -762,6 +789,13 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
+    # ── Dozer core specs ────────────────────────────────────────────────────────
+    if eq in ("dozer", "crawler_dozer"):
+        _row("Hours", hours_fmt)
+        _row("Serial #", di.get("serial_number"))
+        _row("Stock #", di.get("stock_number"))
+        return rows
+
     # ── CTL core ─────────────────────────────────────────────────────────────────
     _row("Hours", hours_fmt)
 
@@ -858,6 +892,41 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
                 _row("Travel Speed (Low)", f"{float(ts_low):.1f}", "MPH")
             except (TypeError, ValueError):
                 _row("Travel Speed (Low)", str(ts_low), "MPH")
+        return rows
+
+    # ── Dozer performance: Ground Pressure / Travel Speed / Fuel / Hydraulic Flow ─
+    if eq in ("dozer", "crawler_dozer"):
+        gp = specs.get("ground_pressure_psi")
+        if gp is not None:
+            try:
+                _row("Ground Pressure", f"{float(gp):.1f}", "PSI")
+            except (TypeError, ValueError):
+                _row("Ground Pressure", str(gp), "PSI")
+        ts_high = (specs.get("travel_speed_high_mph") or specs.get("travel_speed_fwd_mph")
+                   or specs.get("travel_speed_mph"))
+        if ts_high is not None:
+            try:
+                _row("Travel Speed (High)", f"{float(ts_high):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed (High)", str(ts_high), "MPH")
+        ts_low = specs.get("travel_speed_low_mph")
+        if ts_low is not None:
+            try:
+                _row("Travel Speed (Low)", f"{float(ts_low):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed (Low)", str(ts_low), "MPH")
+        fc = specs.get("fuel_capacity_gal")
+        if fc is not None:
+            try:
+                _row("Fuel Capacity", f"{float(fc):.1f}", "GAL")
+            except (TypeError, ValueError):
+                _row("Fuel Capacity", str(fc), "GAL")
+        hf = specs.get("hydraulic_flow_gpm")
+        if hf is not None:
+            try:
+                _row("Hydraulic Flow", f"{float(hf):.1f}", "GPM")
+            except (TypeError, ValueError):
+                _row("Hydraulic Flow", str(hf), "GPM")
         return rows
 
     # ── Backhoe Loader performance ───────────────────────────────────────────────

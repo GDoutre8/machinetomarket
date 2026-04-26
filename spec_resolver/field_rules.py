@@ -94,12 +94,18 @@ _SCISSOR_LIFT_DEFAULTS: Dict[str, FieldBehavior] = {
 }
 
 _DOZER_DEFAULTS: Dict[str, FieldBehavior] = {
-    "net_hp":               FieldBehavior.LOCKED,
-    "operating_weight_lb":  FieldBehavior.RANGE,    # varies LGP vs std
-    "blade_width_in":       FieldBehavior.PACKAGE_DEPENDENT,
-    "blade_capacity_yd3":   FieldBehavior.PACKAGE_DEPENDENT,
-    "travel_speed_fwd_mph": FieldBehavior.LOCKED,
-    "fuel_type":            FieldBehavior.LOCKED,
+    "net_hp":                   FieldBehavior.LOCKED,
+    "operating_weight_lb":      FieldBehavior.RANGE,           # varies LGP vs std
+    "blade_width_in":           FieldBehavior.PACKAGE_DEPENDENT,
+    "blade_width_ft":           FieldBehavior.PACKAGE_DEPENDENT,
+    "blade_capacity_yd3":       FieldBehavior.PACKAGE_DEPENDENT,
+    "travel_speed_fwd_mph":     FieldBehavior.LOCKED,
+    "travel_speed_high_mph":    FieldBehavior.LOCKED,
+    "travel_speed_low_mph":     FieldBehavior.LOCKED,
+    "fuel_capacity_gal":        FieldBehavior.LOCKED,
+    "fuel_type":                FieldBehavior.LOCKED,
+    "ground_pressure_psi":      FieldBehavior.PACKAGE_DEPENDENT,
+    "hydraulic_flow_gpm":       FieldBehavior.PACKAGE_DEPENDENT,
 }
 
 _BACKHOE_DEFAULTS: Dict[str, FieldBehavior] = {

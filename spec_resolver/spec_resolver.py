@@ -214,6 +214,8 @@ _PASSTHROUGH_FIELDS = [
     "platform_width_ft",          # scissor_lift
     # Dozer blade width — direct registry key
     "blade_width_ft",             # crawler_dozer
+    # Dozer fuel tank — direct registry key
+    "fuel_capacity_gal",          # crawler_dozer
 ]
 
 
