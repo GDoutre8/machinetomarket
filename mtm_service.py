@@ -579,6 +579,7 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "travel_speed_mph",
             "hydraulic_flow_gpm",
             "fuel_type",
+            "hinge_pin_height_ft",
         ],
         "technical": [
             "net_hp",
@@ -587,6 +588,7 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "travel_speed_mph",
             "hydraulic_flow_gpm",
             "fuel_type",
+            "hinge_pin_height_ft",
         ],
     },
     # Telehandler — LOCKED standard 2026-04-13.

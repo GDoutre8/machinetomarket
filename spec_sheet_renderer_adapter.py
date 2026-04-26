@@ -573,6 +573,7 @@ def _additional_specs(
             except (TypeError, ValueError):
                 _row("Bucket Width", str(bw))
         _hyd_pressure()
+        _hpp()
         _weight_row()
         _serial()
 
