@@ -550,7 +550,6 @@ def _additional_specs(
         _hyd_pressure()
         _track_info()
         _weight_row()
-        _serial()
 
     elif eq == "skid_steer":
         # Hinge Pin Height moves to Performance Data for SSL — excluded here.
@@ -615,7 +614,6 @@ def _additional_specs(
         _hyd_pressure()
         _hpp()
         _weight_row()
-        _serial()
 
     elif eq == "telehandler":
         _weight_row()
@@ -641,17 +639,15 @@ def _additional_specs(
             _row("Loader Breakout", _fmt_int(bf), "LB")
         _width()
         _weight_row()
-        _serial()
 
     elif eq == "scissor_lift":
-        _serial()
+        pass
 
     elif eq in ("dozer", "crawler_dozer"):
         ft = specs.get("fuel_type")
         if ft:
             _row("Fuel Type", str(ft).title())
         _weight_row()
-        _serial()
 
     elif eq == "boom_lift":
         _weight_row()
@@ -664,7 +660,6 @@ def _additional_specs(
                 _row("Drive Speed", str(round(float(ds), 1)), "MPH")
             except (TypeError, ValueError):
                 _row("Drive Speed", str(ds), "MPH")
-        _serial()
 
     else:
         _weight_row()
@@ -897,7 +892,8 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
                 _row("Max Reach", f"{float(reach):.1f}'")
             except (TypeError, ValueError):
                 _row("Max Reach", str(reach))
-        bbf = specs.get("bucket_breakout_force_lbs") or specs.get("breakout_force_lbs")
+        bbf = (specs.get("bucket_breakout_lb") or specs.get("bucket_breakout_force_lbs")
+               or specs.get("breakout_force_lbs") or specs.get("bucket_dig_force_lbf"))
         _row("Bucket Breakout Force", _fmt_int(bbf), "LB")
         adf = (specs.get("arm_digging_force_lbs") or specs.get("arm_dig_force_lbs")
                or specs.get("arm_breakout_force_lbf") or specs.get("arm_breakout_force_lbs"))

@@ -49,6 +49,8 @@ def resolve(ctx: ResolutionContext) -> Optional[FieldResolution]:
     else:
         raw_val = entry.specs.get(FIELD)
         registry_val = normalize_dig_depth(raw_val) if raw_val is not None else None
+    if registry_val is not None and ctx.parsed_category == "BH":
+        applied.append("standard_dig_depth")
     family_range = entry.family_ranges.get(FIELD) if ctx.is_family else None
 
     if ctx.is_exact and registry_val is not None:
