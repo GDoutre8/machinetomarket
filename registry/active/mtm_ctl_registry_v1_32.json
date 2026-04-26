@@ -11305,7 +11305,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 73.5,
@@ -11900,7 +11900,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 72.1,
@@ -12733,7 +12733,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 106.0,
@@ -12971,7 +12971,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 106.0,
@@ -13220,7 +13220,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 106.0,
@@ -23426,7 +23426,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 73.0,
@@ -23672,7 +23672,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 110.0,
@@ -23795,7 +23795,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 121.0,
@@ -24676,7 +24676,7 @@
         "end": null
       },
       "status": "active_used_market",
-      "registry_tier": "coverage_stub",
+      "registry_tier": "production",
       "alias_hints": [],
       "specs": {
         "horsepower_hp": 121.0,
