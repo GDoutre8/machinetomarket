@@ -1773,7 +1773,7 @@ def safe_parse_listing(raw_text: str) -> dict:
                     "COMPACT",
                 }
                 m2 = re.search(
-                    rf'\b{re.escape(make)}\s+([A-Z0-9][A-Za-z0-9\-]{{1,20}})',
+                    rf'\b{re.escape(make)}\s+([A-Z0-9][A-Za-z0-9\-]{{1,20}}(?:\s+\d+[A-Za-z]\w{{0,8}})?)',
                     t, re.I
                 )
                 if m2 and m2.group(1).upper() not in _MODEL_BLOCKLIST:
