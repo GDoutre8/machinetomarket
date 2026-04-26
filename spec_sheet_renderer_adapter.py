@@ -541,7 +541,7 @@ def _additional_specs(
 
     if eq == "compact_track_loader":
         lp_raw = specs.get("lift_path") or specs.get("lift_type")
-        if lp_raw:
+        if lp_raw and "lift_path" not in hero_keys:
             _LP = {"vertical": "Vertical", "radial": "Radial",
                    "high": "Vertical", "locked": "Vertical"}
             _row("Lift Path", _LP.get(str(lp_raw).lower(), str(lp_raw).title()))
@@ -1045,6 +1045,40 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
         hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
         if hfo is not None and di.get("high_flow") == "yes":
             _row("High Flow Output", _fmt_int(hfo), "GPM")
+        # CTL row 4: Travel Speed — combined low/high or single value
+        ts_high = specs.get("travel_speed_high_mph") or specs.get("travel_speed_mph")
+        ts_low  = specs.get("travel_speed_low_mph")
+        if ts_high is not None and ts_low is not None:
+            try:
+                _row("Travel Speed", f"{float(ts_low):.1f} / {float(ts_high):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed", f"{ts_low} / {ts_high}", "MPH")
+        elif ts_high is not None:
+            try:
+                _row("Travel Speed", f"{float(ts_high):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed", str(ts_high), "MPH")
+        elif ts_low is not None:
+            try:
+                _row("Travel Speed", f"{float(ts_low):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed", str(ts_low), "MPH")
+        # CTL row 5: Hydraulic Pressure — prefer high_psi, fall back to standard_psi then psi
+        psi = (specs.get("hydraulic_pressure_high_psi")
+               or specs.get("hydraulic_pressure_standard_psi")
+               or specs.get("hydraulic_pressure_psi"))
+        if psi is not None:
+            try:
+                _row("Hydraulic Pressure", f"{int(float(psi)):,}", "PSI")
+            except (TypeError, ValueError):
+                _row("Hydraulic Pressure", str(psi), "PSI")
+        # CTL row 6: Fuel Capacity
+        fc = specs.get("fuel_capacity_gal")
+        if fc is not None:
+            try:
+                _row("Fuel Capacity", f"{float(fc):.1f}", "GAL")
+            except (TypeError, ValueError):
+                _row("Fuel Capacity", str(fc), "GAL")
 
     return rows
 
