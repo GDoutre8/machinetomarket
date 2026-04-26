@@ -146,7 +146,7 @@ def _registry_path(filename: str) -> str:
 # Keys are canonical equipment_type values
 REGISTRY_FILENAMES = {
     EQ_SKID_STEER:   "mtm_skid_steer_registry_v1_18.json",
-    EQ_CTL:          "mtm_ctl_registry_v1_29.json",
+    EQ_CTL:          "mtm_ctl_registry_v1_30.json",
     EQ_MINI_EX:      "mtm_mini_ex_registry_v2_2.json",
     EQ_BACKHOE:      "mtm_backhoe_loader_registry_v1.json",
     EQ_DOZER:        "mtm_dozer_registry_v1.json",
