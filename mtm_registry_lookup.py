@@ -1800,6 +1800,27 @@ def lookup_machine(
             candidates = mfr_exact
         # If no exact manufacturer match, keep all candidates and let model scoring decide
 
+    # ── 3b. Gehl V-series / VT-series disambiguation guard ───────────────
+    # Bare "V###" inputs (e.g. "V210") must not fuzzy-match "VT###" CTL
+    # records (e.g. "VT210"). The V-series are wheeled skid steers relocated
+    # to the SSL registry; VT-series are distinct tracked CTL models.
+    # SequenceMatcher gives V210↔VT210 ≈ 0.89, above FUZZY_THRESHOLD —
+    # without this guard that produces a false CTL hit.
+    # Guard conditions: Gehl manufacturer + bare V### input (no T suffix).
+    # VT### inputs are unaffected: re.match(r"^[Vv]\d+$", "VT210") → False.
+    # V### CTL hold records (V330/V335/V360) are preserved: guard only
+    # removes VT### candidates, not V### ones already in the pool.
+    if (
+        model
+        and canonical_mfr
+        and _normalize_str(canonical_mfr) == "gehl"
+        and re.match(r"^[Vv]\d+$", model.strip())
+    ):
+        candidates = [
+            r for r in candidates
+            if not re.match(r"^VT\d+", r.get("model", ""), re.IGNORECASE)
+        ]
+
     # ── 4. Score each candidate on model ─────────────────────────────────
     if not model:
         if candidates:
