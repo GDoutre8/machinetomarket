@@ -368,7 +368,10 @@ def _hero_specs(
         lbc = specs.get("loader_bucket_capacity_yd3") or specs.get("bucket_capacity_yd3")
         _push("Loader Bucket", _fmt_yd3(lbc), "YD\u00b3", "loader_bucket")
         if len(tiles) < 4:
-            bf = specs.get("loader_breakout_force_lbs") or specs.get("breakout_force_lbs")
+            bf = (specs.get("loader_breakout_force_lb")
+                  or specs.get("loader_breakout_force_lbf")
+                  or specs.get("loader_breakout_force_lbs")
+                  or specs.get("breakout_force_lbs"))
             _push("Loader Breakout", _fmt_int(bf), "LB", "breakout_force")
 
     elif eq == "boom_lift":
@@ -590,7 +593,10 @@ def _additional_specs(
             lbc = specs.get("loader_bucket_capacity_yd3") or specs.get("bucket_capacity_yd3")
             _row("Loader Bucket", _fmt_yd3(lbc), "YD³")
         if "breakout_force" not in hero_keys:
-            bf = specs.get("loader_breakout_force_lbs") or specs.get("breakout_force_lbs")
+            bf = (specs.get("loader_breakout_force_lb")
+                  or specs.get("loader_breakout_force_lbf")
+                  or specs.get("loader_breakout_force_lbs")
+                  or specs.get("breakout_force_lbs"))
             _row("Loader Breakout", _fmt_int(bf), "LB")
         _width()
         _weight_row()
@@ -851,6 +857,30 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
                 _row("Travel Speed (Low)", f"{float(ts_low):.1f}", "MPH")
             except (TypeError, ValueError):
                 _row("Travel Speed (Low)", str(ts_low), "MPH")
+        return rows
+
+    # ── Backhoe Loader performance ───────────────────────────────────────────────
+    if eq == "backhoe_loader":
+        bbf = (specs.get("bucket_breakout_lb")
+               or specs.get("backhoe_bucket_force_lbf")
+               or specs.get("backhoe_bucket_force_lbs"))
+        _row("Backhoe Bucket Force", _fmt_int(bbf), "LB")
+        lbf = (specs.get("loader_breakout_force_lb")
+               or specs.get("loader_breakout_force_lbf")
+               or specs.get("loader_breakout_force_lbs"))
+        _row("Loader Breakout Force", _fmt_int(lbf), "LB")
+        hflow = specs.get("hydraulic_flow_gpm")
+        if hflow is not None:
+            try:
+                _row("Hydraulic Flow", f"{float(hflow):.1f}", "GPM")
+            except (TypeError, ValueError):
+                _row("Hydraulic Flow", str(hflow), "GPM")
+        ts = specs.get("travel_speed_mph")
+        if ts is not None:
+            try:
+                _row("Travel Speed", f"{float(ts):.1f}", "MPH")
+            except (TypeError, ValueError):
+                _row("Travel Speed", str(ts), "MPH")
         return rows
 
     # ── CTL + SSL shared row 1: Tipping Load ────────────────────────────────────

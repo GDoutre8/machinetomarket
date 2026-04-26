@@ -1862,6 +1862,43 @@ def lookup_machine(
         if s >= best_score - AMBIGUITY_BAND and s >= FUZZY_THRESHOLD
     ]
     if len(near_top) > 1:
+        # ── 6a. Tiebreaker: prefer the slug that directly encodes the model ──
+        # When all tied candidates share the same manufacturer + equipment_type,
+        # attempt deterministic resolution before returning ambiguous_model.
+        #
+        # Pass 1 — slug-model affinity: prefer the record whose model_slug ends
+        #   with "_" + normalized_model (e.g. "310sl" → prefer slug "jd_310sl"
+        #   over "jd_310").  This handles demoted legacy stubs that share the
+        #   same model string but have a less specific slug.
+        # Pass 2 — spec_confidence: prefer HIGH over MEDIUM over LOW.
+        #
+        # Only fires when all tied candidates are same mfr + eq_type (i.e. we
+        # are NOT resolving cross-type or cross-manufacturer ambiguity, which
+        # must still require the caller to supply equipment_type).
+        _conf_rank = {"HIGH": 2, "MEDIUM": 1, "LOW": 0, "": 0}
+        _tied_mfrs = {_normalize_str(r.get("manufacturer", "")) for _, r in near_top}
+        _tied_eqs  = {r.get("equipment_type", "") for _, r in near_top}
+        if len(_tied_mfrs) == 1 and len(_tied_eqs) == 1:
+            _norm_model = _normalize_str(model)
+            def _slug_affinity(r: dict) -> int:
+                slug = _normalize_str(r.get("model_slug", ""))
+                return 1 if slug.endswith(_norm_model) else 0
+            _resolved = sorted(
+                near_top,
+                key=lambda x: (
+                    _slug_affinity(x[1]),
+                    _conf_rank.get((x[1].get("spec_confidence") or "").upper(), 0),
+                ),
+                reverse=True,
+            )
+            if _slug_affinity(_resolved[0][1]) > _slug_affinity(_resolved[1][1]) or (
+                _conf_rank.get((_resolved[0][1].get("spec_confidence") or "").upper(), 0)
+                > _conf_rank.get((_resolved[1][1].get("spec_confidence") or "").upper(), 0)
+            ):
+                best_score, best_record = _resolved[0]
+                near_top = [_resolved[0]]
+
+    if len(near_top) > 1:
         suggestions = [
             {
                 "manufacturer":   r.get("manufacturer"),

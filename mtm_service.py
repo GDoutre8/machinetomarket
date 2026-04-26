@@ -297,7 +297,8 @@ _SPEC_KEY_MAP: dict[str, str] = {
     "max_dig_depth_ft":             "max_dig_depth",   # backhoe_loader (value in feet → converted below)
     # Breakout force: registry key → resolver canonical name used by breakout_force.resolve
     "bucket_dig_force_lbf":         "bucket_breakout_lb",   # excavator, mini_ex
-    "backhoe_bucket_force_lbf":     "bucket_breakout_lb",   # backhoe_loader
+    "backhoe_bucket_force_lbf":     "bucket_breakout_lb",   # backhoe_loader — backhoe dig force
+    "loader_breakout_force_lbf":    "loader_breakout_force_lb",  # backhoe_loader — front loader force
     # Bucket/blade capacity: source registries use 'cy' suffix; canonical is 'yd3'
     "bucket_capacity_cy":           "bucket_capacity_yd3",  # excavator, wheel_loader
 }
@@ -644,6 +645,7 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "max_dig_depth",
             "loader_bucket_capacity_yd3",
             "bucket_breakout_lb",
+            "loader_breakout_force_lb",
             "travel_speed_mph",
             "hydraulic_flow_gpm",
             "fuel_type",
@@ -654,6 +656,7 @@ SPEC_LEVEL_FIELDS: dict[str, dict[str, list[str]]] = {
             "max_dig_depth",
             "loader_bucket_capacity_yd3",
             "bucket_breakout_lb",
+            "loader_breakout_force_lb",
             "travel_speed_mph",
             "hydraulic_flow_gpm",
             "fuel_type",
