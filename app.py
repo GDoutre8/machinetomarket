@@ -677,12 +677,12 @@ async def download_pack_by_session(session_id: str):
     if not os.path.isdir(pack_dir):
         raise HTTPException(status_code=404, detail="Pack not found")
 
-    # Always rebuild ZIP so it reflects any post-generation edits (title, listing text, notes)
+    # Always rebuild ZIP so it reflects any post-generation edits (title, listing text, notes).
+    # Never fall back to a stale ZIP — if rebuild fails, surface the error.
     try:
         _zip_folder(pack_dir, zip_path)
     except Exception:
-        if not os.path.isfile(zip_path):
-            raise HTTPException(status_code=500, detail="ZIP build failed")
+        raise HTTPException(status_code=500, detail="ZIP build failed")
 
     # Read machine label from metadata for the download filename
     meta_path = os.path.join(_OUTPUTS_DIR, session_id, "listing_output", "metadata_internal.json")
@@ -1221,44 +1221,11 @@ async def build_listing_endpoint(
         with open(os.path.join(session_dir, "dealer_input.json"), "w", encoding="utf-8") as f:
             json.dump(di_dict, f)
 
-        # Build the same enriched resolved_specs that listing_pack_builder uses for
-        # the spec sheet, so the result page tier toggle and the spec sheet are identical.
+        # Use the enriched spec dict returned by build_listing_pack_v1 — this is the
+        # exact same dict used to build the spec sheet PNG, so result page, HTML spec
+        # sheet, and ZIP all read from a single source of truth.
         _persist_eq = (resolved_machine or {}).get("equipment_type", "").lower()
-        _persist_rs = dict(resolved_specs)
-        if _persist_eq == "skid_steer":
-            # Inject dealer-confirmed booleans exactly as listing_pack_builder does.
-            # None stays None (unknown) — no inference or fallback.
-            if dealer_input.high_flow is not None:
-                _persist_rs["high_flow"] = dealer_input.high_flow
-            if dealer_input.two_speed_travel is not None:
-                _persist_rs["two_speed"] = dealer_input.two_speed_travel
-            # hours: always present (dealer-entered), core SSL output.
-            _persist_rs["hours"] = dealer_input.hours
-
-        if _persist_eq == "compact_track_loader":
-            # Mirror exactly what listing_pack_builder injects for CTL spec sheet.
-            # None stays None — no inference.
-            if dealer_input.high_flow is not None:
-                _persist_rs["high_flow"] = dealer_input.high_flow
-            if dealer_input.two_speed_travel is not None:
-                _persist_rs["two_speed"] = dealer_input.two_speed_travel
-            # hours: always present, core CTL output.
-            _persist_rs["hours"] = dealer_input.hours
-            # Dealer-input core output fields (locked CTL standard 2026-04-10).
-            if dealer_input.cab_type:
-                _persist_rs["cab_type"] = dealer_input.cab_type
-            _persist_rs["ac"] = dealer_input.ac
-            if dealer_input.track_condition:
-                _persist_rs["track_condition"] = dealer_input.track_condition
-            if dealer_input.serial_number:
-                _persist_rs["serial_number"] = dealer_input.serial_number
-            # Feature fields: use locked standard buyer-facing key names.
-            if dealer_input.heater is not None:
-                _persist_rs["heat"] = dealer_input.heater
-            if dealer_input.control_type:
-                _persist_rs["controls_type"] = dealer_input.control_type
-            if dealer_input.coupler_type:
-                _persist_rs["quick_attach"] = dealer_input.coupler_type
+        _persist_rs = pack.get("enriched_specs") or dict(resolved_specs)
 
         with open(os.path.join(session_dir, "resolved_specs.json"), "w", encoding="utf-8") as f:
             json.dump(_persist_rs, f)

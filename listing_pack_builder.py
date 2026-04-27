@@ -847,7 +847,7 @@ def build_listing_pack_v1(
         )
 
     # 5. Delegate to the full pack assembler
-    return build_listing_pack(
+    _pack_result = build_listing_pack(
         raw_text                = "",
         parsed_listing          = parsed_listing,
         resolved_machine        = resolved_machine,
@@ -865,3 +865,7 @@ def build_listing_pack_v1(
         dealer_input_dump       = dealer_input.model_dump(),
         enriched_resolved_specs = _resolved_for_sheet,
     )
+    # Expose the fully-enriched spec dict so app.py can persist it as
+    # resolved_specs.json without duplicating the injection logic here.
+    _pack_result["enriched_specs"] = _resolved_for_sheet
+    return _pack_result
