@@ -467,7 +467,9 @@ def build_listing_pack(
     _lp_dir = Path(os.path.join(pack_dir, "Listing_Photos"))
     _explicit_listing = sorted(str(p) for p in _lp_dir.glob("*_listing.jpg")) if _lp_dir.is_dir() else []
     outputs["listing_photos"]         = _explicit_listing
-    outputs["primary_preview_image"]  = _explicit_listing[0] if _explicit_listing else None
+    # Card PNG is the intended primary preview (Featured Listing Image).
+    # Fall back to first listing JPG only when no card was generated.
+    outputs["primary_preview_image"]  = outputs.get("card_png") or (_explicit_listing[0] if _explicit_listing else None)
 
     try:
         _explicit_payload = {k: outputs[k] for k in (

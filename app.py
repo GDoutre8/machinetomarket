@@ -461,12 +461,16 @@ async def build_listing_result(request: Request, session_id: str):
         },
     ]
 
-    # Primary preview image: use the first *_listing.jpg recorded at build time.
-    # New sessions have outputs_explicit.json; old sessions get None here and the
-    # template falls back to its pack.urls[0] logic.
+    # Card PNG URL — "Featured Listing Image" on result page.
+    _card_explicit = _explicit_outputs.get("card_png")
+    card_png_url: str | None = None
+    if _card_explicit and os.path.isfile(_card_explicit):
+        card_png_url = f"{web_base}/Listing_Photos/{os.path.basename(_card_explicit)}"
+
+    # Primary preview: card PNG when present, else first listing JPG (old sessions).
     _primary_explicit = _explicit_outputs.get("primary_preview_image")
-    primary_preview_image: str | None = None
-    if _primary_explicit and os.path.isfile(_primary_explicit):
+    primary_preview_image: str | None = card_png_url  # prefer card when available
+    if not primary_preview_image and _primary_explicit and os.path.isfile(_primary_explicit):
         primary_preview_image = f"{web_base}/Listing_Photos/{os.path.basename(_primary_explicit)}"
 
     # Walkaround video
@@ -527,6 +531,7 @@ async def build_listing_result(request: Request, session_id: str):
         "listing_title":  listing_title,
         "spec_tiers":     spec_tiers,
         "spec_sheet_url":        spec_sheet_url,
+        "card_png_url":          card_png_url,
         "image_packs":           image_packs,
         "primary_preview_image": primary_preview_image,
         "walkaround_url":        walkaround_url,

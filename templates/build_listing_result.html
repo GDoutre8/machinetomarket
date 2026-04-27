@@ -852,7 +852,7 @@
     <!-- ── Spec Sheet ── -->
     {% if spec_sheet_url %}
     <div class="result-card result-card-secondary">
-      <div class="result-card-header">Spec Sheet</div>
+      <div class="result-card-header">Machine Spec Sheet</div>
       <div class="result-card-body">
         <img class="spec-sheet-img" src="{{ spec_sheet_url }}" alt="Machine Spec Sheet" />
         <div style="margin-top:12px;">
@@ -867,10 +867,14 @@
     {% if any_images %}
     {% set preview_ns = namespace(url=None, label='', tag='') %}
     {% if primary_preview_image %}
-      {# Explicit first listing photo recorded at build time — no guessing by sort order #}
       {% set preview_ns.url = primary_preview_image %}
-      {% set preview_ns.label = 'Listing Photos' %}
-      {% set preview_ns.tag = 'Ready to Post' %}
+      {% if card_png_url and primary_preview_image == card_png_url %}
+        {% set preview_ns.label = 'Featured Listing Image' %}
+        {% set preview_ns.tag = 'Hero Card' %}
+      {% else %}
+        {% set preview_ns.label = 'Listing Photos' %}
+        {% set preview_ns.tag = 'Ready to Post' %}
+      {% endif %}
     {% else %}
       {# Fallback for sessions built before outputs_explicit.json existed #}
       {% for pack in image_packs %}

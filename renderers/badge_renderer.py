@@ -318,17 +318,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives accent bar + phone color on charcoal
     *,
     force_variant: Optional[Literal["white", "charcoal"]] = None,  # QA override; None = auto-detect
-    logo_box_w: int = 200,          # max logo width — wider to favour horizontal logos
-    logo_box_h: int = 52,           # max logo height
-    padding_x: int = 22,
-    padding_y: int = 20,
-    gap: int = 10,                  # gap between actual logo right edge and text column
-    sep_width: int = 1,
+    logo_box_w: int = 250,          # max logo width — wider to favour horizontal logos
+    logo_box_h: int = 68,           # max logo height (matches JS proportional ~65-72px)
+    padding_x: int = 14,
+    padding_y: int = 12,
+    gap: int = 14,                  # gap between actual logo right edge and text column
+    sep_width: int = 3,
     text_gap: int = 5,
-    corner_radius: int = 12,
-    accent_bar_h: int = 5,
-    name_size: int = 24,
-    phone_size: int = 13,
+    corner_radius: int = 6,
+    accent_bar_h: int = 4,
+    name_size: int = 18,
+    phone_size: int = 14,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -438,6 +438,16 @@ def build_badge(
     )
     canvas.alpha_composite(body)
 
+    # Border on white badge — 1px dark outline (matches JS production style)
+    if bg_kind == "white":
+        _bdraw_border = ImageDraw.Draw(canvas)
+        _bdraw_border.rounded_rectangle(
+            (sm, sm, sm + badge_w, sm + badge_h),
+            radius=corner_radius,
+            outline=(26, 26, 26, 200),
+            width=1,
+        )
+
     draw = ImageDraw.Draw(canvas)
 
     # Top accent bar — theme accent color, flat top edge
@@ -454,12 +464,12 @@ def build_badge(
     logo_y = content_top + (content_h - logo_ph) // 2
     canvas.alpha_composite(logo_scaled, (logo_x, logo_y))
 
-    # Vertical separator — centred within the gap between logo right edge and text column
+    # Vertical separator — accent-colored (matches JS clr.div = accent)
     sep_x      = sm + padding_x + logo_pw + (gap - sep_width) // 2
     sep_inset  = content_h // 5
     sep_top_y  = content_top + sep_inset
     sep_bot_y  = content_top + content_h - sep_inset
-    draw.rectangle((sep_x, sep_top_y, sep_x + sep_width - 1, sep_bot_y), fill=sep_color)
+    draw.rectangle((sep_x, sep_top_y, sep_x + sep_width - 1, sep_bot_y), fill=accent_rgb + (255,))
 
     # Text block — centered within its column, vertically centered in content area.
     # Each line is independently centered on text_block_w so name and phone align
