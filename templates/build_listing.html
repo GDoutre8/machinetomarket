@@ -214,7 +214,7 @@
     .output-section-head{max-width:var(--max);margin:0 auto 16px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:10px}
     .output-section-head .label{font-family:var(--display);font-size:clamp(40px,4.4vw,56px);font-weight:400;line-height:1.0;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
     .output-section-head .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-pill);font-size:11.5px;font-weight:600}
-    .output-grid{display:grid;grid-template-columns:40fr 30fr 30fr;gap:18px;align-items:stretch}
+    .output-grid{display:grid;grid-template-columns:1.35fr 0.85fr;gap:18px;align-items:stretch}
     .output-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-soft);display:flex;flex-direction:column}
     .output-card-head{display:flex;flex-direction:column;gap:2px;padding:16px 20px 12px}
     .output-card-head .label{font-size:15.5px;font-weight:700;color:var(--ink);line-height:1.2}
@@ -226,22 +226,10 @@
     .demo-media{padding:0 16px 18px;display:flex;flex-direction:column;flex:1}
     .demo-media .frame{border-radius:var(--radius-sm);overflow:hidden;background:#111;border:1px solid var(--line);flex:1;display:flex;align-items:center;justify-content:center}
     .demo-media .frame img{width:100%;height:100%;max-height:380px;object-fit:contain;display:block}
-    .demo-media.spec .frame{background:#fff;padding:0;align-items:flex-start;justify-content:flex-start;height:360px;max-height:360px;overflow:hidden;position:relative}
-    .demo-media.spec .frame img{width:100%;height:auto;max-height:none;object-fit:contain;display:block;transform:scale(1.04);transform-origin:top left}
+    .demo-media.spec .frame{background:#fff;padding:0;align-items:flex-start;justify-content:flex-start;height:420px;max-height:420px;overflow:hidden;position:relative}
+    .demo-media.spec .frame img{width:100%;height:auto;max-height:none;object-fit:contain;display:block;transform:scale(1.06);transform-origin:top left}
     .demo-media.spec .sample-link{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--mtm-yellow-deep);text-decoration:none;border-bottom:1px solid rgba(241,182,43,.4);padding-bottom:1px;align-self:flex-start}
     .demo-media.spec .sample-link:hover{color:var(--ink);border-bottom-color:var(--ink)}
-
-    /* Package includes card */
-    .pkg-rows{padding:6px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
-    .pkg-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff}
-    .ft{display:inline-flex;align-items:center;justify-content:center;width:50px;height:36px;border-radius:6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
-    .ft-txt{background:#fde7c4;color:#a3590a}
-    .ft-png{background:#fde7c4;color:#a3590a}
-    .ft-jpg{background:#fde7c4;color:#a3590a}
-    .ft-zip{background:#0f1115;color:#fff}
-    .pkg-text{display:flex;flex-direction:column;gap:1px;min-width:0}
-    .pkg-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
-    .pkg-desc{font-size:12.5px;color:var(--muted);line-height:1.4;font-weight:400}
 
     /* ── Trust band — DARK ─────────────────────────────────────────────── */
     .trust-band{background:linear-gradient(180deg,#11151b 0%,#161b23 100%);padding:24px 0}
@@ -480,34 +468,6 @@
                 <img src="/static/demo_outputs/demo_02_spec_sheet.png" alt="MTM spec sheet — 2021 CAT 299D3">
               </div>
               <a class="sample-link" href="/static/demo_outputs/demo_02_spec_sheet.png" target="_blank" rel="noopener">View full sample &rarr;</a>
-            </div>
-          </article>
-          <article class="output-card">
-            <div class="output-card-head">
-              <span class="label">Full Listing Package</span>
-              <span class="sub">Everything bundled for download</span>
-            </div>
-            <div class="pkg-rows">
-              <div class="pkg-row">
-                <span class="ft ft-txt">TXT</span>
-                <div class="pkg-text"><span class="pkg-name">Listing copy</span><span class="pkg-desc">Paste into any platform</span></div>
-              </div>
-              <div class="pkg-row">
-                <span class="ft ft-png">PNG</span>
-                <div class="pkg-text"><span class="pkg-name">Featured listing image</span><span class="pkg-desc">Dealer logo + contact overlay</span></div>
-              </div>
-              <div class="pkg-row">
-                <span class="ft ft-jpg">JPG</span>
-                <div class="pkg-text"><span class="pkg-name">Spec sheet</span><span class="pkg-desc">Buyer-ready summary</span></div>
-              </div>
-              <div class="pkg-row">
-                <span class="ft ft-jpg">JPG</span>
-                <div class="pkg-text"><span class="pkg-name">Image pack</span><span class="pkg-desc">Formatted for every channel</span></div>
-              </div>
-              <div class="pkg-row">
-                <span class="ft ft-zip">ZIP</span>
-                <div class="pkg-text"><span class="pkg-name">Full bundle</span><span class="pkg-desc">Everything in one download</span></div>
-              </div>
             </div>
           </article>
         </div>
