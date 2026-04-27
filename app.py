@@ -444,13 +444,28 @@ async def build_listing_result(request: Request, session_id: str):
         )
         return [f"{web_base}/{subfolder}/{os.path.basename(p)}" for p in found]
 
+    def _load_listing_photos() -> list[str]:
+        """Return only real listing photos — *_listing.jpg / *_listing.jpeg only.
+        Excludes *_card.png, *_spec_sheet.png, and all other PNG artifacts."""
+        img_dir = os.path.join(pack_dir, "Listing_Photos")
+        if not os.path.isdir(img_dir):
+            return []
+        found = sorted(
+            p for p in _glob.glob(os.path.join(img_dir, "*"))
+            if os.path.isfile(p) and (
+                p.lower().endswith("_listing.jpg") or
+                p.lower().endswith("_listing.jpeg")
+            )
+        )
+        return [f"{web_base}/Listing_Photos/{os.path.basename(p)}" for p in found]
+
     image_packs = [
         {
             "folder":   "Listing_Photos",
             "label":    "Listing Photos",
             "tag":      "Ready to Post",
             "hint":     "Branded listing images with your logo and contact info. Use these for Facebook Marketplace, Craigslist, dealer sites, and all listing platforms.",
-            "urls":     _load_image_urls("Listing_Photos"),
+            "urls":     _load_listing_photos(),
         },
         {
             "folder":   "Original_Photos",
@@ -467,11 +482,10 @@ async def build_listing_result(request: Request, session_id: str):
     if _card_explicit and os.path.isfile(_card_explicit):
         card_png_url = f"{web_base}/Listing_Photos/{os.path.basename(_card_explicit)}"
 
-    # Primary preview: card PNG when present, else first listing JPG (old sessions).
-    _primary_explicit = _explicit_outputs.get("primary_preview_image")
-    primary_preview_image: str | None = card_png_url  # prefer card when available
-    if not primary_preview_image and _primary_explicit and os.path.isfile(_primary_explicit):
-        primary_preview_image = f"{web_base}/Listing_Photos/{os.path.basename(_primary_explicit)}"
+    # Primary preview for Image Pack: first real listing photo.
+    # Card and spec sheet are displayed in their own dedicated sections above.
+    _listing_urls = image_packs[0]["urls"]
+    primary_preview_image: str | None = _listing_urls[0] if _listing_urls else None
 
     # Walkaround video
     walkaround_abs = os.path.join(pack_dir, "walkaround.mp4")
