@@ -446,7 +446,11 @@ async def build_listing_result(request: Request, session_id: str):
 
     def _load_listing_photos() -> list[str]:
         """Return only real listing photos — *_listing.jpg / *_listing.jpeg only.
-        Excludes *_card.png, *_spec_sheet.png, and all other PNG artifacts."""
+        Excludes *_card.png, *_spec_sheet.png, and all other PNG artifacts.
+
+        UI-ONLY: feeds the Listing Photos carousel on the result page.
+        Must NOT be used for ZIP assembly. ZIP is built by _zip_folder()
+        in listing_pack_builder.py and includes card + spec sheet independently."""
         img_dir = os.path.join(pack_dir, "Listing_Photos")
         if not os.path.isdir(img_dir):
             return []
