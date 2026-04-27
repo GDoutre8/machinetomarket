@@ -1420,7 +1420,7 @@
         "emissions_tier": "Tier 4 Final",
         "lift_path": "radial",
         "frame_size": "mid",
-        "width_over_tires_in": 66.2,
+        "width_over_tires_in": 66.0,
         "wheelbase_in": null,
         "fuel_capacity_gal": 19.5,
         "fuel_type": "diesel",
@@ -2197,7 +2197,7 @@
         "emissions_tier": "Tier 4 Final",
         "lift_path": "vertical",
         "frame_size": "mid",
-        "width_over_tires_in": 66.0,
+        "width_over_tires_in": 69.0,
         "wheelbase_in": null,
         "fuel_capacity_gal": 24.8,
         "fuel_type": "diesel",
@@ -3983,7 +3983,7 @@
         "emissions_tier": "Tier 4 Final",
         "lift_path": "radial",
         "frame_size": "mid",
-        "width_over_tires_in": 65.9,
+        "width_over_tires_in": 66.0,
         "wheelbase_in": null,
         "fuel_capacity_gal": 19.5,
         "fuel_type": "diesel",
@@ -4359,7 +4359,7 @@
         "emissions_tier": "Tier 4 Final",
         "lift_path": "vertical",
         "frame_size": "extra_large",
-        "width_over_tires_in": 76.0,
+        "width_over_tires_in": 77.0,
         "wheelbase_in": null,
         "fuel_capacity_gal": 29.1,
         "fuel_type": "diesel",
@@ -6219,7 +6219,7 @@
         "emissions_tier": "Tier 4 Final",
         "lift_path": "vertical",
         "frame_size": "mid",
-        "width_over_tires_in": 72.9,
+        "width_over_tires_in": 73.5,
         "wheelbase_in": null,
         "fuel_capacity_gal": 31.7,
         "fuel_type": "diesel",
@@ -6774,7 +6774,7 @@
         "engine_model": "FPT F5B FL413 D*C001",
         "hydraulic_pressure_high_psi": 3046,
         "emissions_tier": "Tier 4 Final (SCR/DEF required)",
-        "width_over_tires_in": 76.5,
+        "width_over_tires_in": 75.0,
         "bucket_hinge_pin_height_in": 131.6,
         "lift_path": "vertical"
       },
@@ -11348,7 +11348,7 @@
         "fuel_capacity_gal": 24.8,
         "lift_path": "vertical",
         "frame_size": "mid",
-        "width_over_tires_in": 65.9,
+        "width_over_tires_in": 69.3,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -14048,7 +14048,7 @@
         "fuel_capacity_gal": null,
         "lift_path": null,
         "frame_size": null,
-        "width_over_tires_in": null,
+        "width_over_tires_in": 77.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -15692,7 +15692,7 @@
         "fuel_capacity_gal": 24,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": 69.5,
+        "width_over_tires_in": 70.0,
         "wheelbase_in": null,
         "standard_tire_size": null,
         "width_over_tracks_in": 69.5
@@ -15962,7 +15962,7 @@
         "fuel_capacity_gal": 24,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": 69.5,
+        "width_over_tires_in": 70.0,
         "wheelbase_in": null,
         "standard_tire_size": null,
         "width_over_tracks_in": 69.5
@@ -17910,7 +17910,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": null,
+        "width_over_tires_in": 66.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18033,7 +18033,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": null,
+        "width_over_tires_in": 65.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18156,7 +18156,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": 66.1,
+        "width_over_tires_in": 68.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18289,7 +18289,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": null,
+        "width_over_tires_in": 73.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18412,7 +18412,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": null,
+        "width_over_tires_in": 78.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18535,7 +18535,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": 74.8,
+        "width_over_tires_in": 78.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18674,7 +18674,7 @@
         "fuel_capacity_gal": 27.2,
         "lift_path": "vertical",
         "frame_size": "large",
-        "width_over_tires_in": 74.8,
+        "width_over_tires_in": 78.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -18817,7 +18817,7 @@
         "fuel_capacity_gal": null,
         "lift_path": "radial",
         "frame_size": null,
-        "width_over_tires_in": null,
+        "width_over_tires_in": 80.0,
         "wheelbase_in": null,
         "standard_tire_size": null
       },
@@ -27283,7 +27283,7 @@
         "engine_cylinders": 4,
         "fuel_type": "diesel",
         "emissions_tier": "Tier 4 Final",
-        "width_over_tires_in": 69
+        "width_over_tires_in": 66.0
       },
       "feature_flags": {
         "high_flow_available": true,
