@@ -3150,7 +3150,8 @@
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3190 â€” gear pump",
         "aux_flow_high_gpm null â€” high-flow package availability not confirmed in primary source",
         "Radial lift path",
-        "Shares platform with Case SR175 â€” New Holland and Case share Alpha Series architecture"
+        "Shares platform with Case SR175 â€” New Holland and Case share Alpha Series architecture",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -3275,7 +3276,8 @@
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3190 â€” gear pump",
         "aux_flow_high_gpm null â€” high-flow package availability not confirmed in primary source",
         "Radial lift path",
-        "Shares platform with Case SR210 â€” Alpha Series architecture"
+        "Shares platform with Case SR210 â€” Alpha Series architecture",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -3400,7 +3402,8 @@
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3190 â€” gear pump",
         "aux_flow_high_gpm null â€” high-flow package availability not confirmed in primary source",
         "Radial lift path",
-        "Shares platform with Case SR240 â€” Alpha Series architecture"
+        "Shares platform with Case SR240 â€” Alpha Series architecture",
+        "ERA_CLASSIFICATION: 200 Series launch / early 2010-2014. Obsolete/replaced model; keep separate from later successor models."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -3526,7 +3529,8 @@
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3045 â€” gear pump, pressure unchanged in high-flow mode",
         "aux_flow_high_gpm is package_dependent â€” must be confirmed on unit record",
         "Vertical lift path â€” key differentiator vs L223 (radial)",
-        "Shares platform with Case SV280 â€” Alpha Series architecture"
+        "Shares platform with Case SV280 â€” Alpha Series architecture",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -3651,7 +3655,8 @@
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3190 â€” gear pump",
         "aux_flow_high_gpm is package_dependent â€” must be confirmed on unit record",
         "Vertical lift path; large-frame NH SSL",
-        "engine_displacement_cu_in null â€” not confirmed from primary FPT source"
+        "engine_displacement_cu_in null â€” not confirmed from primary FPT source",
+        "ERA_CLASSIFICATION: 200 Series launch / early 2010-2014. Obsolete/replaced model; keep separate from later successor models."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -3776,7 +3781,8 @@
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3190 â€” gear pump",
         "aux_flow_high_gpm is package_dependent â€” must be confirmed on unit record",
         "Vertical lift path; largest New Holland SSL in Alpha Series lineup",
-        "engine_displacement_cu_in null â€” not confirmed from primary FPT source"
+        "engine_displacement_cu_in null â€” not confirmed from primary FPT source",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -6046,7 +6052,7 @@
         "fuel_capacity_gal": 19.5,
         "lift_path": "vertical",
         "frame_size": "medium",
-        "width_over_tires_in": 70.0,
+        "width_over_tires_in": 69.1,
         "wheelbase_in": 44.4,
         "standard_tire_size": "12-16.5",
         "boom_breakout_lb": 3450,
@@ -6120,10 +6126,145 @@
         "OEM cleanup 2026-04-12: horsepower, ROC, tipping, OW, aux_flow, hinge_pin, width, engine (ISM N4LDI-TA-50SL, not FPT), displacement, aspiration, pressures, speeds, fuel, frame_size, dump_height, dump_reach, wheelbase, breakout forces updated to OEM-confirmed values.",
         "Engine is ISM (not FPT) -- prior FPT fill was incorrect for this model.",
         "Two-speed is standard equipment on this model.",
-        "hydraulic_pressure_high_psi same as standard (3046 psi) -- gear pump system."
+        "hydraulic_pressure_high_psi same as standard (3046 psi) -- gear pump system.",
+        "ERA_CLASSIFICATION: 300 Series / OEM-confirmed in CNH New Holland 2019 brochure (L316/L318/L320/L321/L328/L334). Successor family to 200 Series. Do not use these specs to patch 200 Series records. L321 is a distinct model and not an L221 replacement.",
+        "2019 CNH New Holland brochure correction: width_over_tires_in updated from 70.0 to 69.1."
       ],
       "registry_tier": "production",
       "alias_hints": []
+    },
+    {
+      "equipment_type": "skid_steer",
+      "category": "skid_steer",
+      "machine_type": "skid_steer",
+      "manufacturer": "New Holland",
+      "model": "L321",
+      "model_slug": "nh_l321",
+      "model_family": "L-Series",
+      "years_supported": {
+        "start": null,
+        "end": null
+      },
+      "status": "active_used_market",
+      "specs": {
+        "horsepower_hp": 68,
+        "horsepower_gross_hp": 74,
+        "engine_manufacturer": "FPT",
+        "engine_model": "FPT F5H FL463",
+        "engine_displacement_cu_in": 207,
+        "engine_cylinders": 4,
+        "engine_aspiration": null,
+        "fuel_type": "diesel",
+        "emissions_tier": "Tier 4 Final",
+        "rated_operating_capacity_lbs": 2100,
+        "tipping_load_lbs": 4200,
+        "operating_weight_lbs": 6970,
+        "bucket_hinge_pin_height_in": 123.0,
+        "dump_height_in": null,
+        "dump_reach_in": 20.3,
+        "travel_speed_low_mph": 7.8,
+        "travel_speed_high_mph": 11.4,
+        "aux_flow_standard_gpm": 24.2,
+        "aux_flow_high_gpm": 33.2,
+        "hydraulic_pressure_standard_psi": 3046,
+        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pump_type": null,
+        "fuel_capacity_gal": 19.5,
+        "lift_path": "radial",
+        "frame_size": null,
+        "width_over_tires_in": 69.1,
+        "wheelbase_in": null,
+        "standard_tire_size": null,
+        "boom_breakout_lb": null,
+        "bucket_breakout_lb": null
+      },
+      "feature_flags": {
+        "enclosed_cab_available": null,
+        "high_flow_available": true,
+        "two_speed_available": true,
+        "ride_control_available": null,
+        "joystick_controls_available": null,
+        "hydraulic_coupler_available": null
+      },
+      "field_confidence": {
+        "horsepower_hp": "HIGH",
+        "horsepower_gross_hp": "HIGH",
+        "rated_operating_capacity_lbs": "HIGH",
+        "tipping_load_lbs": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "bucket_hinge_pin_height_in": "HIGH",
+        "dump_reach_in": "HIGH",
+        "travel_speed_low_mph": "HIGH",
+        "travel_speed_high_mph": "HIGH",
+        "aux_flow_standard_gpm": "HIGH",
+        "aux_flow_high_gpm": "HIGH",
+        "hydraulic_pressure_standard_psi": "HIGH",
+        "fuel_capacity_gal": "HIGH",
+        "lift_path": "HIGH",
+        "width_over_tires_in": "HIGH",
+        "engine_manufacturer": "HIGH",
+        "engine_model": "HIGH",
+        "fuel_type": "HIGH",
+        "engine_displacement_cu_in": "MEDIUM",
+        "engine_cylinders": "MEDIUM",
+        "emissions_tier": "MEDIUM",
+        "hydraulic_pressure_high_psi": "LOW",
+        "hydraulic_pump_type": "LOW",
+        "engine_aspiration": "LOW",
+        "frame_size": "LOW",
+        "dump_height_in": "LOW",
+        "wheelbase_in": "LOW",
+        "standard_tire_size": "LOW",
+        "boom_breakout_lb": "LOW",
+        "bucket_breakout_lb": "LOW"
+      },
+      "field_behavior": {
+        "horsepower_hp": "locked",
+        "horsepower_gross_hp": "locked",
+        "rated_operating_capacity_lbs": "locked",
+        "tipping_load_lbs": "locked",
+        "operating_weight_lbs": "locked",
+        "bucket_hinge_pin_height_in": "locked",
+        "dump_reach_in": "locked",
+        "travel_speed_low_mph": "locked",
+        "travel_speed_high_mph": "locked",
+        "aux_flow_standard_gpm": "locked",
+        "hydraulic_pressure_standard_psi": "locked",
+        "fuel_capacity_gal": "locked",
+        "lift_path": "locked",
+        "width_over_tires_in": "locked",
+        "engine_manufacturer": "locked",
+        "engine_model": "locked",
+        "engine_displacement_cu_in": "locked",
+        "engine_cylinders": "locked",
+        "emissions_tier": "locked",
+        "fuel_type": "locked",
+        "aux_flow_high_gpm": "package_dependent",
+        "hydraulic_pressure_high_psi": "manual_review",
+        "hydraulic_pump_type": "manual_review",
+        "engine_aspiration": "manual_review",
+        "frame_size": "manual_review",
+        "dump_height_in": "manual_review",
+        "wheelbase_in": "manual_review",
+        "standard_tire_size": "manual_review",
+        "boom_breakout_lb": "manual_review",
+        "bucket_breakout_lb": "manual_review"
+      },
+      "source_refs": [
+        "CNH New Holland 2019 skid steer brochure (NH.pdf) — OEM-confirmed"
+      ],
+      "notes": [
+        "New record. Source: CNH New Holland 2019 brochure (NH.pdf).",
+        "Radial lift, FPT-engined model. L321 is a distinct 300 Series model and is not L221.",
+        "High-flow value is OEM-confirmed but package-dependent; confirm high-flow package on unit.",
+        "hydraulic_pressure_high_psi not separately published in 2019 brochure. Leave null/manual_review.",
+        "engine_aspiration, dump_height_in, wheelbase_in, standard_tire_size, and breakout forces not published in the 2019 brochure.",
+        "ERA_CLASSIFICATION: 300 Series / OEM-confirmed in CNH New Holland 2019 brochure (L316/L318/L320/L321/L328/L334). Successor family to 200 Series. Do not use these specs to patch 200 Series records. L321 is a distinct model and not an L221 replacement."
+      ],
+      "registry_tier": "production",
+      "alias_hints": [
+        "l 321"
+      ]
     },
     {
       "equipment_type": "skid_steer",
@@ -6222,7 +6363,8 @@
       "notes": [
         "OEM cleanup 2026-04-12: horsepower, OW, aux_flow, hinge_pin, width, engine_model, displacement, pressures, speeds, fuel, dump_height, dump_reach, wheelbase updated to OEM-confirmed values.",
         "Two-speed is standard equipment on this model.",
-        "hydraulic_pressure_high_psi (4000 psi) reflects high-flow circuit pressure; differs from standard (3450 psi)."
+        "hydraulic_pressure_high_psi (4000 psi) reflects high-flow circuit pressure; differs from standard (3450 psi).",
+        "ERA_CLASSIFICATION: 300 Series / OEM-confirmed in CNH New Holland 2019 brochure (L316/L318/L320/L321/L328/L334). Successor family to 200 Series. Do not use these specs to patch 200 Series records. L321 is a distinct model and not an L221 replacement."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -7590,7 +7732,7 @@
       "machine_type": "skid_steer",
       "manufacturer": "New Holland",
       "model": "L213",
-      "model_slug": "new_holland_l213",
+      "model_slug": "nh_l213",
       "model_family": "L-Series",
       "years_supported": {
         "start": 2013,
@@ -7708,10 +7850,13 @@
         "engine_displacement_cu_in MEDIUM / manual_review: 167 cu in consistent with FPT F4GE compact family but not pulled from NH primary spec sheet.",
         "aux_flow_high_gpm LOW / manual_review: high_flow_available is false on L213; aux_flow_high_gpm value is a placeholder and should not be used. Field retained for schema consistency only.",
         "bucket_hinge_pin_height_in, dump_height_in, dump_reach_in MEDIUM / manual_review: values not pulled from NH OEM spec sheet; require confirmation before lock.",
-        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi â€” gear pump."
+        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi â€” gear pump.",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ],
       "registry_tier": "production",
-      "alias_hints": []
+      "alias_hints": [
+        "new_holland_l213"
+      ]
     },
     {
       "equipment_type": "skid_steer",
@@ -7719,7 +7864,7 @@
       "machine_type": "skid_steer",
       "manufacturer": "New Holland",
       "model": "L216",
-      "model_slug": "new_holland_l216",
+      "model_slug": "nh_l216",
       "model_family": "L-Series",
       "years_supported": {
         "start": 2013,
@@ -7837,10 +7982,13 @@
         "engine_displacement_cu_in MEDIUM / manual_review: 182 cu in consistent with FPT F4GE compact family but not pulled from NH primary spec sheet.",
         "bucket_hinge_pin_height_in, dump_height_in, dump_reach_in MEDIUM / manual_review: values not pulled from NH OEM spec sheet; require confirmation before lock.",
         "aux_flow_high_gpm MEDIUM / package_dependent: high-flow available on L216; confirm exact GPM from OEM spec before lock.",
-        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi â€” gear pump."
+        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi â€” gear pump.",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ],
       "registry_tier": "production",
-      "alias_hints": []
+      "alias_hints": [
+        "new_holland_l216"
+      ]
     },
     {
       "equipment_type": "skid_steer",
@@ -13028,7 +13176,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2250; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 200 Series launch / early 2010-2014. Obsolete/replaced model; keep separate from later successor models."
       ]
     },
     {
@@ -13155,7 +13304,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1500; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -13282,7 +13432,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1600; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -13409,7 +13560,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1700; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -13536,7 +13688,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2200; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -13663,7 +13816,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1800; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -13790,7 +13944,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2200; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -13917,7 +14072,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1900; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 100 Series / early L-series, source family New Holland 100 Series SSL 2008-2009. Do not patch from 200/300 Series sources."
       ]
     },
     {
@@ -14044,7 +14200,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2150; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 200 Series launch / early 2010-2014. Obsolete/replaced model; keep separate from later successor models."
       ]
     },
     {
@@ -14171,7 +14328,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2210; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: 200 Series Tier 4 Final / later 2015-2019. Use only OEM sources where this exact model appears; do not patch from 300 Series."
       ]
     },
     {
@@ -14298,7 +14456,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2500; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: uncertain/manual_review. Confirm equipment family and OEM source before spec overwrite."
       ]
     },
     {
@@ -14425,7 +14584,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1600; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -14552,7 +14712,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "[2026-03-29 Research Batch] 52 hp rated (net) Shibaura N844T. Operating weight 5,540 lbs. Width 65.6 in over 10x16.5. Std flow 17.7 gpm. High-flow not available. Single-speed max 7.3 mph. Sources: OEM New Holland LS170 spec sheet (irp-cdn.multiscreensite.com), skidsteerloaderspecs.com/nh_ls170, Equipment Trader listings",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -14679,7 +14840,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "[2026-03-29 Research Batch] 60 hp net (CNH 332T/JF 3-cylinder turbocharged). Width 71.1 in per OEM. Operating weight 7,193 lbs per VeriTread. Std flow 18.5 gpm; high-flow 32 gpm. Travel 7.3 mph. Sources: skidsteerloaderspecs.com/nh_ls180, skidsteerspecifications.com/new-holland/LS180, veritread.com LS180",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -14806,7 +14968,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1800; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -14933,7 +15096,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2200; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -15060,7 +15224,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1900; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -15187,7 +15352,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1900; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -15314,7 +15480,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2200; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: uncertain/manual_review. Confirm equipment family and OEM source before spec overwrite."
       ]
     },
     {
@@ -15441,7 +15608,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1900; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: uncertain/manual_review. Confirm equipment family and OEM source before spec overwrite."
       ]
     },
     {
@@ -15568,7 +15736,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1500; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -15695,7 +15864,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=1700; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -15822,7 +15992,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2000; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -15949,7 +16120,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2200; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -16076,7 +16248,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2400; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -16203,7 +16376,8 @@
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
         "tipping_load_lbs derived via SAE J818 2x ROC rule from rated_operating_capacity_lbs=2700; confidence MEDIUM.",
-        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH."
+        "engine_manufacturer set to FPT (Fiat Powertrain) based on New Holland skid steer engine sourcing; confidence HIGH.",
+        "ERA_CLASSIFICATION: LS/LX legacy / pre-100 Series. Requires separate legacy OEM source before spec overwrite."
       ]
     },
     {
@@ -32037,7 +32211,7 @@
       "machine_type": "skid_steer",
       "manufacturer": "New Holland",
       "model": "L328",
-      "model_slug": "new_holland_l328",
+      "model_slug": "nh_l328",
       "model_family": "L3-Series",
       "years_supported": {
         "start": 2021,
@@ -32143,11 +32317,13 @@
       "notes": [
         "OEM cleanup 2026-04-12: horsepower (net/gross), lift_path, hinge_pin, width, dump_reach, engine_model, displacement, cylinders, aspiration, travel_speed_low, wheelbase, breakout forces updated to OEM-confirmed values.",
         "Two-speed is standard equipment on this model.",
-        "Super Boom vertical lift (NH-exclusive naming). No DEF (maintenance-free Tier 4 Final)."
+        "Super Boom vertical lift (NH-exclusive naming). No DEF (maintenance-free Tier 4 Final).",
+        "ERA_CLASSIFICATION: 300 Series / OEM-confirmed in CNH New Holland 2019 brochure (L316/L318/L320/L321/L328/L334). Successor family to 200 Series. Do not use these specs to patch 200 Series records. L321 is a distinct model and not an L221 replacement."
       ],
       "registry_tier": "production",
       "alias_hints": [
-        "l 328"
+        "l 328",
+        "new_holland_l328"
       ]
     },
     {
@@ -32531,7 +32707,8 @@
         "New record created 2026-04-12 from OEM-confirmed source data.",
         "Two-speed is standard equipment on this model.",
         "Engine is ISM N4LDI-TA-45SL (not FPT).",
-        "aux_flow_high_gpm is package_dependent -- confirm on unit record."
+        "aux_flow_high_gpm is package_dependent -- confirm on unit record.",
+        "ERA_CLASSIFICATION: 300 Series / OEM-confirmed in CNH New Holland 2019 brochure (L316/L318/L320/L321/L328/L334). Successor family to 200 Series. Do not use these specs to patch 200 Series records. L321 is a distinct model and not an L221 replacement."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -32565,7 +32742,7 @@
         "bucket_hinge_pin_height_in": 112.0,
         "dump_height_in": 84.8,
         "dump_reach_in": 18.5,
-        "travel_speed_low_mph": 7.9,
+        "travel_speed_low_mph": 7.4,
         "travel_speed_high_mph": null,
         "aux_flow_standard_gpm": 18.4,
         "aux_flow_high_gpm": null,
@@ -32660,7 +32837,9 @@
         "Two-speed not available on this model (single-speed only).",
         "High-flow not available on L316.",
         "Engine is ISM N844LT (not FPT).",
-        "Radial lift, small-frame model."
+        "Radial lift, small-frame model.",
+        "ERA_CLASSIFICATION: 300 Series / OEM-confirmed in CNH New Holland 2019 brochure (L316/L318/L320/L321/L328/L334). Successor family to 200 Series. Do not use these specs to patch 200 Series records. L321 is a distinct model and not an L221 replacement.",
+        "2019 CNH New Holland brochure correction: travel_speed_low_mph updated from 7.9 to 7.4."
       ],
       "registry_tier": "production",
       "alias_hints": []
