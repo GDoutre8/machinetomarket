@@ -6,7 +6,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
   /* MTM brand palette */
@@ -36,9 +36,9 @@
   --error:          #E05252;
   --success:        #3DB87A;
 
-  --mono:   'IBM Plex Mono', monospace;
-  --cond:   'Teko', sans-serif;
-  --body:   'Inter', sans-serif;
+  --mono:    'IBM Plex Mono', monospace;
+  --display: 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif;
+  --body:    'Inter', sans-serif;
   --radius: 4px;
   --max:    1140px;
 }
@@ -161,7 +161,7 @@ main {
 }
 
 .hero h1 {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: clamp(40px, 5.5vw, 64px);
   font-weight: 600;
   line-height: 0.92;
@@ -193,7 +193,7 @@ main {
 }
 
 .hero-stat-val {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 28px;
   font-weight: 600;
   color: var(--mtm-yellow);
@@ -226,7 +226,7 @@ main {
 /* Machine identity headline in listing output */
 .listing-headline {
   display: block;
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -278,7 +278,7 @@ main {
 }
 
 .panel-title {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -362,7 +362,7 @@ textarea#raw-input:focus {
   color: var(--mtm-black);
   border: 1px solid var(--mtm-yellow);
   padding: 11px 24px;
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -560,7 +560,7 @@ textarea#raw-input:focus {
 }
 
 .specs-title {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -596,7 +596,7 @@ textarea#raw-input:focus {
 }
 
 .spec-val {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 20px;
   font-weight: 700;
   color: var(--mtm-black);
@@ -684,7 +684,7 @@ footer {
 }
 
 .footer-logo {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -710,7 +710,7 @@ footer {
 }
 
 .tier-btn {
-  font-family: var(--cond);
+  font-family: var(--body);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;

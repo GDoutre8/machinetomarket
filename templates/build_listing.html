@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,226 +6,577 @@
   <title>Build My Listing - Machine-to-Market</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&family=Oswald:wght@600&family=Barlow:wght@400;700&family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css" />
   <style>
+    /* ── Light-theme override for /build-listing ──────────────────────────── */
     :root {
-      --bg:#0a0b0d;--bg-2:#101216;--panel:#171a1f;--panel-2:#12151a;--panel-3:#1d2229;--panel-4:#222831;
-      --line:rgba(255,255,255,.14);--line-soft:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.2);
-      --text:#f4f1e8;--muted:#b4bac0;--dim:#858b92;--shadow:0 28px 72px rgba(0,0,0,.42);--glow:0 0 0 1px rgba(232,169,32,.16),0 30px 68px rgba(0,0,0,.38);
-      --radius:8px;--radius-sm:4px;--max:1240px;
+      --bg:#ffffff;--bg-soft:#f7f8f9;--bg-band:#11151b;--bg-band-2:#171b22;
+      --ink:#0f1115;--ink-2:#1f242c;--text:#0f1115;--muted:#5b6472;--dim:#8a93a1;
+      --line:#e4e6ea;--line-soft:#eef0f3;--line-strong:#cfd3da;
+      --mtm-yellow:#f1b62b;--mtm-yellow-deep:#d99814;--mtm-yellow-bg:rgba(241,182,43,.12);
+      --shadow-card:0 1px 2px rgba(15,17,21,.04),0 8px 24px rgba(15,17,21,.06);
+      --shadow-soft:0 1px 0 rgba(15,17,21,.03),0 2px 8px rgba(15,17,21,.05);
+      --radius:14px;--radius-sm:10px;--radius-pill:999px;--max:1200px;
     }
     *{box-sizing:border-box} html{scroll-behavior:smooth}
-    body{position:relative;background:
-      radial-gradient(circle at top,rgba(232,169,32,.14),transparent 22%),
-      radial-gradient(circle at 82% 18%,rgba(232,169,32,.06),transparent 18%),
-      radial-gradient(circle at 20% 14%,rgba(255,255,255,.03),transparent 20%),
-      linear-gradient(180deg,#15181d 0%,#0e1014 14%,#0a0b0d 42%,#0d1014 76%,#090a0c 100%);
-      color:var(--text);min-height:100vh;font-family:var(--body)}
-    body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.32;background:
-      linear-gradient(180deg,transparent 0%,rgba(255,255,255,.022) 49%,transparent 50%,transparent 100%);
-      background-size:100% 160px}
-    body::after{content:"";position:fixed;inset:0;pointer-events:none;background:
-      radial-gradient(circle at center,transparent 36%,rgba(0,0,0,.24) 100%);
-      opacity:.7}
-    header{background:rgba(10,12,15,.84);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);box-shadow:0 10px 24px rgba(0,0,0,.22)}
-    main{max-width:none;margin:0;padding:0 0 88px;width:100%}.build-shell{width:min(100%,var(--max));margin:0 auto;padding:0 28px}
-    .site-mark{font-family:var(--cond);font-size:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text);text-decoration:none}.site-mark span{color:var(--mtm-yellow)}
-    .header-link{font-size:11px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03)}.header-link:hover{color:var(--text);border-color:rgba(232,169,32,.5);background:rgba(232,169,32,.08)}
-    .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line-soft);background:linear-gradient(115deg,rgba(7,8,10,.96) 8%,rgba(10,12,15,.8) 48%,rgba(8,9,11,.96) 100%)}
-    .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:180px;pointer-events:none;background:linear-gradient(180deg,transparent 0%,rgba(10,11,13,.88) 65%,rgba(10,11,13,1) 100%)}
-    .hero-media,.hero-media video,.hero-overlay{position:absolute;inset:0}.hero-media{z-index:0;background:linear-gradient(90deg,rgba(10,11,13,.98),rgba(10,11,13,.74))}.hero-media video{width:100%;height:100%;object-fit:cover;opacity:.42;filter:saturate(.78) contrast(1.08) brightness(.52)}
-    .hero-overlay{z-index:1;background:
-      linear-gradient(90deg,rgba(7,8,10,.985) 0%,rgba(7,8,10,.92) 30%,rgba(7,8,10,.58) 62%,rgba(7,8,10,.92) 100%),
-      linear-gradient(180deg,rgba(7,8,10,.16) 0%,rgba(7,8,10,.82) 100%),
-      radial-gradient(circle at 18% 34%,rgba(232,169,32,.14),transparent 28%)}
-    .hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,.92fr) minmax(500px,600px);gap:42px;align-items:center;min-height:760px;padding:74px 0 64px}
-    .eyebrow,.card-kicker,.section-kicker,.micro{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mtm-yellow)} .eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}.eyebrow::before{content:"";width:32px;height:2px;background:var(--mtm-yellow)}
-    .hero-copy h1,.marketing-copy h2{font-family:var(--cond);font-weight:600;line-height:.9;letter-spacing:.03em;text-transform:uppercase;color:var(--text)} .hero-copy h1{font-size:clamp(58px,7vw,104px);margin:0 0 18px;max-width:720px}.marketing-copy h2{font-size:clamp(34px,4vw,52px);margin:8px 0 12px}
-    .hero-copy p,.marketing-copy p,.support-card p,.process-card p,.preview-card p,.hero-form-card p,.section-note,.status-msg,.photo-count,.match-type,.uc-preview-machine,.uc-att-sentence,.uc-limit-sentence,.uc-no-match,.no-match-notice{color:var(--muted)}
-    .hero-copy{position:relative;padding:12px 22px 12px 0}
-    .hero-copy::after{content:"";position:absolute;inset:0 14% 0 -40px;z-index:-1;background:linear-gradient(90deg,rgba(9,10,12,.7),rgba(9,10,12,.18) 72%,transparent 100%);filter:blur(8px)}
-    .hero-copy p{max-width:600px;font-size:20px;line-height:1.62;margin:0 0 22px;color:#c7ccd1}.hero-bullets{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:8px 16px;max-width:660px;margin-bottom:0}.hero-bullet{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:15px;color:#d8dce0}.hero-bullet::before{content:"";width:10px;height:10px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}.hero-value-callout{max-width:500px;margin:4px 0 0;padding:2px 0 2px 14px;border-left:2px solid rgba(232,169,32,.55);font-size:18px;font-weight:600;line-height:1.3;letter-spacing:.01em;color:#dfddd6;text-transform:none;text-wrap:balance}.hero-value-callout span{display:block}
-    .hero-form-wrap{display:flex;justify-content:flex-end}.hero-form-card,.workspace-card,.support-card,.marketing-card,.process-card,.preview-card{border-radius:var(--radius);border:1px solid var(--line);background:linear-gradient(180deg,rgba(28,32,39,.96),rgba(17,20,25,.98));box-shadow:var(--shadow);position:relative} .hero-form-card{width:min(100%,590px);padding:42px 42px 38px;position:relative;overflow:hidden;background:
-      linear-gradient(180deg,rgba(32,37,45,.98),rgba(18,21,26,.99)),
-      linear-gradient(135deg,rgba(232,169,32,.05),transparent 34%);border-color:rgba(232,169,32,.24);box-shadow:0 0 0 1px rgba(255,255,255,.03),0 0 0 1px rgba(232,169,32,.1),0 26px 60px rgba(0,0,0,.44)} .hero-form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,rgba(232,169,32,.95),rgba(232,169,32,.14))}.hero-form-card::after{content:"";position:absolute;inset:auto -40px -60px auto;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(232,169,32,.12) 0%,rgba(232,169,32,0) 70%);pointer-events:none}.hero-form-card h2{font-family:var(--cond);font-size:34px;font-weight:600;line-height:.96;letter-spacing:.03em;text-transform:uppercase;color:var(--text);margin:12px 0 10px}
-    .form-card,.uc-preview-card{background:linear-gradient(180deg,rgba(23,26,31,.99),rgba(15,17,21,.99));border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:0 18px 48px rgba(0,0,0,.22)}
-    .step-header-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}.step-badge{width:32px;height:32px;border-radius:6px;border:1px solid rgba(232,169,32,.4);background:rgba(232,169,32,.1);color:var(--mtm-yellow);font-family:var(--cond);font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-    .step-title,.section-label,.uc-preview-label{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text)} .section-label{display:inline-flex;align-items:center;gap:10px;margin-bottom:14px}.section-label::after{content:"";width:42px;height:1px;background:rgba(232,169,32,.35)}
-    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}.field-row.single{grid-template-columns:1fr}.field-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}.field{display:flex;flex-direction:column;gap:8px}.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.field label .req{color:var(--mtm-yellow)}
-    .field input[type="text"],.field input[type="number"],.field textarea,.field select{width:100%;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.035));color:var(--text);font-family:var(--body);font-size:16px;padding:15px 15px;min-height:56px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.field input::placeholder,.field textarea::placeholder{color:rgba(183,188,193,.58)}.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:rgba(232,169,32,.6);box-shadow:0 0 0 3px rgba(232,169,32,.12), inset 0 1px 0 rgba(255,255,255,.05);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05))}.field textarea{min-height:108px;resize:vertical}.field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23858b92' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;cursor:pointer}.field select option{background:#1d2229;color:var(--text)}
-    .submit-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}.btn-generate,.btn-change{border-radius:4px;font-family:var(--cond);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn-generate{border:1px solid var(--mtm-yellow);background:linear-gradient(180deg,#f0b02d,#d79512);color:#111;font-size:22px;font-weight:600;padding:20px 26px;min-height:70px;box-shadow:0 18px 38px rgba(232,169,32,.18)}.btn-generate:hover{transform:translateY(-1px);box-shadow:0 22px 44px rgba(232,169,32,.24)}.btn-generate:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}.btn-change{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--muted);font-size:14px;font-weight:500;padding:10px 14px}.btn-change:hover{border-color:rgba(232,169,32,.4);color:var(--text);background:rgba(232,169,32,.08)}
-    .cta-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:14px;width:100%}
-    .cta-wrap .btn-generate{width:100%;justify-content:center}
-    .cta-note{font-size:13px;line-height:1.55;color:#cfcfc8;letter-spacing:.01em}
-    .status-msg{font-size:13px;min-height:18px}.status-msg.error{color:#ff8d8d}.status-msg.success{color:#5cc58a}.spinner{display:inline-block;width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:var(--mtm-yellow);animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}@keyframes spin{to{transform:rotate(360deg)}}.hidden{display:none!important}
-    .feature-strip,.workspace,.marketing-section,.process-section{position:relative}
-    .feature-strip,.marketing-section,.process-section{border-top:1px solid rgba(255,255,255,.06)}
-    .feature-strip::before,.marketing-section::before,.process-section::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(232,169,32,.14) 18%,rgba(255,255,255,.06) 50%,rgba(232,169,32,.14) 82%,transparent 100%)}
-    .feature-strip{padding:34px 0 8px;position:relative;margin-top:-44px;z-index:3;background:linear-gradient(180deg,rgba(16,18,22,.76),rgba(13,15,19,.94))}.feature-strip-grid,.process-grid,.preview-grid{display:grid;gap:18px}.feature-strip-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.support-card{padding:20px 18px 16px;min-height:132px;background:linear-gradient(180deg,rgba(24,28,34,.98),rgba(16,18,22,.98));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.support-card:hover,.preview-card:hover,.process-card:hover{transform:translateY(-2px);border-color:rgba(232,169,32,.24);box-shadow:0 24px 54px rgba(0,0,0,.28)}.support-index{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:4px;background:rgba(232,169,32,.12);border:1px solid rgba(232,169,32,.34);color:var(--mtm-yellow);font-family:var(--mono);font-size:11px;margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.support-card h3,.process-card h3,.preview-card h3{font-family:var(--cond);font-size:24px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--text);margin-bottom:8px}
-    .workspace{padding:0;background:none}
+    body{background:#fff!important;color:var(--ink);min-height:100vh;font-family:var(--body);margin:0}
+    body::before,body::after{display:none!important}
+    main{max-width:none;margin:0;padding:0;width:100%;background:#fff}
+    .build-shell{width:min(100%,var(--max));margin:0 auto;padding:0 32px}
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header{background:#11151b;border-bottom:1px solid rgba(255,255,255,.08);box-shadow:none;backdrop-filter:none}
+    header .header-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max);margin:0 auto;padding:0 32px;height:76px}
+    header .logo{display:inline-flex;align-items:center;text-decoration:none}
+    header .logo img{height:42px;width:auto;display:block}
+    header .site-nav{display:flex;align-items:center;gap:28px}
+    header .nav-link{font-family:var(--body);font-size:14px;font-weight:500;letter-spacing:.01em;color:rgba(255,255,255,.6);text-decoration:none;background:none;border:none;padding:6px 2px;cursor:pointer}
+    header .nav-link:hover{color:#fff}
+    header .nav-link.muted{color:var(--ink-2);cursor:default;opacity:.85}
+    header .nav-link.muted:hover{color:var(--ink-2)}
+    header .nav-cta{display:inline-flex;align-items:center;justify-content:center;font-family:var(--body);font-size:14px;font-weight:600;color:#0f1115;background:var(--mtm-yellow);border:1px solid var(--mtm-yellow);border-radius:8px;padding:9px 18px;text-decoration:none;box-shadow:0 1px 2px rgba(15,17,21,.08)}
+    header .nav-cta:hover{background:var(--mtm-yellow-deep);border-color:var(--mtm-yellow-deep)}
+
+    /* ── Hero ───────────────────────────────────────────────────────────── */
+    .hero{background:#fff;padding:72px 0 64px;border-bottom:1px solid var(--line-soft);position:static}
+    .hero::before,.hero::after{display:none}
+    .hero-media,.hero-overlay{display:none!important}
+    .hero-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(540px,660px);gap:72px;align-items:start;min-height:0;padding:0;position:static}
+    .hero-copy{padding:8px 0;position:static}
+    .hero-copy::after{display:none}
+    .launch-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--line-strong);border-radius:var(--radius-pill);background:#fff;color:var(--ink-2);font-size:13px;font-weight:500}
+    .launch-pill::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--mtm-yellow);background:#fff;display:inline-block;position:relative}
+    .launch-pill::after{content:"";position:absolute;display:none}
+    .hero-copy h1{font-family:var(--display);font-size:clamp(64px,6.2vw,88px);font-weight:400;line-height:.95;letter-spacing:.02em;color:var(--ink);margin:22px 0 24px;text-transform:uppercase;max-width:none}
+    .hero-copy h1 .accent{color:var(--mtm-yellow);display:block}
+    .hero-sub{font-size:17px;line-height:1.55;color:var(--muted);margin:0 0 24px;max-width:560px}
+    .trust-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+    .trust-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--line);border-radius:var(--radius-pill);background:#fff;font-size:13.5px;color:var(--ink-2);font-weight:500;box-shadow:var(--shadow-soft)}
+    .trust-pill .check{display:inline-flex;width:16px;height:16px;border-radius:50%;background:var(--mtm-yellow-bg);color:var(--mtm-yellow-deep);align-items:center;justify-content:center;font-size:11px;font-weight:700}
+    .no-match-copy{font-size:13px;line-height:1.6;color:var(--muted);max-width:520px;margin:18px 0 0}
+
+    /* ── Intake card (dark) ────────────────────────────────────────────── */
+    .hero-form-wrap{display:block}
+    .hero-form-card{width:100%;background:linear-gradient(180deg,#1a1f28 0%,#141821 100%);border:1px solid #2a3140;border-top:3px solid var(--mtm-yellow);border-radius:var(--radius);padding:30px 32px 26px;box-shadow:0 18px 40px rgba(8,10,14,.45),0 2px 6px rgba(8,10,14,.25);position:relative;overflow:visible;color:#e6e9ef}
+    .hero-form-card::before,.hero-form-card::after{display:none}
+    .card-kicker{display:inline-block;font-family:var(--body);font-size:11.5px;font-weight:700;color:var(--mtm-yellow);letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
+    .hero-form-card h2{font-family:var(--body);font-size:30px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.01em;margin:0 0 10px;line-height:1.05}
+    .hero-form-card > p.intake-sub{display:block;font-size:13.5px;line-height:1.55;color:#b6bdcb;margin:0 0 18px;max-width:none;font-weight:400}
+    .step-label{font-family:var(--body);font-size:11.5px;font-weight:700;color:#a8b0bd;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;display:block}
+    .step-label-row{margin-bottom:10px;display:none}
+    .step-label-row .step-label{margin:0}
+
+    /* ── Form fields ───────────────────────────────────────────────────── */
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+    .field-row.single{grid-template-columns:1fr}
+    .field-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .intake-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    .intake-fields .field-price{grid-column:1 / -1}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-family:var(--body);font-size:11px;font-weight:700;color:#a8b0bd;letter-spacing:.1em;text-transform:uppercase}
+    .hero-form-card .field label{color:#a8b0bd}
+    .field label .req{color:var(--mtm-yellow)}
+    .field label .opt{color:#7d8593;font-weight:500;letter-spacing:.06em;margin-left:4px}
+    .field input[type="text"],.field input[type="number"],.field textarea,.field select{width:100%;border-radius:var(--radius-sm);border:1px solid var(--line-strong);background:#fff;color:var(--ink);font-family:var(--body);font-size:14.5px;padding:10px 12px;min-height:42px;box-shadow:none;font-weight:500}
+    .hero-form-card .field input[type="text"],.hero-form-card .field input[type="number"]{background:#0f1219;border:1px solid #2f3645;color:#fff;min-height:50px;padding:12px 14px;font-size:15px;font-weight:500}
+    .hero-form-card .field input::placeholder{color:#5b6373;font-weight:400}
+    .hero-form-card .field input:focus{outline:none;border-color:var(--mtm-yellow);box-shadow:0 0 0 3px rgba(241,182,43,.18);background:#0f1219}
+    .field input::placeholder,.field textarea::placeholder{color:#aab0bb;font-weight:400}
+    .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--mtm-yellow);box-shadow:0 0 0 3px var(--mtm-yellow-bg);background:#fff}
+    .field textarea{min-height:80px;resize:vertical}
+    .field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235b6472' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;cursor:pointer}
+    .field select option{background:#fff;color:var(--ink)}
+
+    /* ── Buttons ───────────────────────────────────────────────────────── */
+    .submit-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+    .btn-generate,.btn-change{border-radius:var(--radius-sm);font-family:var(--body);letter-spacing:0;text-transform:none;cursor:pointer}
+    .btn-generate{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--mtm-yellow);background:var(--mtm-yellow);color:#0f1115;font-size:16px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:16px 22px;min-height:58px;box-shadow:0 2px 6px rgba(241,182,43,.25);transition:background .14s,box-shadow .14s,transform .14s}
+    .btn-generate:hover{background:var(--mtm-yellow-deep);border-color:var(--mtm-yellow-deep);transform:translateY(-1px);box-shadow:0 6px 14px rgba(217,152,20,.32)}
+    .btn-generate:disabled{opacity:.6;cursor:not-allowed;box-shadow:none;transform:none;background:var(--mtm-yellow)}
+    .btn-change{border:1px solid var(--line-strong);background:#fff;color:var(--ink-2);font-size:13.5px;font-weight:500;padding:8px 14px}
+    .btn-change:hover{border-color:var(--mtm-yellow-deep);color:var(--mtm-yellow-deep);background:var(--mtm-yellow-bg)}
+    .cta-wrap{display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%}
+    .cta-wrap .btn-generate{width:100%}
+    .cta-note{font-size:13px;line-height:1.5;color:var(--muted);text-align:center}
+    .hero-form-card .cta-note{color:#a8b0bd}
+    .hero-value-callout{display:none}
+    .intake-pitch{margin:18px 0 0;padding:14px 16px;border-left:3px solid var(--mtm-yellow);background:rgba(241,182,43,.06);border-radius:4px}
+    .intake-pitch p{margin:0;font-size:14px;line-height:1.5;color:#fff;font-weight:600}
+    .intake-foot{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .intake-foot .foot-note{font-size:12.5px;color:#a8b0bd;line-height:1.45;margin:0}
+    .intake-foot .foot-link{display:inline-flex;align-items:center;justify-content:center;font-family:var(--body);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#e6e9ef;background:transparent;border:1px solid #2f3645;border-radius:var(--radius-sm);padding:9px 14px;text-decoration:none;cursor:pointer}
+    .intake-foot .foot-link:hover{border-color:var(--mtm-yellow);color:var(--mtm-yellow)}
+
+    /* ── Status / spinner ─────────────────────────────────────────────── */
+    .status-msg{font-size:13px;min-height:18px;color:var(--muted)}
+    .status-msg.error{color:#c8302a}
+    .status-msg.success{color:#1f7a48}
+    .spinner{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid rgba(15,17,21,.18);border-top-color:var(--mtm-yellow-deep);animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hidden{display:none!important}
+
+    /* ── Photo upload ─────────────────────────────────────────────────── */
+    .photos-row{display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:stretch}
+    .photo-drop{border:2px dashed var(--line-strong);border-radius:var(--radius-sm);padding:18px 12px;text-align:center;background:var(--bg-soft);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;transition:border-color .14s,background .14s}
+    .photo-drop:hover,.photo-drop.drag-over{border-color:var(--mtm-yellow);background:var(--mtm-yellow-bg)}
+    .photo-drop.has-files{border-color:var(--mtm-yellow);background:#fff;border-style:solid}
+    .photo-drop-icon{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;margin-bottom:8px}
+    .photo-drop-label{color:var(--ink-2);font-size:12.5px;line-height:1.4;pointer-events:none;font-weight:500}
+    .photo-drop-label strong{color:var(--ink);font-weight:600}
+    .photo-drop-label .sub{color:var(--muted);font-size:11px;font-weight:400;display:block;margin-top:4px}
+    #photo-preview{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+    .photo-suggest{font-size:12px;color:var(--muted);margin-top:8px}
+
+    /* ── Photo thumbs (preserve JS-generated structure) ──────────────── */
+    .photo-thumb-wrap{position:relative;flex-shrink:0;width:96px;height:96px}
+    .photo-thumb-wrap img{width:96px;height:96px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--line);display:block;background:#f0f0f0}
+    .photo-thumb-wrap.is-main img{border-color:var(--mtm-yellow);box-shadow:0 0 0 2px rgba(241,182,43,.35)}
+    .photo-main-badge{position:absolute;bottom:0;left:0;right:0;text-align:center;font-family:var(--body);font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;background:var(--mtm-yellow);color:#0f1115;font-weight:700;padding:3px 0;border-radius:0 0 var(--radius-sm) var(--radius-sm);pointer-events:none}
+    .photo-thumb-controls{position:absolute;top:3px;right:3px;display:flex;gap:2px}
+    .photo-ctrl-btn{width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,.3);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;background:rgba(15,17,21,.74);color:#fff;padding:0;line-height:1}
+    .photo-ctrl-btn:hover{background:var(--mtm-yellow);color:#0f1115;border-color:var(--mtm-yellow)}
+    .photo-set-main-btn{position:absolute;top:3px;left:3px;font-family:var(--body);font-size:9px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;padding:3px 6px;background:rgba(15,17,21,.74);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:4px;cursor:pointer;white-space:nowrap}
+    .photo-set-main-btn:hover{background:var(--mtm-yellow);color:#0f1115;border-color:var(--mtm-yellow)}
+    .photo-del-btn{position:absolute;bottom:3px;right:3px;width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,.3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;background:rgba(15,17,21,.74);color:#fff;padding:0;line-height:1}
+    .photo-del-btn:hover{background:#c8302a;color:#fff;border-color:#c8302a}
+    .photo-count{font-family:var(--body);font-size:12px;letter-spacing:0;color:var(--muted);margin-top:8px;font-weight:500}
+
+    /* ── Workspace (step 2) cards ──────────────────────────────────────── */
+    .workspace{padding:0;background:#fff}
     .workspace-card{padding:0;border:none;background:none;box-shadow:none}
-    .match-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.03))}.match-banner-left{display:flex;align-items:center;gap:12px;min-width:0}.match-icon{width:34px;height:34px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);flex-shrink:0}.match-icon.match-found{color:#3db87a;border-color:rgba(61,184,122,.45);background:rgba(61,184,122,.12)}.match-icon.match-unknown{color:#ff6b6b;border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.12)}.match-label{font-size:15px;font-weight:600;color:var(--text);word-break:break-word}
-    .match-warning-card,.no-match-notice{padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:18px;font-size:13px;line-height:1.6}.match-warning-card{border:1px solid rgba(232,169,32,.5);background:rgba(232,169,32,.1);color:#f4d483}.no-match-notice{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04)}
-    .spec-preview-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}.spec-pill{min-width:104px;padding:12px 16px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025))}.spec-pill-val{font-family:var(--body);font-size:20px;font-weight:600;letter-spacing:0;color:var(--text);white-space:nowrap}.spec-pill-lbl{margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-    .toggles-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.feature-select-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));grid-column:span 2}.feature-select-label{color:var(--text);font-size:14px;white-space:nowrap}.feature-select{flex:1;background:#1d2229;border:1px solid rgba(255,255,255,.18);border-radius:4px;color:var(--text);font-size:14px;padding:4px 8px;cursor:pointer}.feature-select:focus{outline:none;border-color:rgba(232,169,32,.6)}.feature-select option{background:#1d2229;color:var(--text)}.feature-select option:checked,.feature-select option:hover{background:#2a2f3a;color:#fff}.toggle-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));color:var(--text);font-size:14px;cursor:pointer}.toggle-check:hover{border-color:rgba(232,169,32,.34);background:rgba(232,169,32,.06)}.toggle-check input[type="checkbox"]{width:16px;height:16px;accent-color:var(--mtm-yellow);flex-shrink:0}.toggle-check.checked{border-color:rgba(232,169,32,.45);background:linear-gradient(180deg,rgba(232,169,32,.13),rgba(232,169,32,.08))}
-    .photo-drop{border:1px dashed rgba(255,255,255,.22);border-radius:4px;padding:24px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025));cursor:pointer}.photo-drop:hover,.photo-drop.drag-over,.photo-drop.has-files{border-color:rgba(232,169,32,.5);background:linear-gradient(180deg,rgba(232,169,32,.11),rgba(255,255,255,.035))}.photo-drop-label{color:var(--muted);font-size:13px;line-height:1.65;pointer-events:none}.photo-drop-label strong{color:var(--text)}#photo-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.photo-thumb{width:76px;height:76px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,.12)}
-    .uc-preview-card.has-content{border-color:rgba(232,169,32,.4);box-shadow:0 18px 48px rgba(232,169,32,.08)}.uc-preview-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.1)}.uc-best-for-list{list-style:none;padding:0;margin:0 0 10px}.uc-best-for-list li{position:relative;padding:4px 0 4px 18px;color:var(--text);font-size:14px}.uc-best-for-list li::before{content:"";position:absolute;left:2px;top:12px;width:8px;height:8px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}.uc-limit-sentence{border-left:2px solid rgba(232,169,32,.3);padding-left:12px;margin-top:8px}
-    #step2{padding:28px 0 8px}
-    .marketing-section{padding:34px 0 22px;background:linear-gradient(180deg,rgba(18,21,26,.98),rgba(12,14,18,.98))}.marketing-grid{display:grid;gap:24px}.marketing-copy{max-width:640px}.marketing-copy h2{margin-bottom:10px}.marketing-copy p{font-size:16px;line-height:1.55;max-width:620px}.marketing-points{display:grid;gap:8px;margin-top:14px;max-width:560px}.marketing-point{position:relative;padding-left:14px;font-size:14px;line-height:1.45;color:#c7ccd1}.marketing-point::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}
-    .preview-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:20px;align-items:stretch}
-    .preview-card{padding:0;overflow:hidden;background:
-      linear-gradient(180deg,rgba(23,27,33,.99),rgba(12,15,19,.995)),
-      linear-gradient(135deg,rgba(232,169,32,.05),transparent 42%);
-      border-color:rgba(255,255,255,.1)}
-    .preview-card:hover{transform:none;border-color:rgba(255,255,255,.1);box-shadow:var(--shadow)}
-    .preview-card.primary-preview,.preview-card.secondary-preview{min-height:100%;height:100%}
-    .preview-frame{padding:24px}
-    .preview-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim)}
-    .preview-status{display:inline-flex;align-items:center;gap:8px;color:var(--mtm-yellow)}
-    .preview-status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mtm-yellow);box-shadow:0 0 12px rgba(232,169,32,.3)}
-    .preview-stack{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:20px;height:100%}
-    /* ── Listing card — brochure layout ── */
-    .listing-card{display:flex;flex-direction:column;min-height:100%;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
-    .listing-card-top{display:grid;grid-template-columns:minmax(0,1.55fr) 240px;height:320px;background:#0a0c10}
-    .listing-image-col{position:relative;overflow:hidden;border-right:1px solid rgba(255,255,255,.07)}
-    .listing-image-col > img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
-    .listing-image-col::after{content:"";position:absolute;inset:auto 0 0 0;height:44%;background:linear-gradient(180deg,transparent 0%,rgba(4,5,7,.85) 100%);pointer-events:none}
-    .dealer-info-inner{position:absolute;bottom:10px;left:12px;z-index:3;display:flex;align-items:center;gap:8px}
-    .dealer-logo-sm{height:52px;width:auto;object-fit:contain;flex-shrink:0}
-    .dealer-contact-sm{display:flex;flex-direction:column;gap:1px}
-    .dealer-name-sm{font-family:'Bebas Neue','Oswald',sans-serif;font-size:17px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:#fff;line-height:1.1;text-shadow:0 1px 3px rgba(0,0,0,.8)}
-    .dealer-phone-sm{font-family:'Bebas Neue','Oswald',sans-serif;font-size:13px;letter-spacing:.04em;color:#c0c4cc;line-height:1.2;text-shadow:0 1px 2px rgba(0,0,0,.7)}
-    .dealer-cta-sm{font-family:var(--body);font-size:9px;color:rgba(255,255,255,.42);line-height:1.3;letter-spacing:.02em}
-    .listing-badges-col{display:flex;flex-direction:column;padding:14px 14px 12px;background:linear-gradient(180deg,#0f1217 0%,#080b0f 100%);position:relative}
-    .listing-badge-tag{position:absolute;top:11px;right:11px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--mtm-yellow);border:1px solid rgba(232,169,32,.36);border-radius:2px;padding:3px 7px;background:rgba(232,169,32,.06)}
-    .machine-title-block{margin-bottom:12px;padding-right:44px}
-    .machine-headline{font-family:var(--cond);font-size:34px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;line-height:.96;color:#f5f5f3}
-    .machine-headline .model-accent{color:var(--mtm-yellow)}
-    .machine-sub-line{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#666660;margin-top:5px}
-    .badge-list{display:flex;flex-direction:column;gap:6px;flex:1}
-    .hl-badge{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:4px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055)}
-    .hl-icon-circle{width:26px;height:26px;border-radius:50%;background:rgba(232,169,32,.1);border:1px solid rgba(232,169,32,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--mtm-yellow)}
-    .hl-text{display:flex;flex-direction:column;gap:1px;min-width:0}
-    .hl-label{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#e0ddd7;line-height:1}
-    .hl-sub{font-family:var(--body);font-size:10px;color:#666660;line-height:1.3}
-    /* ── Spec section (light, 2-col grid) ── */
-    .listing-spec-section{background:#f4f3f0;padding:14px 18px 10px;flex:1}
-    .spec-section-kicker{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#777772;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-    .spec-section-kicker::before{content:"";width:18px;height:1px;background:rgba(0,0,0,.18)}
-    .spec-grid-2col{display:grid;grid-template-columns:1fr 1fr}
-    .spec-2col-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 10px 6px 0;border-bottom:1px solid rgba(0,0,0,.07);font-size:12px;gap:6px}
-    .spec-2col-row:nth-child(2n){padding-left:10px;padding-right:0;border-left:1px solid rgba(0,0,0,.07)}
-    .spec-2col-row span:first-child{color:#555550;font-weight:400}
-    .spec-2col-row span:last-child{font-family:var(--mono);font-size:11px;color:#1a1a1a;font-weight:600;text-align:right;letter-spacing:.03em}
-    /* ── Listing footer bar ── */
-    .listing-footer-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:#181c22;border-top:1px solid rgba(255,255,255,.05);min-height:40px;flex-shrink:0}
-    .footer-dealer-info{font-family:var(--cond);font-size:15px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#e8e4dc}
-    .footer-dealer-phone{color:var(--mtm-yellow)}
-    .footer-cta-text{font-family:var(--body);font-size:10px;color:#666660;letter-spacing:.02em}
-    .spec-sheet{display:grid;gap:10px}
-    .spec-sheet-head{padding:0 0 10px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .spec-sheet-head strong{display:block;font-family:var(--cond);font-size:24px;font-weight:600;letter-spacing:.03em;color:var(--text);text-transform:uppercase}
-    .spec-sheet-head span{display:block;margin-top:4px;font-size:13px;line-height:1.45;color:#c2c7cc}
-    .spec-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;color:#dbe0e4}
-    .spec-row:last-child{border-bottom:none}
-    .spec-row span:first-child{color:#bcc2c8}
-    .spec-row span:last-child{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--text);text-align:right}
-    .spec-footer{padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--dim)}
-    .brand-visual{display:grid;grid-template-rows:minmax(220px,1fr) auto auto;gap:14px;height:100%}
-    .brand-canvas{position:relative;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:
-      radial-gradient(circle at top right,rgba(232,169,32,.1),transparent 24%),
-      linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015)),
-      linear-gradient(135deg,#1d2128 0%,#12151a 100%);
-      overflow:hidden;padding:16px;min-height:220px}
-    .brand-overlay-tag{position:absolute;left:16px;top:16px;z-index:3;padding:7px 10px;border:1px solid rgba(232,169,32,.32);border-radius:999px;background:rgba(10,12,15,.82);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:#f0d68e}
-    .media-stack{position:relative;height:100%;min-height:188px}
-    .media-format-card{position:absolute;overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 34px rgba(0,0,0,.34);background:#0f1217}
-    .media-format-card img{width:100%;height:100%;display:block;object-fit:cover}
-    .media-format-card span{position:absolute;left:10px;bottom:10px;padding:5px 8px;border-radius:999px;background:rgba(8,10,13,.84);border:1px solid rgba(255,255,255,.12);font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#ece6d7}
-    .media-square{width:38%;aspect-ratio:1 / 1;left:0;bottom:2%;z-index:1}
-    .media-square img{object-position:50% 50%}
-    .media-portrait{width:44%;aspect-ratio:4 / 5;left:28%;top:8%;z-index:2}
-    .media-portrait img{object-position:52% 50%}
-    .media-vertical{width:32%;aspect-ratio:9 / 16;right:0;bottom:0;z-index:3}
-    .media-vertical img{object-position:56% 50%}
-    .brand-bar{padding-top:4px;font-size:13px;color:#c6ccd1}
-    .brand-bar strong{font-weight:600;color:var(--text)}
-    .brand-subline{font-size:12px;color:var(--dim)}
-    .process-section{display:none}
-    @media (max-width:1100px){.hero-inner,.marketing-grid,.preview-grid,.preview-layout{grid-template-columns:1fr}.feature-strip-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-stack{grid-template-columns:1fr 1fr;grid-template-rows:none}}
-    @media (max-width:860px){.build-shell{padding:0 18px}.hero-inner{min-height:auto;gap:26px;padding:64px 0 56px;grid-template-columns:1fr}.hero-form-wrap{justify-content:stretch}.hero-form-card{width:100%;padding:32px 32px 30px}.hero-bullets,.feature-strip-grid,.process-grid,.field-row.three,.toggles-grid,.preview-stack{grid-template-columns:1fr}.field-row{grid-template-columns:1fr}.preview-frame{padding:22px}.listing-image-col{min-height:240px}.listing-badges-col{padding:12px}.brand-visual{grid-template-rows:minmax(200px,58vw) auto auto}#step2{padding:22px 0 8px}}
-    @media (max-width:480px){.listing-card-top{grid-template-columns:1fr;height:auto}.spec-grid-2col{grid-template-columns:1fr}.spec-2col-row:nth-child(2n){border-left:none;padding-left:0}}
-    @media (max-width:560px){.site-mark{font-size:17px}.header-link{padding:7px 10px;font-size:10px}.hero-copy h1{font-size:46px}.hero-copy p{font-size:17px}.hero-value-callout{font-size:17px;max-width:100%;padding-left:12px}.hero-form-card,.form-card,.uc-preview-card,.preview-frame{padding:20px}.support-card,.process-card,.preview-card{min-height:auto}.field input[type="text"],.field input[type="number"],.field textarea{min-height:52px;font-size:15px}.btn-generate{font-size:18px;min-height:62px;padding:17px 20px}.secondary-preview h3{font-size:24px}.machine-headline{font-size:26px}.cta-note{font-size:12px}.preview-topline{align-items:flex-start;flex-direction:column}.media-square{width:42%}.media-portrait{width:46%;left:24%}.media-vertical{width:34%}.spec-2col-row:nth-child(2n){border-left:none;padding-left:0}}
+    .build-shell .workspace-card{padding:48px 0 8px}
+    .form-card,.uc-preview-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow-soft)}
+    .step-header-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .step-badge{width:28px;height:28px;border-radius:6px;border:1px solid var(--mtm-yellow);background:var(--mtm-yellow-bg);color:var(--mtm-yellow-deep);font-family:var(--body);font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .step-title,.section-label,.uc-preview-label{font-family:var(--body);font-size:14px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink)}
+    .section-label{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .section-label::after{display:none}
+    .step-title{font-size:15px}
+    #step2{padding:8px 0 8px}
+
+    /* ── Match banner / spec preview ───────────────────────────────────── */
+    .match-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--bg-soft)}
+    .match-banner-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .match-icon{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;border:1px solid var(--line);background:#fff;flex-shrink:0;color:var(--muted)}
+    .match-icon.match-found{color:#1f7a48;border-color:#1f7a48;background:rgba(31,122,72,.08)}
+    .match-icon.match-unknown{color:#c8302a;border-color:#c8302a;background:rgba(200,48,42,.08)}
+    .match-label{font-size:14.5px;font-weight:600;color:var(--ink);word-break:break-word}
+    .match-type{font-size:12.5px;color:var(--muted);margin-top:2px}
+    .match-warning-card{padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px;line-height:1.5;border:1px solid var(--mtm-yellow);background:var(--mtm-yellow-bg);color:#7a5b0d}
+    .no-match-notice{padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px;line-height:1.5;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink-2)}
+    .spec-preview-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+    .spec-pill{min-width:96px;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--bg-soft)}
+    .spec-pill-val{font-family:var(--body);font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
+    .spec-pill-lbl{margin-top:4px;font-family:var(--body);font-size:11px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:500}
+
+    /* ── Feature toggles ──────────────────────────────────────────────── */
+    .toggles-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .feature-select-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);background:#fff;grid-column:span 2}
+    .feature-select-label{color:var(--ink);font-size:13.5px;white-space:nowrap;font-weight:500}
+    .feature-select{flex:1;background:#fff;border:1px solid var(--line-strong);border-radius:var(--radius-sm);color:var(--ink);font-size:13.5px;padding:6px 8px;cursor:pointer;font-family:var(--body)}
+    .feature-select:focus{outline:none;border-color:var(--mtm-yellow);box-shadow:0 0 0 3px var(--mtm-yellow-bg)}
+    .feature-select option{background:#fff;color:var(--ink)}
+    .toggle-check{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13.5px;cursor:pointer;font-weight:500}
+    .toggle-check:hover{border-color:var(--mtm-yellow);background:var(--mtm-yellow-bg)}
+    .toggle-check input[type="checkbox"]{width:16px;height:16px;accent-color:var(--mtm-yellow);flex-shrink:0}
+    .toggle-check.checked{border-color:var(--mtm-yellow);background:var(--mtm-yellow-bg);color:var(--ink)}
+
+    /* ── Use case preview card ────────────────────────────────────────── */
+    .uc-preview-card{padding:18px 20px}
+    .uc-preview-card.has-content{border-color:var(--mtm-yellow);box-shadow:0 4px 16px rgba(241,182,43,.12)}
+    .uc-preview-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+    .uc-preview-machine{font-size:12.5px;color:var(--muted)}
+    .uc-best-for-list{list-style:none;padding:0;margin:0 0 8px}
+    .uc-best-for-list li{position:relative;padding:4px 0 4px 20px;color:var(--ink);font-size:13.5px}
+    .uc-best-for-list li::before{content:"";position:absolute;left:4px;top:11px;width:8px;height:8px;background:var(--mtm-yellow);clip-path:polygon(0 50%,50% 0,100% 50%,50% 100%)}
+    .uc-att-sentence,.uc-no-match{font-size:13px;color:var(--ink-2);margin:6px 0}
+    .uc-limit-sentence{border-left:3px solid var(--mtm-yellow);padding-left:12px;margin-top:8px;font-size:13px;color:var(--ink-2)}
+
+    /* ── Dead/legacy sections (hide) ──────────────────────────────────── */
+    .feature-strip,.marketing-section,.process-section{display:none!important}
+
+    /* ── How MTM Works — DARK band ────────────────────────────────────── */
+    .how-band{background:linear-gradient(180deg,#11151b 0%,#161b23 100%);padding:36px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .how-band .build-shell{padding:0 32px}
+    .how-title{font-family:var(--display);font-size:clamp(40px,4.4vw,56px);font-weight:400;color:#fff;text-align:center;margin:0 0 52px;letter-spacing:.02em;text-transform:uppercase;line-height:1.0}
+    .how-grid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr;gap:8px;align-items:start;justify-items:center;max-width:1100px;margin:0 auto}
+    .how-step{text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px}
+    .how-step .num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--mtm-yellow);color:#0f1115;font-size:14px;font-weight:700;align-items:center;justify-content:center}
+    .how-step .ic{width:42px;height:42px;color:var(--mtm-yellow);display:inline-flex;align-items:center;justify-content:center}
+    .how-step .ic svg{width:32px;height:32px}
+    .how-step h3{font-family:var(--body);font-size:14px;font-weight:600;color:#fff;margin:2px 0 0;text-transform:none;letter-spacing:0}
+    .how-step p{font-size:12.5px;color:#a8b0bd;margin:0;line-height:1.4}
+    .how-chev{font-size:24px;color:#3a4250;align-self:center;margin-top:34px;font-weight:300;line-height:1}
+
+    /* ── Output preview section ───────────────────────────────────────── */
+    .output-section{padding:36px 0 8px;background:#fff}
+    .output-section-head{max-width:var(--max);margin:0 auto 16px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .output-section-head .label{font-family:var(--display);font-size:clamp(40px,4.4vw,56px);font-weight:400;line-height:1.0;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+    .output-section-head .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-pill);font-size:11.5px;font-weight:600}
+    .output-grid{display:grid;grid-template-columns:40fr 30fr 30fr;gap:18px;align-items:stretch}
+    .output-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-soft);display:flex;flex-direction:column}
+    .output-card-head{display:flex;flex-direction:column;gap:2px;padding:16px 20px 12px}
+    .output-card-head .label{font-size:15.5px;font-weight:700;color:var(--ink);line-height:1.2}
+    .output-card-head .sub{font-size:12.5px;color:var(--muted);line-height:1.35}
+    .badge-soft{background:var(--mtm-yellow-bg);color:var(--mtm-yellow-deep);border:1px solid rgba(241,182,43,.3)}
+    .badge-blue{background:#eef4ff;color:#2459bd;border:1px solid #d4e1f7}
+
+    /* Actual output preview cards */
+    .demo-media{padding:0 16px 18px;display:flex;flex-direction:column;flex:1}
+    .demo-media .frame{border-radius:var(--radius-sm);overflow:hidden;background:#111;border:1px solid var(--line);flex:1;display:flex;align-items:center;justify-content:center}
+    .demo-media .frame img{width:100%;height:100%;max-height:380px;object-fit:contain;display:block}
+    .demo-media.spec .frame{background:#fff;padding:0;align-items:flex-start;justify-content:flex-start;height:360px;max-height:360px;overflow:hidden;position:relative}
+    .demo-media.spec .frame img{width:100%;height:auto;max-height:none;object-fit:contain;display:block;transform:scale(1.04);transform-origin:top left}
+    .demo-media.spec .sample-link{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--mtm-yellow-deep);text-decoration:none;border-bottom:1px solid rgba(241,182,43,.4);padding-bottom:1px;align-self:flex-start}
+    .demo-media.spec .sample-link:hover{color:var(--ink);border-bottom-color:var(--ink)}
+
+    /* Package includes card */
+    .pkg-rows{padding:6px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
+    .pkg-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff}
+    .ft{display:inline-flex;align-items:center;justify-content:center;width:50px;height:36px;border-radius:6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
+    .ft-txt{background:#fde7c4;color:#a3590a}
+    .ft-png{background:#fde7c4;color:#a3590a}
+    .ft-jpg{background:#fde7c4;color:#a3590a}
+    .ft-zip{background:#0f1115;color:#fff}
+    .pkg-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+    .pkg-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
+    .pkg-desc{font-size:12.5px;color:var(--muted);line-height:1.4;font-weight:400}
+
+    /* ── Trust band — DARK ─────────────────────────────────────────────── */
+    .trust-band{background:linear-gradient(180deg,#11151b 0%,#161b23 100%);padding:24px 0}
+    .trust-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;max-width:1100px;margin:0 auto;padding:0 32px}
+    .trust-item{display:flex;align-items:center;gap:12px;color:#fff}
+    .trust-ico{width:36px;height:36px;color:var(--mtm-yellow);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .trust-ico svg{width:28px;height:28px}
+    .trust-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+    .trust-name{font-size:14.5px;font-weight:700;color:var(--mtm-yellow);line-height:1.2}
+    .trust-sub{font-size:12.5px;color:#cbd0d9;line-height:1.3}
+
+    /* ── CTA band ──────────────────────────────────────────────────────── */
+    .cta-band{padding:22px 0 32px;background:#fff}
+    .cta-card{display:flex;align-items:center;gap:20px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;box-shadow:var(--shadow-soft);max-width:var(--max);margin:0 auto}
+    .cta-icon{width:42px;height:42px;border-radius:50%;background:var(--mtm-yellow-bg);color:var(--mtm-yellow-deep);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .cta-copy{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+    .cta-title{font-size:17px;font-weight:700;color:var(--ink);line-height:1.2}
+    .cta-sub{font-size:13px;color:var(--muted);line-height:1.4}
+    .cta-btn-yellow{display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#0f1115;background:var(--mtm-yellow);border:1px solid var(--mtm-yellow);border-radius:var(--radius-sm);padding:11px 20px;text-decoration:none;flex-shrink:0;box-shadow:0 1px 2px rgba(15,17,21,.06)}
+    .cta-btn-yellow:hover{background:var(--mtm-yellow-deep);border-color:var(--mtm-yellow-deep)}
+    .cta-link{font-size:14px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px;flex-shrink:0;cursor:pointer;background:none;border:none;font-family:var(--body);padding:0}
+    .cta-link:hover{color:var(--mtm-yellow-deep)}
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    .site-footer{background:#fff;border-top:1px solid var(--line);padding:22px 0;font-family:var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .footer-shell{display:flex;align-items:center;justify-content:space-between;gap:32px;max-width:var(--max);margin:0 auto;padding:0 32px;flex-wrap:wrap}
+    .footer-left{display:flex;align-items:center;gap:24px}
+    .footer-left img{height:28px;width:auto;display:block}
+    .footer-tag{font-family:var(--body);font-weight:500;font-size:12px;color:var(--muted);line-height:1.45;text-transform:uppercase;letter-spacing:.08em}
+    .footer-nav{display:flex;align-items:center;gap:32px}
+    .footer-nav .nl{font-family:var(--body);font-weight:500;font-size:12px;color:var(--ink-2);text-decoration:none;text-transform:uppercase;letter-spacing:.08em}
+    .footer-nav .nl.muted{color:var(--ink-2);cursor:default;opacity:.85}
+    .footer-nav .nl:hover{color:var(--mtm-yellow-deep)}
+    .footer-copy{font-family:var(--body);font-weight:500;font-size:12px;color:var(--muted);line-height:1.45;text-align:right;text-transform:uppercase;letter-spacing:.08em}
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width:1100px){
+      .hero-inner{grid-template-columns:1fr;gap:32px}
+      .output-grid{grid-template-columns:1fr}
+      .output-section-head{padding:0 20px}
+      .how-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+      .how-chev{display:none}
+      .trust-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+      .preview-body{grid-template-columns:1fr}
+      .intake-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:860px){
+      .build-shell,.how-band .build-shell{padding:0 20px}
+      header .header-inner,.footer-shell,.trust-grid{padding:0 20px}
+      .hero{padding:40px 0 36px}
+      .hero-copy h1{font-size:42px}
+      .hero-form-card{padding:22px}
+      .photos-row{grid-template-columns:1fr}
+      header .site-nav{gap:14px}
+      header .nav-link.muted{display:none}
+      .footer-shell{flex-direction:column;align-items:flex-start;gap:14px}
+      .footer-copy{text-align:left}
+      .cta-card{flex-wrap:wrap}
+      .cta-btn-yellow,.cta-link{flex-shrink:1}
+    }
+    @media (max-width:560px){
+      header .nav-link{display:none}
+      header .nav-cta{padding:8px 14px;font-size:13px}
+      .intake-fields{grid-template-columns:1fr 1fr}
+      .toggles-grid{grid-template-columns:1fr}
+      .field-row,.field-row.three{grid-template-columns:1fr}
+      .how-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .trust-grid{grid-template-columns:1fr}
+      .spec-chips{grid-template-columns:1fr 1fr}
+    }
   </style>
 </head>
 <body>
 <header>
-  <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;max-width:1240px;margin:0 auto;padding:0 28px;height:62px;">
+  <div class="header-inner">
     <a href="/" class="logo">
-      <img src="/static/assets/logo_mtm.webp" alt="Machine to Market" />
+      <img src="/static/assets/logo_mtm.png?v=2" alt="Machine to Market" />
     </a>
-    <a href="/fix-listing" class="header-link">Fix My Listing</a>
+    <nav class="site-nav" aria-label="Primary">
+      <span class="nav-link muted">Examples</span>
+      <span class="nav-link muted">Resources</span>
+      <span class="nav-link muted">About</span>
+      <a href="/fix-listing" class="nav-link">Fix Listing</a>
+      <a href="#step1-card" class="nav-cta">Start Listing</a>
+    </nav>
   </div>
 </header>
 <main class="build-page">
   <form id="build-form" novalidate>
     <section class="hero">
-      <div class="hero-media"><video autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/static/build-listing-hero.mp4" type="video/mp4"></video></div>
-      <div class="hero-overlay"></div>
       <div class="build-shell hero-inner">
         <div class="hero-copy">
-          <div class="eyebrow">Dealer Build Workflow</div>
-          <h1>Build. Download. Post.</h1>
-          <p>Turn basic machine details into a complete, dealer-ready listing package — no formatting, no guesswork.</p>
-          <div class="hero-bullets">
-            <div class="hero-bullet">Post-ready listing copy for every channel</div><div class="hero-bullet">Photos sized for every platform</div><div class="hero-bullet">Clean spec sheets for buyer review</div><div class="hero-bullet">Build once — post everywhere</div>
+          <span class="launch-pill">For Equipment Dealers &amp; Sellers</span>
+          <h1>Build Listings<br>That Sell <span class="accent">Faster.</span></h1>
+          <p class="hero-sub">Enter year, make, and model &mdash; MTM builds your listing package in minutes.</p>
+          <div class="trust-pills">
+            <span class="trust-pill"><span class="check">&#10003;</span>Registry-Backed Specs</span>
+            <span class="trust-pill"><span class="check">&#10003;</span>Buyer-Ready Spec Sheets</span>
+            <span class="trust-pill"><span class="check">&#10003;</span>Branded Image Packs</span>
           </div>
+          <p class="no-match-copy">If your machine isn't in our registry yet, MTM still builds clean copy from the details you provide — with a clear summary of what was confirmed and what to double-check before you post.</p>
         </div>
         <div class="hero-form-wrap">
           <div class="hero-form-card" id="step1-card">
-            <div class="card-kicker">Start the Package</div>
+            <span class="card-kicker">Start the package</span>
             <h2>Machine Intake</h2>
-            <p>Load machine details first. We’ll pull the right spec context and open the full build workspace below.</p>
+            <p class="intake-sub">Load machine details first. We&rsquo;ll pull the right spec context and open the full build workspace below.</p>
             <div id="step1-edit">
-              <div class="field-row three">
+              <div class="step-label-row"><span class="step-label">Step 1 &mdash; Machine details</span></div>
+              <div class="intake-fields">
                 <div class="field"><label for="s1-year">Year <span class="req">*</span></label><input type="number" id="s1-year" placeholder="2019" min="1970" max="2030"></div>
                 <div class="field"><label for="s1-make">Make <span class="req">*</span></label><input type="text" id="s1-make" placeholder="Bobcat"></div>
                 <div class="field"><label for="s1-model">Model <span class="req">*</span></label><input type="text" id="s1-model" placeholder="T770"></div>
+                <div class="field field-price"><label for="s1-price">Asking Price <span class="opt">Optional</span></label><input type="text" id="s1-price" placeholder="$49,500" inputmode="numeric"></div>
               </div>
-              <div class="field-row single"><div class="field"><label for="s1-price">Asking Price <span style="font-weight:400;color:var(--dim);font-size:11px;">Optional</span></label><input type="text" id="s1-price" placeholder="$49,500" inputmode="numeric"></div></div>
-              <div class="submit-row"><div class="cta-wrap"><button type="button" id="identify-btn" class="btn-generate">Build My Listing</button><div class="hero-value-callout"><span>Stop pulling your top reps off real deals.</span><span>Enter Year, Make, Model — everything else is handled.</span></div><div class="cta-note">No login required. Start building immediately.</div><a href="#homepage-example" class="btn-change" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">See Example</a></div><span class="status-msg hidden" id="step1-status"></span></div>
+              <div class="submit-row">
+                <div class="cta-wrap">
+                  <button type="button" id="identify-btn" class="btn-generate">Build My Listing</button>
+                </div>
+                <span class="status-msg hidden" id="step1-status"></span>
+              </div>
+              <div class="intake-pitch">
+                <p>Stop pulling your top reps off real deals.<br>Enter Year, Make, Model &mdash; everything else is handled.</p>
+              </div>
+              <div class="intake-foot">
+                <p class="foot-note">Start building immediately.</p>
+              </div>
             </div>
-            <div id="step1-done" class="hidden"><div class="match-banner"><div class="match-banner-left"><span class="match-icon" id="match-icon"></span><div><div class="match-label" id="match-label"></div><div class="match-type" id="match-type"></div></div></div><button type="button" id="change-btn" class="btn-change">Change Machine</button></div></div>
+            <div id="step1-done" class="hidden">
+              <div class="match-banner">
+                <div class="match-banner-left">
+                  <span class="match-icon" id="match-icon"></span>
+                  <div>
+                    <div class="match-label" id="match-label"></div>
+                    <div class="match-type" id="match-type"></div>
+                  </div>
+                </div>
+                <button type="button" id="change-btn" class="btn-change">Change Machine</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
-    <section class="feature-strip"><div class="build-shell"><div class="feature-strip-grid"><article class="support-card"><div class="support-index">01</div><h3>Listing Copy</h3><p>Dealer-ready text built for marketplace posts, inventory pages, and fast handoff to sales teams.</p></article><article class="support-card"><div class="support-index">02</div><h3>Spec Sheet</h3><p>Clean machine details organized into a pack that feels ready to send without extra formatting.</p></article><article class="support-card"><div class="support-index">03</div><h3>Image Pack</h3><p>Prepared image outputs designed to move across channels without another design pass.</p></article><article class="support-card"><div class="support-index">04</div><h3>Walkaround Video</h3><p>Video output support keeps the listing package feeling complete and ready for modern channels.</p></article><article class="support-card"><div class="support-index">05</div><h3>ZIP Download</h3><p>Everything bundled into one downloadable package that is easy to review, post, and share.</p></article></div></div></section>
+
     <section class="workspace"><div class="build-shell"><div class="workspace-card">
       <div id="step2" class="hidden">
         <div id="match-warning" class="match-warning-card hidden"><strong>Weak registry match</strong> - OEM specs shown may not be exact for this model. Verify before publishing.</div>
-        <div id="no-match-notice" class="no-match-notice hidden">Machine not found in registry - listing will be generated without OEM specs. Fill in the details below and we’ll build the copy from your inputs.</div>
+        <div id="no-match-notice" class="no-match-notice hidden">Machine not found in registry - listing will be generated without OEM specs. Fill in the details below and we'll build the copy from your inputs.</div>
         <div class="form-card hidden" id="spec-preview-card"><div class="section-label">OEM Specs <span style="font-size:10px;opacity:.7;font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400;color:var(--dim);">from registry</span></div><div class="spec-preview-grid" id="spec-preview-grid"></div></div>
         <div class="form-card"><div class="step-header-row" style="margin-bottom:14px;"><span class="step-badge">2</span><div><div class="step-title">Features &amp; Options</div><div class="step-sub" id="features-sub">Check all that apply</div></div></div><div class="toggles-grid" id="features-container"></div></div>
         <div class="form-card"><div class="section-label">Hours &amp; Condition</div><div class="field-row" style="grid-template-columns:160px 1fr 1fr 1fr 1fr 1fr;"><div class="field"><label for="hours">Hours <span class="req">*</span></label><input type="number" id="hours" name="hours" placeholder="1450" min="0"></div><div class="field"><label for="condition_field" id="condition-pct-label">Track Condition</label><select id="condition_field" name="condition_field"><option value="">-- Select --</option><option value="New">New</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="Worn">Worn</option></select></div><div class="field"><label for="condition_grade">Grade</label><select id="condition_grade" name="condition_grade"><option value="">-- Select --</option><option value="Excellent">Excellent</option><option value="Good">Good</option><option value="Fair">Fair</option></select></div><div class="field"><label for="serial_number">Serial Number</label><input type="text" id="serial_number" name="serial_number" placeholder="CAT0259D3XXXXX"></div><div class="field"><label for="stock_number">Stock Number</label><input type="text" id="stock_number" name="stock_number" placeholder="STK-1042"></div><div class="field"><label for="track_percent_remaining">Track % Remaining <span style="font-weight:400;color:var(--dim);font-size:11px;">0–100</span></label><input type="number" id="track_percent_remaining" name="track_percent_remaining" placeholder="85" min="0" max="100"></div></div></div>
         <div class="form-card"><div class="section-label">Attachments</div><div class="field-row" style="grid-template-columns:160px 1fr;"><div class="field"><label for="bucket_size">Bucket Size <span style="font-weight:400;color:var(--dim);font-size:11px;">inches</span></label><input type="number" id="bucket_size" name="bucket_size" placeholder="84" min="0"></div><div class="field"><label for="attachments_included">Attachments Included</label><input type="text" id="attachments_included" name="attachments_included" placeholder="Bucket, pallet forks, grapple"></div></div></div>
-        <div class="form-card"><div class="section-label">Photos</div><div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()"><div class="photo-drop-label"><strong>Click to upload</strong> or drag &amp; drop photos here<br><span style="font-size:11px;">JPG, PNG, WEBP - multiple files supported</span></div></div><div id="photo-preview"></div><div id="photo-count" class="photo-count hidden"></div></div>
+        <div class="form-card">
+          <div class="section-label">Photos</div>
+          <div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()">
+            <div class="photo-drop-label"><strong>Click to upload</strong> or drag &amp; drop photos here<br><span style="font-size:11px;">JPG, PNG, WEBP &middot; First photo becomes the main listing image</span></div>
+          </div>
+          <div id="photo-preview"></div>
+          <div id="photo-count" class="photo-count hidden"></div>
+        </div>
         <div class="form-card" id="dealer-badge-card"></div>
-                <div class="uc-preview-card hidden" id="uc-preview-card"><div class="uc-preview-header"><span class="uc-preview-label">What This Machine Is Best For</span><span class="uc-preview-machine" id="uc-preview-machine"></span></div><div id="uc-preview-body"></div></div>
+        <div class="uc-preview-card hidden" id="uc-preview-card"><div class="uc-preview-header"><span class="uc-preview-label">What This Machine Is Best For</span><span class="uc-preview-machine" id="uc-preview-machine"></span></div><div id="uc-preview-body"></div></div>
         <div class="submit-row"><div><button type="submit" class="btn-generate" id="submit-btn">Next: Review Listing</button><div style="margin-top:7px;font-size:12px;color:var(--dim);">You'll review and refine before posting</div></div><span class="status-msg hidden" id="status-msg"></span></div>
-      </div></div></div></section>
-    <section class="marketing-section" id="homepage-example" style="scroll-margin-top:72px"><div class="build-shell"><div class="marketing-grid"><div class="marketing-copy"><div class="section-kicker">Output Proof</div><h2>Formatted for every channel.</h2><p>Build once, then deliver a full listing, buyer-ready specs, and machine photos already formatted for the places you post.</p><div class="marketing-points"><div class="marketing-point">Full listing presentation with real machine imagery</div><div class="marketing-point">Exact machine specs organized for buyer review</div><div class="marketing-point">Finished media outputs ready for marketplace, website, and social</div></div></div><div class="preview-layout"><article class="preview-card primary-preview"><div class="preview-frame"><div class="preview-topline"><span class="preview-status">Listing Sample</span><span>Primary output</span></div><div class="listing-card"><div class="listing-card-top"><div class="listing-image-col"><img src="/images/299d3/hero.jpg" alt="2024 CAT 299D3 listing preview" /><div class="dealer-info-inner"><img class="dealer-logo-sm" src="/static/assets/yellow_iron_yard_logo.png?v=5" alt="Yellow Iron Yard" /><div class="dealer-contact-sm"><span class="dealer-name-sm">John Smith</span><span class="dealer-phone-sm">555-555-5555</span><span class="dealer-cta-sm">Call or text to schedule</span></div></div></div><div class="listing-badges-col"><span class="listing-badge-tag">LISTING</span><div class="machine-title-block"><div class="machine-headline">CAT <span class="model-accent">299D3</span></div><div class="machine-sub-line">2024 &bull; Compact Track Loader</div></div><div class="badge-list"><div class="hl-badge"><div class="hl-icon-circle">&#9881;</div><div class="hl-text"><span class="hl-label">POWERFUL</span><span class="hl-sub">74.3 HP Engine</span></div></div><div class="hl-badge"><div class="hl-icon-circle">&#8679;</div><div class="hl-text"><span class="hl-label">STRONG LIFT</span><span class="hl-sub">3,480 lb Rated Capacity</span></div></div><div class="hl-badge"><div class="hl-icon-circle">&#8776;</div><div class="hl-text"><span class="hl-label">HIGH FLOW</span><span class="hl-sub">23 GPM Aux Hydraulics</span></div></div><div class="hl-badge"><div class="hl-icon-circle">&#8644;</div><div class="hl-text"><span class="hl-label">2-SPEED</span><span class="hl-sub">8.4 MPH Travel Speed</span></div></div></div></div></div><div class="listing-spec-section"><div class="spec-section-kicker">Core Specs</div><div class="spec-grid-2col"><div class="spec-2col-row"><span>Engine Power</span><span>74.3 HP</span></div><div class="spec-2col-row"><span>Rated Capacity</span><span>3,480 LB</span></div><div class="spec-2col-row"><span>Tipping Load</span><span>9,945 LB</span></div><div class="spec-2col-row"><span>Aux Hydraulic Flow</span><span>23 GPM</span></div><div class="spec-2col-row"><span>Operating Weight</span><span>11,451 LB</span></div><div class="spec-2col-row"><span>Hyd. Pressure</span><span>3,720 PSI</span></div><div class="spec-2col-row"><span>Max Travel Speed</span><span>8.4 MPH</span></div><div class="spec-2col-row"><span>High Flow</span><span>YES</span></div></div></div><div class="listing-footer-bar"><span class="footer-dealer-info">JOHN SMITH &nbsp;<span class="footer-dealer-phone">555-555-5555</span></span><span class="footer-cta-text">Call or text to schedule</span></div></div></div></article><div class="preview-stack"><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Spec Sheet Preview</span><span>Buyer-ready</span></div><h3>Machine Details</h3><div class="spec-sheet"><div class="spec-sheet-head"><strong>Buyer-ready spec summary</strong><span>Clean rows for quick review and fast handoff.</span></div><div class="spec-row"><span>Operating Weight</span><span>11,451 LB</span></div><div class="spec-row"><span>Rated Capacity</span><span>3,480 LB</span></div><div class="spec-row"><span>Tipping Load</span><span>9,945 LB</span></div><div class="spec-row"><span>Engine Power</span><span>74.3 HP</span></div><div class="spec-row"><span>Auxiliary Flow</span><span>23 GPM</span></div><div class="spec-row"><span>Travel Speed</span><span>8.4 MPH</span></div><div class="spec-row"><span>Width</span><span>72.9 IN</span></div><div class="spec-row"><span>Hinge Pin Height</span><span>10.8 FT</span></div><div class="spec-footer">Full spec sheet included</div></div></div></article><article class="preview-card secondary-preview"><div class="preview-frame"><div class="preview-topline"><span>Finished Media Output</span><span>Export-ready</span></div><h3>Finished Media Output</h3><div class="brand-visual"><div class="brand-canvas"><div class="brand-overlay-tag">Dealer Overlay Active</div><div class="media-stack"><div class="media-format-card media-square"><img src="/images/299d3/side.jpg" alt="Square 1:1 crop preview of CAT 299D3" /><span>1:1 Square</span></div><div class="media-format-card media-portrait"><img src="/images/299d3/alt.jpg" alt="Portrait 4:5 crop preview of CAT 299D3" /><span>4:5 Portrait</span></div><div class="media-format-card media-vertical"><img src="/images/299d3/side.jpg" alt="Vertical 9:16 crop preview of CAT 299D3" /><span>9:16 Vertical</span></div></div></div><div class="brand-bar"><strong>Ready for: Marketplace • Website • Social</strong></div><div class="brand-subline">Multiple formats generated automatically</div></div></div></article></div></div></div></div></section>
-    <input type="hidden" name="year" id="h-year"><input type="hidden" name="make" id="h-make"><input type="hidden" name="model" id="h-model"><input type="hidden" name="asking_price" id="h-asking-price"><input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none">
+      </div>
+    </div></div></section>
+
+    <section class="how-band">
+      <div class="build-shell">
+        <h2 class="how-title">How MTM Works</h2>
+        <div class="how-grid">
+          <div class="how-step">
+            <span class="num">1</span>
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h10M7 14h6"/></svg></span>
+            <h3>Enter details</h3>
+            <p>Year, make, model.</p>
+          </div>
+          <div class="how-chev">&rsaquo;</div>
+          <div class="how-step">
+            <span class="num">2</span>
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="4"/></svg></span>
+            <h3>Upload Photos</h3>
+            <p>Add machine photos.</p>
+          </div>
+          <div class="how-chev">&rsaquo;</div>
+          <div class="how-step">
+            <span class="num">3</span>
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span>
+            <h3>Match specs</h3>
+            <p>Matched from registry.</p>
+          </div>
+          <div class="how-chev">&rsaquo;</div>
+          <div class="how-step">
+            <span class="num">4</span>
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6"/></svg></span>
+            <h3>Generate Copy</h3>
+            <p>Dealer-ready listing text.</p>
+          </div>
+          <div class="how-chev">&rsaquo;</div>
+          <div class="how-step">
+            <span class="num">5</span>
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg></span>
+            <h3>Download ZIP</h3>
+            <p>One package, post-ready.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="output-section" id="homepage-example" style="scroll-margin-top:72px">
+      <div class="build-shell">
+        <div class="output-section-head">
+          <span class="label">ACTUAL OUTPUT PREVIEW</span>
+          <span class="badge badge-soft">Real MTM Output</span>
+        </div>
+        <p style="margin:6px 0 14px;padding:0 4px;font-size:13px;color:var(--muted);line-height:1.5;">Everything generated from one machine intake.</p>
+        <div class="output-grid">
+          <article class="output-card">
+            <div class="output-card-head">
+              <span class="label">Featured Listing Image</span>
+              <span class="sub">Ready for marketplace posting</span>
+            </div>
+            <div class="demo-media">
+              <div class="frame">
+                <img src="/static/demo_outputs/demo_01_card.png" alt="MTM hero card — 2021 CAT 299D3 $79,500">
+              </div>
+            </div>
+          </article>
+          <article class="output-card">
+            <div class="output-card-head">
+              <span class="label">Machine Spec Sheet</span>
+              <span class="sub">Clean equipment specs in one page</span>
+            </div>
+            <div class="demo-media spec">
+              <div class="frame">
+                <img src="/static/demo_outputs/demo_02_spec_sheet.png" alt="MTM spec sheet — 2021 CAT 299D3">
+              </div>
+              <a class="sample-link" href="/static/demo_outputs/demo_02_spec_sheet.png" target="_blank" rel="noopener">View full sample &rarr;</a>
+            </div>
+          </article>
+          <article class="output-card">
+            <div class="output-card-head">
+              <span class="label">Full Listing Package</span>
+              <span class="sub">Everything bundled for download</span>
+            </div>
+            <div class="pkg-rows">
+              <div class="pkg-row">
+                <span class="ft ft-txt">TXT</span>
+                <div class="pkg-text"><span class="pkg-name">Listing copy</span><span class="pkg-desc">Paste into any platform</span></div>
+              </div>
+              <div class="pkg-row">
+                <span class="ft ft-png">PNG</span>
+                <div class="pkg-text"><span class="pkg-name">Featured listing image</span><span class="pkg-desc">Dealer logo + contact overlay</span></div>
+              </div>
+              <div class="pkg-row">
+                <span class="ft ft-jpg">JPG</span>
+                <div class="pkg-text"><span class="pkg-name">Spec sheet</span><span class="pkg-desc">Buyer-ready summary</span></div>
+              </div>
+              <div class="pkg-row">
+                <span class="ft ft-jpg">JPG</span>
+                <div class="pkg-text"><span class="pkg-name">Image pack</span><span class="pkg-desc">Formatted for every channel</span></div>
+              </div>
+              <div class="pkg-row">
+                <span class="ft ft-zip">ZIP</span>
+                <div class="pkg-text"><span class="pkg-name">Full bundle</span><span class="pkg-desc">Everything in one download</span></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-band">
+      <div class="trust-grid">
+        <div class="trust-item">
+          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9c-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2l4-4"/></svg></span>
+          <div class="trust-text"><span class="trust-name">Registry-Backed</span><span class="trust-sub">OEM specs from MTM registry</span></div>
+        </div>
+        <div class="trust-item">
+          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <div class="trust-text"><span class="trust-name">Confidence-Based</span><span class="trust-sub">Flags weak matches for review</span></div>
+        </div>
+        <div class="trust-item">
+          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6"/></svg></span>
+          <div class="trust-text"><span class="trust-name">Dealer-Ready</span><span class="trust-sub">Output formatted for posting</span></div>
+        </div>
+        <div class="trust-item">
+          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M16 7H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H7"/></svg></span>
+          <div class="trust-text"><span class="trust-name">No Guesswork</span><span class="trust-sub">Structured. Branded. Post-ready.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="build-shell">
+        <div class="cta-card">
+          <span class="cta-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6l-6 6"/></svg></span>
+          <div class="cta-copy">
+            <span class="cta-title">Start your next listing</span>
+            <span class="cta-sub">Generate dealer-ready listings, spec sheets, and branded images.</span>
+          </div>
+          <a href="#step1-card" class="cta-btn-yellow">Start Listing</a>
+          <a href="/fix-listing" class="cta-link">Fix Listing</a>
+        </div>
+      </div>
+    </section>
+
+    <input type="hidden" name="year" id="h-year">
+    <input type="hidden" name="make" id="h-make">
+    <input type="hidden" name="model" id="h-model">
+    <input type="hidden" name="asking_price" id="h-asking-price">
+    <input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none">
   </form>
 </main>
-<script src="/static/dealer_profile.js?v=2"></script>
+<footer class="site-footer">
+  <div class="footer-shell">
+    <div class="footer-left">
+      <img src="/static/assets/logo_mtm.png?v=2" alt="Machine to Market" />
+      <span class="footer-tag">Built for equipment dealers.</span>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <span class="nl muted">Privacy</span>
+      <span class="nl muted">Terms</span>
+      <a href="/fix-listing" class="nl">Fix Listing</a>
+    </nav>
+    <span class="footer-copy">&copy; 2026 Machine to Market</span>
+  </div>
+</footer>
+<script src="/static/dealer_profile.js?v=5"></script>
 <script src="/static/dealer_badge_renderer.js"></script>
 <script src="/static/imagePackExporter.js"></script>
 <script>
 (function () {
 
-  // â”€â”€ All boolean feature field names (superset of all equipment types) â”€â”€â”€â”€â”€â”€â”€
+  // ── All boolean feature field names (superset of all equipment types) ─────
   const BUILD_DRAFT_KEY = 'mtm_build_listing_draft_v1';
   const ALL_FEATURE_NAMES = [
     'enclosed_cab', 'heat', 'ac', 'high_flow', 'two_speed', 'ride_control',
@@ -237,7 +588,7 @@
     // coupler_type="false" to pass validator — a validation crash on every CTL/SSL submission.
   ];
 
-  // â”€â”€ Element refs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Element refs ──────────────────────────────────────────────────────────
   const form       = document.getElementById('build-form');
   const submitBtn  = document.getElementById('submit-btn');
   const statusMsg  = document.getElementById('status-msg');
@@ -281,7 +632,7 @@
         return;
       }
       if (el.type === 'checkbox') {
-        fields[key] = !!el.checked;
+        fields[key] = el.checked;
         return;
       }
       fields[key] = el.value;
@@ -291,11 +642,9 @@
 
   function applyDraftFields(fields) {
     if (!fields || typeof fields !== 'object') return;
-    form.querySelectorAll('input, textarea, select').forEach(el => {
-      if (!el || !el.type || el.type === 'file') return;
-      const key = el.id || el.name;
-      if (!key || !(key in fields)) return;
-      const value = fields[key];
+    Object.entries(fields).forEach(([key, value]) => {
+      const el = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+      if (!el) return;
       if (el.type === 'radio') {
         el.checked = String(el.value) === String(value);
         return;
@@ -396,7 +745,7 @@
     saveBuildListingDraft();
   }, true);
 
-  // â”€â”€ Step 1: identify machine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Step 1: identify machine ──────────────────────────────────────────────
   identifyBtn.addEventListener('click', async function () {
     const year  = document.getElementById('s1-year').value.trim();
     const make  = document.getElementById('s1-make').value.trim();
@@ -408,7 +757,7 @@
     }
 
     identifyBtn.disabled = true;
-    showStep1Status('<span class="spinner"></span>Looking up machineâ€¦', '');
+    showStep1Status('<span class="spinner"></span>Looking up machine&hellip;', '');
 
     const fd = new FormData();
     fd.append('year', year);
@@ -571,7 +920,7 @@
     }
   }
 
-  // â”€â”€ Change machine â€” go back to step 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Change machine — go back to step 1 ───────────────────────────────────
   changeBtn.addEventListener('click', function () {
     // Invalidate cached machine data immediately so the draft saved below
     // (and any drafts saved from subsequent keystrokes in the s1 fields)
@@ -585,36 +934,115 @@
     document.getElementById('s1-year').focus();
   });
 
-  // â”€â”€ Photo upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  function updatePhotoPreview(files) {
-    photoPreview.innerHTML = '';
-    Array.from(files).slice(0, 12).forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      const img = document.createElement('img');
-      img.className = 'photo-thumb';
-      img.src = URL.createObjectURL(file);
-      photoPreview.appendChild(img);
+  // ── Photo ordering ────────────────────────────────────────────────────────
+  let orderedPhotos = [];
+
+  function addPhotos(fileList) {
+    Array.from(fileList).forEach(function(f) {
+      if (f.type.startsWith('image/')) orderedPhotos.push(f);
     });
-    photoCount.textContent = files.length > 0
-      ? `${files.length} photo${files.length !== 1 ? 's' : ''} selected`
-      : '';
-    photoCount.classList.toggle('hidden', files.length === 0);
+    renderPhotoThumbs();
   }
 
-  photoInput.addEventListener('change', () => updatePhotoPreview(photoInput.files));
+  function renderPhotoThumbs() {
+    photoPreview.innerHTML = '';
+    orderedPhotos.forEach(function(file, idx) {
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-thumb-wrap' + (idx === 0 ? ' is-main' : '');
 
-  photoDrop.addEventListener('dragover',  e => { e.preventDefault(); photoDrop.classList.add('drag-over'); });
-  photoDrop.addEventListener('dragleave', () => photoDrop.classList.remove('drag-over'));
-  photoDrop.addEventListener('drop', e => {
-    e.preventDefault();
-    photoDrop.classList.remove('drag-over');
-    const dt = new DataTransfer();
-    Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
-    photoInput.files = dt.files;
-    updatePhotoPreview(dt.files);
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = file.name;
+      wrap.appendChild(img);
+
+      if (idx === 0) {
+        const badge = document.createElement('div');
+        badge.className = 'photo-main-badge';
+        badge.textContent = 'Main Photo';
+        wrap.appendChild(badge);
+      } else {
+        const setMain = document.createElement('button');
+        setMain.type = 'button';
+        setMain.className = 'photo-set-main-btn';
+        setMain.textContent = 'Set Main';
+        setMain.addEventListener('click', function() {
+          const removed = orderedPhotos.splice(idx, 1);
+          orderedPhotos.unshift(removed[0]);
+          renderPhotoThumbs();
+          saveBuildListingDraft();
+        });
+        wrap.appendChild(setMain);
+      }
+
+      if (orderedPhotos.length > 1) {
+        const controls = document.createElement('div');
+        controls.className = 'photo-thumb-controls';
+        if (idx > 0) {
+          const btnL = document.createElement('button');
+          btnL.type = 'button';
+          btnL.className = 'photo-ctrl-btn';
+          btnL.title = 'Move left';
+          btnL.textContent = '\u2190';
+          btnL.addEventListener('click', function() {
+            const f = orderedPhotos.splice(idx, 1)[0];
+            orderedPhotos.splice(idx - 1, 0, f);
+            renderPhotoThumbs();
+            saveBuildListingDraft();
+          });
+          controls.appendChild(btnL);
+        }
+        if (idx < orderedPhotos.length - 1) {
+          const btnR = document.createElement('button');
+          btnR.type = 'button';
+          btnR.className = 'photo-ctrl-btn';
+          btnR.title = 'Move right';
+          btnR.textContent = '\u2192';
+          btnR.addEventListener('click', function() {
+            const f = orderedPhotos.splice(idx, 1)[0];
+            orderedPhotos.splice(idx + 1, 0, f);
+            renderPhotoThumbs();
+            saveBuildListingDraft();
+          });
+          controls.appendChild(btnR);
+        }
+        wrap.appendChild(controls);
+      }
+
+      const btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.className = 'photo-del-btn';
+      btnDel.title = 'Remove photo';
+      btnDel.textContent = '\u00d7';
+      btnDel.addEventListener('click', function() {
+        orderedPhotos.splice(idx, 1);
+        renderPhotoThumbs();
+        saveBuildListingDraft();
+      });
+      wrap.appendChild(btnDel);
+
+      photoPreview.appendChild(wrap);
+    });
+
+    photoDrop.classList.toggle('has-files', orderedPhotos.length > 0);
+    photoCount.textContent = orderedPhotos.length > 0
+      ? orderedPhotos.length + ' photo' + (orderedPhotos.length !== 1 ? 's' : '') + ' selected \u00b7 First photo is the main listing image'
+      : '';
+    photoCount.classList.toggle('hidden', orderedPhotos.length === 0);
+  }
+
+  photoInput.addEventListener('change', function() {
+    addPhotos(photoInput.files);
   });
 
-  // ── Use-case preview ──────────────────────────────────────────────────────────
+  photoDrop.addEventListener('dragover',  function(e) { e.preventDefault(); photoDrop.classList.add('drag-over'); });
+  photoDrop.addEventListener('dragleave', function()  { photoDrop.classList.remove('drag-over'); });
+  photoDrop.addEventListener('drop', function(e) {
+    e.preventDefault();
+    photoDrop.classList.remove('drag-over');
+    addPhotos(e.dataTransfer.files);
+  });
+
+  // ── Use-case preview ──────────────────────────────────────────────────────
   let ucTimer = null;
 
   function schedulePreview() {
@@ -632,7 +1060,7 @@
     ucCard.classList.remove('hidden');
     ucCard.classList.remove('has-content');
     ucMachine.textContent = '';
-    ucBody.innerHTML = '<div class="uc-spinner-row"><span class="spinner"></span> Analyzingâ€¦</div>';
+    ucBody.innerHTML = '<div class="uc-spinner-row"><span class="spinner"></span> Analyzing&hellip;</div>';
 
     const fd = new FormData();
     fd.append('year',  year);
@@ -692,14 +1120,15 @@
 
     if (!data.spec_found || !data.payload) {
       ucMachine.textContent = data.machine_match || '';
-      ucBody.innerHTML = '<p class="uc-no-match">Model not found â€” listing will be generated without OEM spec sheet.</p>';
+      ucBody.innerHTML = '<p class="uc-no-match">Model not found \u2014 listing will be generated without OEM spec sheet.</p>';
       return;
     }
 
     const { best_for, attachment_sentence, limitation_sentence } = data.payload;
+
     if (!best_for || !best_for.length) {
       ucMachine.textContent = data.machine_match || '';
-      ucBody.innerHTML = '<p class="uc-no-match">Registry match found â€” use case data not available for this model.</p>';
+      ucBody.innerHTML = '<p class="uc-no-match">Registry match found \u2014 use case data not available for this model.</p>';
       return;
     }
 
@@ -716,7 +1145,7 @@
   // Trigger use-case preview when hours is entered
   document.getElementById('hours').addEventListener('blur', schedulePreview);
 
-  // â”€â”€ Form submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Form submit ───────────────────────────────────────────────────────────
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -799,10 +1228,16 @@
 
     submitBtn.disabled = true;
 
-    // Server applies badge overlay — upload raw photos only
-    Array.from(photoInput.files).forEach(function (f) { fd.append('photos', f); });
+    // Submit photos in user-chosen order; main photo (index 0) goes first.
+    // Server applies badge overlay — upload raw photos only.
+    if (orderedPhotos.length > 0) {
+      orderedPhotos.forEach(function(f) { fd.append('photos', f); });
+    } else {
+      // Fallback: if no ordered state (e.g. draft restore edge case), send photoInput.files
+      Array.from(photoInput.files).forEach(function(f) { fd.append('photos', f); });
+    }
 
-    showStatus('<span class="spinner"></span>Generating your listing pack…', '');
+    showStatus('<span class="spinner"></span>Generating your listing pack&hellip;', '');
 
     try {
       const resp = await fetch('/build-listing', { method: 'POST', body: fd });
@@ -827,7 +1262,7 @@
     }
   });
 
-  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Helpers ───────────────────────────────────────────────────────────────
   function showStep1Status(html, type) {
     step1Status.innerHTML  = html;
     step1Status.className  = 'status-msg' + (type ? ' ' + type : '');
@@ -859,4 +1294,3 @@
 </script>
 </body>
 </html>
-

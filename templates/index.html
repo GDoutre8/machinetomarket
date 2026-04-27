@@ -6,7 +6,7 @@
   <title>Fix My Listing (Beta) — Machine-to-Market | Yellow Iron Yard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css" />
   <style>
     /* ── Options bar ──────────────────────────────────────────── */
@@ -201,10 +201,13 @@
     }
     .hero-left h1 {
       margin-bottom: 14px;
-      font-size: clamp(52px, 6.3vw, 88px);
-      line-height: 0.9;
-      letter-spacing: 0.015em;
+      font-family: var(--display);
+      font-size: clamp(72px, 8vw, 120px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
       text-wrap: balance;
+      font-weight: 400;
     }
     .sub {
       max-width: 560px;
@@ -286,7 +289,7 @@
     }
     .panel-header-copy strong {
       display: block;
-      font-family: var(--cond);
+      font-family: var(--body);
       font-size: 26px;
       font-weight: 600;
       letter-spacing: 0.03em;
@@ -441,12 +444,12 @@
       margin-bottom: 4px;
     }
     .supporting-head h2 {
-      font-family: var(--cond);
-      font-size: 36px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
+      font-family: var(--display);
+      font-size: clamp(40px, 4.4vw, 56px);
+      font-weight: 400;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
-      line-height: 0.96;
+      line-height: 1.0;
       color: var(--mtm-black);
     }
     .supporting-head p {
@@ -530,7 +533,7 @@
     .example-card .after-copy strong {
       display: block;
       margin-bottom: 2px;
-      font-family: var(--cond);
+      font-family: var(--body);
       font-size: 19px;
       font-weight: 700;
       letter-spacing: 0.03em;
@@ -573,7 +576,7 @@
     .example-price {
       display: block;
       margin: 2px 0 0;
-      font-family: var(--cond);
+      font-family: var(--body);
       font-size: 24px;
       font-weight: 700;
       letter-spacing: 0.03em;
@@ -628,7 +631,8 @@
     }
     @media (max-width: 500px) {
       .hero-left h1 {
-        font-size: 48px;
+        font-size: 44px;
+        line-height: 1.0;
       }
       .sub {
         font-size: 16px;
@@ -670,7 +674,7 @@
         <img src="/static/assets/logo_mtm.webp" alt="Machine to Market" />
       </a>
       <div class="header-right">
-        <a href="/build-listing" style="font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:var(--mtm-yellow);color:var(--mtm-black);padding:7px 16px;border-radius:3px;text-decoration:none;white-space:nowrap;">Build My Listing →</a>
+        <a href="/build-listing" style="font-family:var(--body);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:var(--mtm-yellow);color:var(--mtm-black);padding:7px 16px;border-radius:3px;text-decoration:none;white-space:nowrap;">Build My Listing →</a>
         <span class="header-badge">Fix My Listing · Beta</span>
       </div>
     </div>
