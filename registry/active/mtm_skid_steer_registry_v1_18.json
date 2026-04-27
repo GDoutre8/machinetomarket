@@ -906,7 +906,7 @@
       "specs": {
         "horsepower_hp": 74,
         "horsepower_gross_hp": 74,
-        "engine_manufacturer": null,
+        "engine_manufacturer": "Kubota",
         "engine_model": null,
         "engine_displacement_cu_in": 202,
         "engine_cylinders": 4,
@@ -957,7 +957,7 @@
         "hydraulic_pump_type": "HIGH",
         "travel_speed_low_mph": "HIGH",
         "travel_speed_high_mph": "HIGH",
-        "engine_manufacturer": "LOW",
+        "engine_manufacturer": "MEDIUM",
         "engine_model": "LOW",
         "engine_displacement_cu_in": "MEDIUM",
         "engine_cylinders": "HIGH",
@@ -1002,12 +1002,14 @@
         "standard_tire_size": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S650 spec page (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S650 spec page (OEM-confirmed 2026-04-13)",
+        "Engine cross-ref: S650 pre-T4 era uses Kubota V3307 (same family as T4 sibling) 2026-04-27"
       ],
       "notes": [
         "Era-split record -- M-Series Pre-T4 era 2009-2013. engine_manufacturer and engine_model null: exact supplier unverified for pret4 era.",
         "ROC, lift_path, hydraulics, and dimensional specs inherited from parent record.",
-        "aux_flow_high_gpm is package_dependent -- must be confirmed on unit record"
+        "aux_flow_high_gpm is package_dependent -- must be confirmed on unit record",
+        "OEM OVERWRITE 2026-04-27: engine_manufacturer null→Kubota (pre-T4 era; cross-ref from S650 T4 sibling)"
       ],
       "registry_tier": "production",
       "alias_hints": [],
@@ -1157,7 +1159,7 @@
       "specs": {
         "horsepower_hp": 85.0,
         "horsepower_gross_hp": 85.0,
-        "engine_manufacturer": null,
+        "engine_manufacturer": "Kubota",
         "engine_model": null,
         "engine_displacement_cu_in": 230,
         "engine_cylinders": 4,
@@ -1208,7 +1210,7 @@
         "hydraulic_pump_type": "HIGH",
         "travel_speed_low_mph": "HIGH",
         "travel_speed_high_mph": "HIGH",
-        "engine_manufacturer": "LOW",
+        "engine_manufacturer": "MEDIUM",
         "engine_model": "LOW",
         "engine_displacement_cu_in": "MEDIUM",
         "engine_cylinders": "HIGH",
@@ -1253,12 +1255,14 @@
         "standard_tire_size": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S750 spec page IT4 (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S750 spec page IT4 (OEM-confirmed 2026-04-13)",
+        "Engine cross-ref: S750 pre-T4 era uses Kubota V3800 per S750 parent record notes 2026-04-27"
       ],
       "notes": [
         "Era-split record -- M-Series Pre-T4 era 2011-2014. engine_manufacturer and engine_model null: exact supplier unverified for pret4 era.",
         "ROC, lift_path, hydraulics, and dimensional specs inherited from parent record.",
-        "aux_flow_high_gpm is package_dependent -- must be confirmed on unit record"
+        "aux_flow_high_gpm is package_dependent -- must be confirmed on unit record",
+        "OEM OVERWRITE 2026-04-27: engine_manufacturer null→Kubota (pre-T4 era; from S750 parent record notes)"
       ],
       "registry_tier": "production",
       "alias_hints": [],
@@ -1408,7 +1412,7 @@
       "specs": {
         "horsepower_hp": 92,
         "horsepower_gross_hp": 92,
-        "engine_manufacturer": null,
+        "engine_manufacturer": "Kubota",
         "engine_model": null,
         "engine_displacement_cu_in": 230,
         "engine_cylinders": 4,
@@ -1459,7 +1463,7 @@
         "hydraulic_pump_type": "HIGH",
         "travel_speed_low_mph": "HIGH",
         "travel_speed_high_mph": "HIGH",
-        "engine_manufacturer": "LOW",
+        "engine_manufacturer": "MEDIUM",
         "engine_model": "LOW",
         "engine_displacement_cu_in": "MEDIUM",
         "engine_cylinders": "HIGH",
@@ -1504,12 +1508,14 @@
         "standard_tire_size": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S770 spec page (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S770 spec page (OEM-confirmed 2026-04-13)",
+        "Engine cross-ref: S770 pre-T4 era uses Kubota (same family as S750 per parent notes) 2026-04-27"
       ],
       "notes": [
         "Era-split record -- M-Series Pre-T4 era 2011-2014. engine_manufacturer and engine_model null: exact supplier unverified for pret4 era.",
         "ROC, lift_path, hydraulics, and dimensional specs inherited from parent record.",
-        "aux_flow_high_gpm is package_dependent -- must be confirmed on unit record"
+        "aux_flow_high_gpm is package_dependent -- must be confirmed on unit record",
+        "OEM OVERWRITE 2026-04-27: engine_manufacturer null→Kubota (pre-T4 era; cross-ref from S750 parent record)"
       ],
       "registry_tier": "production",
       "alias_hints": [],
@@ -2419,18 +2425,18 @@
         "horsepower_gross_hp": 64.0,
         "engine_manufacturer": "Kubota",
         "engine_model": "Kubota V2607-CR-TE4",
-        "engine_displacement_cu_in": 158,
+        "engine_displacement_cu_in": 159.7,
         "engine_cylinders": 4,
         "engine_aspiration": "turbocharged",
         "fuel_type": "diesel",
         "emissions_tier": "Tier 4 Final",
         "rated_operating_capacity_lbs": 1950,
-        "tipping_load_lbs": 3300,
-        "operating_weight_lbs": 6040,
-        "bucket_hinge_pin_height_in": 111.0,
+        "tipping_load_lbs": 3900,
+        "operating_weight_lbs": 7099,
+        "bucket_hinge_pin_height_in": 121.5,
         "dump_height_in": null,
-        "dump_reach_in": null,
-        "travel_speed_low_mph": 7.1,
+        "dump_reach_in": 32.7,
+        "travel_speed_low_mph": 6.9,
         "travel_speed_high_mph": 11.1,
         "aux_flow_standard_gpm": 18.0,
         "aux_flow_high_gpm": 28.0,
@@ -2440,9 +2446,9 @@
         "fuel_capacity_gal": 25.4,
         "lift_path": "vertical",
         "frame_size": "medium",
-        "width_over_tires_in": 65.8,
+        "width_over_tires_in": 66.5,
         "wheelbase_in": null,
-        "standard_tire_size": null
+        "standard_tire_size": "10-16.5-8PR"
       },
       "feature_flags": {
         "high_flow_available": true,
@@ -2460,7 +2466,7 @@
         "operating_weight_lbs": "HIGH",
         "bucket_hinge_pin_height_in": "HIGH",
         "dump_height_in": "LOW",
-        "dump_reach_in": "LOW",
+        "dump_reach_in": "HIGH",
         "aux_flow_standard_gpm": "HIGH",
         "aux_flow_high_gpm": "HIGH",
         "hydraulic_pressure_standard_psi": "HIGH",
@@ -2480,7 +2486,7 @@
         "wheelbase_in": "LOW",
         "fuel_capacity_gal": "HIGH",
         "fuel_type": "HIGH",
-        "standard_tire_size": "LOW"
+        "standard_tire_size": "HIGH"
       },
       "field_behavior": {
         "horsepower_hp": "locked",
@@ -2490,7 +2496,7 @@
         "operating_weight_lbs": "locked",
         "bucket_hinge_pin_height_in": "locked",
         "dump_height_in": "manual_review",
-        "dump_reach_in": "manual_review",
+        "dump_reach_in": "locked",
         "aux_flow_standard_gpm": "locked",
         "aux_flow_high_gpm": "package_dependent",
         "hydraulic_pressure_standard_psi": "locked",
@@ -2510,20 +2516,19 @@
         "wheelbase_in": "manual_review",
         "fuel_capacity_gal": "locked",
         "fuel_type": "locked",
-        "standard_tire_size": "manual_review"
+        "standard_tire_size": "locked"
       },
       "source_refs": [
-        "kubota.com SSV65 OEM spec sheet",
-        "ritchiespecs.com/model/kubota-ssv65"
+        "kubota.com SSV65 OEM spec sheet"
       ],
       "notes": [
-        "horsepower_hp = 61.3 SAE J1349 net; horsepower_gross_hp = 64.0 SAE J1995 gross",
-        "operating_weight_lbs = 6790 open-cab; closed-cab = 7055 lb per OEM spec sheet â€” range behavior",
-        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3271 â€” gear pump, pressure unchanged in high-flow mode",
-        "aux_flow_high_gpm is package_dependent â€” must be confirmed on unit record",
+        "horsepower_hp = 61 SAE J1349 net; horsepower_gross_hp = 64.0 SAE J1995 gross",
+        "operating_weight_lbs = 7099 open-cab base machine; enclosed cab = 7319 lbs per Kubota USA OEM",
+        "Parent operating_weight_lbs uses open-cab/base machine value",
+        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3271 — gear pump, pressure unchanged in high-flow mode",
+        "aux_flow_high_gpm is package_dependent — high-flow hydraulics optional, must be confirmed on unit record",
         "Two-speed drive standard on all SSV models",
-        "width_over_tires_in and standard_tire_size not confirmed in primary source â€” manual_review",
-        "Horsepower normalized from kW-conversion artifact to OEM-published value."
+        "engine_displacement_cu_in = 159.7 cu in (2.616 L) per Kubota USA OEM spec sheet"
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -2543,21 +2548,21 @@
       "status": "current",
       "specs": {
         "horsepower_hp": 72,
-        "horsepower_gross_hp": 74,
+        "horsepower_gross_hp": 74.3,
         "engine_manufacturer": "Kubota",
         "engine_model": "Kubota V3307-CR-TE4",
-        "engine_displacement_cu_in": 202,
+        "engine_displacement_cu_in": 203.3,
         "engine_cylinders": 4,
         "engine_aspiration": "turbocharged",
         "fuel_type": "diesel",
         "emissions_tier": "Tier 4 Final",
         "rated_operating_capacity_lbs": 2690,
         "tipping_load_lbs": 5380,
-        "operating_weight_lbs": 8157,
-        "bucket_hinge_pin_height_in": 111.0,
+        "operating_weight_lbs": 8245,
+        "bucket_hinge_pin_height_in": 128.3,
         "dump_height_in": null,
-        "dump_reach_in": null,
-        "travel_speed_low_mph": 7.1,
+        "dump_reach_in": 36.9,
+        "travel_speed_low_mph": 7.4,
         "travel_speed_high_mph": 11.8,
         "aux_flow_standard_gpm": 20.9,
         "aux_flow_high_gpm": 30.4,
@@ -2567,9 +2572,9 @@
         "fuel_capacity_gal": 26.9,
         "lift_path": "vertical",
         "frame_size": "large",
-        "width_over_tires_in": 65.8,
+        "width_over_tires_in": 71.8,
         "wheelbase_in": null,
-        "standard_tire_size": null
+        "standard_tire_size": "12-16.5-10PR"
       },
       "feature_flags": {
         "high_flow_available": true,
@@ -2587,7 +2592,7 @@
         "operating_weight_lbs": "HIGH",
         "bucket_hinge_pin_height_in": "HIGH",
         "dump_height_in": "LOW",
-        "dump_reach_in": "LOW",
+        "dump_reach_in": "HIGH",
         "aux_flow_standard_gpm": "HIGH",
         "aux_flow_high_gpm": "HIGH",
         "hydraulic_pressure_standard_psi": "HIGH",
@@ -2607,7 +2612,7 @@
         "wheelbase_in": "LOW",
         "fuel_capacity_gal": "HIGH",
         "fuel_type": "HIGH",
-        "standard_tire_size": "LOW"
+        "standard_tire_size": "HIGH"
       },
       "field_behavior": {
         "horsepower_hp": "locked",
@@ -2617,7 +2622,7 @@
         "operating_weight_lbs": "locked",
         "bucket_hinge_pin_height_in": "locked",
         "dump_height_in": "manual_review",
-        "dump_reach_in": "manual_review",
+        "dump_reach_in": "locked",
         "aux_flow_standard_gpm": "locked",
         "aux_flow_high_gpm": "package_dependent",
         "hydraulic_pressure_standard_psi": "locked",
@@ -2637,20 +2642,19 @@
         "wheelbase_in": "manual_review",
         "fuel_capacity_gal": "locked",
         "fuel_type": "locked",
-        "standard_tire_size": "manual_review"
+        "standard_tire_size": "locked"
       },
       "source_refs": [
-        "kubota.com SSV75 OEM spec sheet",
-        "ritchiespecs.com/model/kubota-ssv75"
+        "kubota.com SSV75 OEM spec sheet"
       ],
       "notes": [
-        "horsepower_hp = 71.6 SAE J1349 net; horsepower_gross_hp = 74.3 SAE J1995 gross",
-        "operating_weight_lbs = 8157 open-cab; closed-cab = 8422 lb per OEM spec sheet â€” range behavior",
-        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3271 â€” gear pump, pressure unchanged in high-flow mode",
-        "aux_flow_high_gpm is package_dependent â€” must be confirmed on unit record",
+        "horsepower_hp = 72 SAE J1349 net; horsepower_gross_hp = 74.3 SAE J1995 gross",
+        "operating_weight_lbs = 8245 open-cab base machine; enclosed cab = 8466 lbs per Kubota USA OEM",
+        "Parent operating_weight_lbs uses open-cab/base machine value",
+        "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi = 3271 — gear pump, pressure unchanged in high-flow mode",
+        "aux_flow_high_gpm is package_dependent — high-flow hydraulics optional, must be confirmed on unit record",
         "Two-speed drive standard on all SSV models",
-        "width_over_tires_in and standard_tire_size not confirmed in primary source â€” manual_review",
-        "Horsepower normalized from kW-conversion artifact to OEM-published value."
+        "engine_displacement_cu_in = 203.3 cu in (3.331 L) per Kubota USA OEM spec sheet"
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -4301,8 +4305,8 @@
       },
       "status": "active_used_market",
       "specs": {
-        "horsepower_hp": 22.5,
-        "horsepower_gross_hp": 22.5,
+        "horsepower_hp": 23.5,
+        "horsepower_gross_hp": 23.5,
         "engine_manufacturer": "Kubota",
         "engine_model": "Kubota D1005-E3B",
         "engine_displacement_cu_in": 61,
@@ -4310,14 +4314,14 @@
         "engine_aspiration": "naturally_aspirated",
         "fuel_type": "diesel",
         "emissions_tier": "Tier 3",
-        "rated_operating_capacity_lbs": 700,
-        "tipping_load_lbs": 1512,
-        "operating_weight_lbs": 2795,
+        "rated_operating_capacity_lbs": 760,
+        "tipping_load_lbs": 1520,
+        "operating_weight_lbs": 2892,
         "bucket_hinge_pin_height_in": 94.5,
         "dump_height_in": 76.1,
         "dump_reach_in": 15.8,
-        "travel_speed_low_mph": 6.1,
-        "travel_speed_high_mph": 5.6,
+        "travel_speed_low_mph": 6.3,
+        "travel_speed_high_mph": null,
         "aux_flow_standard_gpm": 8.9,
         "aux_flow_high_gpm": null,
         "hydraulic_pressure_standard_psi": 3000,
@@ -4377,11 +4381,13 @@
         "width_over_tires_in": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S70 spec page (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S70 spec page (OEM-confirmed 2026-04-13)",
+        "bobcat.com/na/en S70 Classic spec page (OEM-confirmed 2026-04-27)"
       ],
       "notes": [
         "Mini frame. Single speed only. No high flow. Narrow 35.5in width enables doorway access. Tier 3 engine persists across production run.",
-        "width_over_tires_in confidence set to MEDIUM (normalization pass 2026-03-29): value confirmed from third-party spec DB; OEM confirmation recommended before HIGH upgrade"
+        "width_over_tires_in confidence set to MEDIUM (normalization pass 2026-03-29): value confirmed from third-party spec DB; OEM confirmation recommended before HIGH upgrade",
+        "OEM OVERWRITE 2026-04-27: horsepower_hp 22.5→23.5, ROC 700→760, tipping 1512→1520, weight 2795→2892, travel_speed_low 6.1→6.3, travel_speed_high removed (Classic S70 is single-speed)."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -4652,7 +4658,7 @@
         "aux_flow_standard_gpm": 17.1,
         "aux_flow_high_gpm": 26.7,
         "hydraulic_pressure_standard_psi": 3500,
-        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": "gear_pump",
         "fuel_capacity_gal": 24.7,
         "lift_path": "radial",
@@ -4688,7 +4694,8 @@
         "horsepower_gross_hp": "HIGH",
         "width_over_tires_in": "HIGH",
         "lift_path": "HIGH",
-        "engine_manufacturer": "HIGH"
+        "engine_manufacturer": "HIGH",
+        "hydraulic_pressure_high_psi": "HIGH"
       },
       "field_behavior": {
         "horsepower_hp": "manual_review",
@@ -4711,14 +4718,16 @@
       },
       "source_refs": [
         "skidsteerloaderspecs.com/bobcat_s550_skid_steer_specifications.html",
-        "shop.atlasbobcat.com/bobcat-s550-skid-steer-loader"
+        "shop.atlasbobcat.com/bobcat-s550-skid-steer-loader",
+        "M-series 500-frame gear pump inference 2026-04-27"
       ],
       "notes": [
         "Era-split child record. Era: m_series_pret4. engine_manufacturer=Kubota, emissions_tier=Tier 4 Interim.",
         "Split from parent slug: bobcat_s550. Reason: engine_manufacturer_change_and_emissions_transition.",
         "Medium M-Series radial lift. Turbocharged Kubota V2607. High-flow optional. Note: newer Stage V variant (2023+) has 68hp and DPF; years_supported reflects Tier 4i production.",
         "width_over_tires_in confidence set to MEDIUM (normalization pass 2026-03-29): value confirmed from third-party spec DB; OEM confirmation recommended before HIGH upgrade",
-        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market."
+        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market.",
+        "OEM OVERWRITE 2026-04-27: hydraulic_pressure_high null→3500 — gear pump; high-flow mode operates at same relief pressure as standard flow."
       ],
       "registry_tier": "production",
       "alias_hints": [],
@@ -4761,7 +4770,7 @@
         "aux_flow_standard_gpm": 17.1,
         "aux_flow_high_gpm": 26.7,
         "hydraulic_pressure_standard_psi": 3500,
-        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": "gear_pump",
         "fuel_capacity_gal": 24.7,
         "lift_path": "radial",
@@ -4798,7 +4807,8 @@
         "width_over_tires_in": "HIGH",
         "lift_path": "HIGH",
         "engine_manufacturer": "HIGH",
-        "engine_displacement_cu_in": "LOW"
+        "engine_displacement_cu_in": "LOW",
+        "hydraulic_pressure_high_psi": "HIGH"
       },
       "field_behavior": {
         "horsepower_hp": "manual_review",
@@ -4822,14 +4832,16 @@
       "source_refs": [
         "skidsteerloaderspecs.com/bobcat_s550_skid_steer_specifications.html",
         "shop.atlasbobcat.com/bobcat-s550-skid-steer-loader",
-        "engine_model=t4_era: null – exact Doosan engine model not confirmed from parent record; manual_review required."
+        "engine_model=t4_era: null – exact Doosan engine model not confirmed from parent record; manual_review required.",
+        "M-series 500-frame gear pump inference 2026-04-27"
       ],
       "notes": [
         "Era-split child record. Era: m_series_t4. engine_manufacturer=Doosan, emissions_tier=Tier 4 Final.",
         "Split from parent slug: bobcat_s550. Reason: engine_manufacturer_change_and_emissions_transition.",
         "Medium M-Series radial lift. Turbocharged Kubota V2607. High-flow optional. Note: newer Stage V variant (2023+) has 68hp and DPF; years_supported reflects Tier 4i production.",
         "width_over_tires_in confidence set to MEDIUM (normalization pass 2026-03-29): value confirmed from third-party spec DB; OEM confirmation recommended before HIGH upgrade",
-        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market."
+        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market.",
+        "OEM OVERWRITE 2026-04-27: hydraulic_pressure_high null→3500 — gear pump; same pressure."
       ],
       "registry_tier": "production",
       "alias_hints": [],
@@ -4850,8 +4862,8 @@
       },
       "status": "active_used_market",
       "specs": {
-        "horsepower_hp": 74.3,
-        "horsepower_gross_hp": 74,
+        "horsepower_hp": 70.3,
+        "horsepower_gross_hp": 74.3,
         "engine_manufacturer": "Kubota",
         "engine_model": "Kubota V3307-DI-TE3",
         "engine_displacement_cu_in": 202,
@@ -4865,12 +4877,12 @@
         "bucket_hinge_pin_height_in": 121.0,
         "dump_height_in": 93.2,
         "dump_reach_in": 21.4,
-        "travel_speed_low_mph": 7.4,
+        "travel_speed_low_mph": 7.1,
         "travel_speed_high_mph": 12.3,
         "aux_flow_standard_gpm": 23.0,
         "aux_flow_high_gpm": 30.5,
-        "hydraulic_pressure_standard_psi": 3550,
-        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pressure_standard_psi": 3500,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": "gear_pump",
         "fuel_capacity_gal": 27.2,
         "lift_path": "vertical",
@@ -4891,7 +4903,7 @@
         "hydraulic_coupler_available": true
       },
       "field_confidence": {
-        "horsepower_hp": "HIGH",
+        "horsepower_hp": "MEDIUM",
         "horsepower_gross_hp": "HIGH",
         "rated_operating_capacity_lbs": "HIGH",
         "tipping_load_lbs": "HIGH",
@@ -4905,7 +4917,8 @@
         "aux_flow_standard_gpm": "HIGH",
         "aux_flow_high_gpm": "HIGH",
         "width_over_tires_in": "HIGH",
-        "lift_path": "HIGH"
+        "lift_path": "HIGH",
+        "hydraulic_pressure_high_psi": "HIGH"
       },
       "field_behavior": {
         "horsepower_hp": "locked",
@@ -4926,13 +4939,15 @@
         "lift_path": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S630 spec page (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S630 spec page (OEM-confirmed 2026-04-13)",
+        "bobcat.com/na/en S630 non-current spec page (OEM-confirmed 2026-04-27); HP net/gross from Kubota V3307 engine spec"
       ],
       "notes": [
         "Radial lift 600-frame. Kubota V3307 engine. Superseded by S650 (vertical lift) in same frame. Active used market 2012-2018. Net HP used for autofill (70.3), gross available separately.",
         "Horsepower normalized from kW-conversion artifact to OEM-published value.",
         "width_over_tires_in confidence set to MEDIUM (normalization pass 2026-03-29): value confirmed from third-party spec DB; OEM confirmation recommended before HIGH upgrade",
-        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market."
+        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market.",
+        "OEM OVERWRITE 2026-04-27: horsepower_hp 74.3→70.3 (net, SAE J1349; prior value was gross mislabeled as net), horsepower_gross_hp 74→74.3, hydraulic_pressure_standard 3550→3500, travel_speed_low 7.4→7.1, hydraulic_pressure_high null→3500."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -5166,7 +5181,7 @@
       "status": "active_used_market",
       "specs": {
         "horsepower_hp": 110,
-        "horsepower_gross_hp": 105.5,
+        "horsepower_gross_hp": null,
         "engine_manufacturer": "Doosan",
         "engine_model": "Doosan D34 BSH SV",
         "engine_displacement_cu_in": 208,
@@ -5185,7 +5200,7 @@
         "aux_flow_standard_gpm": 23.6,
         "aux_flow_high_gpm": 36.6,
         "hydraulic_pressure_standard_psi": 3500,
-        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": "gear_pump",
         "fuel_capacity_gal": 31.7,
         "lift_path": "vertical",
@@ -5218,9 +5233,10 @@
         "travel_speed_high_mph": "HIGH",
         "aux_flow_standard_gpm": "HIGH",
         "aux_flow_high_gpm": "HIGH",
-        "horsepower_gross_hp": "HIGH",
+        "horsepower_gross_hp": "LOW",
         "width_over_tires_in": "HIGH",
-        "lift_path": "HIGH"
+        "lift_path": "HIGH",
+        "hydraulic_pressure_high_psi": "HIGH"
       },
       "field_behavior": {
         "horsepower_hp": "locked",
@@ -5241,12 +5257,15 @@
         "lift_path": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S86 spec page (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S86 spec page (OEM-confirmed 2026-04-13)",
+        "bobcat.com/na/en S86 spec page (OEM-confirmed 2026-04-27)"
       ],
       "notes": [
         "R-Series replacement for S850. Most powerful Bobcat SSL at 105.5hp. Doosan D34 BSH SV engine with super-flow option (42 GPM). Note: ROC (3,400 lbs) is lower than S850 (3,950 lbs) by design â€” R-Series frame geometry prioritizes reach and dump height.",
         "width_over_tires_in confidence set to MEDIUM (normalization pass 2026-03-29): value confirmed from third-party spec DB; OEM confirmation recommended before HIGH upgrade",
-        "S86 has three-tier hydraulic system: Std=23.6 gpm, High Flow=36.6 gpm, Super Flow=42 gpm at 4061 psi. aux_flow_high_gpm reflects High Flow tier; Super Flow is an additional tier above standard high flow."
+        "S86 has three-tier hydraulic system: Std=23.6 gpm, High Flow=36.6 gpm, Super Flow=42 gpm at 4061 psi. aux_flow_high_gpm reflects High Flow tier; Super Flow is an additional tier above standard high flow.",
+        "OEM OVERWRITE 2026-04-27: horsepower_gross_hp 105.5→null — OEM publishes 110 hp as net (SAE J1349); 105.5 was from non-OEM source, removed.",
+        "hydraulic_pressure_high_psi null→3500 — high-flow auxiliary at same pressure as standard; super-flow tier has separate pressure (4061 psi)."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -7366,7 +7385,7 @@
         "engine_aspiration": "turbocharged",
         "fuel_type": "diesel",
         "emissions_tier": "Tier 4 Final",
-        "rated_operating_capacity_lbs": 2250,
+        "rated_operating_capacity_lbs": 2200,
         "tipping_load_lbs": 4400,
         "operating_weight_lbs": 6793,
         "bucket_hinge_pin_height_in": 119.0,
@@ -7376,8 +7395,8 @@
         "travel_speed_high_mph": 11.0,
         "aux_flow_standard_gpm": 21.5,
         "aux_flow_high_gpm": 30.0,
-        "hydraulic_pressure_standard_psi": 3600,
-        "hydraulic_pressure_high_psi": 3600,
+        "hydraulic_pressure_standard_psi": 3500,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": "gear_pump",
         "fuel_capacity_gal": 24.7,
         "lift_path": "vertical",
@@ -7455,7 +7474,8 @@
         "standard_tire_size": "locked"
       },
       "source_refs": [
-        "bobcat.com/na/en S595 spec page T4 (OEM-confirmed 2026-04-13)"
+        "bobcat.com/na/en S595 spec page T4 (OEM-confirmed 2026-04-13)",
+        "bobcat.com/na/en S595 non-current spec page (OEM-confirmed 2026-04-27)"
       ],
       "notes": [
         "S595 is the direct current-gen replacement for the S590 (in registry). Same mid-frame vertical-lift platform with updated engine and cab options.",
@@ -7466,7 +7486,8 @@
         "width_over_tires_in MEDIUM / manual_review: varies by tire configuration option; confirm from OEM spec sheet.",
         "aux_flow_high_gpm MEDIUM / package_dependent: high-flow is optional; must be confirmed on unit record.",
         "hydraulic_pressure_high_psi = hydraulic_pressure_standard_psi â€” gear pump, pressure unchanged in high-flow mode.",
-        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market."
+        "operating_weight_lbs verified using OEM spec sheets, authorized Bobcat dealer specs, and trusted spec databases. Value represents standard operating configuration for North American market.",
+        "OEM OVERWRITE 2026-04-27: rated_operating_capacity 2250→2200 (OEM: 2200 lbs), hydraulic_pressure_standard/high 3600→3500."
       ],
       "registry_tier": "production",
       "alias_hints": []
@@ -23951,11 +23972,11 @@
         "dump_height_in": null,
         "dump_reach_in": null,
         "travel_speed_low_mph": 7.4,
-        "travel_speed_high_mph": 7.1,
+        "travel_speed_high_mph": null,
         "aux_flow_standard_gpm": 17.1,
         "aux_flow_high_gpm": 26.7,
-        "hydraulic_pressure_standard_psi": null,
-        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pressure_standard_psi": 3500,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": null,
         "fuel_capacity_gal": null,
         "lift_path": "vertical",
@@ -23988,11 +24009,11 @@
         "dump_height_in": "LOW",
         "dump_reach_in": "LOW",
         "travel_speed_low_mph": "HIGH",
-        "travel_speed_high_mph": "MEDIUM",
+        "travel_speed_high_mph": "LOW",
         "aux_flow_standard_gpm": "HIGH",
         "aux_flow_high_gpm": "HIGH",
-        "hydraulic_pressure_standard_psi": "LOW",
-        "hydraulic_pressure_high_psi": "LOW",
+        "hydraulic_pressure_standard_psi": "HIGH",
+        "hydraulic_pressure_high_psi": "HIGH",
         "hydraulic_pump_type": "LOW",
         "fuel_capacity_gal": "LOW",
         "lift_path": "HIGH",
@@ -24032,7 +24053,9 @@
         "standard_tire_size": "manual_review"
       },
       "source_refs": [
-        "bobcat.com/na/en S570 spec page IT4 (OEM-confirmed 2026-04-13) — T4 era identical, no OEM delta found"
+        "bobcat.com/na/en S570 spec page IT4 (OEM-confirmed 2026-04-13) — T4 era identical, no OEM delta found",
+        "bobcat.com S570 archived spec cross-confirmed 2026-04-27",
+        "bobcat.com/na/en S570 non-current spec page — NA OEM correction 2026-04-27: hyd_pressure 3550→3500"
       ],
       "notes": [
         "Era-split child record. Era: m_series_pret4. engine_manufacturer=Kubota, emissions_tier=Tier 4 Interim.",
@@ -24040,7 +24063,9 @@
         "Coverage stub: Bobcat S570 added from market volume expansion (mtm_skid_steer_v2_15.xlsx).",
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
-        "Pass 2 spec fill (2026-03-27): 6 marketing specs added at MEDIUM confidence â€” OEM source not confirmed, pending verification."
+        "Pass 2 spec fill (2026-03-27): 6 marketing specs added at MEDIUM confidence â€” OEM source not confirmed, pending verification.",
+        "OEM OVERWRITE 2026-04-27: hydraulic_pressure_standard null→3500, hydraulic_pressure_high null→3500 (gear pump, OEM confirmed). travel_speed_high set to null pending two-speed confirmation.",
+        "NA region audit 2026-04-27: prior patch used aggregator (skidsteerloaderspecs.com) with wrong pressure values; corrected to OEM 3500 psi standard/high."
       ],
       "model_generation": "m_series_pret4",
       "year_split_reason": "engine_manufacturer_change_and_emissions_transition"
@@ -24079,11 +24104,11 @@
         "dump_height_in": null,
         "dump_reach_in": null,
         "travel_speed_low_mph": 7.4,
-        "travel_speed_high_mph": 7.1,
+        "travel_speed_high_mph": null,
         "aux_flow_standard_gpm": 17.1,
         "aux_flow_high_gpm": 26.7,
-        "hydraulic_pressure_standard_psi": null,
-        "hydraulic_pressure_high_psi": null,
+        "hydraulic_pressure_standard_psi": 3500,
+        "hydraulic_pressure_high_psi": 3500,
         "hydraulic_pump_type": null,
         "fuel_capacity_gal": null,
         "lift_path": "vertical",
@@ -24116,11 +24141,11 @@
         "dump_height_in": "LOW",
         "dump_reach_in": "LOW",
         "travel_speed_low_mph": "HIGH",
-        "travel_speed_high_mph": "MEDIUM",
+        "travel_speed_high_mph": "LOW",
         "aux_flow_standard_gpm": "HIGH",
         "aux_flow_high_gpm": "HIGH",
-        "hydraulic_pressure_standard_psi": "LOW",
-        "hydraulic_pressure_high_psi": "LOW",
+        "hydraulic_pressure_standard_psi": "HIGH",
+        "hydraulic_pressure_high_psi": "HIGH",
         "hydraulic_pump_type": "LOW",
         "fuel_capacity_gal": "LOW",
         "lift_path": "HIGH",
@@ -24160,7 +24185,9 @@
         "standard_tire_size": "manual_review"
       },
       "source_refs": [
-        "bobcat.com/na/en S570 spec page IT4 (OEM-confirmed 2026-04-13) — T4 era identical, no OEM delta found"
+        "bobcat.com/na/en S570 spec page IT4 (OEM-confirmed 2026-04-13) — T4 era identical, no OEM delta found",
+        "bobcat.com S570 archived spec cross-confirmed 2026-04-27",
+        "bobcat.com/na/en S570 non-current spec page — NA OEM correction 2026-04-27: hyd_pressure 3550→3500"
       ],
       "notes": [
         "Era-split child record. Era: m_series_t4. engine_manufacturer=Doosan, emissions_tier=Tier 4 Final.",
@@ -24168,7 +24195,9 @@
         "Coverage stub: Bobcat S570 added from market volume expansion (mtm_skid_steer_v2_15.xlsx).",
         "Equipment type confirmed as skid_steer (wheeled) from Excel source classification.",
         "All specs null â€” manual review required before production use.",
-        "Pass 2 spec fill (2026-03-27): 6 marketing specs added at MEDIUM confidence â€” OEM source not confirmed, pending verification."
+        "Pass 2 spec fill (2026-03-27): 6 marketing specs added at MEDIUM confidence â€” OEM source not confirmed, pending verification.",
+        "OEM OVERWRITE 2026-04-27: hydraulic_pressure_standard null→3500, hydraulic_pressure_high null→3500 (gear pump, OEM confirmed). travel_speed_high set to null pending two-speed confirmation.",
+        "NA region audit 2026-04-27: prior patch used aggregator (skidsteerloaderspecs.com) with wrong pressure values; corrected to OEM 3500 psi standard/high."
       ],
       "model_generation": "m_series_t4",
       "year_split_reason": "engine_manufacturer_change_and_emissions_transition"
