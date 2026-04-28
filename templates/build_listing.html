@@ -19,7 +19,7 @@
   <meta name="twitter:image" content="https://www.machinetomarket.com/static/assets/brand/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css?v=20260428-0025" />
   <style>
     /* ── Light-theme override for /build-listing ──────────────────────────── */
@@ -247,6 +247,27 @@
     .demo-media:not(.spec) .frame{flex:none;aspect-ratio:4/5;max-height:460px;width:auto;background:#0f1115}
     .demo-media:not(.spec) .frame img{width:100%;height:100%;max-height:none;object-fit:contain;display:block}
 
+    /* ── Output proof (A/B/C/D selector) ───────────────────────────────── */
+    .output-proof{padding:36px 0 32px;background:#fff}
+    .output-proof__head{max-width:var(--max);margin:0 auto;padding:0 32px}
+    .output-proof__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px;align-items:start;max-width:var(--max);margin:0 auto;padding:0 32px}
+    .output-preview{margin:0;display:flex;flex-direction:column;gap:8px}
+    .output-preview__frame{aspect-ratio:4/5;width:100%;background:#0f1115;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-soft)}
+    .output-preview__frame img{width:100%;height:100%;object-fit:contain;display:block}
+    #output-preview-caption{font-family:var(--body);font-size:12px;color:var(--muted);letter-spacing:.04em;margin:0;padding:0 2px}
+    .output-selector{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+    .output-selector__row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
+    .output-selector__row:hover{border-color:#c9ced8}
+    .output-selector__row:focus-visible{outline:2px solid var(--mtm-yellow);outline-offset:2px}
+    .output-selector__row.is-active{border-color:var(--mtm-yellow);background:var(--mtm-yellow-bg);box-shadow:0 4px 16px rgba(234,179,8,.12)}
+    .output-selector__num{font-family:var(--display);font-size:22px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:.02em;flex-shrink:0;min-width:28px}
+    .output-selector__row.is-active .output-selector__num{color:var(--mtm-yellow-deep)}
+    .output-selector__text{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+    .output-selector__title{font-family:var(--body);font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
+    .output-selector__desc{font-family:var(--body);font-size:12.5px;color:var(--muted);line-height:1.3}
+    .output-selector__arrow{font-size:22px;color:#9aa1ad;line-height:1;flex-shrink:0}
+    .output-selector__row.is-active .output-selector__arrow{color:var(--mtm-yellow-deep)}
+
     /* ── Trust band — DARK ─────────────────────────────────────────────── */
     .trust-band{background:linear-gradient(180deg,#11151b 0%,#161b23 100%);padding:24px 0}
     .trust-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;max-width:1100px;margin:0 auto;padding:0 32px}
@@ -285,6 +306,8 @@
     @media (max-width:1100px){
       .hero-inner{grid-template-columns:1fr;gap:32px}
       .output-grid{grid-template-columns:1fr}
+      .output-proof__grid{grid-template-columns:1fr;padding:0 20px}
+      .output-proof__head{padding:0 20px}
       .output-section-head{padding:0 20px}
       .how-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
       .how-chev{display:none}
@@ -316,81 +339,322 @@
       .trust-grid{grid-template-columns:1fr}
       .spec-chips{grid-template-columns:1fr 1fr}
     }
+
+    /* ═════════════════════════════════════════════════════════════════════════
+       MARKETING HOMEPAGE (Page 1) — Claude Design v2 system
+       Scoped via .mkt-* classes. Coexists with existing build-workspace styles.
+       ═════════════════════════════════════════════════════════════════════════ */
+    .mkt{
+      --paper:#ffffff;--paper-2:#f5f4f0;--paper-3:#ebe9e1;
+      --tone-hero:#F5F4EF;--tone-stats:#FFFFFF;--tone-output:#F1F0EA;
+      --tone-process:#FAF8F2;--tone-why:#F1F0EA;
+      --m-ink:#0d0d0c;--m-ink-2:#1a1a18;
+      --rule:#D7D2C8;--hair:#D7D2C8;
+      --m-text:#0d0d0c;--text-dim:#6e6c63;--text-faint:#9a978c;
+      --m-accent:#FFC600;--good:#1f7a3a;--warn:#c2671a;
+      --m-container:1440px;--pad-x:clamp(20px, 4vw, 56px);
+      font-family:'Barlow',system-ui,sans-serif;color:var(--m-text);
+    }
+    .mkt-container{max-width:var(--m-container);margin:0 auto;padding-left:var(--pad-x);padding-right:var(--pad-x)}
+    .mkt .cond{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;letter-spacing:-0.015em;line-height:.92;text-transform:uppercase}
+    .mkt .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+    .mkt .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:500}
+    .mkt .eyebrow .sw{display:inline-block;width:8px;height:8px;background:var(--m-accent);margin-right:10px;vertical-align:1px}
+
+    /* Topbar */
+    .mkt-topbar{position:relative;z-index:50;background:var(--paper);border-bottom:1px solid var(--rule)}
+    .mkt-topbar-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:24px}
+    .mkt-brand{display:inline-flex;align-items:center;gap:10px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:18px;letter-spacing:.02em;text-transform:uppercase;color:var(--paper);text-decoration:none;padding:5px 10px;border:1px solid #000;background:#000}
+    .mkt-brand .mark{width:28px;height:28px;background:var(--m-ink);color:var(--m-accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Barlow Condensed';font-weight:900;letter-spacing:-0.06em}
+    .mkt-brand img{height:30px;width:auto;display:block}
+    .mkt-nav{display:flex;gap:32px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+    .mkt-nav a, .mkt-nav span{color:var(--m-ink-2);text-decoration:none;cursor:default;padding:4px 0;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
+    .mkt-nav a{cursor:pointer;color:var(--m-ink)}
+    .mkt-nav a:hover{color:var(--m-ink);border-bottom-color:var(--m-accent)}
+    .mkt-topbar-cta{display:flex;gap:10px;align-items:center}
+    @media (max-width:760px){.mkt-nav{display:none}}
+
+    /* Buttons */
+    .mkt .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--m-ink);transition:transform .12s, background .15s, color .15s;text-decoration:none;cursor:pointer}
+    .mkt .btn-primary{background:var(--m-ink);color:var(--paper)}
+    .mkt .btn-primary:hover{background:var(--m-accent);color:var(--m-ink);border-color:var(--m-ink)}
+    .mkt .btn-yellow{background:var(--m-accent);color:var(--m-ink);border-color:var(--m-ink)}
+    .mkt .btn-yellow:hover{background:var(--m-ink);color:var(--m-accent)}
+    .mkt .btn-ghost{background:transparent;color:var(--m-ink);border-color:var(--m-ink)}
+    .mkt .btn-ghost:hover{background:var(--m-ink);color:var(--paper)}
+    .mkt .btn-sm{padding:9px 14px;font-size:12px}
+    .mkt .btn .arrow{display:inline-block;transition:transform .15s}
+    .mkt .btn:hover .arrow{transform:translateX(3px)}
+
+    /* Meta bar */
+    .mkt-meta-bar{border-bottom:1px solid var(--rule);background:var(--paper);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+    .mkt-meta-bar-inner{display:flex;justify-content:space-between;padding:10px 0;color:var(--text-dim);gap:24px;flex-wrap:wrap}
+    .mkt-meta-bar-inner b{color:var(--m-ink);font-weight:700}
+
+    /* Hero */
+    .mkt-hero{padding:44px 0 0;border-bottom:1px solid var(--rule);position:relative;background:var(--tone-hero)}
+    .mkt-hero-grid{display:grid;grid-template-columns:54fr 46fr;gap:56px;align-items:start}
+    @media (max-width:1000px){.mkt-hero-grid{grid-template-columns:1fr;gap:40px}}
+    .mkt-hero-eyebrow{margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--hair)}
+    .mkt-hero h1.headline{font-size:clamp(56px, 8.5vw, 144px);margin:0;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;letter-spacing:-0.025em;line-height:.88;text-transform:uppercase;color:var(--m-ink)}
+    .mkt-hero h1.headline .accent{background:var(--m-accent);padding:0 .08em;display:inline-block}
+    .mkt-hero-sub{font-size:clamp(19px, 1.55vw, 22px);line-height:1.55;color:var(--text-dim);max-width:640px;margin:32px 0 32px}
+    .mkt-hero-sub b{color:var(--m-text);font-weight:600}
+    .mkt-hero-cta{display:flex;flex-wrap:wrap;gap:0;align-items:stretch}
+    .mkt-hero-cta .btn{padding:18px 28px;font-size:15px}
+    .mkt-hero-cta .btn + .btn{border-left:0}
+    .mkt-hero-meta-line{display:flex;flex-wrap:wrap;gap:24px;margin-top:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim)}
+    .mkt-hero-meta-line .item{display:flex;align-items:center;gap:8px}
+    .mkt-hero-meta-line .item::before{content:"";width:6px;height:6px;background:var(--m-accent);display:inline-block}
+
+    /* Hero right: dark intake slab */
+    .mkt-hero-right{display:flex;flex-direction:column;background:#0d0d0c;color:var(--paper);border:1px solid var(--m-ink);position:relative}
+    .mkt-hero-right::before{content:"";position:absolute;top:-1px;left:0;right:0;height:2px;background:var(--m-accent)}
+    .mkt-intake-card{padding:44px 44px 40px;display:flex;flex-direction:column;gap:26px}
+    @media (max-width:600px){.mkt-intake-card{padding:28px 24px}}
+    .mkt-intake-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--m-accent);font-weight:700}
+    .mkt-intake-title{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:clamp(42px, 4.6vw, 60px);letter-spacing:-0.02em;line-height:.92;text-transform:uppercase;color:var(--paper);margin:-6px 0 0}
+    .mkt-intake-desc{font-size:15px;line-height:1.55;color:#9a978c;margin:0;max-width:46ch}
+    .mkt-intake-fields-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px}
+    @media (max-width:600px){.mkt-intake-fields-grid{grid-template-columns:1fr 1fr}}
+    .mkt-ifld{display:flex;flex-direction:column;gap:10px}
+    .mkt-ifld .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--paper);font-weight:700;display:flex;align-items:center;gap:6px}
+    .mkt-ifld .lbl .req{color:var(--m-accent);font-weight:900}
+    .mkt-ifld .lbl .opt{color:#6e6c63;font-weight:500;letter-spacing:.18em}
+    .mkt-ifld input{width:100%;background:#1a1a18;border:1px solid #2a2a27;color:var(--paper);padding:18px 16px;font-family:'Barlow',sans-serif;font-weight:600;font-size:18px;letter-spacing:.01em;outline:0;transition:border-color .12s, background .12s;border-radius:0;min-height:58px}
+    .mkt-ifld input::placeholder{color:#5b5953;font-weight:500}
+    .mkt-ifld input:focus{border-color:var(--m-accent);background:#0d0d0c}
+    .mkt-ifld.full{grid-column:1 / -1}
+    .mkt-build-btn{width:100%;background:var(--m-accent);color:var(--m-ink);border:0;padding:24px 22px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:22px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:background .12s, transform .12s;margin-top:6px;border-radius:0;min-height:72px}
+    .mkt-build-btn:hover{background:#ffd33a}
+    .mkt-build-btn .arrow{transition:transform .12s}
+    .mkt-build-btn:hover .arrow{transform:translateX(4px)}
+    .mkt-intake-callout{background:#161614;border-left:3px solid var(--m-accent);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+    .mkt-intake-callout .l1{font-size:13.5px;line-height:1.45;color:var(--paper);font-weight:600}
+    .mkt-intake-callout .l2{font-size:13.5px;line-height:1.45;color:#c8c5b8;font-weight:400}
+    .mkt-intake-callout .l2 b{color:var(--paper);font-weight:600}
+    .mkt-intake-microline{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6e6c63;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #2a2a27;padding-top:14px;margin-top:-2px;gap:12px;flex-wrap:wrap}
+    .mkt-intake-microline .ok{color:var(--m-accent);font-weight:700;display:inline-flex;align-items:center;gap:6px}
+    .mkt-intake-microline .ok::before{content:"●"}
+    .mkt-match-banner{background:#161614;border:1px solid #2a2a27;border-left:3px solid var(--m-accent);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--paper)}
+    .mkt-match-banner-left{display:flex;align-items:center;gap:12px;flex:1}
+    .mkt-match-banner-left .match-icon{width:24px;height:24px;background:var(--m-accent);color:var(--m-ink);display:inline-flex;align-items:center;justify-content:center;font-weight:900;border-radius:50%}
+    .mkt-match-banner-left .match-label{font-family:'Barlow Condensed';font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:-0.01em;color:var(--paper);line-height:1}
+    .mkt-match-banner-left .match-type{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#9a978c;margin-top:4px}
+    .mkt-btn-change{background:transparent;color:var(--m-accent);border:1px solid var(--m-accent);font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;padding:8px 12px;cursor:pointer}
+    .mkt-btn-change:hover{background:var(--m-accent);color:var(--m-ink)}
+
+    /* Marquee */
+    .mkt-marquee{background:var(--m-accent);color:var(--m-ink);overflow:hidden;border-bottom:1px solid var(--m-ink);padding:14px 0;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:22px;letter-spacing:.02em;text-transform:uppercase;display:flex;white-space:nowrap;border-top:1px solid var(--m-ink)}
+    .mkt-marquee-track{display:flex;gap:40px;animation:mktMarqueeScroll 38s linear infinite;flex-shrink:0;padding-right:40px;align-items:center}
+    .mkt-marquee .dot{display:inline-block;width:8px;height:8px;background:var(--m-ink);border-radius:50%;flex-shrink:0}
+    @keyframes mktMarqueeScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* Stats strip */
+    .mkt-trust{border-bottom:1px solid var(--rule);background:var(--tone-stats)}
+    .mkt-trust-inner{display:grid;grid-template-columns:repeat(4,1fr);align-items:stretch}
+    @media (max-width:760px){.mkt-trust-inner{grid-template-columns:1fr 1fr}}
+    .mkt-trust .item{padding:32px 28px;border-right:1px solid var(--hair);display:flex;flex-direction:column;gap:6px;position:relative}
+    .mkt-trust .item:last-child{border-right:0}
+    .mkt-trust .item .num{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:64px;line-height:.9;letter-spacing:-0.03em;color:var(--m-ink)}
+    .mkt-trust .item .num small{font-size:24px;color:var(--text-dim);font-weight:700;letter-spacing:0;margin-left:2px}
+    .mkt-trust .item .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim)}
+    .mkt-trust .item::before{content:"";position:absolute;top:0;left:0;width:24px;height:3px;background:var(--m-accent)}
+
+    /* Section frame */
+    .mkt-section{padding:120px 0;border-bottom:1px solid var(--rule);position:relative}
+    .mkt-section.tone-output{background:var(--tone-output)}
+    .mkt-section.tone-process{background:var(--tone-process)}
+    .mkt-section.tone-why{background:var(--tone-why)}
+    .mkt-section-head{display:grid;grid-template-columns:200px 1fr 1.2fr;gap:32px;margin-bottom:64px;align-items:start;padding-bottom:24px;border-bottom:1px solid var(--rule)}
+    @media (max-width:1000px){.mkt-section-head{grid-template-columns:1fr;gap:16px}}
+    .mkt-section-head .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);padding-top:8px}
+    .mkt-section-head h2{font-size:clamp(48px, 6.5vw, 96px);margin:0;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:.88;text-transform:uppercase;color:var(--m-ink)}
+    .mkt-section-head .blurb{font-size:17px;line-height:1.55;color:var(--text-dim);max-width:480px;align-self:end}
+    .mkt-section-head .blurb b{color:var(--m-ink);font-weight:600}
+    @media (max-width:1000px){.mkt-section{padding:64px 0}.mkt-section-head{margin-bottom:36px}}
+
+    /* Output proof — mockup look */
+    .mkt-proof-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:0;border:1px solid var(--rule);background:var(--paper)}
+    @media (max-width:1000px){.mkt-proof-grid{grid-template-columns:1fr}}
+    .mkt-proof-left{padding:24px;background:var(--paper-2);display:flex;align-items:center;justify-content:center;min-height:720px;border-right:1px solid var(--rule)}
+    @media (max-width:1000px){.mkt-proof-left{border-right:0;border-bottom:1px solid var(--rule);min-height:0;padding:20px}}
+    .mkt-proof-left .mkt-preview-img{max-width:100%;max-height:680px;width:auto;height:auto;display:block;box-shadow:0 28px 70px rgba(0,0,0,.14), 0 3px 0 var(--m-ink);border:1px solid var(--rule);background:var(--paper)}
+    .mkt-proof-caption{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-top:14px;text-align:center;width:100%}
+    .mkt-proof-right{display:grid;grid-template-rows:1fr 1fr 1fr 1fr;background:var(--paper)}
+    .mkt-pr-row{all:unset;box-sizing:border-box;padding:28px 32px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:22px;cursor:pointer;transition:background .15s;width:100%}
+    .mkt-pr-row:last-child{border-bottom:0}
+    .mkt-pr-row.is-active{background:var(--m-ink);color:var(--paper)}
+    .mkt-pr-row.is-active .mkt-pr-num{color:var(--m-accent)}
+    .mkt-pr-row.is-active .mkt-pr-text .t{color:var(--paper)}
+    .mkt-pr-row.is-active .mkt-pr-text .d{color:#a8a59a}
+    .mkt-pr-row.is-active .mkt-pr-arrow{color:var(--m-accent)}
+    .mkt-pr-row:hover:not(.is-active){background:var(--paper-2)}
+    .mkt-pr-row:focus-visible{outline:2px solid var(--m-accent);outline-offset:-2px}
+    .mkt-pr-num{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:var(--text-dim);min-width:34px}
+    .mkt-pr-text{flex:1;display:flex;flex-direction:column;gap:8px}
+    .mkt-pr-text .t{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;letter-spacing:-0.01em;color:var(--m-ink)}
+    .mkt-pr-text .d{font-size:13px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;text-transform:uppercase}
+    .mkt-pr-arrow{font-family:'Barlow Condensed';font-size:28px;color:var(--text-faint)}
+
+    /* Process (5 steps) */
+    .mkt-process{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--rule)}
+    @media (max-width:1000px){.mkt-process{grid-template-columns:1fr 1fr}}
+    @media (max-width:560px){.mkt-process{grid-template-columns:1fr}}
+    .mkt-step{padding:32px 24px;border-right:1px solid var(--rule);min-height:280px;display:flex;flex-direction:column;justify-content:space-between;background:var(--paper);position:relative}
+    .mkt-step:last-child{border-right:0}
+    .mkt-step.last{background:var(--m-ink);color:var(--paper)}
+    .mkt-step.last .num{color:var(--m-accent)}
+    .mkt-step.last p{color:#9a978c}
+    .mkt-step .num{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;color:var(--text-dim)}
+    .mkt-step h4{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:30px;letter-spacing:-0.015em;line-height:.95;margin:18px 0 10px;text-transform:uppercase}
+    .mkt-step p{font-size:14px;line-height:1.55;color:var(--text-dim);margin:0}
+    .mkt-step .glyph{width:48px;height:48px;border:1.5px solid var(--m-ink);display:flex;align-items:center;justify-content:center;margin:14px 0;color:var(--m-ink)}
+    .mkt-step.last .glyph{border-color:var(--m-accent);color:var(--m-accent)}
+    .mkt-step .timing{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;margin-top:18px;padding-top:12px;border-top:1px dashed var(--hair)}
+    .mkt-step.last .timing{border-top-color:#2a2a27;color:var(--m-accent)}
+
+    /* Differentiators */
+    .mkt-diffs{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--rule)}
+    @media (max-width:900px){.mkt-diffs{grid-template-columns:1fr 1fr}}
+    @media (max-width:560px){.mkt-diffs{grid-template-columns:1fr}}
+    .mkt-diff{padding:36px 28px;border-right:1px solid var(--rule);background:var(--paper);position:relative;min-height:260px;display:flex;flex-direction:column}
+    .mkt-diff:last-child{border-right:0}
+    .mkt-diff .glyph{width:52px;height:52px;background:var(--m-accent);display:flex;align-items:center;justify-content:center;color:var(--m-ink);margin-bottom:24px}
+    .mkt-diff h4{font-family:'Barlow Condensed';font-weight:800;font-size:26px;letter-spacing:-0.015em;line-height:.95;margin:0 0 10px;text-transform:uppercase;color:var(--m-ink)}
+    .mkt-diff p{font-size:14px;line-height:1.55;color:var(--text-dim);margin:0;flex:1}
+    .mkt-diff .num{position:absolute;top:24px;right:24px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.18em;color:var(--text-faint)}
+
+    /* CTA close */
+    .mkt-cta-close{background:var(--m-ink);color:var(--paper);padding:120px 0;text-align:left}
+    .mkt-cta-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end}
+    @media (max-width:900px){.mkt-cta-grid{grid-template-columns:1fr}}
+    @media (max-width:1000px){.mkt-cta-close{padding:64px 0}}
+    .mkt-cta-close h2{font-size:clamp(56px, 9vw, 144px);margin:0;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;letter-spacing:-0.025em;line-height:.86;text-transform:uppercase;color:var(--paper)}
+    .mkt-cta-close h2 .accent{background:var(--m-accent);color:var(--m-ink);padding:0 .12em;display:inline-block}
+    .mkt-cta-close .side{display:flex;flex-direction:column;gap:24px;padding-bottom:8px}
+    .mkt-cta-close .btn-yellow{padding:24px 44px;font-size:19px;letter-spacing:.1em;align-self:flex-start;border-color:var(--m-accent)}
+    .mkt-cta-close .btn-yellow:hover{background:var(--m-ink);color:var(--m-accent);border-color:var(--m-accent)}
+    .mkt-cta-close .trust-line{padding-top:18px;margin-top:6px;border-top:1px solid #2a2a27;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9a978c;line-height:1.8}
+    .mkt-cta-close .trust-line span{color:var(--m-accent);margin-right:6px}
+
+    /* Footer */
+    .mkt-footer{padding:40px 0 32px;border-top:1px solid var(--rule);background:var(--paper);font-family:'Barlow',sans-serif}
+    .mkt-footer .mkt-brand{padding:6px 12px}
+    .mkt-footer .mkt-brand img{height:32px}
+    .mkt-foot-grid{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
+    .mkt-foot-links{display:flex;gap:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);flex-wrap:wrap}
+    .mkt-foot-links a{color:var(--text-dim);text-decoration:none}
+    .mkt-foot-links a:hover{color:var(--m-ink)}
+    .mkt-foot-links .muted{color:var(--text-faint);cursor:default}
+    .mkt-foot-mark{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.2em;color:var(--text-dim)}
+
   </style>
 </head>
-<body>
-<header>
-  <div class="header-inner">
-    <a href="/" class="logo">
+<body class="mkt">
+<header class="mkt-topbar">
+  <div class="mkt-container mkt-topbar-inner">
+    <a href="/" class="mkt-brand">
       <picture>
         <source media="(max-width: 768px)" srcset="/static/assets/brand/wordmark-nav-mobile-350w.png">
         <img src="/static/assets/brand/wordmark-nav-500w.png" alt="Machine to Market" />
       </picture>
     </a>
-    <nav class="site-nav" aria-label="Primary">
-      <span class="nav-link muted">Examples</span>
-      <span class="nav-link muted">Resources</span>
-      <span class="nav-link muted">About</span>
-      <a href="/fix-listing" class="nav-link">Fix Listing</a>
-      <a href="#step1-card" class="nav-cta">Start Listing</a>
+    <nav class="mkt-nav" aria-label="Primary">
+      <a href="#real-output">Output</a>
+      <a href="#process">Process</a>
+      <a href="#why">Why MTM</a>
+      <a href="/fix-listing">Fix Listing</a>
     </nav>
+    <div class="mkt-topbar-cta">
+      <a href="#step1-card" class="btn btn-primary btn-sm">Build My Listing <span class="arrow">&rsaquo;</span></a>
+    </div>
   </div>
 </header>
 <main class="build-page">
   <form id="build-form" novalidate>
-    <section class="hero">
-      <div class="build-shell hero-inner">
-        <div class="hero-copy">
-          <span class="launch-pill">For Equipment Dealers &amp; Sellers</span>
-          <h1>Build Listings<br>That Sell <span class="accent">Faster.</span></h1>
-          <p class="hero-sub">Enter year, make, and model &mdash; MTM builds your listing package in minutes.</p>
-          <div class="trust-pills">
-            <span class="trust-pill"><span class="check">&#10003;</span>Registry-Backed Specs</span>
-            <span class="trust-pill"><span class="check">&#10003;</span>Buyer-Ready Spec Sheets</span>
-            <span class="trust-pill"><span class="check">&#10003;</span>Branded Image Packs</span>
-          </div>
-          <p class="no-match-copy">If your machine isn't in our registry yet, MTM still builds clean copy from the details you provide — with a clear summary of what was confirmed and what to double-check before you post.</p>
-        </div>
-        <div class="hero-form-wrap">
-          <div class="hero-form-card" id="step1-card">
-            <span class="card-kicker">Start the package</span>
-            <h2>Machine Intake</h2>
-            <p class="intake-sub">Load machine details first. We&rsquo;ll pull the right spec context and open the full build workspace below.</p>
-            <div id="step1-edit">
-              <div class="step-label-row"><span class="step-label">Step 1 &mdash; Machine details</span></div>
-              <div class="intake-fields">
-                <div class="field"><label for="s1-year">Year <span class="req">*</span></label><input type="number" id="s1-year" placeholder="2019" min="1970" max="2030"></div>
-                <div class="field"><label for="s1-make">Make <span class="req">*</span></label><input type="text" id="s1-make" placeholder="Bobcat"></div>
-                <div class="field"><label for="s1-model">Model <span class="req">*</span></label><input type="text" id="s1-model" placeholder="T770"></div>
-                <div class="field field-price"><label for="s1-price">Asking Price <span class="opt">Optional</span></label><input type="text" id="s1-price" placeholder="$49,500" inputmode="numeric"></div>
-              </div>
-              <div class="submit-row">
-                <div class="cta-wrap">
-                  <button type="button" id="identify-btn" class="btn-generate">Build My Listing</button>
-                </div>
-                <span class="status-msg hidden" id="step1-status"></span>
-              </div>
-              <div class="intake-pitch">
-                <p>Stop pulling your top reps off real deals.<br>Enter Year, Make, Model &mdash; everything else is handled.</p>
-              </div>
-              <div class="intake-foot">
-                <p class="foot-note">Start building immediately.</p>
-              </div>
+    <div class="mkt-meta-bar">
+      <div class="mkt-container mkt-meta-bar-inner">
+        <span><b>MTM</b> &middot; MACHINE TO MARKET</span>
+        <span>EQUIPMENT LISTING ENGINE</span>
+        <span>BUILT FOR EQUIPMENT SELLERS</span>
+      </div>
+    </div>
+    <section class="mkt-hero">
+      <div class="mkt-container">
+        <div class="mkt-hero-grid">
+          <div>
+            <div class="eyebrow mkt-hero-eyebrow"><span class="sw"></span>FOR EQUIPMENT DEALERS &amp; SELLERS</div>
+            <h1 class="headline">List<br>Better.<br><span class="accent">Sell</span> Faster.</h1>
+            <p class="mkt-hero-sub">Turn machine photos and details into <b>dealer-ready listing copy</b>, <b>OEM-backed spec sheets</b>, and <b>branded image packs</b> in minutes.</p>
+            <div class="mkt-hero-cta">
+              <a href="#step1-card" class="btn btn-yellow">Build My Package <span class="arrow">&rsaquo;</span></a>
+              <a href="#real-output" class="btn btn-ghost">See Real Output</a>
             </div>
-            <div id="step1-done" class="hidden">
-              <div class="match-banner">
-                <div class="match-banner-left">
-                  <span class="match-icon" id="match-icon"></span>
-                  <div>
-                    <div class="match-label" id="match-label"></div>
-                    <div class="match-type" id="match-type"></div>
+            <div class="mkt-hero-meta-line">
+              <div class="item">No login</div>
+              <div class="item">Built for dealers</div>
+              <div class="item">Download instantly</div>
+            </div>
+          </div>
+
+          <div class="mkt-hero-right">
+            <div class="mkt-intake-card" id="step1-card">
+              <div class="mkt-intake-eyebrow">START THE PACKAGE</div>
+              <h2 class="mkt-intake-title">Machine Intake</h2>
+              <p class="mkt-intake-desc intake-sub">Load machine details first. We&rsquo;ll pull the right spec context and open the full build workspace below.</p>
+
+              <div id="step1-edit">
+                <div class="mkt-intake-fields-grid intake-fields">
+                  <div class="mkt-ifld">
+                    <div class="lbl">YEAR <span class="req">*</span></div>
+                    <input type="number" id="s1-year" placeholder="2019" min="1970" max="2030">
+                  </div>
+                  <div class="mkt-ifld">
+                    <div class="lbl">MAKE <span class="req">*</span></div>
+                    <input type="text" id="s1-make" placeholder="Bobcat">
+                  </div>
+                  <div class="mkt-ifld">
+                    <div class="lbl">MODEL <span class="req">*</span></div>
+                    <input type="text" id="s1-model" placeholder="T770">
+                  </div>
+                  <div class="mkt-ifld full">
+                    <div class="lbl">ASKING PRICE <span class="opt">OPTIONAL</span></div>
+                    <input type="text" id="s1-price" placeholder="$49,500" inputmode="numeric">
                   </div>
                 </div>
-                <button type="button" id="change-btn" class="btn-change">Change Machine</button>
+
+                <button type="button" id="identify-btn" class="mkt-build-btn btn-generate">BUILD MY LISTING <span class="arrow">&rsaquo;</span></button>
+
+                <span class="status-msg hidden" id="step1-status"></span>
+
+                <div class="mkt-intake-callout">
+                  <div class="l1">Stop pulling your top reps off real deals.</div>
+                  <div class="l2">Enter <b>Year, Make, Model</b> &mdash; everything else is handled.</div>
+                </div>
+
+                <div class="mkt-intake-microline">
+                  <span class="ok">REGISTRY-BACKED &middot; OEM</span>
+                  <span>~5 MIN BUILD</span>
+                </div>
+              </div>
+
+              <div id="step1-done" class="hidden">
+                <div class="mkt-match-banner match-banner">
+                  <div class="mkt-match-banner-left match-banner-left">
+                    <span class="match-icon" id="match-icon"></span>
+                    <div>
+                      <div class="match-label" id="match-label"></div>
+                      <div class="match-type" id="match-type"></div>
+                    </div>
+                  </div>
+                  <button type="button" id="change-btn" class="mkt-btn-change btn-change">Change Machine</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <div style="height:32px"></div>
       </div>
     </section>
 
@@ -416,114 +680,230 @@
       </div>
     </div></div></section>
 
-    <section class="how-band">
-      <div class="build-shell">
-        <h2 class="how-title">How MTM Works</h2>
-        <div class="how-grid">
-          <div class="how-step">
-            <span class="num">1</span>
-            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h10M7 14h6"/></svg></span>
-            <h3>Enter details</h3>
-            <p>Year, make, model.</p>
+    <div class="mkt-marquee" aria-hidden="true">
+      <div class="mkt-marquee-track">
+        <span>LIST BETTER. SELL FASTER.</span><span class="dot"></span>
+        <span>OEM-BACKED REGISTRY</span><span class="dot"></span>
+        <span>DEALER-READY OUTPUT</span><span class="dot"></span>
+        <span>CONFIDENCE-FLAGGED SPECS</span><span class="dot"></span>
+        <span>MARKETPLACE-FORMATTED</span><span class="dot"></span>
+        <span>NO LOGIN REQUIRED</span><span class="dot"></span>
+        <span>OEM-BACKED SPECS</span><span class="dot"></span>
+        <span>LIST BETTER. SELL FASTER.</span><span class="dot"></span>
+        <span>OEM-BACKED REGISTRY</span><span class="dot"></span>
+        <span>DEALER-READY OUTPUT</span><span class="dot"></span>
+        <span>CONFIDENCE-FLAGGED SPECS</span><span class="dot"></span>
+        <span>MARKETPLACE-FORMATTED</span><span class="dot"></span>
+        <span>NO LOGIN REQUIRED</span><span class="dot"></span>
+        <span>BUILT FOR DEALERS</span><span class="dot"></span>
+      </div>
+    </div>
+
+    <section class="mkt-trust">
+      <div class="mkt-container">
+        <div class="mkt-trust-inner">
+          <div class="item">
+            <div class="num">~5<small>min</small></div>
+            <div class="lbl">From Intake to ZIP</div>
           </div>
-          <div class="how-chev">&rsaquo;</div>
-          <div class="how-step">
-            <span class="num">2</span>
-            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="4"/></svg></span>
-            <h3>Upload Photos</h3>
-            <p>Add machine photos.</p>
+          <div class="item">
+            <div class="num">12<small>files</small></div>
+            <div class="lbl">Per Package</div>
           </div>
-          <div class="how-chev">&rsaquo;</div>
-          <div class="how-step">
-            <span class="num">3</span>
-            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span>
-            <h3>Match specs</h3>
-            <p>Matched from registry.</p>
+          <div class="item">
+            <div class="num">100<small>%</small></div>
+            <div class="lbl">Dealer-Owned Output</div>
           </div>
-          <div class="how-chev">&rsaquo;</div>
-          <div class="how-step">
-            <span class="num">4</span>
-            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6"/></svg></span>
-            <h3>Generate Copy</h3>
-            <p>Dealer-ready listing text.</p>
-          </div>
-          <div class="how-chev">&rsaquo;</div>
-          <div class="how-step">
-            <span class="num">5</span>
-            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg></span>
-            <h3>Download ZIP</h3>
-            <p>One package, post-ready.</p>
+          <div class="item">
+            <div class="num">OEM</div>
+            <div class="lbl">Registry-Verified Specs</div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="output-section" id="homepage-example" style="scroll-margin-top:72px">
-      <div class="build-shell">
-        <div class="output-section-head">
-          <span class="label">ACTUAL OUTPUT PREVIEW</span>
-          <span class="badge badge-soft">Real MTM Output</span>
+    <section class="mkt-section tone-output" id="real-output" style="scroll-margin-top:72px">
+      <div class="mkt-container">
+        <div class="mkt-section-head">
+          <div class="num">// 01 &middot; OUTPUT</div>
+          <h2>Real output.<br>From one intake.</h2>
+          <div class="blurb">Every package ships with <b>posting-ready assets</b>. No retyping, no Canva, no PowerPoint. Pick a file to preview.</div>
         </div>
-        <p style="margin:6px 0 14px;padding:0 4px;font-size:13px;color:var(--muted);line-height:1.5;">Everything generated from one machine intake.</p>
-        <div class="output-grid">
-          <article class="output-card">
-            <div class="output-card-head">
-              <span class="label">Featured Listing Image</span>
-              <span class="sub">Ready for marketplace posting</span>
-            </div>
-            <div class="demo-media">
-              <div class="frame">
-                <img src="/static/demo_outputs/demo_01_card.png?v=20260426-230158" alt="MTM hero card — 2021 CAT 299D3 $79,500">
-              </div>
-            </div>
-          </article>
-          <article class="output-card">
-            <div class="output-card-head">
-              <span class="label">Machine Spec Sheet</span>
-              <span class="sub">Clean equipment specs in one page</span>
-            </div>
-            <div class="demo-media spec">
-              <div class="frame">
-                <img src="/static/demo_outputs/demo_02_spec_sheet.png?v=20260426-230158" alt="MTM spec sheet — 2021 CAT 299D3">
-              </div>
-              <a class="sample-link" href="/static/demo_outputs/demo_02_spec_sheet.png?v=20260426-230158" target="_blank" rel="noopener">View full sample &rarr;</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
 
-    <section class="trust-band">
-      <div class="trust-grid">
-        <div class="trust-item">
-          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9c-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2l4-4"/></svg></span>
-          <div class="trust-text"><span class="trust-name">Registry-Backed</span><span class="trust-sub">OEM specs from MTM registry</span></div>
-        </div>
-        <div class="trust-item">
-          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-          <div class="trust-text"><span class="trust-name">Confidence-Based</span><span class="trust-sub">Flags weak matches for review</span></div>
-        </div>
-        <div class="trust-item">
-          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6"/></svg></span>
-          <div class="trust-text"><span class="trust-name">Dealer-Ready</span><span class="trust-sub">Output formatted for posting</span></div>
-        </div>
-        <div class="trust-item">
-          <span class="trust-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M16 7H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H7"/></svg></span>
-          <div class="trust-text"><span class="trust-name">No Guesswork</span><span class="trust-sub">Structured. Branded. Post-ready.</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta-band">
-      <div class="build-shell">
-        <div class="cta-card">
-          <span class="cta-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6l-6 6"/></svg></span>
-          <div class="cta-copy">
-            <span class="cta-title">Start your next listing</span>
-            <span class="cta-sub">Generate dealer-ready listings, spec sheets, and branded images.</span>
+        <div class="mkt-proof-grid">
+          <div class="mkt-proof-left">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+              <img
+                id="output-preview-img"
+                class="mkt-preview-img"
+                src="/static/demo_outputs/demo_price_tag_card.png"
+                alt="Marketplace Hero Card — 2024 CAT 299D3 price tag listing render"
+              />
+              <div id="output-preview-caption" class="mkt-proof-caption">PNG &middot; 1080&times;1350 &middot; Marketplace-formatted</div>
+            </div>
           </div>
-          <a href="#step1-card" class="cta-btn-yellow">Start Listing</a>
-          <a href="/fix-listing" class="cta-link">Fix Listing</a>
+
+          <div class="mkt-proof-right" data-output-selector role="tablist">
+            <button type="button"
+                    class="mkt-pr-row output-selector__row is-active"
+                    role="tab" aria-selected="true"
+                    data-asset="/static/demo_outputs/demo_price_tag_card.png"
+                    data-asset-alt="Marketplace Hero Card — 2024 CAT 299D3 price tag listing render"
+                    data-caption="PNG · 1080×1350 · Marketplace-formatted">
+              <span class="mkt-pr-num">A.</span>
+              <span class="mkt-pr-text">
+                <span class="t">Marketplace Hero Card</span>
+                <span class="d">PNG &middot; 1080&times;1350</span>
+              </span>
+              <span class="mkt-pr-arrow" aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button type="button"
+                    class="mkt-pr-row output-selector__row"
+                    role="tab" aria-selected="false"
+                    data-asset="/static/demo_outputs/demo_spec_sheet.png"
+                    data-asset-alt="Dealer Spec Sheet — A4 PDF render with OEM-backed specifications"
+                    data-caption="PDF · A4 · OEM-Backed">
+              <span class="mkt-pr-num">B.</span>
+              <span class="mkt-pr-text">
+                <span class="t">Dealer Spec Sheet</span>
+                <span class="d">PDF &middot; A4 &middot; OEM-Backed</span>
+              </span>
+              <span class="mkt-pr-arrow" aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button type="button"
+                    class="mkt-pr-row output-selector__row"
+                    role="tab" aria-selected="false"
+                    data-asset="/static/demo_outputs/demo_image_pack.png"
+                    data-asset-alt="Branded Image Pack — 9 square crops with dealer mark and price"
+                    data-caption="PNG · 9 crops · square">
+              <span class="mkt-pr-num">C.</span>
+              <span class="mkt-pr-text">
+                <span class="t">Branded Image Pack</span>
+                <span class="d">PNG &middot; 9 crops &middot; square</span>
+              </span>
+              <span class="mkt-pr-arrow" aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button type="button"
+                    class="mkt-pr-row output-selector__row"
+                    role="tab" aria-selected="false"
+                    data-asset="/static/demo_outputs/demo_listing_copy.png"
+                    data-asset-alt="Listing Copy — headline, body, and tags formatted for marketplace listings"
+                    data-caption="TXT · Headline + body + tags">
+              <span class="mkt-pr-num">D.</span>
+              <span class="mkt-pr-text">
+                <span class="t">Listing Copy</span>
+                <span class="d">TXT &middot; Headline + body + tags</span>
+              </span>
+              <span class="mkt-pr-arrow" aria-hidden="true">&rsaquo;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mkt-section tone-process" id="process">
+      <div class="mkt-container">
+        <div class="mkt-section-head">
+          <div class="num">// 02 &middot; PROCESS</div>
+          <h2>Five steps.<br>One zip.</h2>
+          <div class="blurb">From raw machine photos to a <b>marketplace-ready package</b>. No formatting, no chasing OEM PDFs, no Canva.</div>
+        </div>
+        <div class="mkt-process">
+          <div class="mkt-step">
+            <div>
+              <div class="num">// 01</div>
+              <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+              <h4>Enter Details</h4>
+              <p>Year, make, model. Registry context loads automatically.</p>
+            </div>
+            <div class="timing">~ 30 SEC</div>
+          </div>
+          <div class="mkt-step">
+            <div>
+              <div class="num">// 02</div>
+              <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <h4>Upload Photos</h4>
+              <p>Drag in machine photos. First becomes the listing hero.</p>
+            </div>
+            <div class="timing">~ 1 MIN</div>
+          </div>
+          <div class="mkt-step">
+            <div>
+              <div class="num">// 03</div>
+              <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l5 5L21 4"/><path d="M3 19h18"/></svg></div>
+              <h4>Verify Specs</h4>
+              <p>OEM specs from registry. Weak matches flagged for review.</p>
+            </div>
+            <div class="timing">~ 10 SEC</div>
+          </div>
+          <div class="mkt-step">
+            <div>
+              <div class="num">// 04</div>
+              <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3h10l4 4v14H5z"/><path d="M9 13h6M9 17h4"/></svg></div>
+              <h4>Generate Copy</h4>
+              <p>Headline, body, hashtags. Dealer voice, posting-ready.</p>
+            </div>
+            <div class="timing">~ 20 SEC</div>
+          </div>
+          <div class="mkt-step last">
+            <div>
+              <div class="num">// 05</div>
+              <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v14"/><path d="M5 12l7 7 7-7"/><path d="M4 21h16"/></svg></div>
+              <h4>Download ZIP</h4>
+              <p>One package. Marketplace-ready. No editing.</p>
+            </div>
+            <div class="timing">~ 5 MIN TOTAL</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mkt-section tone-why" id="why">
+      <div class="mkt-container">
+        <div class="mkt-section-head">
+          <div class="num">// 03 &middot; WHY MTM</div>
+          <h2>Built for<br>equipment sellers.</h2>
+          <div class="blurb">MTM is not a SaaS dashboard or a generic AI tool. It's a <b>listing engine</b> built around the real workflow of equipment dealers, brokers, auction resellers, and independent sellers.</div>
+        </div>
+        <div class="mkt-diffs">
+          <div class="mkt-diff">
+            <div class="num">// 01</div>
+            <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/></svg></div>
+            <h4>OEM-Backed Registry</h4>
+            <p>Specs pulled directly from the MTM OEM registry. No retyping torque numbers from a PDF.</p>
+          </div>
+          <div class="mkt-diff">
+            <div class="num">// 02</div>
+            <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="6"/></svg></div>
+            <h4>Confidence-Flagged</h4>
+            <p>Weak registry matches are flagged before publish. You always know exactly what to verify.</p>
+          </div>
+          <div class="mkt-diff">
+            <div class="num">// 03</div>
+            <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16"/><path d="M3 10h18"/><path d="M8 4v16"/></svg></div>
+            <h4>Dealer-Ready Formatting</h4>
+            <p>Output sized for Facebook Marketplace, MachineryTrader, and direct buyer email &mdash; no editing.</p>
+          </div>
+          <div class="mkt-diff">
+            <div class="num">// 04</div>
+            <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18"/><path d="M9 3v18M3 9h18"/></svg></div>
+            <h4>Structured + Branded</h4>
+            <p>Image pack carries your dealer mark and price tag. One package. One zip. No PowerPoint.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mkt-cta-close" id="start">
+      <div class="mkt-container mkt-cta-grid">
+        <h2>Year, make,<br>model. <span class="accent">Go.</span></h2>
+        <div class="side">
+          <a href="#step1-card" class="btn btn-yellow">Build My Package <span class="arrow">&rsaquo;</span></a>
+          <div class="trust-line">
+            <div><span>&middot;</span>NO LOGIN REQUIRED</div>
+            <div><span>&middot;</span>OEM-BACKED SPECS</div>
+            <div><span>&middot;</span>DOWNLOAD INSTANTLY</div>
+          </div>
         </div>
       </div>
     </section>
@@ -535,18 +915,20 @@
     <input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none">
   </form>
 </main>
-<footer class="site-footer">
-  <div class="footer-shell">
-    <div class="footer-left">
+<footer class="mkt-footer">
+  <div class="mkt-container mkt-foot-grid">
+    <a href="/" class="mkt-brand">
       <img src="/static/assets/brand/lockup-footer-700w.png" alt="Machine to Market" />
-      <span class="footer-tag">Built for equipment dealers.</span>
+    </a>
+    <div class="mkt-foot-links">
+      <a href="#process">Process</a>
+      <a href="#real-output">Output</a>
+      <a href="#why">Why MTM</a>
+      <a href="/fix-listing">Fix Listing</a>
+      <span class="muted">Privacy</span>
+      <span class="muted">Terms</span>
     </div>
-    <nav class="footer-nav" aria-label="Footer">
-      <span class="nl muted">Privacy</span>
-      <span class="nl muted">Terms</span>
-      <a href="/fix-listing" class="nl">Fix Listing</a>
-    </nav>
-    <span class="footer-copy">&copy; 2026 Machine to Market</span>
+    <div class="mkt-foot-mark">&copy; 2026 MACHINE / TO / MARKET</div>
   </div>
 </footer>
 <script src="/static/dealer_profile.js?v=5"></script>
@@ -1269,6 +1651,37 @@
   applyDraftToForm(loadBuildListingDraft());
   if (typeof window.initDealerProfile === 'function') window.initDealerProfile('dealer-badge-card');
 
+})();
+</script>
+<script>
+(function () {
+  var selector = document.querySelector('[data-output-selector]');
+  if (!selector) return;
+
+  var rows    = selector.querySelectorAll('.output-selector__row');
+  var img     = document.getElementById('output-preview-img');
+  var caption = document.getElementById('output-preview-caption');
+
+  rows.forEach(function (row) {
+    var src = row.getAttribute('data-asset');
+    if (src) { var p = new Image(); p.src = src; }
+  });
+
+  function activate(row) {
+    rows.forEach(function (r) { r.classList.remove('is-active'); r.setAttribute('aria-selected', 'false'); });
+    row.classList.add('is-active');
+    row.setAttribute('aria-selected', 'true');
+
+    var src = row.getAttribute('data-asset');
+    var alt = row.getAttribute('data-asset-alt') || '';
+    var cap = row.getAttribute('data-caption') || '';
+    if (img) { img.src = src; img.alt = alt; }
+    if (caption) { caption.textContent = cap; }
+  }
+
+  rows.forEach(function (row) {
+    row.addEventListener('click', function () { activate(row); });
+  });
 })();
 </script>
 </body>
