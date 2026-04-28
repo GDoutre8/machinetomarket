@@ -488,13 +488,6 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     position: absolute; top: 0; left: 0; right: 0; height: 6px;
     background: var(--accent); z-index: 6;
   }}
-  /* Left vertical strip */
-  .left-strip {{
-    position: absolute; left: 0; top: 0; bottom: 0; width: 48px;
-    background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.45));
-    z-index: 2;
-  }}
-
   /* Dealer badge */
   .dealer-row {{
     position: absolute; top: 48px; left: 48px; right: 48px;
@@ -673,7 +666,6 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     <div class="lift"></div>
   </div>
   <div class="top-rule"></div>
-  <div class="left-strip"></div>
   <div class="dealer-row">{dealer_html}</div>
   {price_html}
   <div class="title-block">
