@@ -1203,6 +1203,434 @@ _TEMPLATES["auction_ticket"] = _render_auction_ticket
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template 3 — "wide_shot"
+# Reference: design_handoff_wide_shot/source/concept-fieldcard.jsx
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_wide_shot(data: dict) -> str:
+    """
+    Wide Shot — photo-dominant layout. Full-machine/wide-crop photo occupies the
+    centre band; compact header carries title+price; clean KPI rail below; dark
+    dealer footer anchors the bottom.
+
+    All payload fields are optional and degrade cleanly when missing.
+    """
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key = (dealer.get("theme") or "yellow").lower().strip()
+    theme = _THEMES.get(theme_key, _THEMES["yellow"])
+    accent = theme["accent"]
+    accent_ink = theme["accent_ink"]
+
+    year    = machine.get("year")
+    make    = (machine.get("make") or "").upper()
+    model   = (machine.get("model") or "").upper()
+    eq_type = (machine.get("equipment_type") or "").lower()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+
+    flags = machine.get("feature_flags") or {}
+    high_flow = bool(flags.get("high_flow_available", False))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    # ── Left title column ─────────────────────────────────────────────────────
+
+    # Year · Make eyebrow
+    ym_parts: list[str] = []
+    if year:
+        ym_parts.append(html.escape(str(year)))
+    if make:
+        ym_parts.append(html.escape(make))
+    elif not year:
+        cat = _EQ_TYPE_DISPLAY.get(eq_type, "")
+        if cat:
+            ym_parts.append(html.escape(cat.upper()))
+    eyebrow_html = (
+        f'<div class="ws-eyebrow">{" &nbsp;·&nbsp; ".join(ym_parts)}</div>'
+        if ym_parts else ""
+    )
+
+    # Model — auto-shrink for long names
+    mlen = len(model)
+    if mlen <= 4:
+        model_px = 170
+    elif mlen <= 5:
+        model_px = 155
+    elif mlen <= 7:
+        model_px = 125
+    elif mlen <= 9:
+        model_px = 100
+    else:
+        model_px = 82
+    model_html = (
+        f'<div class="ws-model" style="font-size:{model_px}px">'
+        f'{html.escape(model)}</div>'
+        if model else ""
+    )
+
+    # Trim chip — only when high flow confirmed
+    trim_html = (
+        '<div class="ws-trim">HIGH FLOW</div>'
+        if high_flow else ""
+    )
+
+    left_col = eyebrow_html + model_html + trim_html
+
+    # ── Right price cluster ───────────────────────────────────────────────────
+
+    price_str = _fmt_price(price) if price is not None else ""
+    price_line = (
+        f'<div class="ws-price">{html.escape(price_str)}</div>'
+        if price_str else ""
+    )
+
+    if hours is not None:
+        try:
+            hrs_display = f"{int(hours):,}"
+        except (TypeError, ValueError):
+            hrs_display = str(hours)
+        hours_line = (
+            f'<div class="ws-hours">'
+            f'<span class="ws-hrs-val">{html.escape(hrs_display)}</span>'
+            f'<span class="ws-hrs-unit">HRS</span>'
+            f'</div>'
+        )
+    else:
+        hours_line = ""
+
+    financing_block = (
+        f'<div class="ws-accent-rule"></div>'
+        f'<div class="ws-financing">Financing Available</div>'
+    ) if price_str else ""
+
+    right_col_inner = price_line + hours_line + financing_block
+    right_col = (
+        f'<div class="ws-price-cluster">{right_col_inner}</div>'
+        if right_col_inner else ""
+    )
+
+    # ── Photo band ────────────────────────────────────────────────────────────
+
+    if photo_uri:
+        photo_html = f'<img class="ws-photo-img" src="{photo_uri}" alt=""/>'
+    else:
+        photo_html = '<div class="ws-photo-fallback"></div>'
+
+    # ── KPI rail ──────────────────────────────────────────────────────────────
+
+    specs = _build_specs(machine, eq_type, high_flow_confirmed=high_flow)
+
+    _SHORT_LABELS = {
+        "RATED OP CAPACITY": "CAPACITY",
+        "NET HORSEPOWER":    "NET HP",
+        "AUX FLOW":          "AUX FLOW",
+        "HIGH FLOW":         "HIGH FLOW",
+        "OP WEIGHT":         "OP WEIGHT",
+        "NET HP":            "NET HP",
+        "DIG DEPTH":         "DIG DEPTH",
+        "LIFT CAP":          "CAPACITY",
+        "LIFT HT":           "LIFT",
+        "BUCKET":            "BUCKET",
+        "BLADE":             "BLADE",
+        "PLATFORM HT":       "PLAT HT",
+        "PLATFORM W":        "PLAT W",
+        "PLATFORM CAP":      "PLAT CAP",
+        "HORIZ REACH":       "REACH",
+    }
+
+    kpi_cells: list[str] = []
+    for i, spec in enumerate(specs):
+        is_last = i == len(specs) - 1
+        sep_cls = "" if i == 0 else " ws-kpi-sep"
+        pl = "56" if i == 0 else "32"
+        pr = "56" if is_last else "32"
+        short = _SHORT_LABELS.get(spec["label"], spec["label"][:9])
+        if spec["value"] is None:
+            num_html = '<span class="ws-kpi-val">&mdash;</span>'
+        else:
+            unit_html = (
+                f'<span class="ws-kpi-unit">{html.escape(spec["unit"])}</span>'
+                if spec["unit"] else ""
+            )
+            num_html = (
+                f'<span class="ws-kpi-val">{html.escape(spec["value"])}</span>'
+                f'{unit_html}'
+            )
+        kpi_cells.append(
+            f'<div class="ws-kpi-cell{sep_cls}" style="padding-left:{pl}px;padding-right:{pr}px">'
+            f'  <div class="ws-kpi-label">{html.escape(short)}</div>'
+            f'  <div class="ws-kpi-num">{num_html}</div>'
+            f'</div>'
+        )
+    kpi_rail_html = '<div class="ws-kpi-rail">' + "".join(kpi_cells) + '</div>'
+
+    # ── Dealer footer ─────────────────────────────────────────────────────────
+
+    show_dealer = bool(dealer.get("show_branding", True)) and bool(dealer.get("name"))
+    if show_dealer:
+        d_name  = dealer.get("name") or ""
+        d_short = (dealer.get("short_mark") or _initials(d_name)).upper()[:2]
+        d_rep   = dealer.get("rep") or ""
+        d_phone = dealer.get("phone") or ""
+        rep_html = f'<span class="ws-rep">{html.escape(d_rep)}</span>' if d_rep else ""
+        divider_html = (
+            '<span class="ws-rep-divider"></span>' if d_rep and d_phone else ""
+        )
+        phone_html = (
+            f'<span class="ws-phone">{html.escape(d_phone)}</span>' if d_phone else ""
+        )
+        footer_html = (
+            f'<div class="ws-footer">'
+            f'  <div class="ws-footer-left">'
+            f'    <div class="ws-mark">{html.escape(d_short)}</div>'
+            f'    <div class="ws-dealer-text">'
+            f'      <div class="ws-presented-by">Presented&nbsp;by</div>'
+            f'      <div class="ws-dealer-name">{html.escape(d_name.upper())}</div>'
+            f'    </div>'
+            f'  </div>'
+            f'  <div class="ws-footer-right">'
+            f'    {rep_html}{divider_html}{phone_html}'
+            f'  </div>'
+            f'</div>'
+        )
+    else:
+        footer_html = ""
+
+    return _PAGE_TEMPLATE_WIDE.format(
+        accent=accent,
+        accent_ink=accent_ink,
+        left_col=left_col,
+        right_col=right_col,
+        photo_html=photo_html,
+        kpi_rail_html=kpi_rail_html,
+        footer_html=footer_html,
+    )
+
+
+_PAGE_TEMPLATE_WIDE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Wide Shot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{
+    background: #fafaf7;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background: #fafaf7;
+    color: #0d0d0c;
+    --accent: {accent};
+    --accent-ink: {accent_ink};
+    --ink: #0d0d0c;
+  }}
+
+  /* ── HEADER STRIP ─────────────────────────────── */
+  .ws-header {{
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 316px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 30px 56px 18px;
+    z-index: 3;
+  }}
+
+  /* Left column */
+  .ws-eyebrow {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 600; font-size: 17px;
+    letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(13,13,12,.55); margin-bottom: 8px;
+  }}
+  .ws-model {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    line-height: .86; letter-spacing: -.02em;
+    color: #0d0d0c; margin-left: -4px;
+    text-transform: uppercase;
+    white-space: nowrap; overflow: hidden;
+  }}
+  .ws-trim {{
+    display: inline-flex; align-items: center;
+    background: var(--accent); color: var(--accent-ink);
+    padding: 8px 16px; margin-top: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 26px;
+    letter-spacing: .06em; line-height: 1;
+    text-transform: uppercase;
+  }}
+
+  /* Right column — price cluster */
+  .ws-price-cluster {{
+    text-align: right;
+    display: flex; flex-direction: column; align-items: flex-end;
+    padding-top: 25px;
+    flex: 0 0 auto;
+  }}
+  .ws-price {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 96px;
+    line-height: .88; letter-spacing: -.02em;
+    color: #0d0d0c; white-space: nowrap;
+  }}
+  .ws-hours {{
+    display: flex; align-items: baseline; gap: 8px;
+    margin-top: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+  }}
+  .ws-hrs-val {{
+    font-size: 36px; line-height: .9;
+    color: #0d0d0c; letter-spacing: -.01em;
+  }}
+  .ws-hrs-unit {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(13,13,12,.55);
+  }}
+  .ws-accent-rule {{
+    width: 120px; height: 3px;
+    background: var(--accent);
+    margin-top: 12px; margin-bottom: 8px;
+  }}
+  .ws-financing {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: .10em; text-transform: uppercase;
+    color: rgba(13,13,12,.78);
+  }}
+
+  /* ── DIVIDER ──────────────────────────────────── */
+  .ws-divider-top {{
+    position: absolute; top: 316px; left: 0; right: 0; height: 1px;
+    background: rgba(13,13,12,.3); z-index: 2;
+  }}
+
+  /* ── PHOTO BAND ───────────────────────────────── */
+  .ws-photo-band {{
+    position: absolute; top: 332px; left: 0; right: 0; height: 746px;
+    background: #0d0d0c; overflow: hidden;
+  }}
+  .ws-photo-img {{
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 50%;
+    display: block;
+    filter: brightness(1.04) contrast(1.03) saturate(1.04);
+  }}
+  .ws-photo-fallback {{
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg, #2a2926 0 22px, #232220 22px 44px);
+  }}
+
+  /* ── KPI RAIL ─────────────────────────────────── */
+  .ws-kpi-rail {{
+    position: absolute; top: 1078px; left: 0; right: 0; height: 124px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-top: 1px solid rgba(13,13,12,.3);
+    border-bottom: 1px solid rgba(13,13,12,.18);
+    background: #fafaf7;
+  }}
+  .ws-kpi-cell {{
+    padding-top: 22px; padding-bottom: 22px;
+    display: flex; flex-direction: column; justify-content: center; gap: 10px;
+    min-width: 0;
+  }}
+  .ws-kpi-sep {{ border-left: 1px solid rgba(13,13,12,.27); }}
+  .ws-kpi-label {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 800; font-size: 15px;
+    letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(13,13,12,.7);
+  }}
+  .ws-kpi-num {{ display: flex; align-items: baseline; gap: 8px; }}
+  .ws-kpi-val {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 64px;
+    line-height: .9; letter-spacing: -.015em;
+    color: #0d0d0c;
+  }}
+  .ws-kpi-unit {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700; font-size: 18px;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(13,13,12,.6);
+  }}
+
+  /* ── DEALER FOOTER ────────────────────────────── */
+  .ws-footer {{
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 148px;
+    padding: 24px 56px;
+    background: #0d0d0c; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 3px solid var(--accent);
+  }}
+  .ws-footer-left {{
+    display: flex; align-items: center; gap: 18px;
+  }}
+  .ws-mark {{
+    width: 42px; height: 42px; border-radius: 3px;
+    background: var(--accent); color: #0d0d0c;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 22px; letter-spacing: -.02em;
+    flex: 0 0 auto;
+  }}
+  .ws-dealer-text {{ display: flex; flex-direction: column; line-height: 1; }}
+  .ws-presented-by {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700; font-size: 11px;
+    letter-spacing: .32em; text-transform: uppercase;
+    color: rgba(255,255,255,.5); margin-bottom: 6px;
+  }}
+  .ws-dealer-name {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 30px;
+    letter-spacing: .02em; text-transform: uppercase; color: #fff;
+  }}
+  .ws-footer-right {{
+    display: flex; align-items: center; gap: 24px;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 600; font-size: 14px;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: rgba(255,255,255,.85);
+  }}
+  .ws-rep-divider {{
+    width: 1px; height: 18px; background: rgba(255,255,255,.25);
+    flex: 0 0 auto;
+  }}
+  .ws-phone {{ color: #fff; }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="ws-header">
+    <div class="ws-left">{left_col}</div>
+    {right_col}
+  </div>
+  <div class="ws-divider-top"></div>
+  <div class="ws-photo-band">{photo_html}</div>
+  {kpi_rail_html}
+  {footer_html}
+</div>
+</body>
+</html>
+"""
+
+_TEMPLATES["wide_shot"] = _render_wide_shot
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Demo
 # ─────────────────────────────────────────────────────────────────────────────
 
