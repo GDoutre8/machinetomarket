@@ -259,7 +259,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   min-height: 0;
 }
 .photo-hero.has-photo .hero-rail {
-  grid-template-rows: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
   align-self: stretch;
 }
 .photo-hero.no-photo .hero-rail {
@@ -306,7 +306,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 .main {
   flex: 0 0 auto;
   overflow: visible;
-  padding: 9px 22px 0;
+  padding: 23px 22px 0;
   display: flex;
   flex-direction: row;
   gap: 16px;
@@ -321,7 +321,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
 
 /* ── Lower section: condition + performance ── */
 .lower {
-  padding: 7px 22px 0;
+  padding: 24px 22px 0;
   display: flex;
   flex-direction: row;
   gap: 16px;
@@ -344,7 +344,7 @@ body { background: #fff; display: flex; justify-content: center; align-items: fl
   padding-left: 7px;
   border-bottom: 1px solid rgba(13,13,13,0.09);
   border-left: 3px solid var(--accent);
-  margin-bottom: 5px;
+  margin-bottom: 7px;
 }
 .sec-footnote {
   font-size: 6px; color: #BBBBBB; line-height: 1.4;
