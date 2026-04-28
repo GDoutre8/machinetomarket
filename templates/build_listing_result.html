@@ -849,24 +849,27 @@
     </script>
     {% endif %}
 
-    <!-- ── Featured Listing Image ── -->
-    {% if card_png_url %}
+    <!-- ── Actual Output Preview ── -->
+    {% if card_png_url or spec_sheet_url %}
     <div class="result-card result-card-secondary">
-      <div class="result-card-header">Featured Listing Image</div>
+      <div class="result-card-header">Actual Output Preview</div>
       <div class="result-card-body">
-        <img class="spec-sheet-img" src="{{ card_png_url }}" alt="Featured Listing Image — {{ machine_label }}" />
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- ── Spec Sheet ── -->
-    {% if spec_sheet_url %}
-    <div class="result-card result-card-secondary">
-      <div class="result-card-header">Machine Spec Sheet</div>
-      <div class="result-card-body">
-        <img class="spec-sheet-img" src="{{ spec_sheet_url }}" alt="Machine Spec Sheet" />
-        <div style="margin-top:12px;">
-          <a href="{{ spec_sheet_url }}" target="_blank" style="display:inline-block;padding:8px 16px;background:#F5C400;color:#0D0D0D;font-weight:700;font-size:13px;text-decoration:none;border-radius:3px;letter-spacing:0.04em;">Open Spec Sheet ↗</a>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
+          {% if card_png_url %}
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--mtm-text-muted);margin-bottom:10px;">Featured Listing Image</div>
+            <img class="spec-sheet-img" src="{{ card_png_url }}" alt="Featured Listing Image — {{ machine_label }}" />
+          </div>
+          {% endif %}
+          {% if spec_sheet_url %}
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--mtm-text-muted);margin-bottom:10px;">Machine Spec Sheet</div>
+            <img class="spec-sheet-img" src="{{ spec_sheet_url }}" alt="Machine Spec Sheet" />
+            <div style="margin-top:12px;">
+              <a href="{{ spec_sheet_url }}" target="_blank" style="display:inline-block;padding:8px 16px;background:#F5C400;color:#0D0D0D;font-weight:700;font-size:13px;text-decoration:none;border-radius:3px;letter-spacing:0.04em;">Open Spec Sheet ↗</a>
+            </div>
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -878,13 +881,8 @@
     {% set preview_ns = namespace(url=None, label='', tag='') %}
     {% if primary_preview_image %}
       {% set preview_ns.url = primary_preview_image %}
-      {% if card_png_url and primary_preview_image == card_png_url %}
-        {% set preview_ns.label = 'Featured Listing Image' %}
-        {% set preview_ns.tag = 'Hero Card' %}
-      {% else %}
-        {% set preview_ns.label = 'Listing Photos' %}
-        {% set preview_ns.tag = 'Ready to Post' %}
-      {% endif %}
+      {% set preview_ns.label = 'Listing Photos' %}
+      {% set preview_ns.tag = 'Ready to Post' %}
     {% else %}
       {# Fallback for sessions built before outputs_explicit.json existed #}
       {% for pack in image_packs %}
