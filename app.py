@@ -419,20 +419,31 @@ async def build_listing_result(request: Request, session_id: str):
         except Exception:
             pass
 
+    def _vq(abs_path: str | None) -> str:
+        """Return ?v={mtime} cache-bust param for a generated asset."""
+        try:
+            return f"?v={int(os.path.getmtime(abs_path))}" if abs_path and os.path.isfile(abs_path) else ""
+        except Exception:
+            return ""
+
     # Spec sheet URL: prefer the explicit path recorded at build time.
     # Fall back to glob for sessions built before outputs_explicit.json existed.
     _ss_explicit = _explicit_outputs.get("spec_sheet_png")
+    _ss_abs: str | None = None
     if _ss_explicit and os.path.isfile(_ss_explicit):
-        spec_sheet_url = f"{web_base}/Listing_Photos/{os.path.basename(_ss_explicit)}"
+        _ss_abs = _ss_explicit
     else:
         _ss_matches = sorted(_glob.glob(
             os.path.join(pack_dir, "Listing_Photos", "*_02_spec_sheet.png")
         ))
         if _ss_matches:
-            spec_sheet_url = f"{web_base}/Listing_Photos/{os.path.basename(_ss_matches[0])}"
+            _ss_abs = _ss_matches[0]
         else:
             print(f"  [Result] WARNING: spec sheet not found in {pack_dir}/Listing_Photos/")
-            spec_sheet_url = None
+    spec_sheet_url = (
+        f"{web_base}/Listing_Photos/{os.path.basename(_ss_abs)}{_vq(_ss_abs)}"
+        if _ss_abs else None
+    )
 
     def _load_image_urls(subfolder: str) -> list[str]:
         img_dir = os.path.join(pack_dir, subfolder)
@@ -484,7 +495,7 @@ async def build_listing_result(request: Request, session_id: str):
     _card_explicit = _explicit_outputs.get("card_png")
     card_png_url: str | None = None
     if _card_explicit and os.path.isfile(_card_explicit):
-        card_png_url = f"{web_base}/Listing_Photos/{os.path.basename(_card_explicit)}"
+        card_png_url = f"{web_base}/Listing_Photos/{os.path.basename(_card_explicit)}{_vq(_card_explicit)}"
 
     # Primary preview for Image Pack: first real listing photo.
     # Card and spec sheet are displayed in their own dedicated sections above.
