@@ -114,8 +114,9 @@
     document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
       var active = el.getAttribute('data-accent-swatch') === savedAccent;
       el.setAttribute('aria-pressed', active ? 'true' : 'false');
-      el.style.outline = active ? '2px solid #fff' : '2px solid transparent';
-      el.style.outlineOffset = '2px';
+      el.style.outline = 'none';
+      el.style.boxShadow = active ? '0 0 0 2px #fff, 0 0 0 4px #1a1a1a' : 'none';
+      el.innerHTML = active ? '<span style="color:#fff;font-size:13px;font-weight:700;line-height:22px;display:block;text-align:center;pointer-events:none;">✓</span>' : '';
     });
     if (logoDrop) {
       if (_logoDataUrl) {
@@ -272,11 +273,11 @@
           '<div class="field">',
             '<label>Card Theme <span style="font-weight:400;color:var(--dim);font-size:11px;">Hero card accent color</span></label>',
             '<div style="display:flex;gap:8px;align-items:center;margin-top:6px;">',
-              '<button type="button" data-accent-swatch="yellow" aria-pressed="true"  title="Yellow" style="width:22px;height:22px;border-radius:50%;background:#FFC20E;border:none;cursor:pointer;outline:2px solid #fff;outline-offset:2px;flex-shrink:0;"></button>',
-              '<button type="button" data-accent-swatch="red"    aria-pressed="false" title="Red"    style="width:22px;height:22px;border-radius:50%;background:#C8102E;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
-              '<button type="button" data-accent-swatch="blue"   aria-pressed="false" title="Blue"   style="width:22px;height:22px;border-radius:50%;background:#1E4D8C;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
-              '<button type="button" data-accent-swatch="green"  aria-pressed="false" title="Green"  style="width:22px;height:22px;border-radius:50%;background:#2C5F3E;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
-              '<button type="button" data-accent-swatch="orange" aria-pressed="false" title="Orange" style="width:22px;height:22px;border-radius:50%;background:#D85A15;border:none;cursor:pointer;outline:2px solid transparent;outline-offset:2px;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="yellow" aria-pressed="true"  title="Yellow" style="width:22px;height:22px;border-radius:50%;background:#FFC20E;border:none;cursor:pointer;box-shadow:0 0 0 2px #fff,0 0 0 4px #000;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="red"    aria-pressed="false" title="Red"    style="width:22px;height:22px;border-radius:50%;background:#C8102E;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="blue"   aria-pressed="false" title="Blue"   style="width:22px;height:22px;border-radius:50%;background:#1E4D8C;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="green"  aria-pressed="false" title="Green"  style="width:22px;height:22px;border-radius:50%;background:#2C5F3E;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="orange" aria-pressed="false" title="Orange" style="width:22px;height:22px;border-radius:50%;background:#D85A15;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
             '</div>',
           '</div>',
         '</div>',
@@ -380,7 +381,9 @@
       document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
         var active = el.getAttribute('data-accent-swatch') === savedAccent;
         el.setAttribute('aria-pressed', active ? 'true' : 'false');
-        el.style.outline = active ? '2px solid #fff' : '2px solid transparent';
+        el.style.outline = 'none';
+        el.style.boxShadow = active ? '0 0 0 2px #fff, 0 0 0 4px #000' : 'none';
+        el.innerHTML = '';
       });
       if ((profile.companyName || '').trim()) {
         fields.style.display = '';
@@ -394,10 +397,13 @@
       swatch.addEventListener('click', function () {
         document.querySelectorAll('[data-accent-swatch]').forEach(function (el) {
           el.setAttribute('aria-pressed', 'false');
-          el.style.outline = '2px solid transparent';
+          el.style.outline = 'none';
+          el.style.boxShadow = 'none';
+          el.innerHTML = '';
         });
         swatch.setAttribute('aria-pressed', 'true');
-        swatch.style.outline = '2px solid #fff';
+        swatch.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px #000';
+        swatch.innerHTML = '';
         save();
       });
     });
