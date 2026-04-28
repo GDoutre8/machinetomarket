@@ -1,21 +1,96 @@
 """
-MTM Hero Listing Card Renderer — v10
+MTM Hero Listing Card Renderer — Featured Listing Templates
 
-Renders 4:5 Facebook-format hero listing cards (1080×1350 px output).
-Consumes a structured data dict with machine / dealer / listing keys and
-returns self-contained HTML ready for Playwright Chromium PNG export.
+Renders a featured listing card as self-contained HTML, ready for Playwright
+Chromium PNG export at 1080×1350 px (4:5).
 
-Design reference: hero_card_v10.html
+This module dispatches on `featured_template` to one of N template renderers.
+Today only Template 1 ("price_tag") is implemented; Templates 2 and 3 will be
+added as additional `_render_<key>()` functions and registered in `_TEMPLATES`.
+
+Design reference for price_tag:
+  design_handoff_hero_listing_pricetag/  (README, preview.html, source/*)
 """
 
 from __future__ import annotations
 
 import base64
 import html
+import re
 from pathlib import Path
 from typing import Any
 
-_VALID_THEMES = {"yellow", "red", "blue", "green", "orange"}
+# ─────────────────────────────────────────────────────────────────────────────
+# Theme palette  (mirrors design_handoff/source/data.js ACCENTS)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_THEMES: dict[str, dict[str, str]] = {
+    "yellow": {"accent": "#FFC600", "accent_ink": "#0d0d0c"},
+    "orange": {"accent": "#FF6A1F", "accent_ink": "#0d0d0c"},
+    "red":    {"accent": "#E0252B", "accent_ink": "#ffffff"},
+    "blue":   {"accent": "#1F6FEB", "accent_ink": "#ffffff"},
+    "green":  {"accent": "#1F8A3B", "accent_ink": "#ffffff"},
+}
+
+_EQ_TYPE_DISPLAY = {
+    "compact_track_loader": "Compact Track Loader",
+    "skid_steer":           "Skid Steer Loader",
+    "skid_steer_loader":    "Skid Steer Loader",
+    "mini_excavator":       "Mini Excavator",
+    "backhoe_loader":       "Backhoe Loader",
+    "large_excavator":      "Large Excavator",
+    "excavator":            "Excavator",
+    "telehandler":          "Telehandler",
+    "wheel_loader":         "Wheel Loader",
+    "dozer":                "Dozer",
+    "crawler_dozer":        "Crawler Dozer",
+    "boom_lift":            "Boom Lift",
+    "scissor_lift":         "Scissor Lift",
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Icons (24-px viewBox, currentColor) — ported from shared.jsx
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _icon(key: str, size: int = 22, stroke: float = 2.0) -> str:
+    s = f'width="{size}" height="{size}" style="display:block"'
+    sw = stroke
+    if key == "weight":
+        return (
+            f'<svg viewBox="0 0 24 24" {s} fill="none" stroke="currentColor" '
+            f'stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round">'
+            '<path d="M5 8h14l-1.6 11a2 2 0 0 1-2 1.7H8.6a2 2 0 0 1-2-1.7L5 8z"/>'
+            '<path d="M9 8a3 3 0 0 1 6 0"/></svg>'
+        )
+    if key == "bolt":
+        return (
+            f'<svg viewBox="0 0 24 24" {s} fill="currentColor">'
+            '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>'
+        )
+    if key == "drop":
+        return (
+            f'<svg viewBox="0 0 24 24" {s} fill="currentColor">'
+            '<path d="M12 2.5c-1.6 3-7 8.4-7 13a7 7 0 0 0 14 0c0-4.6-5.4-10-7-13z"/></svg>'
+        )
+    if key == "clock":
+        return (
+            f'<svg viewBox="0 0 24 24" {s} fill="none" stroke="currentColor" '
+            f'stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round">'
+            '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+        )
+    if key == "arrow":
+        return (
+            f'<svg viewBox="0 0 24 24" {s} fill="none" stroke="currentColor" '
+            f'stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round">'
+            '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>'
+        )
+    if key == "gauge":
+        return (
+            f'<svg viewBox="0 0 24 24" {s} fill="none" stroke="currentColor" '
+            f'stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round">'
+            '<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 13 4-3"/></svg>'
+        )
+    return ""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -23,17 +98,15 @@ _VALID_THEMES = {"yellow", "red", "blue", "green", "orange"}
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _photo_data_uri(photo_path: str | None) -> str | None:
-    """Embed photo as base64 data URI so the rendered HTML is self-contained."""
     if not photo_path:
         return None
-    path = Path(photo_path)
-    if not path.is_file():
+    p = Path(photo_path)
+    if not p.is_file():
         return None
-    ext = path.suffix.lower().lstrip(".")
-    mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png"}.get(ext, "image/jpeg")
-    with open(path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode("ascii")
-    return f"data:{mime};base64,{encoded}"
+    ext = p.suffix.lower().lstrip(".")
+    mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}.get(ext, "image/jpeg")
+    with open(p, "rb") as f:
+        return f"data:{mime};base64," + base64.b64encode(f.read()).decode("ascii")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -44,563 +117,571 @@ def _fmt_comma(v: Any) -> str:
     try:
         return f"{int(v):,}"
     except (TypeError, ValueError):
+        try:
+            fv = float(v)
+            return f"{int(fv):,}" if fv == int(fv) else f"{fv:,.1f}"
+        except (TypeError, ValueError):
+            return str(v)
+
+
+def _fmt_flow(v: Any) -> str:
+    try:
+        fv = float(v)
+    except (TypeError, ValueError):
         return str(v)
-
-
-def _fmt_flow(v: float) -> str:
-    """Integer if whole, one decimal otherwise."""
-    fv = float(v)
-    if fv == int(fv):
-        return str(int(fv))
-    return f"{fv:.1f}"
+    return str(int(fv)) if fv == int(fv) else f"{fv:.1f}"
 
 
 def _fmt_price(price: Any) -> str:
     try:
         return f"${int(price):,}"
     except (TypeError, ValueError):
-        return ""
+        try:
+            fv = float(price)
+            return f"${int(fv):,}"
+        except (TypeError, ValueError):
+            return ""
+
+
+def _initials(name: str | None, fallback: str = "MTM") -> str:
+    if not name:
+        return fallback[:2].upper()
+    cleaned = re.sub(r"[^A-Za-z0-9 ]+", " ", name).strip()
+    parts = [p for p in cleaned.split() if p]
+    if not parts:
+        return fallback[:2].upper()
+    if len(parts) == 1:
+        return parts[0][:2].upper()
+    return (parts[0][0] + parts[1][0]).upper()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Spec column builder
+# Spec column dispatch — returns list of {label, value, unit, icon_key}
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _spec_col(label: str, value: Any, unit: str, comma: bool = False, raw_label: bool = False) -> str:
-    lbl_html = label if raw_label else html.escape(label)
-    if value is None:
-        val_html = '<div class="v">&#8212;</div>'
+def _spec_dict(label: str, value: Any, unit: str, icon_key: str, *, comma: bool = False, flow: bool = False) -> dict:
+    if value is None or value == "":
+        fmt: str | None = None
+    elif flow:
+        fmt = _fmt_flow(value)
+    elif comma:
+        fmt = _fmt_comma(value)
     else:
-        if unit == "GPM":
-            fmt = _fmt_flow(value)
-        elif comma:
-            fmt = _fmt_comma(value)
-        else:
-            fmt = _fmt_comma(value)
-        val_html = (
-            f'<div class="v">{html.escape(fmt)}'
-            f'<span class="u">{html.escape(unit)}</span></div>'
-        )
-    return (
-        f'<div class="spec">'
-        f'<div class="lbl">{lbl_html}</div>'
-        f'{val_html}'
-        f'</div>'
-    )
+        s = str(value).strip()
+        fmt = s if s else None
+    return {"label": label, "value": fmt, "unit": unit, "icon_key": icon_key}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Type-aware spec column dispatch
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _build_spec_cols(machine: dict, eq_type: str) -> tuple[str, str, str]:
-    """Return (col1_html, col2_html, col3_html) keyed to equipment type."""
+def _build_specs(machine: dict, eq_type: str, *, high_flow_confirmed: bool) -> list[dict]:
     hp = machine.get("net_hp") or machine.get("horsepower_hp")
 
-    if eq_type in ("mini_excavator", "excavator", "large_excavator"):
-        weight = machine.get("operating_weight_lb")
-        dig    = machine.get("max_dig_depth_str")
-        return (
-            _spec_col("OP WEIGHT", weight, "LB", comma=True),
-            _spec_col("NET HP",    hp,     "HP"),
-            _spec_col("DIG DEPTH", dig,    ""),
-        )
-
-    if eq_type == "backhoe_loader":
-        weight = machine.get("operating_weight_lb")
-        dig    = machine.get("max_dig_depth_str")
-        return (
-            _spec_col("OP WEIGHT", weight, "LB", comma=True),
-            _spec_col("NET HP",    hp,     "HP"),
-            _spec_col("DIG DEPTH", dig,    ""),
-        )
-
+    if eq_type in ("mini_excavator", "excavator", "large_excavator", "backhoe_loader"):
+        return [
+            _spec_dict("OP WEIGHT", machine.get("operating_weight_lb"), "LB", "weight", comma=True),
+            _spec_dict("NET HP",    hp,                                  "HP", "bolt"),
+            _spec_dict("DIG DEPTH", machine.get("max_dig_depth_str"),    "",   "arrow"),
+        ]
     if eq_type == "telehandler":
-        cap    = machine.get("lift_capacity_lb")
-        height = machine.get("max_lift_height_ft_str")
-        return (
-            _spec_col("LIFT CAP", cap,    "LB", comma=True),
-            _spec_col("NET HP",   hp,     "HP"),
-            _spec_col("LIFT HT",  height, ""),
-        )
-
+        return [
+            _spec_dict("LIFT CAP", machine.get("lift_capacity_lb"),       "LB", "weight", comma=True),
+            _spec_dict("NET HP",   hp,                                     "HP", "bolt"),
+            _spec_dict("LIFT HT",  machine.get("max_lift_height_ft_str"),  "",   "arrow"),
+        ]
     if eq_type == "wheel_loader":
-        weight = machine.get("operating_weight_lb")
-        bucket = machine.get("bucket_capacity_yd3")
-        return (
-            _spec_col("OP WEIGHT", weight, "LB", comma=True),
-            _spec_col("NET HP",    hp,     "HP"),
-            _spec_col("BUCKET",    bucket, "YD\u00b3"),
-        )
-
+        return [
+            _spec_dict("OP WEIGHT", machine.get("operating_weight_lb"),  "LB",   "weight", comma=True),
+            _spec_dict("NET HP",    hp,                                  "HP",   "bolt"),
+            _spec_dict("BUCKET",    machine.get("bucket_capacity_yd3"),  "YD³", "weight"),
+        ]
     if eq_type in ("dozer", "crawler_dozer"):
-        weight = machine.get("operating_weight_lb")
-        blade  = machine.get("blade_capacity_yd3")
-        return (
-            _spec_col("OP WEIGHT", weight, "LB", comma=True),
-            _spec_col("NET HP",    hp,     "HP"),
-            _spec_col("BLADE",     blade,  "YD\u00b3"),
-        )
-
+        return [
+            _spec_dict("OP WEIGHT", machine.get("operating_weight_lb"), "LB",       "weight", comma=True),
+            _spec_dict("NET HP",    hp,                                 "HP",       "bolt"),
+            _spec_dict("BLADE",     machine.get("blade_capacity_yd3"),  "YD³", "weight"),
+        ]
     if eq_type == "boom_lift":
-        ph    = machine.get("platform_height_ft_str")
-        reach = machine.get("horizontal_reach_ft_str")
-        cap   = machine.get("platform_capacity_lbs")
-        return (
-            _spec_col("PLATFORM HT",  ph,    ""),
-            _spec_col("HORIZ REACH",  reach, ""),
-            _spec_col("PLATFORM CAP", cap,   "LB", comma=True),
-        )
-
+        return [
+            _spec_dict("PLATFORM HT",  machine.get("platform_height_ft_str"),  "",  "arrow"),
+            _spec_dict("HORIZ REACH",  machine.get("horizontal_reach_ft_str"), "",  "arrow"),
+            _spec_dict("PLATFORM CAP", machine.get("platform_capacity_lbs"),   "LB","weight", comma=True),
+        ]
     if eq_type == "scissor_lift":
-        ph    = machine.get("platform_height_ft_str")
-        width = machine.get("platform_width_ft_str")
-        cap   = machine.get("platform_capacity_lbs")
-        return (
-            _spec_col("PLATFORM HT",  ph,    ""),
-            _spec_col("PLATFORM W",   width, ""),
-            _spec_col("PLATFORM CAP", cap,   "LB", comma=True),
-        )
+        return [
+            _spec_dict("PLATFORM HT",  machine.get("platform_height_ft_str"),  "",   "arrow"),
+            _spec_dict("PLATFORM W",   machine.get("platform_width_ft_str"),   "",   "arrow"),
+            _spec_dict("PLATFORM CAP", machine.get("platform_capacity_lbs"),   "LB", "weight", comma=True),
+        ]
 
     # Default: CTL / SSL
-    roc       = machine.get("rated_operating_capacity_lbs")
-    flags     = machine.get("feature_flags") or {}
-    high_flow = bool(flags.get("high_flow_available", False))
+    roc = machine.get("rated_operating_capacity_lbs")
     flow_high = machine.get("aux_flow_high_gpm")
     flow_std  = machine.get("aux_flow_standard_gpm")
-    if high_flow and flow_high is not None:
+    if high_flow_confirmed and flow_high is not None:
+        flow_label = "HIGH FLOW"
         flow_val   = flow_high
-        flow_label = "AUX FLOW<br>HIGH FLOW"
-        flow_raw   = True
     else:
-        flow_val   = flow_std
         flow_label = "AUX FLOW"
-        flow_raw   = False
-    return (
-        _spec_col("ROC",      roc,      "LB",  comma=True),
-        _spec_col("NET HP",   hp,       "HP"),
-        _spec_col(flow_label, flow_val, "GPM", raw_label=flow_raw),
-    )
+        flow_val   = flow_std
+    return [
+        _spec_dict("RATED OP CAPACITY", roc,      "LB",  "weight", comma=True),
+        _spec_dict("NET HORSEPOWER",    hp,       "HP",  "bolt"),
+        _spec_dict(flow_label,          flow_val, "GPM", "drop",  flow=True),
+    ]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Main entry point
 # ─────────────────────────────────────────────────────────────────────────────
 
+DEFAULT_FEATURED_TEMPLATE = "price_tag"
+
+
 def render_card(data: dict) -> str:
     """
-    Render the v10 hero listing card as self-contained HTML.
+    Render a featured listing card as a self-contained HTML document.
 
-    Args:
-        data: {
-            "machine": {
-                "year":                         int | None,
-                "make":                         str,
-                "model":                        str,
-                "horsepower_hp":                int | None,
-                "rated_operating_capacity_lbs": int | None,
-                "aux_flow_standard_gpm":        float | None,
-                "aux_flow_high_gpm":            float | None,
-                "feature_flags": {
-                    "high_flow_available": bool,
-                    ...
-                },
-                "photo_path": str | None,
-            },
-            "dealer": {
-                "theme": "yellow" | "red" | "blue" | "green" | "orange",
-            },
-            "listing": {
-                "price_usd": int | None,
-                "hours":     int | None,
-            },
-        }
+    Dispatches on `data["featured_template"]`; falls back to
+    DEFAULT_FEATURED_TEMPLATE when missing or unknown.
+    """
+    template = (data.get("featured_template") or DEFAULT_FEATURED_TEMPLATE).strip().lower()
+    renderer = _TEMPLATES.get(template) or _TEMPLATES[DEFAULT_FEATURED_TEMPLATE]
+    return renderer(data)
 
-    Returns:
-        Complete self-contained HTML document string.
+
+def _render_price_tag(data: dict) -> str:
+    """
+    Render Featured Listing Template 1 ("price_tag") — the locked Price Tag
+    design. See design_handoff_hero_listing_pricetag/README.md.
+
+    All payload fields are optional and degrade cleanly when missing.
     """
     machine = data.get("machine") or {}
     dealer  = data.get("dealer")  or {}
     listing = data.get("listing") or {}
 
-    # --- Machine fields ---
-    year       = machine.get("year")
-    make       = (machine.get("make") or "").upper()
-    model      = machine.get("model") or ""
-    photo_path = machine.get("photo_path")
+    # Theme
+    theme_key = (dealer.get("theme") or "yellow").lower().strip()
+    theme = _THEMES.get(theme_key, _THEMES["yellow"])
+    accent = theme["accent"]
+    accent_ink = theme["accent_ink"]
+    # Dark accent variant flips the dealer-mark contrast
+    is_dark_accent = theme_key in ("red", "blue", "green")
 
-    # --- Theme ---
-    theme = (dealer.get("theme") or "yellow").lower().strip()
-    if theme not in _VALID_THEMES:
-        theme = "yellow"
-    theme_classes = "theme-yellow" if theme == "yellow" else f"theme-dealer theme-{theme}"
+    # Machine
+    year  = machine.get("year")
+    make  = (machine.get("make") or "").upper()
+    model = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+    eq_type = (machine.get("equipment_type") or "").lower()
 
-    # --- Listing fields ---
+    flags = machine.get("feature_flags") or {}
+    high_flow = bool(flags.get("high_flow_available", False))
+
+    # Listing
     price = listing.get("price_usd")
     hours = listing.get("hours")
 
-    # --- Year/make line ---
-    if year and make:
-        ym_html = (
-            f'<span class="year">{html.escape(str(year))}</span>'
-            f'<span class="sep">&middot;</span>'
-            f'<span class="make">{html.escape(make)}</span>'
-        )
-    elif make:
-        ym_html = f'<span class="make">{html.escape(make)}</span>'
-    else:
-        ym_html = ""
+    # Dealer badge
+    show_dealer = bool(dealer.get("show_branding", True)) and bool(dealer.get("name"))
+    d_name  = dealer.get("name") or ""
+    d_short = (dealer.get("short_mark") or _initials(d_name)).upper()[:2]
+    d_rep   = dealer.get("rep") or ""
+    d_phone = dealer.get("phone") or ""
+    d_loc   = dealer.get("location") or ""
+    meta_parts = [p for p in (d_rep or d_loc, d_phone) if p]
+    d_meta = " · ".join(meta_parts)
 
-    # --- Price pill ---
+    # ------- Composed HTML fragments -------
+    # Year/make line (e.g. "2020  ·  BOBCAT")
+    year_make_inner = ""
+    if year and make:
+        year_make_inner = f"{html.escape(str(year))} &nbsp;·&nbsp; {html.escape(make)}"
+    elif make:
+        year_make_inner = html.escape(make)
+    elif year:
+        year_make_inner = html.escape(str(year))
+    if not year_make_inner:
+        category = _EQ_TYPE_DISPLAY.get(eq_type, "")
+        if category:
+            year_make_inner = html.escape(category.upper())
+
+    # Price tag
     if price is not None:
-        price_str  = _fmt_price(price)
-        price_html = f'<div class="h-price"><div class="amt">{html.escape(price_str)}</div></div>'
-        header_cls = "header"
+        price_str = _fmt_price(price)
+        price_html = (
+            f'<div class="pricetag">'
+            f'<div class="amt">{html.escape(price_str)}</div>'
+            f'<div class="sub">Easy Financing Available</div>'
+            f'</div>'
+        ) if price_str else ""
     else:
         price_html = ""
-        header_cls = "header no-price"
 
-    # --- Photo ---
-    photo_uri = _photo_data_uri(photo_path)
-    if photo_uri:
-        photo_cls      = "photo"
-        machine_style  = f'style="background-image: url(\'{photo_uri}\');"'
-    else:
-        photo_cls      = "photo photo-missing"
-        machine_style  = ""
-
-    # --- Hours chip ---
+    # Trim/hours chip — pill (HIGH FLOW), bullet, hours
+    chip_inner_parts: list[str] = []
+    if high_flow:
+        chip_inner_parts.append('<div class="hf-pill">HIGH FLOW</div>')
     if hours is not None:
-        hrs_str    = _fmt_comma(hours)
-        hours_html = (
-            f'<div class="hours-chip">'
-            f'<span class="v">{html.escape(hrs_str)}</span>'
-            f'<span class="u">HRS</span>'
+        try:
+            hrs_display = f"{int(hours):,}"
+        except (TypeError, ValueError):
+            hrs_display = str(hours)
+        chip_inner_parts.append(
+            '<div class="hours">'
+            f'<span class="hclock">{_icon("clock", 22)}</span>'
+            f'<span class="hv">{html.escape(hrs_display)}</span>'
+            '<span class="hu">HRS</span>'
+            '</div>'
+        )
+    if len(chip_inner_parts) == 2:
+        chip_html = (
+            '<div class="trim-strip">'
+            + chip_inner_parts[0]
+            + '<span class="dot">•</span>'
+            + chip_inner_parts[1]
+            + '</div>'
+        )
+    elif chip_inner_parts:
+        chip_html = '<div class="trim-strip">' + chip_inner_parts[0] + '</div>'
+    else:
+        chip_html = ""
+
+    # Dealer badge
+    if show_dealer:
+        dark_cls = " is-dark-accent" if is_dark_accent else ""
+        meta_html = f'<div class="db-meta">{html.escape(d_meta)}</div>' if d_meta else ""
+        dealer_html = (
+            f'<div class="dealer-badge{dark_cls}">'
+            f'  <div class="db-mark">{html.escape(d_short)}</div>'
+            f'  <div class="db-text">'
+            f'    <div class="db-name">{html.escape(d_name.upper())}</div>'
+            f'    {meta_html}'
+            f'  </div>'
             f'</div>'
         )
     else:
-        hours_html = ""
+        dealer_html = ""
 
-    eq_type = (machine.get("equipment_type") or "").lower()
-    roc_html, hp_html, flow_html = _build_spec_cols(machine, eq_type)
+    # Spec rail
+    specs = _build_specs(machine, eq_type, high_flow_confirmed=high_flow)
+    spec_cells: list[str] = []
+    for i, spec in enumerate(specs):
+        sep_cls = "" if i == 0 else " has-sep"
+        if spec["value"] is None:
+            value_html = '<span class="spec-num">&mdash;</span>'
+        else:
+            unit_html = (
+                f'<span class="spec-unit">{html.escape(spec["unit"])}</span>'
+                if spec["unit"] else ""
+            )
+            value_html = (
+                f'<span class="spec-num">{html.escape(spec["value"])}</span>'
+                f'{unit_html}'
+            )
+        spec_cells.append(
+            f'<div class="spec-cell{sep_cls}">'
+            f'  <div class="spec-label-row">'
+            f'    <span class="spec-icon">{_icon(spec["icon_key"], 20)}</span>'
+            f'    <span class="spec-label">{html.escape(spec["label"])}</span>'
+            f'  </div>'
+            f'  <div class="spec-value-row">{value_html}</div>'
+            f'</div>'
+        )
+    spec_rail_html = '<div class="spec-rail">' + "".join(spec_cells) + '</div>'
 
-    return _build_html(
-        theme_classes = theme_classes,
-        header_cls    = header_cls,
-        ym_html       = ym_html,
-        model         = model,
-        price_html    = price_html,
-        photo_cls     = photo_cls,
-        machine_style = machine_style,
-        hours_html    = hours_html,
-        roc_html      = roc_html,
-        hp_html       = hp_html,
-        flow_html     = flow_html,
+    # Photo backdrop
+    if photo_uri:
+        photo_html = (
+            f'<img class="machine-img" src="{photo_uri}" alt=""/>'
+        )
+    else:
+        photo_html = '<div class="photo-fallback"></div>'
+
+    # Auto-shrink very long model names (>5 chars) so they stay on one line
+    model_len = len(model)
+    if model_len <= 5:
+        model_size_px = 230
+    elif model_len <= 7:
+        model_size_px = 190
+    elif model_len <= 9:
+        model_size_px = 150
+    else:
+        model_size_px = 120
+
+    return _PAGE_TEMPLATE.format(
+        accent=accent,
+        accent_ink=accent_ink,
+        year_make_inner=year_make_inner,
+        model=html.escape(model),
+        model_size_px=model_size_px,
+        price_html=price_html,
+        chip_html=chip_html,
+        dealer_html=dealer_html,
+        spec_rail_html=spec_rail_html,
+        photo_html=photo_html,
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HTML template
+# HTML template — native 1080×1350 design space
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _build_html(
-    theme_classes: str,
-    header_cls: str,
-    ym_html: str,
-    model: str,
-    price_html: str,
-    photo_cls: str,
-    machine_style: str,
-    hours_html: str,
-    roc_html: str,
-    hp_html: str,
-    flow_html: str,
-) -> str:
-    model_esc = html.escape(model)
-    return f"""<!DOCTYPE html>
+_PAGE_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>MTM Listing Card</title>
+<title>MTM Featured Listing — Price Tag</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Archivo+Narrow:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {{
-    --mtm-yellow: #FFC20E;
-    --mtm-ink:    #0D0D0D;
-    --mtm-panel:  #141414;
-    --mtm-muted:  #B8B8B8;
-    --mtm-white:  #FFFFFF;
-  }}
-
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
-  body {{
-    background: #0A0A0A;
-    font-family: 'Inter', sans-serif;
-    padding: 20px;
+  html, body {{
+    background: #1a1916;
+    font-family: 'Inter Tight', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }}
-
-  /* ─── Card shell ─────────────────────────────────────────────────── */
   .card {{
-    width: 540px;
-    aspect-ratio: 4 / 5;
-    background: #1A1A1A;
+    width: 1080px;
+    height: 1350px;
     position: relative;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.06);
-    --gutter: 22px;
+    background: #0d0d0c;
+    color: #fff;
+    --accent: {accent};
+    --accent-ink: {accent_ink};
+    --ink: #0d0d0c;
   }}
 
-  /* ─── Header ─────────────────────────────────────────────────────── */
-  .card .header {{
-    padding: 14px var(--gutter) 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    position: relative;
-    flex-shrink: 0;
-  }}
-
-  .card .header.no-price .h-id {{
-    width: 100%;
-  }}
-
-  .card .h-id {{
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-    flex: 1;
-  }}
-
-  .card .h-id .year-make {{
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: 'Oswald', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-  }}
-
-  .card .h-id .year-make .year {{
-    font-weight: 600;
-  }}
-
-  .card .h-id .model {{
-    font-family: 'Oswald', sans-serif;
-    font-size: 56px;
-    font-weight: 700;
-    line-height: 0.9;
-    letter-spacing: -1.5px;
-    margin-top: 3px;
-  }}
-
-  /* ─── Price pill ─────────────────────────────────────────────────── */
-  .card .h-price {{
-    flex-shrink: 0;
-  }}
-
-  .card .h-price .amt {{
-    background: var(--mtm-ink);
-    padding: 10px 16px;
-    border-radius: 4px;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.25);
-    font-family: 'Oswald', sans-serif;
-    font-size: 42px;
-    font-weight: 700;
-    letter-spacing: -1.5px;
-    line-height: 0.9;
-    color: var(--mtm-white);
-    white-space: nowrap;
+  /* Photo + scrims */
+  .photo-wrap {{ position: absolute; inset: 0; z-index: 0; overflow: hidden; }}
+  .machine-img {{
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 55%;
     display: block;
+    filter: brightness(1.08) contrast(1.04) saturate(1.05);
   }}
-
-  /* ─── Photo region ───────────────────────────────────────────────── */
-  .card .photo {{
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-    min-height: 0;
+  .photo-fallback {{
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg, #2a2926 0 22px, #232220 22px 44px);
   }}
-
-  .card .photo .machine {{
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }}
-
-  /* Full-photo gradient overlay */
-  .card .photo::after {{
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
+  .scrim {{
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      rgba(13,13,12,.78) 0%,
+      rgba(13,13,12,.15) 22%,
+      rgba(13,13,12,0) 35%,
+      rgba(13,13,12,0) 52%,
+      rgba(13,13,12,.7) 78%,
+      rgba(13,13,12,.97) 100%);
     pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.18) 0%,
-      rgba(0,0,0,0.06) 25%,
-      rgba(0,0,0,0.00) 50%,
-      rgba(0,0,0,0.10) 70%,
-      rgba(0,0,0,0.32) 100%
-    );
+  }}
+  .lift {{
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 55% 38% at 50% 55%,
+      rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 70%);
+    mix-blend-mode: screen; pointer-events: none;
   }}
 
-  /* Missing photo state */
-  .card .photo.photo-missing .machine {{
-    background: #2A2A2A;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Top yellow rule */
+  .top-rule {{
+    position: absolute; top: 0; left: 0; right: 0; height: 6px;
+    background: var(--accent); z-index: 6;
   }}
-
-  .card .photo.photo-missing .machine::after {{
-    content: 'PHOTO PENDING';
-    font-family: 'Oswald', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: #888;
-    letter-spacing: 0.05em;
-  }}
-
-  .card .photo.photo-missing::after {{
-    display: none;
-  }}
-
-  /* ─── Hours chip ─────────────────────────────────────────────────── */
-  .card .hours-chip {{
-    position: absolute;
-    top: 12px;
-    right: 12px;
+  /* Left vertical strip */
+  .left-strip {{
+    position: absolute; left: 0; top: 0; bottom: 0; width: 48px;
+    background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.45));
     z-index: 2;
-    background: rgba(13,13,13,0.9);
+  }}
+
+  /* Dealer badge */
+  .dealer-row {{
+    position: absolute; top: 48px; left: 48px; right: 48px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 18px; z-index: 5;
+  }}
+  .dealer-badge {{
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 10px 16px 10px 12px;
+    background: rgba(13,13,12,.85);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    padding: 5px 9px 5px 7px;
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
+    white-space: nowrap;
+  }}
+  .dealer-badge .db-mark {{
+    width: 38px; height: 38px;
+    border-radius: 3px;
+    background: var(--accent); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 22px; letter-spacing: -.02em;
+    position: relative; flex: 0 0 auto;
+  }}
+  .dealer-badge.is-dark-accent .db-mark {{
+    background: var(--ink); color: var(--accent);
+  }}
+  .dealer-badge .db-mark::after {{
+    content: ""; position: absolute;
+    right: -1px; bottom: -1px;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }}
+  .dealer-badge .db-text {{
+    display: flex; flex-direction: column; gap: 2px;
+    line-height: 1; min-width: 0;
+  }}
+  .dealer-badge .db-name {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 19px; letter-spacing: .005em;
+    text-transform: uppercase; color: #fff;
+  }}
+  .dealer-badge .db-meta {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 500; font-size: 11px; letter-spacing: .04em;
+    color: rgba(255,255,255,.55); text-transform: uppercase;
   }}
 
-  .card .hours-chip .v {{
-    font-family: 'Oswald', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--mtm-white);
+  /* Price tag */
+  .pricetag {{
+    position: absolute; top: 140px; right: 48px; z-index: 6;
+    background: var(--accent); color: var(--accent-ink);
+    padding: 14px 26px 16px;
+    box-shadow:
+      0 22px 44px rgba(0,0,0,.55),
+      0 4px 0 rgba(13,13,12,.35),
+      inset 0 0 0 3px rgba(13,13,12,.1);
+    clip-path: polygon(0% 8%, 4% 0%, 100% 0%, 100% 100%, 4% 100%, 0% 92%);
+  }}
+  .pricetag .amt {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 84px;
+    line-height: .85; letter-spacing: -.015em;
+    white-space: nowrap; text-transform: uppercase;
+  }}
+  .pricetag .sub {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700; font-size: 11px; letter-spacing: .1em;
+    margin-top: 6px; text-transform: uppercase;
   }}
 
-  .card .hours-chip .u {{
-    font-family: 'Inter', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    line-height: 1;
+  /* Title block */
+  .title-block {{
+    position: absolute; left: 48px; right: 48px; bottom: 316px;
+    z-index: 3; color: #fff;
   }}
-
-  /* ─── Spec block ─────────────────────────────────────────────────── */
-  .card .spec-block {{
-    background: var(--mtm-panel);
-    padding: 14px var(--gutter) 22px;
-    flex-shrink: 0;
+  .title-block .ym {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 26px;
+    color: var(--accent);
+    letter-spacing: .18em; text-transform: uppercase;
+    margin-bottom: 10px;
   }}
-
-  .card .specs {{
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-  }}
-
-  .card .specs .spec:not(:last-child) {{
-    border-right: 1px solid rgba(255,255,255,0.1);
-    padding-right: 12px;
-  }}
-
-  .card .specs .lbl {{
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2.2px;
+  .title-block .model {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: {model_size_px}px;
+    line-height: .86;
+    letter-spacing: -.015em;
+    color: #fff;
+    margin-left: -4px;
     text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+  }}
+  .trim-strip {{
+    display: inline-flex; align-items: center; gap: 14px;
+    margin-top: 14px;
+    background: rgba(13,13,12,.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+  }}
+  .trim-strip .hf-pill {{
+    background: var(--accent); color: var(--accent-ink);
+    padding: 5px 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 24px; letter-spacing: .04em;
+    line-height: 1; text-transform: uppercase;
+  }}
+  .trim-strip .dot {{
+    color: rgba(255,255,255,.5);
+    font-weight: 900; font-size: 22px; line-height: 1;
+  }}
+  .trim-strip .hours {{
+    display: flex; align-items: baseline; gap: 8px;
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 30px;
+  }}
+  .trim-strip .hclock {{
+    color: var(--accent); display: inline-flex; align-self: center;
+  }}
+  .trim-strip .hv {{ color: #fff; }}
+  .trim-strip .hu {{
+    color: rgba(255,255,255,.7);
+    font-size: 18px; font-weight: 700; letter-spacing: .14em;
   }}
 
-  .card .specs .v {{
-    font-family: 'Oswald', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -1px;
-    line-height: 1;
-    color: var(--mtm-white);
-    margin-top: 7px;
-    display: block;
+  /* Spec rail */
+  .spec-rail {{
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: #0d0d0c;
+    border-top: 4px solid var(--accent);
+    padding: 22px 28px 26px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    z-index: 5;
   }}
-
-  .card .specs .v .u {{
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0;
-    color: var(--mtm-muted);
-    margin-left: 2px;
-    vertical-align: baseline;
+  .spec-cell {{
+    padding: 0 14px;
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
   }}
-
-  /* ─── Theme: yellow (MTM default) ───────────────────────────────── */
-  .theme-yellow .header                  {{ background: var(--mtm-yellow); }}
-  .theme-yellow .h-id .year-make         {{ color: var(--mtm-ink); }}
-  .theme-yellow .h-id .year-make .sep    {{ color: rgba(13,13,13,0.45); }}
-  .theme-yellow .h-id .model             {{ color: var(--mtm-ink); }}
-  .theme-yellow .spec-block              {{ border-top: 4px solid var(--mtm-yellow); }}
-  .theme-yellow .specs .lbl              {{ color: var(--mtm-yellow); }}
-  .theme-yellow .hours-chip              {{ border-left: 2px solid var(--mtm-yellow); }}
-  .theme-yellow .hours-chip .u           {{ color: var(--mtm-yellow); }}
-
-  /* ─── Theme: dealer (red / blue / green / orange) ────────────────── */
-  .theme-dealer .header                  {{ background: var(--accent); }}
-  .theme-dealer .h-id .year-make         {{ color: rgba(255,255,255,1); }}
-  .theme-dealer .h-id .year-make .sep    {{ color: rgba(255,255,255,0.5); }}
-  .theme-dealer .h-id .model             {{ color: var(--mtm-white); }}
-  .theme-dealer .spec-block              {{ border-top: 4px solid var(--accent); }}
-  .theme-dealer .specs .lbl              {{ color: var(--accent-bright); }}
-  .theme-dealer .hours-chip              {{ border-left: 2px solid var(--accent-bright); }}
-  .theme-dealer .hours-chip .u           {{ color: var(--accent-bright); }}
-
-  .theme-red    {{ --accent: #C8102E; --accent-bright: #FF5A6E; }}
-  .theme-blue   {{ --accent: #1E4D8C; --accent-bright: #5B9BE8; }}
-  .theme-green  {{ --accent: #2C5F3E; --accent-bright: #6BC48A; }}
-  .theme-orange {{ --accent: #D85A15; --accent-bright: #FF9456; }}
+  .spec-cell.has-sep {{ border-left: 1px solid rgba(255,255,255,.14); }}
+  .spec-label-row {{ display: flex; align-items: center; gap: 8px; }}
+  .spec-icon {{ color: var(--accent); display: inline-flex; }}
+  .spec-label {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700; font-size: 16px; letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.82);
+    white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }}
+  .spec-value-row {{ display: flex; align-items: baseline; gap: 6px; }}
+  .spec-num {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 78px; line-height: .85;
+    color: #fff;
+  }}
+  .spec-unit {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 26px;
+    color: var(--accent);
+  }}
 </style>
 </head>
 <body>
-<div class="card {theme_classes}">
-  <div class="{header_cls}">
-    <div class="h-id">
-      <div class="year-make">{ym_html}</div>
-      <div class="model">{model_esc}</div>
-    </div>
-    {price_html}
+<div class="card">
+  <div class="photo-wrap">
+    {photo_html}
+    <div class="scrim"></div>
+    <div class="lift"></div>
   </div>
-  <div class="{photo_cls}">
-    <div class="machine" {machine_style}></div>
-    {hours_html}
+  <div class="top-rule"></div>
+  <div class="left-strip"></div>
+  <div class="dealer-row">{dealer_html}</div>
+  {price_html}
+  <div class="title-block">
+    <div class="ym">{year_make_inner}</div>
+    <div class="model">{model}</div>
+    {chip_html}
   </div>
-  <div class="spec-block">
-    <div class="specs">
-      {roc_html}
-      {hp_html}
-      {flow_html}
-    </div>
-  </div>
+  {spec_rail_html}
 </div>
 </body>
 </html>
@@ -608,59 +689,44 @@ def _build_html(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Test / demo
+# Template registry — add future templates here, one entry per featured_template
+# key. Keep entries simple (key -> callable taking the payload dict).
+# ─────────────────────────────────────────────────────────────────────────────
+
+_TEMPLATES: dict[str, Any] = {
+    "price_tag": _render_price_tag,
+    # "template_2": _render_template_2,   # planned
+    # "template_3": _render_template_3,   # planned
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Demo
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    import json
-    from pathlib import Path
-
-    # --- CAT 299D3 — yellow theme (MTM default) ---
-    _cat_data = {
+    sample = {
         "machine": {
-            "year":  2022,
-            "make":  "CAT",
-            "model": "299D3",
-            "horsepower_hp":                110,
-            "rated_operating_capacity_lbs": 3550,
-            "aux_flow_standard_gpm":        23.0,
-            "aux_flow_high_gpm":            40.0,
+            "year": 2020,
+            "make": "BOBCAT",
+            "model": "T770",
+            "equipment_type": "compact_track_loader",
+            "horsepower_hp": 92,
+            "rated_operating_capacity_lbs": 3475,
+            "aux_flow_standard_gpm": 23.0,
+            "aux_flow_high_gpm": 36.6,
             "feature_flags": {"high_flow_available": True},
             "photo_path": None,
         },
-        "dealer":  {"theme": "yellow"},
-        "listing": {"price_usd": 89500, "hours": 425},
-    }
-
-    out_yellow = Path("test_card_yellow.html")
-    out_yellow.write_text(render_card(_cat_data), encoding="utf-8")
-    print(f"yellow -> {out_yellow}")
-
-    # --- CAT 299D3 — red theme ---
-    _red_data = dict(_cat_data)
-    _red_data["dealer"] = {"theme": "red"}
-    out_red = Path("test_card_red.html")
-    out_red.write_text(render_card(_red_data), encoding="utf-8")
-    print(f"red    -> {out_red}")
-
-    # --- Null-handling: hours=None, hp=None ---
-    _null_data = {
-        "machine": {
-            "year":  2019,
-            "make":  "BOBCAT",
-            "model": "S650",
-            "horsepower_hp":                None,
-            "rated_operating_capacity_lbs": 2690,
-            "aux_flow_standard_gpm":        None,
-            "aux_flow_high_gpm":            None,
-            "feature_flags": {},
-            "photo_path": None,
+        "dealer": {
+            "theme": "yellow",
+            "name": "Coastline Equipment",
+            "short_mark": "CE",
+            "rep": "Jordan Reyes",
+            "phone": "(562) 555-0182",
+            "show_branding": True,
         },
-        "dealer":  {"theme": "yellow"},
-        "listing": {"price_usd": 45000, "hours": None},
+        "listing": {"price_usd": 60000, "hours": 200},
     }
-    out_null = Path("test_card_nulls.html")
-    out_null.write_text(render_card(_null_data), encoding="utf-8")
-    print(f"nulls  -> {out_null}")
-
-    print("Open these HTML files in a browser to verify rendering.")
+    Path("test_card_pricetag.html").write_text(render_card(sample), encoding="utf-8")
+    print("wrote test_card_pricetag.html")

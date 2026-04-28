@@ -74,6 +74,8 @@ def adapt_dealer_input(
     image_input_paths: list[str],
     *,
     theme: str = "yellow",
+    dealer_info: "dict | None" = None,
+    featured_template: "str | None" = None,
 ) -> dict:
     """
     Build the renderer data dict from a validated DealerInput object.
@@ -92,6 +94,13 @@ def adapt_dealer_input(
     Keys: photo_path, listing_price, listing_hours, theme, high_flow.
     """
     high_flow_raw: Any = getattr(dealer_input, "high_flow", None)
+    info = dealer_info or {}
+    # Featured template — explicit kwarg wins, then dealer_info, then default.
+    chosen_template = (
+        featured_template
+        or info.get("featured_template")
+        or "price_tag"
+    )
     return {
         "photo_path":     image_input_paths[0] if image_input_paths else None,
         "listing_price":  getattr(dealer_input, "asking_price", None),
@@ -100,6 +109,14 @@ def adapt_dealer_input(
         "theme":          theme,
         # Kept for callers that still inspect this flag directly
         "high_flow":      (high_flow_raw == "yes"),
+        # Dealer identity — drives the dealer badge in templates that show it.
+        "dealer_name":    info.get("dealer_name") or info.get("name"),
+        "dealer_rep":     info.get("contact_name") or info.get("rep"),
+        "dealer_phone":   info.get("phone"),
+        "dealer_location":info.get("location") or info.get("city"),
+        "dealer_logo":    info.get("logo_path") or info.get("logo"),
+        "show_branding":  info.get("show_branding", True),
+        "featured_template": chosen_template,
     }
 
 
@@ -153,12 +170,19 @@ def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
             "photo_path": dealer_dict.get("photo_path"),
         },
         "dealer": {
-            "theme": dealer_dict.get("theme") or "yellow",
+            "theme":         dealer_dict.get("theme") or "yellow",
+            "name":          dealer_dict.get("dealer_name"),
+            "rep":           dealer_dict.get("dealer_rep"),
+            "phone":         dealer_dict.get("dealer_phone"),
+            "location":      dealer_dict.get("dealer_location"),
+            "logo_path":     dealer_dict.get("dealer_logo"),
+            "show_branding": dealer_dict.get("show_branding", True),
         },
         "listing": {
             "price_usd": dealer_dict.get("listing_price") or dealer_dict.get("price"),
             "hours":     dealer_dict.get("listing_hours") or dealer_dict.get("hours"),
         },
+        "featured_template": dealer_dict.get("featured_template") or "price_tag",
     }
 
 
@@ -207,8 +231,8 @@ def _screenshot_card(html_str: str, output_path: Path) -> None:
     """
     Render HTML to PNG using Playwright headless Chromium.
 
-    Card CSS is 540px wide with aspect-ratio 4/5 → 540×675 px element.
-    At device_scale_factor 2.0 the element screenshot is exactly 1080×1350 px
+    Card CSS is 1080×1350 (the design's native 4:5 frame). At
+    device_scale_factor 1.0 the element screenshot is exactly 1080×1350 px
     (Facebook portrait recommended size).
 
     Fonts load via Google Fonts CDN; wait_until="networkidle" ensures they
@@ -224,8 +248,8 @@ def _screenshot_card(html_str: str, output_path: Path) -> None:
             browser = pw.chromium.launch(headless=True)
             try:
                 page = browser.new_page(
-                    viewport={"width": 560, "height": 700},
-                    device_scale_factor=2.0,
+                    viewport={"width": 1100, "height": 1400},
+                    device_scale_factor=1.0,
                 )
                 page.set_content(html_str, wait_until="networkidle")
                 card_el = page.query_selector(".card")

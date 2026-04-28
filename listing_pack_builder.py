@@ -845,7 +845,10 @@ def build_listing_pack_v1(
         from card_renderer_adapter import adapt_dealer_input
         _theme = (dealer_info or {}).get("accent_color", "yellow")
         card_dealer_data = adapt_dealer_input(
-            dealer_input, image_input_paths or [], theme=_theme
+            dealer_input,
+            image_input_paths or [],
+            theme=_theme,
+            dealer_info=dealer_info,
         )
 
     # 5. Delegate to the full pack assembler
