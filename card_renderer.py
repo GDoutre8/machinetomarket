@@ -694,10 +694,512 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 # ─────────────────────────────────────────────────────────────────────────────
 
 _TEMPLATES: dict[str, Any] = {
-    "price_tag": _render_price_tag,
-    # "template_2": _render_template_2,   # planned
+    "price_tag":      _render_price_tag,
+    "auction_ticket": None,  # bound below once function is defined
     # "template_3": _render_template_3,   # planned
 }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template 2 — "auction_ticket"
+# Reference: design_handoff_hero_listing_v2/source/concept-auctionticket.jsx
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_auction_ticket(data: dict) -> str:
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key = (dealer.get("theme") or "yellow").lower().strip()
+    theme = _THEMES.get(theme_key, _THEMES["yellow"])
+    accent = theme["accent"]
+    accent_ink = theme["accent_ink"]
+    is_dark_accent = theme_key in ("red", "blue", "green")
+
+    year   = machine.get("year")
+    make   = (machine.get("make") or "").upper()
+    model  = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+    eq_type = (machine.get("equipment_type") or "").lower()
+
+    flags = machine.get("feature_flags") or {}
+    high_flow = bool(flags.get("high_flow_available", False))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    # ----- Year chip + make label -----
+    year_chip_html = ""
+    if year:
+        year_chip_html = (
+            f'<span class="yr-chip">{html.escape(str(year))}</span>'
+        )
+    make_text = make
+    if not make_text and not year:
+        make_text = _EQ_TYPE_DISPLAY.get(eq_type, "").upper()
+    ym_inner = f'{year_chip_html}{html.escape(make_text)}' if make_text else year_chip_html
+    ym_html = f'<div class="ym-row">{ym_inner}</div>' if ym_inner else ""
+
+    # Model shrink for long model names
+    mlen = len(model)
+    if mlen <= 4:
+        model_size_px = 240
+    elif mlen <= 5:
+        model_size_px = 220
+    elif mlen <= 7:
+        model_size_px = 180
+    elif mlen <= 9:
+        model_size_px = 140
+    else:
+        model_size_px = 110
+    model_html = f'<div class="model">{html.escape(model)}</div>' if model else ""
+
+    # ----- HIGH FLOW pill -----
+    hf_html = (
+        '<div class="hf-pill-row"><div class="hf-pill">HIGH FLOW</div></div>'
+        if high_flow else
+        '<div class="hf-pill-row hf-pill-row--empty"></div>'
+    )
+
+    # ----- Photo block -----
+    if photo_uri:
+        photo_inner = f'<img class="machine-img" src="{photo_uri}" alt=""/>'
+    else:
+        photo_inner = '<div class="photo-fallback"></div>'
+
+    # Dealer badge (bottom-left of photo)
+    show_dealer = bool(dealer.get("show_branding", True)) and bool(dealer.get("name"))
+    if show_dealer:
+        d_name  = dealer.get("name") or ""
+        d_short = (dealer.get("short_mark") or _initials(d_name)).upper()[:2]
+        d_rep   = dealer.get("rep") or ""
+        d_phone = dealer.get("phone") or ""
+        d_loc   = dealer.get("location") or ""
+        meta_parts = [p for p in (d_rep or d_loc, d_phone) if p]
+        d_meta = " · ".join(meta_parts)
+        dark_cls = " is-dark-accent" if is_dark_accent else ""
+        meta_html = f'<div class="db-meta">{html.escape(d_meta)}</div>' if d_meta else ""
+        dealer_html = (
+            f'<div class="dealer-badge{dark_cls}">'
+            f'  <div class="db-mark">{html.escape(d_short)}</div>'
+            f'  <div class="db-text">'
+            f'    <div class="db-name">{html.escape(d_name.upper())}</div>'
+            f'    {meta_html}'
+            f'  </div>'
+            f'</div>'
+        )
+    else:
+        dealer_html = ""
+
+    corners_html = "".join(
+        f'<div class="corner corner-{c}"></div>' for c in ("tl", "tr", "bl", "br")
+    )
+
+    photo_html = (
+        f'<div class="photo-block">'
+        f'  {photo_inner}'
+        f'  {corners_html}'
+        f'  <div class="photo-badge">{dealer_html}</div>'
+        f'</div>'
+    )
+
+    # ----- Hours pill -----
+    if hours is not None:
+        try:
+            hrs_display = f"{int(hours):,}"
+        except (TypeError, ValueError):
+            hrs_display = str(hours)
+        hours_html = (
+            '<div class="hours-pill">'
+            f'<span class="hp-icon">{_icon("clock", 20)}</span>'
+            f'<span class="hp-val">{html.escape(hrs_display)}</span>'
+            '<span class="hp-unit">HRS</span>'
+            '</div>'
+        )
+    else:
+        hours_html = ""
+
+    # ----- Price card -----
+    price_str = _fmt_price(price) if price is not None else ""
+    if price_str:
+        price_html = (
+            '<div class="price-card">'
+            f'  <div class="pc-amt">{html.escape(price_str)}</div>'
+            '  <div class="pc-sub">FINANCING AVAILABLE</div>'
+            '  <div class="pc-corner"></div>'
+            '</div>'
+        )
+    else:
+        price_html = ""
+
+    left_col_inner = hours_html + price_html
+    if left_col_inner:
+        left_col_html = f'<div class="buyer-col">{left_col_inner}</div>'
+        ledger_grid_cols = "320px 1fr"
+    else:
+        left_col_html = ""
+        ledger_grid_cols = "1fr"
+
+    # ----- Spec ledger -----
+    specs = _build_specs(machine, eq_type, high_flow_confirmed=high_flow)
+    spec_cells: list[str] = []
+    short_map = {
+        "RATED OP CAPACITY": "ROC",
+        "NET HORSEPOWER":    "NET HP",
+        "AUX FLOW":          "AUX FLOW",
+        "HIGH FLOW":         "HIGH FLOW",
+        "OP WEIGHT":         "OP WEIGHT",
+        "NET HP":            "NET HP",
+        "DIG DEPTH":         "DIG DEPTH",
+        "LIFT CAP":          "LIFT CAP",
+        "LIFT HT":           "LIFT HT",
+        "BUCKET":            "BUCKET",
+        "BLADE":             "BLADE",
+        "PLATFORM HT":       "PLAT HT",
+        "PLATFORM W":        "PLAT W",
+        "PLATFORM CAP":      "PLAT CAP",
+        "HORIZ REACH":       "REACH",
+    }
+    for i, spec in enumerate(specs):
+        sep_cls = "" if i == 0 else " has-sep"
+        long_label = spec["label"]
+        short_label = short_map.get(long_label, long_label[:9])
+        if spec["value"] is None:
+            value_html = '<span class="sl-val">&mdash;</span>'
+        else:
+            unit_html = (
+                f'<span class="sl-unit">{html.escape(spec["unit"])}</span>'
+                if spec["unit"] else ""
+            )
+            value_html = (
+                f'<span class="sl-val">{html.escape(spec["value"])}</span>{unit_html}'
+            )
+        sub_html = (
+            f'<div class="sl-label">{html.escape(long_label)}</div>'
+            if short_label != long_label else ""
+        )
+        spec_cells.append(
+            f'<div class="sl-cell{sep_cls}">'
+            f'  <div class="sl-head">'
+            f'    <span class="sl-icon">{_icon(spec["icon_key"], 18, stroke=2.2)}</span>'
+            f'    <span class="sl-short">{html.escape(short_label)}</span>'
+            f'  </div>'
+            f'  <div class="sl-num-row">{value_html}</div>'
+            f'  {sub_html}'
+            f'</div>'
+        )
+    ledger_html = '<div class="spec-ledger">' + "".join(spec_cells) + '</div>'
+
+    return _PAGE_TEMPLATE_AUCTION.format(
+        accent=accent,
+        accent_ink=accent_ink,
+        ym_html=ym_html,
+        model_html=model_html,
+        model_size_px=model_size_px,
+        hf_html=hf_html,
+        photo_html=photo_html,
+        left_col_html=left_col_html,
+        ledger_grid_cols=ledger_grid_cols,
+        ledger_html=ledger_html,
+    )
+
+
+_PAGE_TEMPLATE_AUCTION = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Auction Ticket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{
+    background: #1a1916;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden;
+    background: #1a1916;
+    --accent: {accent};
+    --accent-ink: {accent_ink};
+    --ink: #0d0d0c;
+    --paper: #f3efe6;
+  }}
+  .paper {{
+    position: absolute; inset: 30px;
+    background: var(--paper);
+    background-image: radial-gradient(rgba(13,13,12,.04) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.4), 0 2px 0 rgba(0,0,0,.18);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }}
+
+  /* HEADER */
+  .hdr {{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 36px 16px;
+    border-bottom: 1.5px solid var(--ink);
+    flex: 0 0 auto;
+  }}
+  .hdr-l {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 800; font-size: 13px; letter-spacing: .32em;
+    color: rgba(13,13,12,.55); text-transform: uppercase;
+  }}
+  .hdr-r {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600; font-size: 11px; letter-spacing: .16em;
+    color: rgba(13,13,12,.45); text-transform: uppercase;
+  }}
+
+  /* TITLE BLOCK */
+  .title-wrap {{ padding: 16px 36px 0; flex: 0 0 auto; }}
+  .ym-row {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 800; font-size: 18px; letter-spacing: .32em;
+    color: var(--ink); text-transform: uppercase;
+    display: flex; align-items: center;
+  }}
+  .yr-chip {{
+    background: var(--accent); color: var(--accent-ink);
+    padding: 3px 9px; margin-right: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 22px; letter-spacing: .05em;
+  }}
+  .model {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: {model_size_px}px;
+    line-height: .78;
+    color: var(--ink);
+    margin-top: 4px; margin-left: -8px;
+    text-transform: uppercase;
+    white-space: nowrap; overflow: hidden;
+  }}
+  .hf-pill-row {{
+    display: flex; align-items: center;
+    padding-top: 8px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(13,13,12,.18);
+    min-height: 50px;
+  }}
+  .hf-pill-row--empty {{ min-height: 18px; padding-top: 4px; padding-bottom: 4px; }}
+  .hf-pill {{
+    background: var(--ink); color: var(--accent);
+    padding: 6px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 26px;
+    letter-spacing: .06em; line-height: 1;
+  }}
+
+  /* PHOTO */
+  .photo-wrap {{ padding: 10px 36px 0; position: relative; flex: 0 0 auto; }}
+  .photo-block {{
+    position: relative;
+    background: var(--ink);
+    height: 540px;
+    overflow: hidden;
+  }}
+  .machine-img {{
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 50%;
+    display: block;
+    filter: brightness(1.06) contrast(1.04) saturate(1.05);
+  }}
+  .photo-fallback {{
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg, #2a2926 0 22px, #1f1e1c 22px 44px);
+  }}
+  .corner {{
+    position: absolute; width: 24px; height: 24px;
+  }}
+  .corner-tl {{ top: 10px; left: 10px;
+    border-top: 3px solid var(--accent); border-left: 3px solid var(--accent); }}
+  .corner-tr {{ top: 10px; right: 10px;
+    border-top: 3px solid var(--accent); border-right: 3px solid var(--accent); }}
+  .corner-bl {{ bottom: 10px; left: 10px;
+    border-bottom: 3px solid var(--accent); border-left: 3px solid var(--accent); }}
+  .corner-br {{ bottom: 10px; right: 10px;
+    border-bottom: 3px solid var(--accent); border-right: 3px solid var(--accent); }}
+  .photo-badge {{
+    position: absolute; left: 16px; bottom: 16px;
+    transform: scale(1.18); transform-origin: left bottom;
+  }}
+
+  /* DEALER BADGE (dark variant on photo) */
+  .dealer-badge {{
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 10px 16px 10px 12px;
+    background: rgba(13,13,12,.85);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }}
+  .dealer-badge .db-mark {{
+    width: 38px; height: 38px;
+    border-radius: 3px;
+    background: var(--accent); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 22px; letter-spacing: -.02em;
+    position: relative; flex: 0 0 auto;
+  }}
+  .dealer-badge.is-dark-accent .db-mark {{
+    background: var(--ink); color: var(--accent);
+  }}
+  .dealer-badge .db-mark::after {{
+    content: ""; position: absolute;
+    right: -1px; bottom: -1px;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }}
+  .dealer-badge .db-text {{
+    display: flex; flex-direction: column; gap: 2px;
+    line-height: 1; min-width: 0;
+  }}
+  .dealer-badge .db-name {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 19px; letter-spacing: .005em;
+    text-transform: uppercase; color: #fff;
+  }}
+  .dealer-badge .db-meta {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 500; font-size: 11px; letter-spacing: .04em;
+    color: rgba(255,255,255,.55); text-transform: uppercase;
+  }}
+
+  /* BOTTOM GRID */
+  .bottom-grid {{
+    padding: 16px 36px 24px;
+    display: grid;
+    grid-template-columns: {ledger_grid_cols};
+    gap: 22px;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
+  }}
+  .buyer-col {{ display: flex; flex-direction: column; gap: 10px; min-width: 0; }}
+
+  .hours-pill {{
+    display: inline-flex; align-self: flex-start;
+    align-items: baseline; gap: 10px;
+    background: var(--ink); color: #fff;
+    padding: 10px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    border: 1px solid var(--accent);
+    width: max-content;
+  }}
+  .hp-icon {{ color: var(--accent); display: inline-flex; align-self: center; }}
+  .hp-val  {{ font-size: 32px; line-height: .9; }}
+  .hp-unit {{
+    font-size: 14px; letter-spacing: .18em;
+    color: rgba(255,255,255,.7); font-weight: 700;
+  }}
+
+  .price-card {{
+    border: 3px solid var(--ink);
+    background: var(--accent); color: var(--accent-ink);
+    padding: 26px 22px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 200px;
+  }}
+  .pc-amt {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 96px; line-height: .85;
+    letter-spacing: -.015em; white-space: nowrap;
+  }}
+  .pc-sub {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; letter-spacing: .12em; font-weight: 700;
+    margin-top: 10px; text-transform: uppercase;
+  }}
+  .pc-corner {{
+    position: absolute; top: -3px; right: -3px;
+    width: 34px; height: 34px;
+    background: var(--ink);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+  }}
+
+  /* SPEC LEDGER */
+  .spec-ledger {{
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border: 1.5px solid rgba(13,13,12,.62);
+    background: var(--paper);
+    align-self: stretch;
+  }}
+  .sl-cell {{
+    padding: 24px 16px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-width: 0;
+  }}
+  .sl-cell.has-sep {{ border-left: 1.5px solid rgba(13,13,12,.62); }}
+  .sl-head {{ display: flex; align-items: center; gap: 8px; }}
+  .sl-icon {{ color: var(--ink); display: inline-flex; }}
+  .sl-short {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 800; font-size: 13px; letter-spacing: .16em;
+    color: var(--ink); text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }}
+  .sl-num-row {{
+    display: flex; align-items: baseline; gap: 6px;
+    margin-top: 14px;
+  }}
+  .sl-val {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 64px; line-height: .85;
+    color: var(--ink);
+  }}
+  .sl-unit {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 22px;
+    color: var(--ink); opacity: .85;
+  }}
+  .sl-label {{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700; font-size: 11px; letter-spacing: .14em;
+    color: rgba(13,13,12,.65); text-transform: uppercase;
+    margin-top: 10px; line-height: 1.2;
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="paper">
+    <div class="hdr">
+      <div class="hdr-l">FEATURED&nbsp;LISTING</div>
+      <div class="hdr-r">LISTING&nbsp;CARD</div>
+    </div>
+    <div class="title-wrap">
+      {ym_html}
+      {model_html}
+      {hf_html}
+    </div>
+    <div class="photo-wrap">
+      {photo_html}
+    </div>
+    <div class="bottom-grid">
+      {left_col_html}
+      {ledger_html}
+    </div>
+  </div>
+</div>
+</body>
+</html>
+"""
+
+
+_TEMPLATES["auction_ticket"] = _render_auction_ticket
 
 
 # ─────────────────────────────────────────────────────────────────────────────
