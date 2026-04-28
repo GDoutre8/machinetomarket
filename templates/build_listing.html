@@ -362,15 +362,15 @@
     .mkt .eyebrow .sw{display:inline-block;width:8px;height:8px;background:var(--m-accent);margin-right:10px;vertical-align:1px}
 
     /* Topbar */
-    .mkt-topbar{position:relative;z-index:50;background:var(--paper);border-bottom:1px solid var(--rule)}
+    .mkt-topbar{position:relative;z-index:50;background:var(--m-ink);border-bottom:1px solid #1e1e1b}
     .mkt-topbar-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:24px}
-    .mkt-brand{display:inline-flex;align-items:center;gap:10px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:18px;letter-spacing:.02em;text-transform:uppercase;color:var(--paper);text-decoration:none;padding:5px 10px;border:1px solid #000;background:#000}
+    .mkt-brand{display:inline-flex;align-items:center;gap:10px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:18px;letter-spacing:.02em;text-transform:uppercase;color:var(--paper);text-decoration:none}
     .mkt-brand .mark{width:28px;height:28px;background:var(--m-ink);color:var(--m-accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Barlow Condensed';font-weight:900;letter-spacing:-0.06em}
     .mkt-brand img{height:30px;width:auto;display:block}
     .mkt-nav{display:flex;gap:32px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
-    .mkt-nav a, .mkt-nav span{color:var(--m-ink-2);text-decoration:none;cursor:default;padding:4px 0;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
-    .mkt-nav a{cursor:pointer;color:var(--m-ink)}
-    .mkt-nav a:hover{color:var(--m-ink);border-bottom-color:var(--m-accent)}
+    .mkt-nav a, .mkt-nav span{color:#9a978c;text-decoration:none;cursor:default;padding:4px 0;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
+    .mkt-nav a{cursor:pointer;color:var(--paper)}
+    .mkt-nav a:hover{color:var(--paper);border-bottom-color:var(--m-accent)}
     .mkt-topbar-cta{display:flex;gap:10px;align-items:center}
     @media (max-width:760px){.mkt-nav{display:none}}
 
@@ -378,8 +378,8 @@
     .mkt .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--m-ink);transition:transform .12s, background .15s, color .15s;text-decoration:none;cursor:pointer}
     .mkt .btn-primary{background:var(--m-ink);color:var(--paper)}
     .mkt .btn-primary:hover{background:var(--m-accent);color:var(--m-ink);border-color:var(--m-ink)}
-    .mkt .btn-yellow{background:var(--m-accent);color:var(--m-ink);border-color:var(--m-ink)}
-    .mkt .btn-yellow:hover{background:var(--m-ink);color:var(--m-accent)}
+    .mkt .btn-yellow{background:var(--m-accent);color:var(--m-ink);border-color:var(--m-accent)}
+    .mkt .btn-yellow:hover{background:#e6b200;color:var(--m-ink);border-color:#e6b200}
     .mkt .btn-ghost{background:transparent;color:var(--m-ink);border-color:var(--m-ink)}
     .mkt .btn-ghost:hover{background:var(--m-ink);color:var(--paper)}
     .mkt .btn-sm{padding:9px 14px;font-size:12px}
@@ -513,6 +513,7 @@
     .mkt-step.last .glyph{border-color:var(--m-accent);color:var(--m-accent)}
     .mkt-step .timing{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;margin-top:18px;padding-top:12px;border-top:1px dashed var(--hair)}
     .mkt-step.last .timing{border-top-color:#2a2a27;color:var(--m-accent)}
+    .mkt-step.accent .glyph{border-color:var(--m-accent);color:var(--m-accent)}
 
     /* Differentiators */
     .mkt-diffs{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--rule)}
@@ -524,6 +525,7 @@
     .mkt-diff h4{font-family:'Barlow Condensed';font-weight:800;font-size:26px;letter-spacing:-0.015em;line-height:.95;margin:0 0 10px;text-transform:uppercase;color:var(--m-ink)}
     .mkt-diff p{font-size:14px;line-height:1.55;color:var(--text-dim);margin:0;flex:1}
     .mkt-diff .num{position:absolute;top:24px;right:24px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.18em;color:var(--text-faint)}
+    .mkt-diff.alt{background:#ece9e1}
 
     /* CTA close */
     .mkt-cta-close{background:var(--m-ink);color:var(--paper);padding:120px 0;text-align:left}
@@ -539,13 +541,13 @@
     .mkt-cta-close .trust-line span{color:var(--m-accent);margin-right:6px}
 
     /* Footer */
-    .mkt-footer{padding:40px 0 32px;border-top:1px solid var(--rule);background:var(--paper);font-family:'Barlow',sans-serif}
-    .mkt-footer .mkt-brand{padding:6px 12px}
+    .mkt-footer{padding:40px 0 32px;border-top:1px solid #1e1e1b;background:var(--m-ink);font-family:'Barlow',sans-serif}
+    .mkt-footer .mkt-brand{padding:0}
     .mkt-footer .mkt-brand img{height:32px}
     .mkt-foot-grid{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
-    .mkt-foot-links{display:flex;gap:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);flex-wrap:wrap}
-    .mkt-foot-links a{color:var(--text-dim);text-decoration:none}
-    .mkt-foot-links a:hover{color:var(--m-ink)}
+    .mkt-foot-links{display:flex;gap:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#9a978c;flex-wrap:wrap}
+    .mkt-foot-links a{color:#9a978c;text-decoration:none}
+    .mkt-foot-links a:hover{color:var(--paper)}
     .mkt-foot-links .muted{color:var(--text-faint);cursor:default}
     .mkt-foot-mark{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.2em;color:var(--text-dim)}
 
@@ -567,7 +569,7 @@
       <a href="/fix-listing">Fix Listing</a>
     </nav>
     <div class="mkt-topbar-cta">
-      <a href="#step1-card" class="btn btn-primary btn-sm">Build My Listing <span class="arrow">&rsaquo;</span></a>
+      <a href="#step1-card" class="btn btn-yellow btn-sm">Build My Listing <span class="arrow">&rsaquo;</span></a>
     </div>
   </div>
 </header>
@@ -809,7 +811,7 @@
           <div class="blurb">From raw machine photos to a <b>marketplace-ready package</b>. No formatting, no chasing OEM PDFs, no Canva.</div>
         </div>
         <div class="mkt-process">
-          <div class="mkt-step">
+          <div class="mkt-step accent">
             <div>
               <div class="num">// 01</div>
               <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
@@ -827,7 +829,7 @@
             </div>
             <div class="timing">~ 1 MIN</div>
           </div>
-          <div class="mkt-step">
+          <div class="mkt-step accent">
             <div>
               <div class="num">// 03</div>
               <div class="glyph"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l5 5L21 4"/><path d="M3 19h18"/></svg></div>
@@ -872,11 +874,11 @@
             <h4>OEM-Backed Registry</h4>
             <p>Specs pulled directly from the MTM OEM registry. No retyping torque numbers from a PDF.</p>
           </div>
-          <div class="mkt-diff">
+          <div class="mkt-diff alt">
             <div class="num">// 02</div>
-            <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="6"/></svg></div>
-            <h4>Confidence-Flagged</h4>
-            <p>Weak registry matches are flagged before publish. You always know exactly what to verify.</p>
+            <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <h4>Fast Marketplace Output</h4>
+            <p>Built for Facebook Marketplace, MachineryTrader, and direct buyer outreach.</p>
           </div>
           <div class="mkt-diff">
             <div class="num">// 03</div>
@@ -884,7 +886,7 @@
             <h4>Dealer-Ready Formatting</h4>
             <p>Output sized for Facebook Marketplace, MachineryTrader, and direct buyer email &mdash; no editing.</p>
           </div>
-          <div class="mkt-diff">
+          <div class="mkt-diff alt">
             <div class="num">// 04</div>
             <div class="glyph"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18"/><path d="M9 3v18M3 9h18"/></svg></div>
             <h4>Structured + Branded</h4>
