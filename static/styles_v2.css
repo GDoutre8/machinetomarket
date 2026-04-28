@@ -10,9 +10,9 @@
 
 :root {
   /* MTM brand palette */
-  --mtm-yellow:   #E8A920;
-  --mtm-yellow-dim: #c48c10;
-  --mtm-yellow-bg: rgba(232,169,32,0.09);
+  --mtm-yellow:   #EAB308;
+  --mtm-yellow-dim: #ca9a07;
+  --mtm-yellow-bg: rgba(234,179,8,0.09);
   --mtm-black:    #1A1A1A;
   --mtm-charcoal: #2D2D2D;
   --mtm-page-bg:  #F5F5F3;
@@ -21,9 +21,9 @@
   --mtm-text-muted: #555550;
 
   /* Legacy YIY vars — still used in header/footer dark areas */
-  --yiy-yellow:     #E8A920;
-  --yiy-yellow-dim: #c48c10;
-  --yiy-yellow-bg:  rgba(232,169,32,0.09);
+  --yiy-yellow:     #EAB308;
+  --yiy-yellow-dim: #ca9a07;
+  --yiy-yellow-bg:  rgba(234,179,8,0.09);
   --navy:           #1A1A1A;
   --navy-mid:       #2D2D2D;
   --navy-panel:     #FFFFFF;
@@ -273,7 +273,7 @@ main {
   font-weight: 500;
   background: var(--mtm-yellow-bg);
   padding: 2px 7px;
-  border: 1px solid rgba(232,169,32,0.25);
+  border: 1px solid rgba(234,179,8,0.25);
   border-radius: 2px;
 }
 
@@ -334,7 +334,7 @@ textarea#raw-input::placeholder {
 
 textarea#raw-input:focus {
   background: #FDFDFB;
-  outline: 2px solid rgba(232,169,32,0.35);
+  outline: 2px solid rgba(234,179,8,0.35);
   outline-offset: -2px;
 }
 
@@ -376,8 +376,8 @@ textarea#raw-input:focus {
 }
 
 .btn-primary:hover {
-  background: #d49a18;
-  box-shadow: 0 2px 12px rgba(232,169,32,0.30);
+  background: #ca9a07;
+  box-shadow: 0 2px 12px rgba(234,179,8,0.30);
 }
 
 .btn-primary:active { transform: scale(0.97); }

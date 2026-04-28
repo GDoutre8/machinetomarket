@@ -4,6 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Listing Pack Ready — Machine-to-Market</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/brand/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/brand/favicon-16x16.png">
+  <link rel="shortcut icon" href="/static/assets/brand/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/brand/apple-touch-icon-180x180.png">
+  <meta property="og:title" content="Machine to Market">
+  <meta property="og:description" content="List Better. Sell Faster.">
+  <meta property="og:image" content="https://www.machinetomarket.com/static/assets/brand/og-image.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.machinetomarket.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Machine to Market">
+  <meta name="twitter:description" content="List Better. Sell Faster.">
+  <meta name="twitter:image" content="https://www.machinetomarket.com/static/assets/brand/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -68,7 +81,7 @@
       transition: background 0.12s, box-shadow 0.12s;
     }
 
-    .btn-download:hover { background: #d49a18; box-shadow: 0 2px 12px rgba(232,169,32,0.30); }
+    .btn-download:hover { background: #ca9a07; box-shadow: 0 2px 12px rgba(234,179,8,0.30); }
 
     .btn-back {
       display: inline-flex;
@@ -101,7 +114,7 @@
 
     /* Primary card — listing preview gets extra visual weight */
     .result-card-primary {
-      border-color: rgba(232,169,32,0.40);
+      border-color: rgba(234,179,8,0.40);
       box-shadow: 0 2px 20px rgba(0,0,0,0.10);
     }
 
@@ -315,8 +328,8 @@
     }
 
     .demo-media.spec .sample-link:hover {
-      background: #d49a18;
-      border-color: #d49a18;
+      background: #ca9a07;
+      border-color: #ca9a07;
     }
 
     /* Image grid */
@@ -409,7 +422,7 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--mtm-black);
-      background: rgba(232,169,32,0.92);
+      background: rgba(234,179,8,0.92);
       border-radius: 999px;
       padding: 7px 11px 6px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.18);
@@ -441,20 +454,20 @@
     }
 
     .thumb-card:hover {
-      border-color: rgba(232,169,32,0.85);
+      border-color: rgba(234,179,8,0.85);
       transform: translateY(-1px);
       box-shadow: 0 8px 18px rgba(0,0,0,0.08);
     }
 
     .thumb-card.active {
-      border-color: rgba(232,169,32,0.95);
-      box-shadow: 0 0 0 2px rgba(232,169,32,0.16);
+      border-color: rgba(234,179,8,0.95);
+      box-shadow: 0 0 0 2px rgba(234,179,8,0.16);
     }
 
     .thumb-card:focus-visible {
       outline: none;
-      border-color: rgba(232,169,32,0.95);
-      box-shadow: 0 0 0 3px rgba(232,169,32,0.18);
+      border-color: rgba(234,179,8,0.95);
+      box-shadow: 0 0 0 3px rgba(234,179,8,0.18);
     }
 
     .thumb-card img {
@@ -770,7 +783,7 @@
             name="title_override"
             value="{{ listing_title }}"
             style="flex:1;min-width:220px;padding:9px 12px;font-family:var(--body);font-size:14px;color:var(--mtm-black);background:var(--mtm-card-white);border:1px solid var(--mtm-border);border-radius:var(--radius);transition:border-color 0.12s,box-shadow 0.12s;box-sizing:border-box;"
-            onfocus="this.style.borderColor='var(--mtm-yellow)';this.style.boxShadow='0 0 0 3px rgba(232,169,32,0.15)'"
+            onfocus="this.style.borderColor='var(--mtm-yellow)';this.style.boxShadow='0 0 0 3px rgba(234,179,8,0.15)'"
             onblur="this.style.borderColor='var(--mtm-border)';this.style.boxShadow='none'"
           />
           <button type="submit" class="btn-back" style="white-space:nowrap;">Update Title</button>
@@ -804,7 +817,7 @@
                 rows="3"
                 placeholder="e.g. Hydraulic thumb, 3rd valve, quick attach, new tracks"
                 style="width:100%;padding:10px 12px;font-family:var(--body);font-size:14px;color:var(--mtm-black);background:var(--mtm-card-white);border:1px solid var(--mtm-border);border-radius:var(--radius);resize:vertical;line-height:1.55;box-sizing:border-box;transition:border-color 0.12s,box-shadow 0.12s;"
-                onfocus="this.style.borderColor='var(--mtm-yellow)';this.style.boxShadow='0 0 0 3px rgba(232,169,32,0.15)'"
+                onfocus="this.style.borderColor='var(--mtm-yellow)';this.style.boxShadow='0 0 0 3px rgba(234,179,8,0.15)'"
                 onblur="this.style.borderColor='var(--mtm-border)';this.style.boxShadow='none'"
               ></textarea>
             </div>
@@ -817,7 +830,7 @@
                 rows="3"
                 placeholder="e.g. Serviced at 1,000 hrs, new filters, no known issues, ready to work"
                 style="width:100%;padding:10px 12px;font-family:var(--body);font-size:14px;color:var(--mtm-black);background:var(--mtm-card-white);border:1px solid var(--mtm-border);border-radius:var(--radius);resize:vertical;line-height:1.55;box-sizing:border-box;transition:border-color 0.12s,box-shadow 0.12s;"
-                onfocus="this.style.borderColor='var(--mtm-yellow)';this.style.boxShadow='0 0 0 3px rgba(232,169,32,0.15)'"
+                onfocus="this.style.borderColor='var(--mtm-yellow)';this.style.boxShadow='0 0 0 3px rgba(234,179,8,0.15)'"
                 onblur="this.style.borderColor='var(--mtm-border)';this.style.boxShadow='none'"
               ></textarea>
             </div>
