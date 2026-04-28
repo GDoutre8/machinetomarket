@@ -793,12 +793,10 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
-    # ── SSL locked core — do not alter ───────────────────────────────────────────
+    # ── SSL core — share the CTL substantive 6-row block (Hinge Pin in core) ────
+    # Falls through to the shared CTL/SSL block below.
     if eq == "skid_steer":
-        _row("Hours", hours_fmt)
-        _row("Serial #", di.get("serial_number"))
-        _row("Stock #", di.get("stock_number"))
-        return rows
+        pass
 
     # ── Wheel Loader core specs ───────────────────────────────────────────────────
     if eq == "wheel_loader":
@@ -821,17 +819,66 @@ def _core_specs(di: dict, specs: dict, eq: str, hours_fmt: str | None) -> list[d
         _row("Stock #", di.get("stock_number"))
         return rows
 
-    # ── CTL core ─────────────────────────────────────────────────────────────────
+    # ── CTL / SSL core (shared substantive 6-row block) ─────────────────────────
+    # Priority: Hours, Machine Width, Operating Weight, Hinge Pin Height,
+    # Travel Speed, Fuel Capacity. Serial/Stock fall through only if room.
     _row("Hours", hours_fmt)
 
-    # Machine Width — CTL registry field is width_over_tires_in, not width_in
-    w = specs.get("width_over_tires_in") or specs.get("width_in") or specs.get("overall_width_in")
+    # Machine Width — CTL registry uses width_over_tires_in; SSL same; cover aliases.
+    w = (specs.get("width_over_tires_in") or specs.get("width_over_tracks_in")
+         or specs.get("machine_width_in") or specs.get("overall_width_in")
+         or specs.get("width_in"))
     if w is not None:
         try:
             _row("Machine Width", f'{int(float(w))}"')
         except (TypeError, ValueError):
             _row("Machine Width", str(w))
 
+    # Operating Weight
+    w_lbs = (specs.get("operating_weight_lbs") or specs.get("operating_weight_lb")
+             or specs.get("machine_weight_lbs"))
+    _row("Operating Weight", _fmt_int(w_lbs), "LB")
+
+    # Hinge Pin Height — registry stores inches; convert to ft + in for display.
+    hpp_in = (specs.get("bucket_hinge_pin_height_in") or specs.get("hinge_pin_height_in")
+              or specs.get("dump_height_in"))
+    hpp_ft_raw = specs.get("hinge_pin_height_ft")
+    if hpp_in is not None:
+        try:
+            _row("Hinge Pin Height", _fmt_ft_in(float(hpp_in) / 12.0))
+        except (TypeError, ValueError):
+            _row("Hinge Pin Height", str(hpp_in))
+    elif hpp_ft_raw is not None:
+        _row("Hinge Pin Height", _fmt_ft_in(hpp_ft_raw))
+
+    # Travel Speed — combined low/high "6.0 / 9.3" or single value.
+    ts_high = specs.get("travel_speed_high_mph") or specs.get("travel_speed_mph")
+    ts_low  = specs.get("travel_speed_low_mph")
+    if ts_high is not None and ts_low is not None:
+        try:
+            _row("Travel Speed", f"{float(ts_low):.1f} / {float(ts_high):.1f}", "MPH")
+        except (TypeError, ValueError):
+            _row("Travel Speed", f"{ts_low} / {ts_high}", "MPH")
+    elif ts_high is not None:
+        try:
+            _row("Travel Speed", f"{float(ts_high):.1f}", "MPH")
+        except (TypeError, ValueError):
+            _row("Travel Speed", str(ts_high), "MPH")
+    elif ts_low is not None:
+        try:
+            _row("Travel Speed", f"{float(ts_low):.1f}", "MPH")
+        except (TypeError, ValueError):
+            _row("Travel Speed", str(ts_low), "MPH")
+
+    # Fuel Capacity
+    fc = specs.get("fuel_capacity_gal")
+    if fc is not None:
+        try:
+            _row("Fuel Capacity", f"{float(fc):.1f}", "GAL")
+        except (TypeError, ValueError):
+            _row("Fuel Capacity", str(fc), "GAL")
+
+    # Serial / Stock fall through only if the substantive specs left budget.
     _row("Serial #", di.get("serial_number"))
     _row("Stock #", di.get("stock_number"))
 
@@ -1016,69 +1063,35 @@ def _performance_specs(di: dict, specs: dict, eq: str) -> list[dict]:
                 _row("Travel Speed", str(ts), "MPH")
         return rows
 
-    # ── CTL + SSL shared row 1: Tipping Load ────────────────────────────────────
+    # ── CTL + SSL shared performance ────────────────────────────────────────────
+    # Order: Tipping Load · High Flow Output (or Standard Aux Flow fallback) ·
+    # Operating Pressure · Bucket Breakout. Travel Speed and Hinge Pin Height
+    # are NOT duplicated here — they live in Core Specs.
     tl = specs.get("tipping_load_lbs") or specs.get("tipping_load_lb")
     _row("Tipping Load", _fmt_int(tl), "LB")
 
-    # ── SSL locked performance row 2: Hinge Pin Height — do not alter ────────────
-    if eq == "skid_steer":
-        hpp_in = (specs.get("hinge_pin_height_in") or specs.get("bucket_hinge_pin_height_in")
-                  or specs.get("dump_height_in"))
-        hpp_ft = specs.get("hinge_pin_height_ft") if not hpp_in else None
-        if hpp_in:
-            try:
-                _row("Hinge Pin Height", f'{int(float(hpp_in))}"')
-            except (TypeError, ValueError):
-                _row("Hinge Pin Height", str(hpp_in))
-        elif hpp_ft is not None:
-            _row("Hinge Pin Height", _fmt_ft_in(hpp_ft))
-    else:
-        # CTL row 2: Hinge Pin Height — bucket_hinge_pin_height_in is the CTL registry field
-        hpp_in = (specs.get("bucket_hinge_pin_height_in") or specs.get("hinge_pin_height_in")
-                  or specs.get("dump_height_in"))
-        if hpp_in is not None:
-            try:
-                _row("Hinge Pin Height", f'{int(float(hpp_in))}"')
-            except (TypeError, ValueError):
-                _row("Hinge Pin Height", str(hpp_in))
-        # CTL row 3: High Flow Output — only shown when this unit has high flow active
-        hfo = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
-        if hfo is not None and di.get("high_flow") == "yes":
-            _row("High Flow Output", _fmt_int(hfo), "GPM")
-        # CTL row 4: Travel Speed — combined low/high or single value
-        ts_high = specs.get("travel_speed_high_mph") or specs.get("travel_speed_mph")
-        ts_low  = specs.get("travel_speed_low_mph")
-        if ts_high is not None and ts_low is not None:
-            try:
-                _row("Travel Speed", f"{float(ts_low):.1f} / {float(ts_high):.1f}", "MPH")
-            except (TypeError, ValueError):
-                _row("Travel Speed", f"{ts_low} / {ts_high}", "MPH")
-        elif ts_high is not None:
-            try:
-                _row("Travel Speed", f"{float(ts_high):.1f}", "MPH")
-            except (TypeError, ValueError):
-                _row("Travel Speed", str(ts_high), "MPH")
-        elif ts_low is not None:
-            try:
-                _row("Travel Speed", f"{float(ts_low):.1f}", "MPH")
-            except (TypeError, ValueError):
-                _row("Travel Speed", str(ts_low), "MPH")
-        # CTL row 5: Hydraulic Pressure — prefer high_psi, fall back to standard_psi then psi
-        psi = (specs.get("hydraulic_pressure_high_psi")
-               or specs.get("hydraulic_pressure_standard_psi")
-               or specs.get("hydraulic_pressure_psi"))
-        if psi is not None:
-            try:
-                _row("Hydraulic Pressure", f"{int(float(psi)):,}", "PSI")
-            except (TypeError, ValueError):
-                _row("Hydraulic Pressure", str(psi), "PSI")
-        # CTL row 6: Fuel Capacity
-        fc = specs.get("fuel_capacity_gal")
-        if fc is not None:
-            try:
-                _row("Fuel Capacity", f"{float(fc):.1f}", "GAL")
-            except (TypeError, ValueError):
-                _row("Fuel Capacity", str(fc), "GAL")
+    high_flow_active = (di.get("high_flow") == "yes")
+    flow_high = specs.get("aux_flow_high_gpm") or specs.get("hi_flow_gpm")
+    flow_std  = (specs.get("aux_flow_standard_gpm") or specs.get("hydraulic_flow_gpm"))
+    if high_flow_active and flow_high is not None:
+        _row("High Flow Output", _fmt_int(flow_high), "GPM")
+    elif flow_std is not None:
+        _row("Standard Aux Flow", _fmt_int(flow_std), "GPM")
+
+    psi = (specs.get("hydraulic_pressure_high_psi")
+           or specs.get("hydraulic_pressure_standard_psi")
+           or specs.get("hydraulic_pressure_psi"))
+    if psi is not None:
+        try:
+            _row("Operating Pressure", f"{int(float(psi)):,}", "PSI")
+        except (TypeError, ValueError):
+            _row("Operating Pressure", str(psi), "PSI")
+
+    bbf = (specs.get("bucket_breakout_force_lbs") or specs.get("bucket_breakout_lb")
+           or specs.get("breakout_force_lbs") or specs.get("bucket_breakout_force_lbf")
+           or specs.get("bucket_dig_force_lbf"))
+    if bbf is not None:
+        _row("Bucket Breakout", _fmt_int(bbf), "LB")
 
     return rows
 
@@ -1379,8 +1392,20 @@ def build_spec_sheet_data(
     photo_path              : First uploaded photo path or None
     """
     di    = dealer_input_data or {}
-    specs = enriched_resolved_specs or {}
     fr    = full_record or {}
+    # Merge fallback: resolved_specs wins; full_record["specs"] fills gaps for
+    # fixed OEM machine specs absent from the resolver output (fuel_capacity_gal,
+    # hydraulic_pressure_*_psi, bucket_breakout_*, etc.). Defensive against both
+    # call shapes: live app passes the unwrapped registry record (top-level
+    # "specs" key); some callers pass the lookup-result wrapper (uses
+    # full_record["specs"] one level down).
+    _fr_specs: dict = {}
+    if isinstance(fr, dict):
+        if isinstance(fr.get("specs"), dict):
+            _fr_specs = fr["specs"]
+        elif isinstance(fr.get("full_record"), dict) and isinstance(fr["full_record"].get("specs"), dict):
+            _fr_specs = fr["full_record"]["specs"]
+    specs = {**_fr_specs, **(enriched_resolved_specs or {})}
     eq    = (equipment_type or "").lower()
     # Normalize short-code aliases to canonical registry eq types.
     _EQ_NORMALIZE = {
