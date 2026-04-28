@@ -409,6 +409,40 @@ def _split_attachments(features: list[str]) -> tuple[list[str], list[str]]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Sparse-layout helpers (CSS px = half-scale)
+# photo-band bottom = 61 + 240 = 301
+# ─────────────────────────────────────────────────────────────────────────────
+
+_PHOTO_BOTTOM = 301
+_CORE_TOP_OFF = 12   # gap from photo-band to core section
+_SEC_TITLE_H  = 11   # .sec-title rendered height
+_CORE_GRID_MT = 4    # .core-grid margin-top
+_CORE_ROW_H   = 24   # one row-pair in the 2-col core grid
+_FEAT_GRID_MT = 7    # .feat-grid margin-top
+_FEAT_ROW_H   = 14   # one row-pair in the 2-col feat grid
+_SEC_GAP      = 12   # breathing gap between sections
+
+
+def _section_tops(n_core: int, n_feat: int) -> tuple[int, int, int]:
+    """Return (core_top, feat_top, bottom_top) in CSS px."""
+    core_top = _PHOTO_BOTTOM + _CORE_TOP_OFF  # 313
+
+    if n_core > 0:
+        core_h = _SEC_TITLE_H + _CORE_GRID_MT + ((n_core + 1) // 2) * _CORE_ROW_H
+        feat_top = core_top + core_h + _SEC_GAP
+    else:
+        feat_top = core_top
+
+    if n_feat > 0:
+        feat_h = _SEC_TITLE_H + _FEAT_GRID_MT + ((n_feat + 1) // 2) * _FEAT_ROW_H
+        bottom_top = feat_top + feat_h + _SEC_GAP
+    else:
+        bottom_top = feat_top
+
+    return core_top, feat_top, bottom_top
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Main renderer
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -483,9 +517,15 @@ def render_spec_sheet(data: dict) -> str:
 
     # ── Core specs (up to 6 rows in a 2-col grid) ──
     core_rows = specs.get("core") or specs.get("additional") or []
-    core_html = ""
-    for r in core_rows[:6]:
-        core_html += _spec_row(r.get("label", ""), r.get("value"), r.get("unit", ""))
+    core_used = [r for r in core_rows[:6] if r.get("value") not in (None, "")]
+    core_html = "".join(
+        _spec_row(r.get("label", ""), r.get("value"), r.get("unit", ""))
+        for r in core_used
+    )
+    # Dense default: 6 rows / 3 pairs → block ~84px; section reserved slot ~113px.
+    # Sparse: collapse vertical footprint so the next section can move up.
+    core_pairs = max(1, (len(core_used) + 1) // 2)
+    core_block_h = 14 + core_pairs * 22  # title + rows
     core_section = (
         '<div class="sec core">'
         '<div class="sec-title"><span class="sec-title-text">Core Specs &mdash; OEM Verified</span></div>'
@@ -495,14 +535,14 @@ def render_spec_sheet(data: dict) -> str:
 
     # ── Features (up to 8) + attachment chips ──
     regular_feats, chips = _split_attachments(features)
-    feat_items = ""
-    for f in regular_feats[:8]:
-        feat_items += (
-            f'<div class="feat-item">'
-            f'<span class="feat-check">&#10003;</span>'
-            f'<span>{_esc(f)}</span>'
-            f'</div>'
-        )
+    feat_used = regular_feats[:8]
+    feat_items = "".join(
+        f'<div class="feat-item">'
+        f'<span class="feat-check">&#10003;</span>'
+        f'<span>{_esc(f)}</span>'
+        f'</div>'
+        for f in feat_used
+    )
 
     chips_html = ""
     if chips:
@@ -516,8 +556,22 @@ def render_spec_sheet(data: dict) -> str:
             f'</div>'
         )
 
+    # Move features section up only when core is genuinely sparse (<6 rows).
+    # Dense layouts keep the original 427 top so verified-good designs are unchanged.
+    DEFAULT_FEAT_TOP = 427
+    if not core_html:
+        feat_top = 313
+    elif len(core_used) < 6:
+        feat_top = min(DEFAULT_FEAT_TOP, 313 + core_block_h + 24)
+    else:
+        feat_top = DEFAULT_FEAT_TOP
+    feat_top_style = f' style="top:{feat_top}px"' if feat_top < DEFAULT_FEAT_TOP else ""
+
+    feat_pairs = max(1, (len(feat_used) + 1) // 2)
+    feat_block_h = 21 + feat_pairs * 13  # title + margin-top + rows w/ row-gap
+
     feat_section = (
-        '<div class="sec features">'
+        f'<div class="sec features"{feat_top_style}>'
         '<div class="sec-title">'
         '<span class="sec-title-text">Features &amp; Options</span>'
         f'{chips_html}'
@@ -544,29 +598,50 @@ def render_spec_sheet(data: dict) -> str:
     cond_html = "".join(
         _spec_row(lbl, val) for lbl, val in cond_rows[:4]
     )
-    cond_section = (
-        '<div class="bottom-col">'
-        '<div class="sec-title"><span class="sec-title-text">Condition &amp; Service</span></div>'
-        f'<div style="margin-top:4px;">{cond_html}</div>'
-        '</div>'
-    ) if cond_html else '<div class="bottom-col"></div>'
-
     # ── Performance rows (up to 4) ──
     perf_rows = specs.get("performance") or []
     perf_html = "".join(
         _spec_row(r.get("label", ""), r.get("value"), r.get("unit", ""))
         for r in perf_rows[:4]
     )
+
+    # Hide empty titled sections entirely; let the surviving column span when
+    # only one side has content. Never render an empty titled section.
+    cond_section = (
+        '<div class="bottom-col">'
+        '<div class="sec-title"><span class="sec-title-text">Condition &amp; Service</span></div>'
+        f'<div style="margin-top:4px;">{cond_html}</div>'
+        '</div>'
+    ) if cond_html else ""
     perf_section = (
         '<div class="bottom-col">'
         '<div class="sec-title"><span class="sec-title-text">Performance Data</span></div>'
         f'<div style="margin-top:4px;">{perf_html}</div>'
         '</div>'
-    ) if perf_html else '<div class="bottom-col"></div>'
+    ) if perf_html else ""
+
+    # Move bottom grid up when features are sparse. Single-column fallback when
+    # only one side has data, so the surviving section uses full width.
+    DEFAULT_BOT_TOP = 524
+    if feat_items:
+        if len(feat_used) < 8:
+            bot_top = min(DEFAULT_BOT_TOP, feat_top + feat_block_h + 18)
+        else:
+            bot_top = DEFAULT_BOT_TOP
+    elif core_html:
+        bot_top = min(DEFAULT_BOT_TOP, 313 + core_block_h + 24)
+    else:
+        bot_top = 313
+    bot_style_parts = []
+    if bot_top < DEFAULT_BOT_TOP:
+        bot_style_parts.append(f"top:{bot_top}px")
+    if bool(cond_section) ^ bool(perf_section):
+        bot_style_parts.append("grid-template-columns:1fr")
+    bot_style = f' style="{";".join(bot_style_parts)}"' if bot_style_parts else ""
 
     bottom_grid = (
-        f'<div class="bottom-grid">{cond_section}{perf_section}</div>'
-        if (cond_html or perf_html) else ""
+        f'<div class="bottom-grid"{bot_style}>{cond_section}{perf_section}</div>'
+        if (cond_section or perf_section) else ""
     )
 
     # ── Footer ──
