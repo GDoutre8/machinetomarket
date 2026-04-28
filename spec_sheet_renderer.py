@@ -409,40 +409,6 @@ def _split_attachments(features: list[str]) -> tuple[list[str], list[str]]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Sparse-layout helpers (CSS px = half-scale)
-# photo-band bottom = 61 + 240 = 301
-# ─────────────────────────────────────────────────────────────────────────────
-
-_PHOTO_BOTTOM = 301
-_CORE_TOP_OFF = 12   # gap from photo-band to core section
-_SEC_TITLE_H  = 11   # .sec-title rendered height
-_CORE_GRID_MT = 4    # .core-grid margin-top
-_CORE_ROW_H   = 24   # one row-pair in the 2-col core grid
-_FEAT_GRID_MT = 7    # .feat-grid margin-top
-_FEAT_ROW_H   = 14   # one row-pair in the 2-col feat grid
-_SEC_GAP      = 12   # breathing gap between sections
-
-
-def _section_tops(n_core: int, n_feat: int) -> tuple[int, int, int]:
-    """Return (core_top, feat_top, bottom_top) in CSS px."""
-    core_top = _PHOTO_BOTTOM + _CORE_TOP_OFF  # 313
-
-    if n_core > 0:
-        core_h = _SEC_TITLE_H + _CORE_GRID_MT + ((n_core + 1) // 2) * _CORE_ROW_H
-        feat_top = core_top + core_h + _SEC_GAP
-    else:
-        feat_top = core_top
-
-    if n_feat > 0:
-        feat_h = _SEC_TITLE_H + _FEAT_GRID_MT + ((n_feat + 1) // 2) * _FEAT_ROW_H
-        bottom_top = feat_top + feat_h + _SEC_GAP
-    else:
-        bottom_top = feat_top
-
-    return core_top, feat_top, bottom_top
-
-
-# ─────────────────────────────────────────────────────────────────────────────
 # Main renderer
 # ─────────────────────────────────────────────────────────────────────────────
 
