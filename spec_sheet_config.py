@@ -11,9 +11,10 @@ from pathlib import Path
 # ── Condition sublabels ───────────────────────────────────────────────────────
 
 CONDITION_CONTEXT: dict[str, str] = {
-    "Excellent": "No visible damage",
-    "Good":      "Minor cosmetic wear",
-    "Fair":      "Works as-is",
+    "Like New":        "No visible damage",
+    "Well Maintained": "Minor cosmetic wear",
+    "Ready to Work":   "Works as-is",
+    "Needs Work":      "Service or repair recommended",
 }
 
 # ── Supported photo extensions ────────────────────────────────────────────────

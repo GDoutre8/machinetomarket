@@ -147,7 +147,8 @@ class DealerInput(BaseModel):
     #   None = not provided by dealer.
     track_percent_remaining: Optional[int] = None
     # condition_grade: structured overall condition rating for spec sheet display.
-    #   Allowed values: "Excellent", "Good", "Fair" (case-sensitive).
+    #   Allowed values (case-sensitive): "Like New", "Well Maintained",
+    #   "Ready to Work", "Needs Work".
     #   None = dealer did not select a grade.
     condition_grade: Optional[str] = None
 
@@ -234,9 +235,12 @@ class DealerInput(BaseModel):
     @field_validator("condition_grade")
     @classmethod
     def condition_grade_valid(cls, v: Optional[str]) -> Optional[str]:
-        _ALLOWED = {"Excellent", "Good", "Fair"}
+        _ALLOWED = {"Like New", "Well Maintained", "Ready to Work", "Needs Work"}
         if v is not None and v not in _ALLOWED:
-            raise ValueError(f"condition_grade must be 'Excellent', 'Good', or 'Fair'; got '{v}'")
+            raise ValueError(
+                "condition_grade must be one of 'Like New', 'Well Maintained', "
+                f"'Ready to Work', 'Needs Work'; got '{v}'"
+            )
         return v or None
 
     @field_validator("coupler_type")

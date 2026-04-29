@@ -657,7 +657,7 @@
                 <div class="sl-head"><span class="lbl">Condition</span><span class="ix">B3</span></div>
                 <div class="sl-body">
                   <select id="vf-grade" name="grade_display" style="width:100%;background:transparent;color:inherit;border:none;font-family:inherit;font-size:inherit;padding:0;outline:none;cursor:pointer">
-                    {% for c in ['Excellent','Very Good','Good','Fair','Needs Work'] %}
+                    {% for c in ['Like New','Well Maintained','Ready to Work','Needs Work'] %}
                     <option value="{{ c }}" {% if grade_val == c %}selected{% endif %}>{{ c }}</option>
                     {% endfor %}
                   </select>
@@ -990,7 +990,7 @@
         <div class="m-input"><div class="h">TRACK % <span style="opacity:.6;font-weight:500">OPT</span></div><div class="b"><input type="text" id="vf-m-trackpct" value="{{ track_pct_str }}" placeholder="—" /></div></div>
         <div class="m-input"><div class="h">CONDITION</div><div class="b">
           <select id="vf-m-grade" style="width:100%;background:transparent;color:inherit;border:none;font-family:inherit;font-size:inherit;padding:0;outline:none;cursor:pointer">
-            {% for c in ['Excellent','Very Good','Good','Fair','Needs Work'] %}
+            {% for c in ['Like New','Well Maintained','Ready to Work','Needs Work'] %}
             <option value="{{ c }}" {% if grade_val == c %}selected{% endif %}>{{ c }}</option>
             {% endfor %}
           </select>
