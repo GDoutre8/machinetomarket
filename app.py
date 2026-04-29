@@ -1463,9 +1463,12 @@ def _verify_decode_dealer_info(session_dir: str, dealer_profile_json: Optional[s
 _VERIFY_SPEC_ALIASES: dict[str, list[str]] = _get_spec_card_alias_map()
 
 
-def _verify_coerce_value(raw: str, type_hint: str):
-    """Parse a dealer-edited value back to the type the spec field expects."""
-    s = (raw or "").strip()
+def _verify_coerce_value(raw, type_hint: str):
+    """Parse a dealer-edited value back to the type the spec field expects.
+    Accepts str, int, or float — JSON payloads may carry numeric literals."""
+    if raw is None:
+        return None
+    s = str(raw).strip()
     if not s:
         return None
     if type_hint == "int":
