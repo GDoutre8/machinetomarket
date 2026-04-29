@@ -42,6 +42,8 @@ from dealer_input import DealerInput
 from fastapi.responses import JSONResponse
 from spec_sheet_renderer_adapter import build_spec_sheet_data as _build_ss_data
 from spec_sheet_renderer import render_spec_sheet as _render_spec_sheet
+from spec_card_builder import build_spec_cards as _build_spec_cards
+from spec_card_map import get_alias_map as _get_spec_card_alias_map
 
 # ── Session cleanup ───────────────────────────────────────────────────────────
 _SESSION_MAX_AGE_SECS = 86400 * 7  # 7 days
@@ -1456,15 +1458,9 @@ def _verify_decode_dealer_info(session_dir: str, dealer_profile_json: Optional[s
 # Canonical spec key + alias mirrors. When the dealer overrides one of these,
 # we mirror the value into every alias so downstream consumers (build_listing_text,
 # build_spec_sheet_entries, build_use_case_payload) all see the override regardless
-# of which key they read.
-_VERIFY_SPEC_ALIASES: dict[str, list[str]] = {
-    "engine_model":         ["engine_model"],
-    "net_hp":               ["net_hp", "horsepower_hp"],
-    "operating_weight_lb":  ["operating_weight_lb", "operating_weight_lbs"],
-    "roc_lb":               ["roc_lb", "rated_operating_capacity_lbs"],
-    "hydraulic_flow_gpm":   ["hydraulic_flow_gpm", "aux_flow_standard_gpm"],
-    "track_width_in":       ["track_width_in", "width_over_tracks_in", "width_over_tires_in"],
-}
+# of which key they read. Sourced from spec_card_map so adding a new category-aware
+# card automatically extends the override mirror set.
+_VERIFY_SPEC_ALIASES: dict[str, list[str]] = _get_spec_card_alias_map()
 
 
 def _verify_coerce_value(raw: str, type_hint: str):
@@ -1759,10 +1755,11 @@ async def build_listing_verify_view(request: Request, session_id: str):
         except (TypeError, ValueError):
             return ""
 
-    # OEM spec card payloads (A1–A6) sourced from resolved_specs
-    engine_model_val   = (resolved_specs.get("engine_model")
-                          or resolved_specs.get("engine_manufacturer")
-                          or "OEM Data Pending")
+    # OEM spec card payloads — category-aware via spec_card_builder.
+    # The legacy hp_str / op_wt_str / roc_str / aux_str / track_w_str /
+    # engine_model variables are still set below so any leftover template
+    # references continue to resolve, but the canonical render path is
+    # spec_cards iterated in templates/partials/verify_specs_cards.html.
     displacement_l     = resolved_specs.get("displacement_l")
     emissions_tier     = resolved_specs.get("emissions_tier") or ""
     fuel_type          = resolved_specs.get("fuel_type") or "Diesel"
@@ -1774,26 +1771,24 @@ async def build_listing_verify_view(request: Request, session_id: str):
     engine_sub_bits.append(fuel_type)
     engine_sub = " · ".join(b for b in engine_sub_bits if b) or "Engine details"
 
-    hp_val = (resolved_specs.get("net_hp")
-              or resolved_specs.get("horsepower_hp")
-              or resolved_specs.get("gross_hp")
-              or resolved_specs.get("horsepower_gross_hp"))
-    hp_str = _fmt_int(hp_val) or "—"
+    spec_cards = _build_spec_cards(equipment_type, resolved_specs, engine_sub=engine_sub)
 
-    op_wt_val = resolved_specs.get("operating_weight_lb") or resolved_specs.get("operating_weight_lbs")
-    op_wt_str = _fmt_int(op_wt_val) or "—"
+    # Legacy single-value fallbacks (mobile spec strip, summary chips)
+    def _card_display(key: str) -> str:
+        for c in spec_cards:
+            if c["key"] == key:
+                return c["display"]
+        return "—"
 
-    roc_val = resolved_specs.get("roc_lb") or resolved_specs.get("rated_operating_capacity_lbs")
-    roc_str = _fmt_int(roc_val) or "—"
-
-    aux_val = (resolved_specs.get("hydraulic_flow_gpm")
-               or resolved_specs.get("aux_flow_standard_gpm"))
-    aux_str = _fmt_dec(aux_val) or "—"
-
-    track_w_val = (resolved_specs.get("track_width_in")
-                   or resolved_specs.get("width_over_tracks_in")
-                   or resolved_specs.get("width_over_tires_in"))
-    track_w_str = _fmt_dec(track_w_val) or "—"
+    engine_model_val = _card_display("engine_model")
+    if engine_model_val == "—":
+        engine_model_val = "OEM Data Pending"
+    hp_str      = _card_display("net_hp")
+    op_wt_str   = _card_display("operating_weight_lb")
+    roc_str     = _card_display("roc_lb")
+    aux_str     = _card_display("hydraulic_flow_gpm")
+    track_w_str = _card_display("track_width_in") if equipment_type == "compact_track_loader" \
+                  else _card_display("width_over_tires_in")
 
     # B-section seller inputs from staged dealer_input.
     # Hours staged as 0 from the homepage intake bootstrap renders as empty
@@ -1914,6 +1909,7 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "roc_str":        roc_str,
         "aux_str":        aux_str,
         "track_w_str":    track_w_str,
+        "spec_cards":     spec_cards,
         "preselected":    preselected,
         "att_preselected": att_preselected,
         "best_for":       best_for_labels,

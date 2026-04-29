@@ -1,0 +1,32 @@
+{# ---------------------------------------------------------------------- #}
+{# Category-aware OEM spec cards                                          #}
+{# Inputs: spec_cards (list[dict]) — built by spec_card_builder.py        #}
+{# Renders the desktop .spec-grid only. Mobile grid is rendered           #}
+{# separately via the same loop further down in verify_specs.html.        #}
+{# Override JS in verify_specs.html keys off [data-spec-key] so any       #}
+{# card in this list participates in spec_overrides_json automatically.   #}
+{# ---------------------------------------------------------------------- #}
+<div class="spec-grid">
+  {% for c in spec_cards %}
+  <div class="spec-card{% if c.warn %} warn{% endif %}">
+    {% if c.warn %}<div class="corner-tag">VERIFY</div>{% endif %}
+    <div class="sc-head">
+      <span class="lbl">{{ c.label }}</span>
+      <span class="ix">{{ c.index }}</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-val">
+        <span contenteditable="true" spellcheck="false"
+              data-spec-key="{{ c.key }}"
+              data-oem-type="{{ c.type }}"
+              data-oem="{{ c.oem_value }}">{{ c.display }}</span>{% if c.unit %}<small>{{ c.unit }}</small>{% endif %}
+      </div>
+      <div class="sc-sub">{{ c.sub }}</div>
+    </div>
+    <div class="sc-foot">
+      <span class="src">{% if c.warn %}PARTIAL MATCH{% else %}OEM REGISTRY{% endif %}</span>
+      <span class="verify">{% if c.warn %}CONFIRM{% elif c.required %}OEM VERIFIED{% else %}OPTIONAL{% endif %}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>

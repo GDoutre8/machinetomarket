@@ -571,62 +571,7 @@
               </div>
             </div>
 
-            <div class="spec-grid">
-              <div class="spec-card">
-                <div class="sc-head"><span class="lbl">Engine</span><span class="ix">A1</span></div>
-                <div class="sc-body">
-                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="engine_model" data-oem-type="string" data-oem="{{ engine_model }}">{{ engine_model }}</span></div>
-                  <div class="sc-sub">{{ engine_sub }}</div>
-                </div>
-                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
-              </div>
-
-              <div class="spec-card">
-                <div class="sc-head"><span class="lbl">Horsepower</span><span class="ix">A2</span></div>
-                <div class="sc-body">
-                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="net_hp" data-oem-type="int" data-oem="{{ hp_str }}">{{ hp_str }}</span><small>HP</small></div>
-                  <div class="sc-sub">Net rated</div>
-                </div>
-                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
-              </div>
-
-              <div class="spec-card">
-                <div class="sc-head"><span class="lbl">Operating Weight</span><span class="ix">A3</span></div>
-                <div class="sc-body">
-                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="operating_weight_lb" data-oem-type="int" data-oem="{{ op_wt_str }}">{{ op_wt_str }}</span><small>LB</small></div>
-                  <div class="sc-sub">Standard configuration</div>
-                </div>
-                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
-              </div>
-
-              <div class="spec-card">
-                <div class="sc-head"><span class="lbl">Lift Capacity</span><span class="ix">A4</span></div>
-                <div class="sc-body">
-                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="roc_lb" data-oem-type="int" data-oem="{{ roc_str }}">{{ roc_str }}</span><small>LB</small></div>
-                  <div class="sc-sub">SAE rated · 50% tip load</div>
-                </div>
-                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
-              </div>
-
-              <div class="spec-card">
-                <div class="sc-head"><span class="lbl">Aux. Hyd. Flow</span><span class="ix">A5</span></div>
-                <div class="sc-body">
-                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="hydraulic_flow_gpm" data-oem-type="float" data-oem="{{ aux_str }}">{{ aux_str }}</span><small>GPM</small></div>
-                  <div class="sc-sub">Standard flow circuit</div>
-                </div>
-                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
-              </div>
-
-              <div class="spec-card warn">
-                <div class="corner-tag">VERIFY</div>
-                <div class="sc-head"><span class="lbl">Track Width</span><span class="ix">A6</span></div>
-                <div class="sc-body">
-                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="track_width_in" data-oem-type="float" data-oem="{{ track_w_str }}">{{ track_w_str }}</span><small>IN</small></div>
-                  <div class="sc-sub">Multiple variants in registry</div>
-                </div>
-                <div class="sc-foot"><span class="src">PARTIAL MATCH</span><span class="verify">CONFIRM</span></div>
-              </div>
-            </div>
+            {% include "partials/verify_specs_cards.html" %}
           </div>
 
           <!-- B · SELLER INPUTS -->
@@ -1025,12 +970,13 @@
         <div class="r"><b>OEM VERIFIED</b></div>
       </div>
       <div class="m-spec-grid">
-        <div class="m-spec"><div class="h"><span>ENGINE</span><span>A1</span></div><div class="v">{{ engine_model }}</div><div class="f">REGISTRY</div></div>
-        <div class="m-spec"><div class="h"><span>HORSEPOWER</span><span>A2</span></div><div class="v">{{ hp_str }}<small>HP</small></div><div class="f">REGISTRY</div></div>
-        <div class="m-spec"><div class="h"><span>OP. WEIGHT</span><span>A3</span></div><div class="v">{{ op_wt_str }}<small>LB</small></div><div class="f">REGISTRY</div></div>
-        <div class="m-spec"><div class="h"><span>LIFT CAP.</span><span>A4</span></div><div class="v">{{ roc_str }}<small>LB</small></div><div class="f">REGISTRY</div></div>
-        <div class="m-spec"><div class="h"><span>AUX FLOW</span><span>A5</span></div><div class="v">{{ aux_str }}<small>GPM</small></div><div class="f">REGISTRY</div></div>
-        <div class="m-spec warn"><div class="h"><span>TRACK WIDTH</span><span>A6</span></div><div class="v">{{ track_w_str }}<small>IN</small></div><div class="f">FLAG · CONFIRM</div></div>
+        {% for c in spec_cards %}
+        <div class="m-spec{% if c.warn %} warn{% endif %}">
+          <div class="h"><span>{{ c.short }}</span><span>{{ c.index }}</span></div>
+          <div class="v">{{ c.display }}{% if c.unit %}<small>{{ c.unit }}</small>{% endif %}</div>
+          <div class="f">{% if c.warn %}FLAG · CONFIRM{% else %}REGISTRY{% endif %}</div>
+        </div>
+        {% endfor %}
       </div>
     </div>
 
