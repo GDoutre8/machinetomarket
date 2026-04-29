@@ -1108,11 +1108,16 @@
     saveBuildListingDraft();
   }, true);
 
-  // ── Step 1: identify machine ──────────────────────────────────────────────
+  // ── Step 1: stage session and redirect to Verify Specs ───────────────────
+  // Homepage intake POSTs to /build-listing/verify which creates the session
+  // and returns {verify_url}. We hard-redirect there — the legacy in-page
+  // Step 2 is bypassed entirely. Photos / hours / features are collected on
+  // the verify page (or via the existing /generate endpoint downstream).
   identifyBtn.addEventListener('click', async function () {
     const year  = document.getElementById('s1-year').value.trim();
     const make  = document.getElementById('s1-make').value.trim();
     const model = document.getElementById('s1-model').value.trim();
+    const price = document.getElementById('s1-price').value.trim();
 
     if (!year || !make || !model) {
       showStep1Status('Year, Make, and Model are required.', 'error');
@@ -1120,20 +1125,45 @@
     }
 
     identifyBtn.disabled = true;
-    showStep1Status('<span class="spinner"></span>Looking up machine&hellip;', '');
+    showStep1Status('<span class="spinner"></span>Staging your listing&hellip;', '');
 
     const fd = new FormData();
     fd.append('year', year);
     fd.append('make', make);
     fd.append('model', model);
+    // Verify endpoint requires hours; user edits the real value on the verify page.
+    fd.append('hours', '0');
+    if (price) fd.append('asking_price', price);
+
+    // Carry dealer profile snapshot if available (matches Step-2 submit behavior).
+    try {
+      const _profileForSave = window.readProfileFromFormState
+        ? window.readProfileFromFormState(form)
+        : null;
+      if (_profileForSave && _profileForSave.companyName) {
+        fd.append('dealer_profile_json', JSON.stringify(_profileForSave));
+      }
+    } catch (_) {}
 
     try {
-      const resp = await fetch('/build-listing/identify', { method: 'POST', body: fd });
-      if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+      const resp = await fetch('/build-listing/verify', { method: 'POST', body: fd });
+      if (!resp.ok) {
+        let detail = `Server error ${resp.status}`;
+        try { const j = await resp.json(); detail = j.detail || detail; } catch (_) {}
+        showStep1Status('Error: ' + detail, 'error');
+        identifyBtn.disabled = false;
+        return;
+      }
       const data = await resp.json();
-      populateStep2(data);
+      if (data.verify_url) {
+        clearBuildListingDraft();
+        window.location.href = data.verify_url;
+      } else {
+        showStep1Status('Could not stage verify step.', 'error');
+        identifyBtn.disabled = false;
+      }
     } catch (err) {
-      showStep1Status('Error: ' + err.message, 'error');
+      showStep1Status('Network error: ' + err.message, 'error');
       identifyBtn.disabled = false;
     }
   });
@@ -1600,10 +1630,10 @@
       Array.from(photoInput.files).forEach(function(f) { fd.append('photos', f); });
     }
 
-    showStatus('<span class="spinner"></span>Generating your listing pack&hellip;', '');
+    showStatus('<span class="spinner"></span>Loading Verify Specs&hellip;', '');
 
     try {
-      const resp = await fetch('/build-listing', { method: 'POST', body: fd });
+      const resp = await fetch('/build-listing/verify', { method: 'POST', body: fd });
       if (!resp.ok) {
         let detail = `Server error ${resp.status}`;
         try { const j = await resp.json(); detail = j.detail || detail; } catch (_) {}
@@ -1612,11 +1642,11 @@
         return;
       }
       const data = await resp.json();
-      if (data.result_url) {
+      if (data.verify_url) {
         clearBuildListingDraft();
-        window.location.href = data.result_url;
+        window.location.href = data.verify_url;
       } else {
-        showStatus('Pack generated but no result URL returned.', 'error');
+        showStatus('Could not stage verify step.', 'error');
         submitBtn.disabled = false;
       }
     } catch (err) {

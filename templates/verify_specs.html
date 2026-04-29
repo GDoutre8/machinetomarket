@@ -1,0 +1,1724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify Specs — Machine to Market</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/static/assets/brand/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/assets/brand/favicon-16x16.png">
+<link rel="shortcut icon" href="/static/assets/brand/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/assets/brand/apple-touch-icon-180x180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff;
+    --paper-2:#f5f4f0;
+    --paper-3:#ebe9e1;
+    --canvas:#F5F4EF;
+    --ink:#0d0d0c;
+    --ink-2:#1a1a18;
+    --rule:#D7D2C8;
+    --hair:#D7D2C8;
+    --hair-2:#D7D2C8;
+    --text:#0d0d0c;
+    --text-dim:#6e6c63;
+    --text-faint:#9a978c;
+    --accent:#FFC600;
+    --accent-ink:#0d0d0c;
+    --good:#1f7a3a;
+    --warn:#c2671a;
+    --container:1440px;
+    --pad-x:clamp(20px, 4vw, 56px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--canvas);color:var(--text);font-family:'Barlow',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  img,svg{display:block;max-width:100%}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+  .container{max-width:var(--container);margin:0 auto;padding-left:var(--pad-x);padding-right:var(--pad-x)}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:500}
+
+  /* ============ TOP BAR ============ */
+  .topbar{position:sticky;top:0;z-index:50;background:var(--ink);color:var(--paper);border-bottom:1px solid var(--ink)}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:18px;letter-spacing:.02em;text-transform:uppercase;color:var(--paper)}
+  .brand .mark{width:28px;height:28px;background:var(--accent);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Barlow Condensed';font-weight:900;letter-spacing:-0.06em}
+  .nav{display:flex;gap:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;color:#9a978c}
+  .nav a{color:#9a978c}
+  .nav a:hover{color:var(--paper)}
+  .nav a.cur{color:var(--accent)}
+  .topbar-cta{display:flex;gap:14px;align-items:center;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9a978c}
+  .topbar-cta b{color:var(--paper);font-weight:600}
+
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--ink);transition:transform .12s, background .15s, color .15s;cursor:pointer}
+
+  /* ============ META BAR ============ */
+  .meta-bar{background:var(--paper);border-bottom:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+  .meta-bar-inner{display:flex;justify-content:space-between;padding:10px 0;color:var(--text-dim)}
+  .meta-bar-inner span b{color:var(--ink);font-weight:700}
+  .meta-bar-inner .dot{display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:8px;vertical-align:1px}
+
+  /* ============ TOP MACHINE SUMMARY STRIP ============ */
+  .summary{background:var(--paper);border-bottom:1px solid var(--rule)}
+  .summary-inner{display:grid;grid-template-columns:160px 1fr auto auto auto auto;gap:0;align-items:stretch;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+  .sum-thumb{position:relative;background:#1a1a18;border-right:1px solid var(--rule);overflow:hidden;min-height:120px}
+  .sum-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .sum-thumb::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 8px,transparent 8px 18px);pointer-events:none}
+  .sum-thumb .badge{position:absolute;top:8px;left:8px;background:var(--accent);color:var(--ink);font-family:'JetBrains Mono';font-size:9px;letter-spacing:.22em;padding:4px 8px;font-weight:700;text-transform:uppercase;z-index:2}
+  .sum-id{padding:18px 24px;display:flex;flex-direction:column;justify-content:center;gap:6px;border-right:1px solid var(--rule)}
+  .sum-id .yr{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;color:var(--text-dim);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .sum-id .yr .ok{color:var(--good);font-weight:700;display:inline-flex;align-items:center;gap:6px}
+  .sum-id .yr .ok::before{content:"●"}
+  .sum-id .nm{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:36px;letter-spacing:-0.02em;line-height:.95;text-transform:uppercase;margin:2px 0 0;color:var(--ink)}
+  .sum-id .sub{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase}
+  .sum-stat{padding:18px 28px;border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center;min-width:140px;background:var(--paper)}
+  .sum-stat:last-of-type{border-right:0}
+  .sum-stat .lbl{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;font-weight:500}
+  .sum-stat .val{font-family:'Barlow Condensed';font-weight:800;font-size:30px;letter-spacing:-0.01em;line-height:1;color:var(--ink);text-transform:uppercase}
+  .sum-stat .val small{font-size:14px;color:var(--text-dim);font-weight:600;letter-spacing:0;margin-left:3px}
+  .sum-stat.price{background:var(--accent)}
+  .sum-stat.price .lbl{color:var(--ink);opacity:.65}
+  .sum-stat.price .val{color:var(--ink)}
+  .sum-stat.stock .val{font-family:'JetBrains Mono';font-size:18px;font-weight:700;letter-spacing:.04em}
+
+  .sum-step{padding:16px 28px;display:flex;flex-direction:column;justify-content:center;gap:10px;background:var(--paper-2);border-left:1px solid var(--rule);min-width:300px}
+  .sum-step .top{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim)}
+  .sum-step .top b{color:var(--ink);font-weight:700}
+  .sum-step .top .accent{color:var(--ink);background:var(--accent);padding:2px 6px;font-weight:700}
+  .sum-step .bar{display:flex;gap:4px}
+  .sum-step .seg{height:6px;flex:1;background:var(--paper-3);position:relative}
+  .sum-step .seg.done{background:var(--ink)}
+  .sum-step .seg.cur{background:var(--accent)}
+  .sum-step .nodes{display:grid;grid-template-columns:repeat(5,1fr);gap:0;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-faint);font-weight:500}
+  .sum-step .nodes .n{display:flex;align-items:center;gap:6px}
+  .sum-step .nodes .n .dt{width:6px;height:6px;background:var(--paper-3);display:inline-block}
+  .sum-step .nodes .n.done{color:var(--text-dim)}
+  .sum-step .nodes .n.done .dt{background:var(--ink)}
+  .sum-step .nodes .n.cur{color:var(--ink);font-weight:700}
+  .sum-step .nodes .n.cur .dt{background:var(--accent)}
+
+  .page{padding:48px 0 120px}
+  .page-grid{display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:start}
+
+  .page-head{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;border-bottom:1px solid var(--rule);padding-bottom:28px;margin-bottom:48px}
+  .page-head .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
+  .page-head h1{font-size:clamp(48px, 6vw, 88px);margin:0;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800;letter-spacing:-0.025em;line-height:.88;text-transform:uppercase}
+  .page-head h1 .accent{background:var(--accent);color:var(--ink);padding:0 .1em;display:inline-block}
+  .page-head .blurb{font-size:16px;line-height:1.55;color:var(--text-dim);max-width:46ch;margin:18px 0 0}
+  .page-head .blurb b{color:var(--ink);font-weight:600}
+  .page-head .meta-stat{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim)}
+  .page-head .meta-stat .big{font-family:'Barlow Condensed';font-weight:800;font-size:60px;line-height:.9;letter-spacing:-0.02em;color:var(--ink);display:flex;align-items:baseline;gap:6px}
+  .page-head .meta-stat .big small{font-size:24px;color:var(--text-dim);font-weight:700;letter-spacing:0}
+
+  .block{margin-bottom:48px;background:var(--paper);border:1px solid var(--rule);padding:28px 28px 30px;position:relative}
+  .block::before{content:"";position:absolute;left:-1px;top:-1px;bottom:-1px;width:4px;background:var(--accent)}
+  .block:last-child{margin-bottom:0}
+  .block.tinted{background:var(--paper-2)}
+  .block-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;padding-bottom:18px;border-bottom:1px solid var(--rule);position:relative}
+  .block-head::after{content:"";position:absolute;left:0;bottom:-2px;width:96px;height:3px;background:var(--accent)}
+  .block-head .l{display:flex;align-items:baseline;gap:16px}
+  .block-head .l .tag{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);font-weight:700;background:var(--accent);padding:3px 7px;line-height:1}
+  .block-head .l h2{font-family:'Barlow Condensed';font-weight:900;font-size:52px;letter-spacing:-0.02em;line-height:.92;text-transform:uppercase;margin:0;color:var(--ink)}
+  .block-head .r{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);display:flex;gap:18px;align-items:center}
+  .block-head .r b{color:var(--ink);font-weight:700}
+  .block-head .r .ok{color:var(--good);font-weight:700;display:inline-flex;align-items:center;gap:6px}
+  .block-head .r .ok::before{content:"●"}
+
+  .spec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .spec-card{background:var(--paper);border:1px solid var(--rule);padding:0;display:flex;flex-direction:column;position:relative;transition:border-color .12s, transform .12s}
+  .spec-card:hover{border-color:var(--ink)}
+  .spec-card .sc-head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule);background:var(--paper-2)}
+  .spec-card .sc-head .lbl{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
+  .spec-card .sc-head .ix{font-family:'JetBrains Mono';font-size:10px;color:var(--text-faint);letter-spacing:.18em}
+  .spec-card .sc-body{padding:22px 18px 16px;flex:1;display:flex;flex-direction:column;gap:14px}
+  .spec-card .sc-val{font-family:'Barlow Condensed';font-weight:800;font-size:46px;letter-spacing:-0.02em;line-height:.92;color:var(--ink);text-transform:uppercase}
+  .spec-card .sc-val small{font-size:18px;color:var(--text-dim);font-weight:700;letter-spacing:.02em;margin-left:6px}
+  .spec-card .sc-sub{font-family:'JetBrains Mono';font-size:11px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-top:-6px}
+  .spec-card .sc-foot{padding:10px 16px;border-top:1px dashed var(--hair-2);display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.22em;text-transform:uppercase}
+  .spec-card .sc-foot .src{color:var(--text-faint);font-weight:500}
+  .spec-card .verify{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--good)}
+  .spec-card .verify::before{content:"";width:7px;height:7px;background:var(--good);display:inline-block;border-radius:50%}
+  .spec-card.warn{border-color:var(--warn)}
+  .spec-card.warn .sc-head{background:#fbf1e6}
+  .spec-card.warn .verify{color:var(--warn)}
+  .spec-card.warn .verify::before{background:var(--warn)}
+  .spec-card.warn .sc-val{color:var(--ink)}
+  .spec-card .corner-tag{position:absolute;top:0;right:0;background:var(--accent);color:var(--ink);font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;padding:3px 6px;font-weight:700;text-transform:uppercase;display:none}
+  .spec-card.warn .corner-tag{display:block}
+  .spec-card .sc-val [contenteditable]{outline:none;border-bottom:1px dashed var(--hair-2);padding:0 2px;cursor:text;transition:border-color .15s, background .15s}
+  .spec-card .sc-val [contenteditable]:hover{border-bottom-color:var(--text-dim)}
+  .spec-card .sc-val [contenteditable]:focus{border-bottom-color:var(--ink);background:#fbf6ec}
+  .spec-card.override{border-color:var(--ink)}
+  .spec-card.override .sc-val{color:var(--ink)}
+  .spec-card.override .sc-val [contenteditable]{border-bottom-color:var(--ink);border-bottom-style:solid}
+  .spec-card.override .verify{color:var(--ink)}
+  .spec-card.override .verify::before{background:var(--ink)}
+
+  .seller-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .seller-card{background:var(--paper);border:1px solid var(--rule);padding:0;display:flex;flex-direction:column;transition:border-color .12s}
+  .seller-card:focus-within{border-color:var(--ink)}
+  .seller-card .sl-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--paper-2)}
+  .seller-card .sl-head .lbl{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
+  .seller-card .sl-head .ix{font-family:'JetBrains Mono';font-size:10px;color:var(--text-faint);letter-spacing:.18em}
+  .seller-card .sl-body{padding:18px 16px 14px}
+  .seller-card .sl-body input{width:100%;border:0;outline:0;background:transparent;font-family:'Barlow Condensed';font-weight:800;font-size:42px;letter-spacing:-0.015em;color:var(--ink);text-transform:uppercase;line-height:.95;padding:0}
+  .seller-card .sl-body input::placeholder{color:var(--text-faint)}
+  .seller-card .sl-body input:focus{caret-color:var(--accent)}
+  .seller-card .sl-foot{padding:10px 14px;border-top:1px dashed var(--hair-2);font-family:'JetBrains Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-faint);display:flex;justify-content:space-between}
+  .seller-card .sl-foot .req{color:var(--ink);font-weight:700}
+
+  .eq-locked{display:flex;align-items:stretch;background:var(--paper);border:1px solid var(--rule);margin-bottom:14px;border-left:3px solid var(--accent)}
+  .eq-locked .eq-locked-l{flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:4px;border-right:1px solid var(--rule)}
+  .eq-locked .eq-locked-l .lbl{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-faint);font-weight:600}
+  .eq-locked .eq-locked-l .v{font-family:'Barlow Condensed';font-weight:800;font-size:22px;letter-spacing:-0.01em;text-transform:uppercase;line-height:1;color:var(--ink)}
+  .eq-locked .eq-locked-r{padding:12px 16px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:4px;background:var(--paper-2);min-width:170px}
+  .eq-locked .eq-locked-r .code{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;font-weight:800;color:var(--ink);background:var(--accent);padding:3px 7px;line-height:1}
+  .eq-locked .eq-locked-r .lock{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint);font-weight:600}
+
+  .fa-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .fa-stack{background:var(--paper);border:1px solid var(--rule);display:flex;flex-direction:column}
+  .fa-stack .fa-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--rule);background:var(--paper-2)}
+  .fa-stack .fa-section{padding:18px 20px}
+  .fa-stack .fa-section + .fa-section{border-top:1px dashed var(--hair-2)}
+  .fa-stack .fa-section .sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:700}
+  .fa-stack .fa-section .sec-head .rank{font-family:'Barlow Condensed';font-size:11px;font-weight:900;background:var(--accent);color:var(--ink);padding:1px 6px;line-height:1;margin-right:8px}
+  .fa-stack .fa-section .sec-body{display:flex;flex-wrap:wrap;gap:12px}
+  .fa-stack .fa-section.attach .sec-body{gap:10px}
+
+  .chip-primary{display:inline-flex;align-items:center;gap:10px;padding:12px 16px 12px 14px;border:1.5px solid var(--ink);background:var(--paper);font-family:'Barlow Condensed';font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);cursor:pointer;font-weight:700;user-select:none;transition:background .12s, color .12s;line-height:1}
+  .chip-primary:hover{background:var(--paper-2)}
+  .chip-primary .box{width:16px;height:16px;border:1.5px solid var(--ink);background:var(--paper);display:inline-flex;align-items:center;justify-content:center;flex:0 0 16px;position:relative}
+  .chip-primary .box::after{content:"";width:10px;height:10px;background:transparent;display:block}
+  .chip-primary[aria-pressed="true"]{background:var(--accent);color:var(--ink);border-color:var(--ink)}
+  .chip-primary[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink)}
+  .chip-primary[aria-pressed="true"] .box::after{background:var(--accent);clip-path:polygon(14% 44%, 0 58%, 36% 95%, 100% 30%, 86% 16%, 36% 66%)}
+
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px 8px 10px;border:1px solid var(--rule);background:var(--paper);font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);cursor:pointer;font-weight:600;user-select:none;transition:border-color .12s, background .12s, color .12s}
+  .chip:hover{border-color:var(--ink);color:var(--ink)}
+  .chip .box{width:14px;height:14px;border:1px solid var(--rule);background:var(--paper);display:inline-flex;align-items:center;justify-content:center;flex:0 0 14px;position:relative}
+  .chip .box::after{content:"";width:8px;height:8px;background:transparent;display:block}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip[aria-pressed="true"] .box{background:var(--accent);border-color:var(--ink)}
+  .chip[aria-pressed="true"] .box::after{background:var(--ink);clip-path:polygon(14% 44%, 0 58%, 36% 95%, 100% 30%, 86% 16%, 36% 66%)}
+
+  .chip-att{display:inline-flex;align-items:center;gap:8px;padding:9px 12px 9px 10px;border:1px solid var(--rule);background:var(--paper-2);font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);cursor:pointer;font-weight:700;user-select:none;transition:all .12s;position:relative}
+  .chip-att:hover{border-color:var(--ink);color:var(--ink)}
+  .chip-att .box{width:14px;height:14px;border:1px solid var(--rule);background:var(--paper);display:inline-flex;align-items:center;justify-content:center;flex:0 0 14px;position:relative}
+  .chip-att .box::after{content:"";width:8px;height:8px;background:transparent;display:block}
+  .chip-att[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--ink);outline:2px solid var(--accent);outline-offset:-4px}
+  .chip-att[aria-pressed="true"] .box{background:var(--accent);border-color:var(--ink)}
+  .chip-att[aria-pressed="true"] .box::after{background:var(--ink);clip-path:polygon(14% 44%, 0 58%, 36% 95%, 100% 30%, 86% 16%, 36% 66%)}
+
+  .bf-row{display:flex;flex-wrap:wrap;gap:8px;padding:14px;background:var(--paper);border:1px solid var(--rule);border-top:0;align-items:center}
+  .bf-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 8px 7px 12px;background:var(--accent);color:var(--ink);font-family:'JetBrains Mono';font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;border:1px solid var(--ink)}
+  .bf-chip::before{content:"";width:6px;height:6px;background:var(--ink);display:inline-block}
+  .bf-chip.custom::before{background:var(--paper);border:1px solid var(--ink)}
+  .bf-chip .x{cursor:pointer;font-family:'JetBrains Mono';font-size:13px;line-height:1;padding:0 2px;color:var(--ink);opacity:.55;transition:opacity .12s;font-weight:700}
+  .bf-chip .x:hover{opacity:1}
+  .chip-add{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px dashed var(--ink);background:transparent;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);cursor:pointer;font-weight:700;line-height:1}
+  .chip-add::before{content:"+";font-size:14px;font-weight:800;line-height:1}
+  .chip-add:hover{background:var(--ink);color:var(--accent);border-style:solid}
+  .chip-add input{border:0;outline:0;background:transparent;font:inherit;color:inherit;text-transform:uppercase;letter-spacing:inherit;width:120px;padding:0}
+  .m-chip-add input{border:0;outline:0;background:transparent;font:inherit;color:inherit;text-transform:uppercase;letter-spacing:inherit;width:88px;padding:0}
+  .m-chip-add.editing{background:var(--paper);border-style:solid}
+  .chip-add.editing{background:var(--paper);border-style:solid}
+  .chip-att.custom{border-left:3px solid var(--accent)}
+  .chip-att .x{margin-left:4px;font-family:'JetBrains Mono';font-size:13px;line-height:1;padding:0 2px;cursor:pointer;color:var(--text-dim);opacity:.55;font-weight:700}
+  .chip-att .x:hover{opacity:1;color:var(--ink)}
+  .chip.custom{border-left:3px solid var(--accent)}
+  .chip .x{margin-left:4px;font-family:'JetBrains Mono';font-size:13px;line-height:1;padding:0 2px;cursor:pointer;color:var(--text-dim);opacity:.55;font-weight:700}
+  .chip .x:hover{opacity:1;color:var(--ink)}
+  .chip[aria-pressed="true"] .x{color:var(--paper);opacity:.7}
+  .chip[aria-pressed="true"] .x:hover{color:var(--paper);opacity:1}
+
+  .m-bf-chip .x{cursor:pointer;font-family:'JetBrains Mono';font-size:11px;line-height:1;padding:0 2px;opacity:.55;font-weight:700;margin-left:2px}
+  .m-bf-chip.custom::before{background:var(--paper);border:1px solid var(--ink)}
+  .m-chip-add{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px dashed var(--ink);background:transparent;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:700;cursor:pointer;line-height:1}
+  .m-chip-add::before{content:"+";font-weight:800}
+  .m-chip-add input{border:0;outline:0;background:transparent;font:inherit;color:inherit;width:90px;padding:0}
+
+  .pb-line[contenteditable]{outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .15s, background .15s;padding:2px 4px;margin:-2px -4px}
+  .pb-line[contenteditable]:hover{border-bottom-color:var(--text-dim)}
+  .pb-line[contenteditable]:focus{border-bottom-color:var(--ink);background:#fbf6ec}
+  .pb-edit-hint{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .pb-edit-hint::before{content:"✎";font-size:10px;color:var(--ink)}
+
+  .preview-block{margin-top:14px;border:1px solid var(--ink);background:var(--paper);display:flex;flex-direction:column}
+  .preview-block .pb-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--ink);background:var(--ink);color:var(--paper)}
+  .preview-block .pb-head .lbl{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;display:inline-flex;align-items:center;gap:8px}
+  .preview-block .pb-head .lbl::before{content:"";width:6px;height:6px;background:var(--accent);display:inline-block}
+  .preview-block .pb-head .meta{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.18em;color:#9a978c;text-transform:uppercase}
+  .preview-block .pb-head .meta b{color:var(--paper);font-weight:700}
+  .preview-block .pb-body{padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px}
+  .preview-block .pb-eyebrow{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-faint);font-weight:600}
+  .preview-block .pb-line{font-family:'Barlow Condensed';font-weight:800;font-size:34px;letter-spacing:-0.02em;line-height:.98;text-transform:uppercase;color:var(--ink)}
+  .preview-block .pb-line .ac{background:var(--accent);padding:0 .08em}
+  .preview-block .pb-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px dashed var(--hair-2);font-family:'JetBrains Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-faint)}
+  .preview-block .pb-foot b{color:var(--ink);font-weight:700}
+
+  .m-eq-locked{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--accent);margin-bottom:10px}
+  .m-eq-locked .lbl{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-faint);font-weight:600}
+  .m-eq-locked .v{font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:-0.01em;text-transform:uppercase;color:var(--ink);flex:1;line-height:1}
+  .m-eq-locked .code{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.18em;color:var(--ink);background:var(--accent);padding:2px 5px;font-weight:700;line-height:1}
+
+  .m-chip-primary{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1.5px solid var(--ink);background:var(--paper);font-family:'Barlow Condensed';font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);font-weight:700;cursor:pointer;user-select:none;line-height:1}
+  .m-chip-primary .box{width:12px;height:12px;border:1.5px solid var(--ink);flex:0 0 12px;position:relative}
+  .m-chip-primary[aria-pressed="true"]{background:var(--accent)}
+  .m-chip-primary[aria-pressed="true"] .box{background:var(--ink)}
+  .m-chip-primary[aria-pressed="true"] .box::after{content:"";position:absolute;inset:0;background:var(--accent);clip-path:polygon(14% 44%, 0 58%, 36% 95%, 100% 30%, 86% 16%, 36% 66%)}
+  .m-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px 6px 8px;border:1px solid var(--rule);background:var(--paper);font-family:'JetBrains Mono';font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);font-weight:600;cursor:pointer;user-select:none}
+  .m-chip .box{width:10px;height:10px;border:1px solid var(--rule);flex:0 0 10px;position:relative}
+  .m-chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .m-chip[aria-pressed="true"] .box{background:var(--accent);border-color:var(--ink)}
+  .m-chip[aria-pressed="true"] .box::after{content:"";position:absolute;inset:0;background:var(--ink);clip-path:polygon(14% 44%, 0 58%, 36% 95%, 100% 30%, 86% 16%, 36% 66%)}
+  .m-chip.custom{border-left:3px solid var(--accent)}
+  .m-chip .x{margin-left:2px;font-family:'JetBrains Mono';font-size:11px;line-height:1;padding:0 2px;cursor:pointer;color:var(--text-dim);opacity:.6;font-weight:700}
+  .m-chip[aria-pressed="true"] .x{color:var(--paper);opacity:.7}
+  .m-fa-body{padding:10px;display:flex;flex-wrap:wrap;gap:6px;background:var(--paper);border:1px solid var(--rule)}
+  .m-fa-sub{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-faint);text-transform:uppercase;padding:8px 2px 4px;font-weight:600}
+  .m-bf-row{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--paper);border:1px solid var(--rule);border-top:0}
+  .m-bf-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;background:var(--accent);color:var(--ink);font-family:'JetBrains Mono';font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;border:1px solid var(--ink)}
+  .m-bf-chip::before{content:"";width:5px;height:5px;background:var(--ink);display:inline-block}
+  .m-preview{margin-top:8px;border:1px solid var(--ink);background:var(--paper)}
+  .m-preview .h{padding:7px 10px;background:var(--ink);color:var(--accent);font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .m-preview .h .meta{color:#9a978c}
+  .m-preview .h .meta b{color:var(--paper)}
+  .m-preview .b{padding:10px;display:flex;flex-direction:column;gap:4px}
+  .m-preview .b .e{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-faint);text-transform:uppercase;font-weight:600}
+  .m-preview .b .l{font-family:'Barlow Condensed';font-weight:800;font-size:20px;letter-spacing:-0.015em;line-height:1;text-transform:uppercase;color:var(--ink)}
+  .m-preview .b .l .ac{background:var(--accent);padding:0 .08em}
+
+  .cta-band{margin-top:64px;background:var(--ink);color:var(--paper);padding:32px 36px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;border:1px solid var(--ink)}
+  .cta-band .l{display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#9a978c}
+  .cta-band .l .top{display:flex;align-items:center;gap:14px}
+  .cta-band .l .top b{color:var(--paper);font-weight:700}
+  .cta-band .l .top .ok{color:var(--accent);font-weight:700;display:inline-flex;align-items:center;gap:6px}
+  .cta-band .l .top .ok::before{content:"●"}
+  .cta-band .l .sub{color:#9a978c;font-size:10px;letter-spacing:.18em}
+  .cta-band .l .sub b{color:var(--paper);font-weight:700}
+  .cta-band .r{display:flex;gap:12px;align-items:center}
+  .cta-band .back{padding:18px 22px;border:1px solid var(--paper);background:transparent;color:var(--paper);font-family:'Barlow Condensed';font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .12s, color .12s}
+  .cta-band .back:hover{background:var(--paper);color:var(--ink)}
+  .cta-band .generate{background:var(--accent);color:var(--ink);border:1px solid var(--accent);padding:22px 36px;font-family:'Barlow Condensed';font-weight:800;font-size:22px;letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:14px;cursor:pointer;transition:background .12s, color .12s}
+  .cta-band .generate:hover{background:var(--paper);color:var(--ink)}
+  .cta-band .generate:disabled{opacity:.7;cursor:wait}
+  .cta-band .generate .ar{font-size:24px;line-height:1}
+
+  /* Right rail */
+  .rail{display:flex;flex-direction:column;gap:24px}
+  .rail-head{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--rule);position:relative}
+  .rail-head::after{content:"";position:absolute;left:0;bottom:-2px;width:72px;height:3px;background:var(--accent)}
+  .rail-head .tag{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);font-weight:700;background:var(--accent);padding:2px 6px;line-height:1;display:inline-block;margin-right:8px;vertical-align:2px}
+  .rail-head .t{font-family:'Barlow Condensed';font-weight:900;font-size:36px;letter-spacing:-0.02em;line-height:.92;text-transform:uppercase;color:var(--ink);display:flex;align-items:baseline;gap:10px}
+  .rail-head .m{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim)}
+  .rail-head .m b{color:var(--ink);font-weight:700}
+  .pkg-card{background:var(--paper);border:1px solid var(--rule);display:flex;flex-direction:column;transition:border-color .12s}
+  .pkg-card:hover{border-color:var(--ink)}
+  .pkg-card .pc-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--paper-2);font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+  .pkg-card .pc-head .name{color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:8px}
+  .pkg-card .pc-head .name .ix{color:var(--accent);font-weight:700}
+  .pkg-card .pc-head .file{color:var(--text-dim);font-weight:500}
+  .pkg-card .pc-hero{aspect-ratio:16/10;background:#1a1a18;position:relative;overflow:hidden;border-bottom:1px solid var(--rule)}
+  .pkg-card .pc-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .pkg-card .pc-hero::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 8px,transparent 8px 18px);pointer-events:none}
+  .pkg-card .pc-hero .price{position:absolute;top:8px;right:8px;background:var(--accent);color:var(--ink);font-family:'Barlow Condensed';font-weight:900;font-size:18px;line-height:1;letter-spacing:-0.01em;padding:7px 12px 7px 18px;clip-path:polygon(8px 0,100% 0,100% 100%,8px 100%, 0 50%);z-index:2}
+  .pkg-card .pc-hero .yr{position:absolute;bottom:8px;left:8px;background:var(--ink);color:var(--accent);font-family:'JetBrains Mono';font-size:10px;font-weight:700;letter-spacing:.2em;padding:6px 10px;z-index:2;border-left:2px solid var(--accent)}
+  .pkg-card .pc-spec{aspect-ratio:1.4/1;background:var(--paper);position:relative;overflow:hidden;border-bottom:1px solid var(--rule);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .pkg-card .pc-spec .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:6px}
+  .pkg-card .pc-spec .ph .mk{font-family:'Barlow Condensed';font-weight:900;font-size:14px;letter-spacing:-0.04em}
+  .pkg-card .pc-spec .ph .id{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-dim)}
+  .pkg-card .pc-spec .pt{font-family:'Barlow Condensed';font-weight:900;font-size:24px;letter-spacing:-0.015em;line-height:.95;text-transform:uppercase}
+  .pkg-card .pc-spec .pr{font-family:'JetBrains Mono';font-size:9px;display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;flex:1}
+  .pkg-card .pc-spec .pr .r{display:flex;justify-content:space-between;border-bottom:1px dashed var(--hair-2);padding:2px 0}
+  .pkg-card .pc-spec .pr .r span:first-child{color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-size:8px}
+  .pkg-card .pc-spec .pr .r span:last-child{font-weight:700;letter-spacing:.04em}
+  .pkg-card .pc-pack{aspect-ratio:1.4/1;background:var(--paper);position:relative;overflow:hidden;border-bottom:1px solid var(--rule);padding:10px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px}
+  .pkg-card .pc-pack > i{background:#1a1a18;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.16em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:600;font-style:normal;position:relative;overflow:hidden}
+  .pkg-card .pc-pack > i::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 4px,transparent 4px 8px);pointer-events:none}
+  .pkg-card .pc-pack > i.y{background:var(--accent);color:var(--ink);font-family:'Barlow Condensed';font-weight:900;font-size:13px;letter-spacing:-0.01em}
+  .pkg-card .pc-pack > i.y::after{display:none}
+  {% if hero_photo_url %}
+  .pkg-card .pc-pack > i.ph{background:#1a1a18 url('{{ hero_photo_url }}') center/cover}
+  {% else %}
+  .pkg-card .pc-pack > i.ph{background:#1a1a18}
+  {% endif %}
+  .pkg-card .pc-pack > i.ph::after{background:rgba(13,13,12,.25)}
+  .pkg-card .pc-copy{aspect-ratio:1.6/1;background:var(--paper);position:relative;overflow:hidden;border-bottom:1px solid var(--rule);padding:14px 16px;display:flex;flex-direction:column;gap:6px;justify-content:center}
+  .pkg-card .pc-copy .lab{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;display:flex;align-items:center;gap:6px}
+  .pkg-card .pc-copy .lab::before{content:"";width:5px;height:5px;background:var(--accent)}
+  .pkg-card .pc-copy .ln{height:6px;background:var(--ink);display:block}
+  .pkg-card .pc-copy .ln.s2{width:90%}
+  .pkg-card .pc-copy .ln.s3{width:70%}
+  .pkg-card .pc-copy .ln.s4{width:55%;background:var(--paper-3);height:4px;margin-top:4px}
+  .pkg-card .pc-meta{padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .pkg-card .pc-meta .info{flex:1;min-width:0}
+  .pkg-card .pc-meta .info .t{font-family:'Barlow Condensed';font-weight:800;font-size:18px;letter-spacing:-0.01em;line-height:1.05;text-transform:uppercase;color:var(--ink);margin-bottom:3px}
+  .pkg-card .pc-meta .info .d{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim)}
+  .pkg-card .pc-meta .ok{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.18em;color:var(--good);font-weight:700;text-transform:uppercase;flex:0 0 auto}
+  .pkg-card .pc-meta .ok::before{content:"● ";color:var(--good)}
+  .rail-totals{background:var(--ink);color:var(--paper);padding:18px 16px;display:flex;flex-direction:column;gap:10px}
+  .rail-totals .row{display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#9a978c}
+  .rail-totals .row b{color:var(--paper);font-weight:700}
+  .rail-totals .row.big{font-family:'Barlow Condensed';font-size:22px;font-weight:800;letter-spacing:.02em;color:var(--paper);border-top:1px dashed #2a2a27;padding-top:10px;margin-top:4px}
+  .rail-totals .row.big b{color:var(--accent);font-family:'Barlow Condensed';font-weight:800}
+
+  footer{padding:36px 0 32px;border-top:1px solid var(--ink);background:var(--ink);color:var(--paper)}
+  .foot-grid{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
+  .foot-links{display:flex;gap:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#9a978c}
+  .foot-links a:hover{color:var(--accent)}
+  .foot-mark{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.2em;color:#9a978c}
+  .foot-mark b{color:var(--paper)}
+
+  /* Mobile shell (hidden on desktop) */
+  .v8-mobile{display:none;font-family:'Barlow';color:var(--ink);background:var(--canvas)}
+  .v8-mobile .m-top{position:sticky;top:0;background:var(--ink);color:var(--paper);z-index:10;border-bottom:1px solid var(--ink)}
+  .v8-mobile .m-top .row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;height:54px}
+  .v8-mobile .m-top .brand{font-family:'Barlow Condensed';font-weight:900;font-size:16px;letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--paper)}
+  .v8-mobile .m-top .brand .mk{width:24px;height:24px;background:var(--accent);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+  .v8-mobile .m-top .step{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .m-step-bar{display:flex;gap:3px;padding:0 16px 10px;background:var(--ink)}
+  .m-step-bar .seg{height:4px;flex:1;background:#2a2a27}
+  .m-step-bar .seg.done{background:var(--paper)}
+  .m-step-bar .seg.cur{background:var(--accent)}
+  .m-summary{background:var(--paper);border-bottom:1px solid var(--rule);padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+  .m-summary .thumb{width:74px;height:74px;flex:0 0 74px;background:#1a1a18;position:relative;overflow:hidden}
+  .m-summary .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .m-summary .thumb .b{position:absolute;top:4px;left:4px;background:var(--accent);color:var(--ink);font-family:'JetBrains Mono';font-size:7px;letter-spacing:.18em;padding:2px 4px;font-weight:700}
+  .m-summary .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .m-summary .meta .yr{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase}
+  .m-summary .meta .nm{font-family:'Barlow Condensed';font-weight:900;font-size:22px;letter-spacing:-0.015em;line-height:1;text-transform:uppercase}
+  .m-summary .meta .sub{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.16em;color:var(--text-dim);text-transform:uppercase;margin-top:2px}
+  .m-summary .pricecol{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .m-summary .pricecol .lbl{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-faint);text-transform:uppercase}
+  .m-summary .pricecol .v{font-family:'Barlow Condensed';font-weight:800;font-size:22px;letter-spacing:-0.01em;line-height:1;background:var(--accent);padding:3px 6px;color:var(--ink)}
+  .m-substrip{display:grid;grid-template-columns:repeat(3,1fr);background:var(--paper);border-bottom:1px solid var(--rule)}
+  .m-substrip .c{padding:10px 12px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:3px}
+  .m-substrip .c:last-child{border-right:0}
+  .m-substrip .c .lbl{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-faint);text-transform:uppercase}
+  .m-substrip .c .v{font-family:'Barlow Condensed';font-weight:800;font-size:18px;letter-spacing:-0.01em;line-height:1;color:var(--ink);text-transform:uppercase}
+  .m-page{padding:20px 16px 120px}
+  .m-h{font-family:'Barlow Condensed';font-weight:800;font-size:36px;letter-spacing:-0.02em;line-height:.92;text-transform:uppercase;margin:0 0 6px}
+  .m-h .ac{background:var(--accent);padding:0 .08em}
+  .m-blurb{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:14px;margin-bottom:18px}
+  .m-blurb b{color:var(--ink)}
+  .m-blurb .ok{color:var(--good)}
+  .m-block{margin-bottom:24px}
+  .m-block-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:18px;position:relative}
+  .m-block-head::after{content:"";position:absolute;left:0;bottom:-2px;width:54px;height:3px;background:var(--accent)}
+  .m-block-head .l{display:flex;align-items:baseline;gap:8px}
+  .m-block-head .tag{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);font-weight:700;background:var(--accent);padding:2px 5px;line-height:1}
+  .m-block-head h3{font-family:'Barlow Condensed';font-weight:900;font-size:30px;letter-spacing:-0.02em;line-height:.92;text-transform:uppercase;margin:0}
+  .m-block-head .r{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase}
+  .m-block-head .r b{color:var(--ink);font-weight:700}
+  .m-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .m-spec{background:var(--paper);border:1px solid var(--rule);padding:0;display:flex;flex-direction:column}
+  .m-spec.warn{border-color:var(--warn)}
+  .m-spec .h{display:flex;justify-content:space-between;padding:6px 10px;background:var(--paper-2);border-bottom:1px solid var(--rule);font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;font-weight:600}
+  .m-spec .v{padding:10px 10px 4px;font-family:'Barlow Condensed';font-weight:800;font-size:24px;letter-spacing:-0.015em;line-height:.95;color:var(--ink);text-transform:uppercase}
+  .m-spec .v small{font-size:11px;color:var(--text-dim);margin-left:3px;font-weight:700}
+  .m-spec .f{padding:6px 10px 8px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--good);font-weight:700;display:flex;align-items:center;gap:5px}
+  .m-spec .f::before{content:"";width:5px;height:5px;background:var(--good);display:inline-block;border-radius:50%}
+  .m-spec.warn .f{color:var(--warn)}
+  .m-spec.warn .f::before{background:var(--warn)}
+  .m-seller-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .m-input{background:var(--paper);border:1px solid var(--rule);padding:0;display:flex;flex-direction:column}
+  .m-input .h{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;padding:6px 10px;background:var(--paper-2);border-bottom:1px solid var(--rule);font-weight:600}
+  .m-input .b input{width:100%;border:0;outline:0;background:transparent;font-family:'Barlow Condensed';font-weight:800;font-size:24px;letter-spacing:-0.015em;color:var(--ink);text-transform:uppercase;padding:10px 10px 8px;line-height:1}
+  .m-pkg{background:var(--paper);border:1px solid var(--rule);margin-bottom:8px;display:flex;align-items:center;gap:10px;padding:8px 10px}
+  .m-pkg .ic{width:36px;height:36px;background:#1a1a18;flex:0 0 36px;color:var(--paper);font-family:'Barlow Condensed';font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .m-pkg .ic img{width:100%;height:100%;object-fit:cover}
+  .m-pkg .info{flex:1;min-width:0}
+  .m-pkg .info .t{font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:-0.01em;text-transform:uppercase;line-height:1}
+  .m-pkg .info .d{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.16em;color:var(--text-dim);text-transform:uppercase;margin-top:3px}
+  .m-pkg .ok{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.16em;color:var(--good);font-weight:700}
+  .m-cta{position:fixed;left:0;right:0;bottom:0;background:var(--paper);padding:12px 16px;border-top:1px solid var(--rule);display:flex;gap:8px;align-items:stretch;z-index:60}
+  .m-cta .back{flex:0 0 auto;padding:0 14px;border:1px solid var(--ink);background:transparent;color:var(--ink);font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+  .m-cta .gen{flex:1;padding:14px 18px;background:var(--accent);color:var(--ink);border:1px solid var(--ink);font-family:'Barlow Condensed';font-weight:800;font-size:18px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .m-cta .gen:disabled{opacity:.7;cursor:wait}
+
+  /* Status / errors */
+  .verify-status{margin-top:14px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);font-weight:600}
+  .verify-status.error{color:#9a2a16}
+
+  /* Responsive switch: ≤880px → mobile shell, >880px → desktop */
+  @media (max-width:880px){
+    .v8-desktop{display:none}
+    .v8-mobile{display:block}
+  }
+  @media (min-width:881px) and (max-width:1200px){
+    .page-grid{grid-template-columns:1fr 320px}
+    .spec-grid{grid-template-columns:repeat(2,1fr)}
+    .seller-grid{grid-template-columns:repeat(2,1fr)}
+    .summary-inner{grid-template-columns:140px 1fr auto auto auto}
+    .sum-step{display:none}
+  }
+</style>
+</head>
+<body>
+
+<form id="verify-form" method="post" action="/build-listing/generate/{{ session_id }}" novalidate>
+
+<!-- ==== DESKTOP ==== -->
+<div class="v8-desktop">
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="/build-listing" class="brand">
+        <div class="mark">M/M</div>
+        <span>Machine to Market</span>
+      </a>
+      <nav class="nav">
+        <a href="#">Output</a>
+        <a href="#">Process</a>
+        <a href="#">Why MTM</a>
+        <a href="#" class="cur">Build</a>
+      </nav>
+      <div class="topbar-cta">
+        <span>SESSION <b>{{ session_id|upper }}</b></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="meta-bar">
+    <div class="container meta-bar-inner">
+      <span><span class="dot"></span><b>BUILD MODE</b> · MACHINE PROFILE</span>
+      <span>STEP 03 / 05 — VERIFY SPECS</span>
+      <span>REGISTRY: <b>OEM-BACKED</b> · OEM VERIFIED SPECS</span>
+    </div>
+  </div>
+
+  <section class="summary">
+    <div class="container" style="padding-top:0;padding-bottom:0">
+      <div class="summary-inner">
+        <div class="sum-thumb">
+          <div class="badge">CONFIRMED</div>
+          {% if hero_photo_url %}<img src="{{ hero_photo_url }}" alt="{{ year }} {{ make }} {{ model }}" onerror="this.style.display='none'">{% endif %}
+        </div>
+        <div class="sum-id">
+          <div class="yr"><span>{{ year }} · {{ make }}</span><span class="ok">OEM VERIFIED</span></div>
+          <div class="nm">{{ machine_label }}</div>
+          <div class="sub">{{ eq_label }}</div>
+        </div>
+        <div class="sum-stat">
+          <div class="lbl">Hours</div>
+          <div class="val">{{ hours_str }}<small>HRS</small></div>
+        </div>
+        <div class="sum-stat price">
+          <div class="lbl">Asking Price</div>
+          <div class="val">{{ price_str }}</div>
+        </div>
+        <div class="sum-stat stock">
+          <div class="lbl">Stock #</div>
+          <div class="val">{{ stock_no }}</div>
+        </div>
+        <div class="sum-step">
+          <div class="top">
+            <span><b>PROGRESS</b></span>
+            <span><span class="accent">STEP 03 / 05</span></span>
+          </div>
+          <div class="bar">
+            <div class="seg done"></div>
+            <div class="seg done"></div>
+            <div class="seg cur"></div>
+            <div class="seg"></div>
+            <div class="seg"></div>
+          </div>
+          <div class="nodes">
+            <div class="n done"><span class="dt"></span>Details</div>
+            <div class="n done"><span class="dt"></span>Photos</div>
+            <div class="n cur"><span class="dt"></span>Verify</div>
+            <div class="n"><span class="dt"></span>Copy</div>
+            <div class="n"><span class="dt"></span>ZIP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="container">
+
+      <div class="page-head">
+        <div>
+          <div class="num">// 03 · VERIFY</div>
+          <h1>Verify <span class="accent">Specs.</span></h1>
+          <p class="blurb">Final review before package generation. <b>OEM specs · seller inputs · features &amp; attachments</b> — confirm everything below, then build.</p>
+        </div>
+        <div class="meta-stat">
+          <div>STATUS</div>
+          <div class="big" style="font-size:48px">OEM VERIFIED<br><span style="color:var(--good)">SPECS</span></div>
+          <div>· 1 FIELD TO CONFIRM</div>
+        </div>
+      </div>
+
+      <div class="page-grid">
+
+        <div>
+
+          <!-- A · OEM SPECS -->
+          <div class="block">
+            <div class="block-head">
+              <div class="l">
+                <div class="tag">// A</div>
+                <h2>OEM Specs</h2>
+              </div>
+              <div class="r">
+                <span>SOURCE <b>MTM-REG-{{ session_id[-5:]|upper }}</b></span>
+                <span class="ok">OEM VERIFIED</span>
+              </div>
+            </div>
+
+            <div class="spec-grid">
+              <div class="spec-card">
+                <div class="sc-head"><span class="lbl">Engine</span><span class="ix">A1</span></div>
+                <div class="sc-body">
+                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="engine_model" data-oem-type="string" data-oem="{{ engine_model }}">{{ engine_model }}</span></div>
+                  <div class="sc-sub">{{ engine_sub }}</div>
+                </div>
+                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
+              </div>
+
+              <div class="spec-card">
+                <div class="sc-head"><span class="lbl">Horsepower</span><span class="ix">A2</span></div>
+                <div class="sc-body">
+                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="net_hp" data-oem-type="int" data-oem="{{ hp_str }}">{{ hp_str }}</span><small>HP</small></div>
+                  <div class="sc-sub">Net rated</div>
+                </div>
+                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
+              </div>
+
+              <div class="spec-card">
+                <div class="sc-head"><span class="lbl">Operating Weight</span><span class="ix">A3</span></div>
+                <div class="sc-body">
+                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="operating_weight_lb" data-oem-type="int" data-oem="{{ op_wt_str }}">{{ op_wt_str }}</span><small>LB</small></div>
+                  <div class="sc-sub">Standard configuration</div>
+                </div>
+                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
+              </div>
+
+              <div class="spec-card">
+                <div class="sc-head"><span class="lbl">Lift Capacity</span><span class="ix">A4</span></div>
+                <div class="sc-body">
+                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="roc_lb" data-oem-type="int" data-oem="{{ roc_str }}">{{ roc_str }}</span><small>LB</small></div>
+                  <div class="sc-sub">SAE rated · 50% tip load</div>
+                </div>
+                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
+              </div>
+
+              <div class="spec-card">
+                <div class="sc-head"><span class="lbl">Aux. Hyd. Flow</span><span class="ix">A5</span></div>
+                <div class="sc-body">
+                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="hydraulic_flow_gpm" data-oem-type="float" data-oem="{{ aux_str }}">{{ aux_str }}</span><small>GPM</small></div>
+                  <div class="sc-sub">Standard flow circuit</div>
+                </div>
+                <div class="sc-foot"><span class="src">OEM REGISTRY</span><span class="verify">OEM VERIFIED</span></div>
+              </div>
+
+              <div class="spec-card warn">
+                <div class="corner-tag">VERIFY</div>
+                <div class="sc-head"><span class="lbl">Track Width</span><span class="ix">A6</span></div>
+                <div class="sc-body">
+                  <div class="sc-val"><span contenteditable="true" spellcheck="false" data-spec-key="track_width_in" data-oem-type="float" data-oem="{{ track_w_str }}">{{ track_w_str }}</span><small>IN</small></div>
+                  <div class="sc-sub">Multiple variants in registry</div>
+                </div>
+                <div class="sc-foot"><span class="src">PARTIAL MATCH</span><span class="verify">CONFIRM</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- B · SELLER INPUTS -->
+          <div class="block">
+            <div class="block-head">
+              <div class="l">
+                <div class="tag">// B — SELLER</div>
+                <h2>Seller Inputs</h2>
+              </div>
+              <div class="r">
+                <span>CONDITION &amp; CONFIG</span>
+                <span><b>3 / 3 COMPLETE</b></span>
+              </div>
+            </div>
+
+            <div class="seller-grid">
+              <div class="seller-card">
+                <div class="sl-head"><span class="lbl">Hours</span><span class="ix">B1</span></div>
+                <div class="sl-body"><input type="text" id="vf-hours" name="hours_display" value="{{ hours_str }}" placeholder="Enter hours" /></div>
+                <div class="sl-foot"><span>METER</span><span class="req">REQUIRED</span></div>
+              </div>
+              <div class="seller-card">
+                <div class="sl-head"><span class="lbl">Track %</span><span class="ix">B2</span></div>
+                <div class="sl-body"><input type="text" id="vf-trackpct" name="track_pct_display" value="{{ track_pct_str }}" /></div>
+                <div class="sl-foot"><span>UNDERCARRIAGE</span><span class="req">REQUIRED</span></div>
+              </div>
+              <div class="seller-card">
+                <div class="sl-head"><span class="lbl">Grade</span><span class="ix">B3</span></div>
+                <div class="sl-body"><input type="text" id="vf-grade" name="grade_display" value="{{ grade_val }}" /></div>
+                <div class="sl-foot"><span>OVERALL</span><span class="req">REQUIRED</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- C · FEATURES & ATTACHMENTS -->
+          <div class="block">
+            <div class="block-head">
+              <div class="l">
+                <div class="tag">// C — CONFIG</div>
+                <h2>Features &amp; Attachments</h2>
+              </div>
+              <div class="r">
+                <span>EQUIPMENT-AWARE · LISTING-IMPACTING</span>
+                <span><b id="fa-count">0 / 0</b> SELECTED</span>
+              </div>
+            </div>
+
+            <div class="eq-locked">
+              <div class="eq-locked-l">
+                <span class="lbl">// EQUIPMENT TYPE</span>
+                <span class="v" id="eq-active-name">{{ eq_label }}</span>
+              </div>
+              <div class="eq-locked-r">
+                <span class="code">{{ eq_code }}</span>
+                <span class="lock">● LOCKED FROM STEP 01</span>
+              </div>
+            </div>
+
+            <div class="fa-grid">
+              <div class="fa-stack">
+                <div class="fa-head">
+                  <span class="lbl" style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Features</span>
+                  <span class="ix" style="font-family:'JetBrains Mono';font-size:10px;color:var(--text-faint);letter-spacing:.18em">C1 · <b style="color:var(--ink);font-weight:700" data-fa-count="features-total">0</b> ON</span>
+                </div>
+                <div class="fa-section">
+                  <div class="sec-head">
+                    <span><span class="rank">P</span>Primary</span>
+                    <span><b data-fa-count="features-primary" style="color:var(--ink);font-weight:700">0</b> selected</span>
+                  </div>
+                  <div class="sec-body" data-fa-group="features-primary" id="fa-primary"></div>
+                </div>
+                <div class="fa-section">
+                  <div class="sec-head">
+                    <span>Secondary</span>
+                    <span><b data-fa-count="features-secondary" style="color:var(--ink);font-weight:700">0</b> selected</span>
+                  </div>
+                  <div class="sec-body" data-fa-group="features-secondary" id="fa-secondary"></div>
+                </div>
+              </div>
+
+              <div class="fa-stack">
+                <div class="fa-head">
+                  <span class="lbl" style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Attachments</span>
+                  <span class="ix" style="font-family:'JetBrains Mono';font-size:10px;color:var(--text-faint);letter-spacing:.18em">C2 · <b style="color:var(--ink);font-weight:700" data-fa-count="attachments">0</b> ON</span>
+                </div>
+                <div class="fa-section attach">
+                  <div class="sec-head">
+                    <span>Available</span>
+                    <span>tap to include</span>
+                  </div>
+                  <div class="sec-body" data-fa-group="attachments" id="fa-attachments"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- D · LISTING PREVIEW -->
+          <div class="block tinted">
+            <div class="block-head">
+              <div class="l">
+                <div class="tag">// D — LIVE</div>
+                <h2>Listing Preview</h2>
+              </div>
+              <div class="r">
+                <span>DERIVED FROM SELECTIONS</span>
+                <span><b>AUTO · v.04</b></span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:24px">
+              <div>
+                <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline">
+                  <span>// Best For <span style="background:var(--accent);color:var(--ink);padding:2px 5px;margin-left:4px;font-weight:800">AI Suggested</span></span>
+                  <span style="color:var(--text-faint);font-weight:500">Keep · remove · add custom</span>
+                </div>
+                <div class="bf-row" id="best-for" style="border-top:1px solid var(--rule)"></div>
+              </div>
+
+              <div>
+                <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline">
+                  <span>// Listing Headline <span style="background:var(--accent);color:var(--ink);padding:2px 5px;margin-left:4px;font-weight:800">AI Drafted</span></span>
+                  <span class="pb-edit-hint">Click to refine</span>
+                </div>
+                <div class="preview-block" style="margin-top:0">
+                  <div class="pb-head">
+                    <span class="lbl">Listing Headline</span>
+                    <span class="meta">AUTO · EDITABLE · <b>v.04</b></span>
+                  </div>
+                  <div class="pb-body">
+                    <div class="pb-eyebrow">// HEADLINE — INLINE EDIT</div>
+                    <div class="pb-line" id="headline-preview" contenteditable="true" spellcheck="false">{% if headline %}{{ headline }}{% else %}{{ year }} {{ make }} {{ model }} · {{ hours_str }} hrs{% endif %}</div>
+                  </div>
+                  <div class="pb-foot">
+                    <span>APPEARS ON HERO CARD &amp; LISTING TITLE</span>
+                    <span><b id="headline-state">AI DRAFT</b></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cta-band">
+            <div class="l">
+              <div class="top">
+                <span class="ok">READY TO GENERATE</span>
+                <span><b>12 FILES</b> · 4.2 MB</span>
+              </div>
+              <div class="sub">REVIEW → CONFIRM → BUILD · STEP <b>03 / 05</b></div>
+            </div>
+            <div class="r">
+              <button type="button" class="back" onclick="window.location.href='/build-listing'">← Back</button>
+              <button type="submit" class="generate" id="d-generate-btn">Generate Package <span class="ar">›</span></button>
+            </div>
+          </div>
+
+          <div id="verify-status" class="verify-status" hidden></div>
+
+        </div>
+
+        <aside>
+          <div class="rail">
+            <div class="rail-head">
+              <div class="t"><span class="tag">// E</span>Package Preview</div>
+              <div class="m"><b>4</b> ASSETS</div>
+            </div>
+
+            <div class="pkg-card">
+              <div class="pc-head"><span class="name"><span class="ix">A</span> HERO CARD</span><span class="file">LISTING_HERO.PNG</span></div>
+              <div class="pc-hero">
+                {% if hero_photo_url %}<img src="{{ hero_photo_url }}" alt="" onerror="this.style.display='none'">{% endif %}
+                <div class="price">{{ price_str }}</div>
+                <div class="yr">{{ year }} · {{ hours_str }} HRS</div>
+              </div>
+              <div class="pc-meta">
+                <div class="info">
+                  <div class="t">Marketplace Card</div>
+                  <div class="d">PNG · 1600×1200 · 1.2 MB</div>
+                </div>
+                <div class="ok">READY</div>
+              </div>
+            </div>
+
+            <div class="pkg-card">
+              <div class="pc-head"><span class="name"><span class="ix">B</span> SPEC SHEET</span><span class="file">SPEC.PDF</span></div>
+              <div class="pc-spec">
+                <div class="ph"><span class="mk">M/M</span><span class="id">{{ session_id[-5:]|upper }}</span></div>
+                <div class="pt">{{ year }} {{ make }} {{ model }}</div>
+                <div class="pr">
+                  <div class="r"><span>Engine</span><span>{{ engine_model }}</span></div>
+                  <div class="r"><span>HP</span><span>{{ hp_str }}</span></div>
+                  <div class="r"><span>Op Wt</span><span>{{ op_wt_str }}</span></div>
+                  <div class="r"><span>Lift</span><span>{{ roc_str }}</span></div>
+                  <div class="r"><span>Aux</span><span>{{ aux_str }} gpm</span></div>
+                  <div class="r"><span>Hours</span><span>{{ hours_str }}</span></div>
+                </div>
+              </div>
+              <div class="pc-meta">
+                <div class="info">
+                  <div class="t">Dealer Spec Sheet</div>
+                  <div class="d">PDF · A4 · 340 KB</div>
+                </div>
+                <div class="ok">READY</div>
+              </div>
+            </div>
+
+            <div class="pkg-card">
+              <div class="pc-head"><span class="name"><span class="ix">C</span> IMAGE PACK</span><span class="file">IMG_PACK/</span></div>
+              <div class="pc-pack">
+                <i class="ph"></i><i>SIDE</i><i>REAR</i>
+                <i>CAB</i><i class="y">{{ price_str }}</i><i>HRS</i>
+                <i>TRACKS</i><i>BUCKET</i><i>LOGO</i>
+              </div>
+              <div class="pc-meta">
+                <div class="info">
+                  <div class="t">Branded 9-Tile</div>
+                  <div class="d">9 × PNG · 1080 · 2.4 MB</div>
+                </div>
+                <div class="ok">READY</div>
+              </div>
+            </div>
+
+            <div class="pkg-card">
+              <div class="pc-head"><span class="name"><span class="ix">D</span> LISTING COPY</span><span class="file">COPY.TXT</span></div>
+              <div class="pc-copy">
+                <span class="lab">HEADLINE</span>
+                <span class="ln"></span>
+                <span class="lab" style="margin-top:4px">BODY</span>
+                <span class="ln s2"></span>
+                <span class="ln s3"></span>
+                <span class="ln s4"></span>
+              </div>
+              <div class="pc-meta">
+                <div class="info">
+                  <div class="t">Headline + Body + Tags</div>
+                  <div class="d">TXT · 4 BLOCKS · 4 KB</div>
+                </div>
+                <div class="ok">READY</div>
+              </div>
+            </div>
+
+            <div class="rail-totals">
+              <div class="row"><span>Files</span><b>12</b></div>
+              <div class="row"><span>Total size</span><b>4.2 MB</b></div>
+              <div class="row"><span>Build time</span><b>~45 sec</b></div>
+              <div class="row big"><span>PACKAGE</span><b>READY</b></div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container foot-grid">
+      <div class="foot-mark"><b>MTM</b> · MACHINE TO MARKET · 2026</div>
+      <div class="foot-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Support</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ==== MOBILE ==== -->
+<div class="v8-mobile">
+  <div class="m-top">
+    <div class="row">
+      <div class="brand"><div class="mk">M/M</div><span>Machine to Market</span></div>
+      <div class="step">03 / 05</div>
+    </div>
+    <div class="m-step-bar">
+      <div class="seg done"></div>
+      <div class="seg done"></div>
+      <div class="seg cur"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+    </div>
+  </div>
+
+  <div class="m-summary">
+    <div class="thumb">
+      <div class="b">OK</div>
+      {% if hero_photo_url %}<img src="{{ hero_photo_url }}" alt="" onerror="this.style.display='none'">{% endif %}
+    </div>
+    <div class="meta">
+      <div class="yr">{{ year }} · {{ make }}</div>
+      <div class="nm">{{ machine_label }}</div>
+      <div class="sub">{{ eq_label }}</div>
+    </div>
+    <div class="pricecol">
+      <div class="lbl">ASKING</div>
+      <div class="v">{{ price_str }}</div>
+    </div>
+  </div>
+  <div class="m-substrip">
+    <div class="c"><div class="lbl">HOURS</div><div class="v">{{ hours_str }}</div></div>
+    <div class="c"><div class="lbl">STOCK #</div><div class="v">{{ stock_no }}</div></div>
+    <div class="c"><div class="lbl">STEP</div><div class="v">VERIFY</div></div>
+  </div>
+
+  <div class="m-page">
+    <h1 class="m-h">Verify <span class="ac">Specs.</span></h1>
+    <div class="m-blurb">
+      REGISTRY: <b>OEM-BACKED</b> · <span class="ok">OEM VERIFIED</span><br>
+      CONFIRM SPECS · LOCK PACKAGE
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// A</span><h3>OEM Specs</h3></div>
+        <div class="r"><b>OEM VERIFIED</b></div>
+      </div>
+      <div class="m-spec-grid">
+        <div class="m-spec"><div class="h"><span>ENGINE</span><span>A1</span></div><div class="v">{{ engine_model }}</div><div class="f">REGISTRY</div></div>
+        <div class="m-spec"><div class="h"><span>HORSEPOWER</span><span>A2</span></div><div class="v">{{ hp_str }}<small>HP</small></div><div class="f">REGISTRY</div></div>
+        <div class="m-spec"><div class="h"><span>OP. WEIGHT</span><span>A3</span></div><div class="v">{{ op_wt_str }}<small>LB</small></div><div class="f">REGISTRY</div></div>
+        <div class="m-spec"><div class="h"><span>LIFT CAP.</span><span>A4</span></div><div class="v">{{ roc_str }}<small>LB</small></div><div class="f">REGISTRY</div></div>
+        <div class="m-spec"><div class="h"><span>AUX FLOW</span><span>A5</span></div><div class="v">{{ aux_str }}<small>GPM</small></div><div class="f">REGISTRY</div></div>
+        <div class="m-spec warn"><div class="h"><span>TRACK WIDTH</span><span>A6</span></div><div class="v">{{ track_w_str }}<small>IN</small></div><div class="f">FLAG · CONFIRM</div></div>
+      </div>
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// B — SELLER</span><h3>Inputs</h3></div>
+        <div class="r"><b>3 / 3</b></div>
+      </div>
+      <div class="m-seller-grid">
+        <div class="m-input"><div class="h">HOURS</div><div class="b"><input type="text" id="vf-m-hours" value="{{ hours_str }}" placeholder="Enter hours" /></div></div>
+        <div class="m-input"><div class="h">TRACK %</div><div class="b"><input type="text" id="vf-m-trackpct" value="{{ track_pct_str }}" /></div></div>
+        <div class="m-input"><div class="h">GRADE</div><div class="b"><input type="text" id="vf-m-grade" value="{{ grade_val }}" /></div></div>
+      </div>
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// C — CONFIG</span><h3>Features &amp; Attach.</h3></div>
+        <div class="r"><b id="m-fa-count">0 / 0</b></div>
+      </div>
+
+      <div class="m-eq-locked">
+        <span class="lbl">// EQUIPMENT</span>
+        <span class="v">{{ eq_label }}</span>
+        <span class="code">{{ eq_code }} · LOCKED</span>
+      </div>
+
+      <div class="m-fa-sub">// PRIMARY FEATURES</div>
+      <div class="m-fa-body" data-fa-group="m-features-primary" id="m-fa-primary"></div>
+      <div class="m-fa-sub">// SECONDARY</div>
+      <div class="m-fa-body" data-fa-group="m-features-secondary" id="m-fa-secondary"></div>
+      <div class="m-fa-sub">// ATTACHMENTS</div>
+      <div class="m-fa-body" data-fa-group="m-attachments" id="m-fa-attachments"></div>
+
+      <div class="m-fa-sub" style="margin-top:6px">// BEST FOR · AI SUGGESTED</div>
+      <div class="m-bf-row" id="m-best-for"></div>
+
+      <div class="m-preview">
+        <div class="h"><span>// HEADLINE · AI DRAFTED</span><span class="meta">EDITABLE · <b>v.04</b></span></div>
+        <div class="b">
+          <div class="e">// TAP TO REFINE</div>
+          <div class="l" id="m-headline-preview" contenteditable="true" spellcheck="false">{% if headline %}{{ headline }}{% else %}{{ year }} {{ make }} {{ model }} · {{ hours_str }} hrs{% endif %}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// PREVIEW</span><h3>Package</h3></div>
+        <div class="r"><b>12 FILES</b></div>
+      </div>
+      <div class="m-pkg">
+        <div class="ic">{% if hero_photo_url %}<img src="{{ hero_photo_url }}" alt="">{% else %}A{% endif %}</div>
+        <div class="info"><div class="t">A · Hero Card</div><div class="d">PNG · 1.2 MB</div></div>
+        <div class="ok">● READY</div>
+      </div>
+      <div class="m-pkg">
+        <div class="ic" style="background:var(--paper);color:var(--ink);border:1px solid var(--ink);font-size:9px">PDF</div>
+        <div class="info"><div class="t">B · Spec Sheet</div><div class="d">PDF · 340 KB</div></div>
+        <div class="ok">● READY</div>
+      </div>
+      <div class="m-pkg">
+        <div class="ic" style="background:var(--accent);color:var(--ink);font-size:9px">9×</div>
+        <div class="info"><div class="t">C · Image Pack</div><div class="d">9 PNG · 2.4 MB</div></div>
+        <div class="ok">● READY</div>
+      </div>
+      <div class="m-pkg">
+        <div class="ic" style="background:var(--paper);color:var(--ink);border:1px solid var(--ink);font-size:9px">TXT</div>
+        <div class="info"><div class="t">D · Listing Copy</div><div class="d">TXT · 4 KB</div></div>
+        <div class="ok">● READY</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="m-cta">
+    <button type="button" class="back" onclick="window.location.href='/build-listing'">←</button>
+    <button type="submit" class="gen" id="m-generate-btn">Generate Package <span>›</span></button>
+  </div>
+</div>
+
+<!-- Hidden form fields submitted to /build-listing/generate/{session_id} -->
+<input type="hidden" name="year"  value="{{ year }}">
+<input type="hidden" name="make"  value="{{ make }}">
+<input type="hidden" name="model" value="{{ model }}">
+<input type="hidden" name="hours" id="vf-hours-out" value="{{ hours_str|replace(',', '') }}">
+<input type="hidden" name="asking_price" value="{{ price_str|replace('$','')|replace(',','') }}">
+<input type="hidden" name="stock_number" value="{{ stock_no if stock_no != '—' else '' }}">
+<input type="hidden" name="track_percent_remaining" id="vf-trackpct-out" value="{{ track_pct_str|replace('%','') }}">
+<input type="hidden" name="condition_grade" id="vf-grade-out" value="{{ grade_val }}">
+<input type="hidden" name="attachments_included" id="vf-attachments-out" value="">
+<input type="hidden" name="cab_type"        id="vf-cab-type"      value="">
+<input type="hidden" name="heater"          id="vf-heater"        value="false">
+<input type="hidden" name="ac"              id="vf-ac"            value="false">
+<input type="hidden" name="high_flow"       id="vf-high-flow"     value="">
+<input type="hidden" name="two_speed"       id="vf-two-speed"     value="">
+<input type="hidden" name="ride_control"    id="vf-ride-control"  value="false">
+<input type="hidden" name="backup_camera"   id="vf-backup-camera" value="false">
+<input type="hidden" name="self_leveling"   id="vf-self-leveling" value="false">
+<input type="hidden" name="coupler_type"    id="vf-coupler-type"  value="">
+
+<!-- Verify-page overrides (session-scoped, applied at /generate) -->
+<input type="hidden" name="spec_overrides_json" id="vf-spec-overrides" value="{}">
+<input type="hidden" name="best_for_override"   id="vf-best-for"       value="">
+<input type="hidden" name="headline_override"   id="vf-headline"       value="{{ headline|default('', true) }}">
+
+</form>
+
+<script>
+(function(){
+  // ============================================================
+  // OEM spec inline edit — Dealer Override toggle
+  // ============================================================
+  function rebuildSpecOverrides(){
+    var hiddenEl = document.getElementById('vf-spec-overrides');
+    if(!hiddenEl) return;
+    var overrides = {};
+    document.querySelectorAll('.v8-desktop .spec-card .sc-val [contenteditable]').forEach(function(el){
+      var key = el.dataset.specKey;
+      if(!key) return;
+      var cur = (el.textContent || '').trim();
+      var oem = (el.dataset.oem || '').trim();
+      if(cur && cur !== oem){
+        overrides[key] = { value: cur, type: el.dataset.oemType || 'string', oem: oem };
+      }
+    });
+    hiddenEl.value = JSON.stringify(overrides);
+  }
+  window.MTM_REBUILD_SPEC_OVERRIDES = rebuildSpecOverrides;
+
+  document.querySelectorAll('.spec-card .sc-val [contenteditable]').forEach(function(el){
+    var card = el.closest('.spec-card');
+    var verify = card.querySelector('.sc-foot .verify');
+    var src = card.querySelector('.sc-foot .src');
+    var oemSrc = src ? src.textContent : 'OEM REGISTRY';
+    var oemVerifyHTML = verify ? verify.innerHTML : 'OEM VERIFIED';
+    function update(){
+      var changed = el.textContent.trim() !== (el.dataset.oem || '').trim();
+      if(changed){
+        card.classList.add('override');
+        card.classList.remove('warn');
+        if(verify) verify.textContent = 'DEALER OVERRIDE';
+        if(src) src.textContent = 'EDITED · OEM ' + (el.dataset.oem || '');
+      } else {
+        card.classList.remove('override');
+        if(verify) verify.innerHTML = oemVerifyHTML;
+        if(src) src.textContent = oemSrc;
+      }
+      rebuildSpecOverrides();
+    }
+    el.addEventListener('input', update);
+    el.addEventListener('blur', update);
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+    });
+  });
+  rebuildSpecOverrides();
+})();
+
+// ============================================================
+// Equipment-type-aware chip presets
+// ============================================================
+window.MTM_VERIFY_CFG = (function(){
+  var eqType = "{{ equipment_type }}";
+  var byType = {
+    'compact_track_loader': {
+      primary:    ['High Flow','Enclosed Cab','Heat / AC','2-Speed','Ride Control'],
+      secondary:  ['Quick Attach','Self-Leveling','Backup Camera'],
+      attachments:['Bucket','Forks','Grapple','Auger','Trencher','Breaker'],
+    },
+    'skid_steer': {
+      primary:    ['High Flow','Enclosed Cab','Heat / AC','2-Speed','Ride Control'],
+      secondary:  ['Quick Attach','Backup Camera','Radio'],
+      attachments:['Bucket','Forks','Grapple','Auger','Trencher','Breaker'],
+    },
+    'mini_excavator': {
+      primary:    ['Enclosed Cab','Heat / AC','Hydraulic Thumb','Aux Hydraulics','Rubber Tracks'],
+      secondary:  ['Quick Attach','Blade','Backup Camera'],
+      attachments:['Bucket','Thumb','Auger','Breaker','Grading Bucket'],
+    },
+    'wheel_loader': {
+      primary:    ['Enclosed Cab','Heat / AC','Quick Attach','Aux Hydraulics','Ride Control'],
+      secondary:  ['Backup Camera','Radio','One Owner'],
+      attachments:['Bucket','Forks','Grapple','Snow Plow'],
+    },
+    'backhoe_loader': {
+      primary:    ['Enclosed Cab','Heat / AC','4WD','Extendahoe','Aux Hydraulics'],
+      secondary:  ['Quick Attach','Backup Camera','Radio'],
+      attachments:['Loader Bucket','Backhoe Bucket','Forks','Auger'],
+    },
+    'telehandler': {
+      primary:    ['Enclosed Cab','Heat / AC','4WD Steering','Aux Hydraulics'],
+      secondary:  ['Quick Attach','Backup Camera','Radio'],
+      attachments:['Forks','Bucket','Truss Boom','Work Platform'],
+    },
+    'excavator': {
+      primary:    ['Enclosed Cab','Heat / AC','Hydraulic Thumb','Aux Hydraulics'],
+      secondary:  ['Quick Attach','Backup Camera','Blade'],
+      attachments:['Bucket','Thumb','Breaker','Grading Bucket'],
+    },
+  };
+  return byType[eqType] || byType['compact_track_loader'];
+})();
+
+window.MTM_VERIFY_PRESEL = {
+  primary: (function(){
+    var pre = [];
+    {% if preselected.high_flow %}pre.push('High Flow');{% endif %}
+    {% if preselected.enclosed_cab %}pre.push('Enclosed Cab');{% endif %}
+    {% if preselected.heat_ac %}pre.push('Heat / AC');{% endif %}
+    {% if preselected.two_speed %}pre.push('2-Speed');{% endif %}
+    {% if preselected.ride_control %}pre.push('Ride Control');{% endif %}
+    return pre;
+  })(),
+  secondary: (function(){
+    var pre = [];
+    {% if preselected.quick_attach %}pre.push('Quick Attach');{% endif %}
+    {% if preselected.self_leveling %}pre.push('Self-Leveling');{% endif %}
+    {% if preselected.backup_camera %}pre.push('Backup Camera');{% endif %}
+    return pre;
+  })(),
+  attachments: {{ att_preselected|tojson }}
+};
+
+// ============================================================
+// FEATURES & ATTACHMENTS + BEST FOR + HEADLINE
+// (ported from Verify Specs v8)
+// ============================================================
+(function(){
+  var EQ = {
+    name:        '{{ eq_label }}',
+    primary:     window.MTM_VERIFY_CFG.primary.slice(),
+    secondary:   window.MTM_VERIFY_CFG.secondary.slice(),
+    attachments: window.MTM_VERIFY_CFG.attachments.slice(),
+    defaults: {
+      primary:     window.MTM_VERIFY_PRESEL.primary.slice(),
+      secondary:   window.MTM_VERIFY_PRESEL.secondary.slice(),
+      attachments: window.MTM_VERIFY_PRESEL.attachments.slice()
+    }
+  };
+
+  var DEFAULT_BF = ['Land Clearing','Material Handling','Site Prep','Demolition'];
+  var SERVER_BF  = {{ best_for|tojson }};
+  var bfState = (Array.isArray(SERVER_BF) && SERVER_BF.length) ? SERVER_BF.slice() : DEFAULT_BF.slice();
+  var bfCustom = {};
+  var customAttachments = [];
+  var customSecondary = [];
+  var SERVER_HEADLINE = {{ headline|default('', true)|tojson }};
+  // When the server provides a headline, treat it as authoritative —
+  // suppress the chip-driven auto-recompute below until the dealer edits.
+  var headlineEdited = !!SERVER_HEADLINE;
+
+  function renderChips(host, items, klass, selectedSet){
+    if(!host) return;
+    var prev = {};
+    Array.prototype.forEach.call(host.querySelectorAll('button'), function(b){
+      prev[b.dataset.label || b.textContent.trim().replace(/\s*✕\s*$/,'')] =
+        b.getAttribute('aria-pressed') === 'true';
+    });
+    host.innerHTML = '';
+    items.forEach(function(label){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = klass;
+      b.dataset.label = label;
+      var pressed = (prev[label] !== undefined) ? prev[label]
+        : (selectedSet && selectedSet.indexOf(label) !== -1);
+      b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      b.innerHTML = '<span class="box"></span>' + label;
+      host.appendChild(b);
+    });
+  }
+
+  function renderAttachments(){
+    var host = document.getElementById('fa-attachments');
+    var mhost = document.getElementById('m-fa-attachments');
+    if(!host) return;
+    var all = EQ.attachments.concat(customAttachments);
+    var prev = {};
+    Array.prototype.forEach.call(host.querySelectorAll('button'), function(b){
+      prev[b.dataset.label] = b.getAttribute('aria-pressed') === 'true';
+    });
+    host.innerHTML = '';
+    all.forEach(function(label){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip-att';
+      if(customAttachments.indexOf(label) !== -1) b.classList.add('custom');
+      b.dataset.label = label;
+      var pressed = (prev[label] !== undefined) ? prev[label]
+        : (EQ.defaults.attachments.indexOf(label) !== -1);
+      b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      var x = customAttachments.indexOf(label) !== -1
+        ? '<span class="x" title="Remove" data-rm="'+label+'">✕</span>' : '';
+      b.innerHTML = '<span class="box"></span>' + label + x;
+      host.appendChild(b);
+    });
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'chip-add';
+    add.id = 'att-add-btn';
+    add.innerHTML = '<span>Add Attachment</span>';
+    host.appendChild(add);
+
+    if(mhost){
+      mhost.innerHTML = '';
+      all.forEach(function(label){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'm-chip';
+        b.dataset.label = label;
+        var pressed = (prev[label] !== undefined) ? prev[label]
+          : (EQ.defaults.attachments.indexOf(label) !== -1);
+        b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+        b.innerHTML = '<span class="box"></span>' + label;
+        mhost.appendChild(b);
+      });
+      var madd = document.createElement('button');
+      madd.type = 'button';
+      madd.className = 'm-chip-add';
+      madd.id = 'm-att-add-btn';
+      madd.innerHTML = '<span>Add</span>';
+      mhost.appendChild(madd);
+    }
+  }
+
+  function renderSecondary(){
+    var host = document.getElementById('fa-secondary');
+    var mhost = document.getElementById('m-fa-secondary');
+    if(!host) return;
+    var all = EQ.secondary.concat(customSecondary);
+    var prev = {};
+    Array.prototype.forEach.call(host.querySelectorAll('button'), function(b){
+      if(b.classList.contains('chip-add')) return;
+      prev[b.dataset.label] = b.getAttribute('aria-pressed') === 'true';
+    });
+
+    host.innerHTML = '';
+    all.forEach(function(label){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      if(customSecondary.indexOf(label) !== -1) b.classList.add('custom');
+      b.dataset.label = label;
+      var pressed = (prev[label] !== undefined) ? prev[label]
+        : (EQ.defaults.secondary.indexOf(label) !== -1);
+      b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      var x = customSecondary.indexOf(label) !== -1
+        ? '<span class="x" title="Remove" data-rm-sec="'+label+'">✕</span>' : '';
+      b.innerHTML = '<span class="box"></span>' + label + x;
+      host.appendChild(b);
+    });
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'chip-add';
+    add.id = 'sec-add-btn';
+    add.innerHTML = '<span>Add Feature</span>';
+    host.appendChild(add);
+
+    if(mhost){
+      mhost.innerHTML = '';
+      all.forEach(function(label){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'm-chip';
+        if(customSecondary.indexOf(label) !== -1) b.classList.add('custom');
+        b.dataset.label = label;
+        var pressed = (prev[label] !== undefined) ? prev[label]
+          : (EQ.defaults.secondary.indexOf(label) !== -1);
+        b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+        var x = customSecondary.indexOf(label) !== -1
+          ? '<span class="x" title="Remove" data-rm-sec="'+label+'">✕</span>' : '';
+        b.innerHTML = '<span class="box"></span>' + label + x;
+        mhost.appendChild(b);
+      });
+      var madd = document.createElement('button');
+      madd.type = 'button';
+      madd.className = 'm-chip-add';
+      madd.id = 'm-sec-add-btn';
+      madd.innerHTML = '<span>Add</span>';
+      mhost.appendChild(madd);
+    }
+  }
+
+  function renderBestFor(){
+    var host = document.getElementById('best-for');
+    var mhost = document.getElementById('m-best-for');
+    function paint(node, chipCls){
+      if(!node) return;
+      node.innerHTML = '';
+      bfState.forEach(function(u){
+        var s = document.createElement('span');
+        s.className = chipCls + (bfCustom[u] ? ' custom' : '');
+        s.innerHTML = u + ' <span class="x" data-rm="'+u+'" title="Remove">✕</span>';
+        node.appendChild(s);
+      });
+      var add = document.createElement('button');
+      add.type = 'button';
+      add.className = (chipCls === 'bf-chip') ? 'chip-add' : 'm-chip-add';
+      add.dataset.bfAdd = '1';
+      add.innerHTML = (chipCls === 'bf-chip')
+        ? '<span>Add Custom Best For</span>'
+        : '<span>Add</span>';
+      node.appendChild(add);
+    }
+    paint(host,  'bf-chip');
+    paint(mhost, 'm-bf-chip');
+    var bfHidden = document.getElementById('vf-best-for');
+    if(bfHidden){ bfHidden.value = JSON.stringify(bfState); }
+  }
+
+  function getSelectedLabels(scope){
+    if(!scope) return [];
+    return Array.prototype.filter.call(
+      scope.querySelectorAll('button'),
+      function(b){ return b.getAttribute('aria-pressed') === 'true'; }
+    ).map(function(b){ return (b.dataset.label || b.textContent).trim(); });
+  }
+
+  function updateAll(){
+    var dPri = document.querySelector('[data-fa-group="features-primary"]');
+    var dSec = document.querySelector('[data-fa-group="features-secondary"]');
+    var dAtt = document.querySelector('[data-fa-group="attachments"]');
+
+    var pri = getSelectedLabels(dPri);
+    var sec = getSelectedLabels(dSec);
+    var atts = getSelectedLabels(dAtt);
+
+    var totalSel = pri.length + sec.length + atts.length;
+    function chipCount(host){
+      if(!host) return 0;
+      return host.querySelectorAll('button:not(.chip-add):not(.m-chip-add)').length;
+    }
+    var totalAvail = chipCount(dPri) + chipCount(dSec) + chipCount(dAtt);
+    var faC = document.getElementById('fa-count');     if(faC) faC.textContent = totalSel + ' / ' + totalAvail;
+    var mfaC= document.getElementById('m-fa-count');   if(mfaC) mfaC.textContent = totalSel + ' / ' + totalAvail;
+
+    document.querySelectorAll('[data-fa-count="features-primary"]').forEach(function(e){ e.textContent = pri.length; });
+    document.querySelectorAll('[data-fa-count="features-secondary"]').forEach(function(e){ e.textContent = sec.length; });
+    document.querySelectorAll('[data-fa-count="attachments"]').forEach(function(e){ e.textContent = atts.length; });
+    document.querySelectorAll('[data-fa-count="features-total"]').forEach(function(e){ e.textContent = pri.length + sec.length; });
+
+    if(!headlineEdited){
+      var bits = ['{{ year }} {{ make }} {{ model }}', '{{ hours_str }} hrs'];
+      var lead = pri[0] || sec[0] || atts[0];
+      if(lead) bits.push('<span class="ac">' + lead + '</span>');
+      pri.slice(1, 3).forEach(function(f){ bits.push(f); });
+      if(atts.length) bits.push(atts.join(' + '));
+      var html = bits.join(' · ');
+      var hp  = document.getElementById('headline-preview');   if(hp)  hp.innerHTML = html;
+      var mhp = document.getElementById('m-headline-preview'); if(mhp) mhp.innerHTML = html;
+    }
+
+    // Push selections to hidden inputs for form submission
+    function has(arr, lbl){
+      var k = lbl.toLowerCase();
+      return arr.some(function(v){ return v.toLowerCase() === k; });
+    }
+    var allSel = pri.concat(sec);
+    document.getElementById('vf-high-flow').value     = has(allSel, 'High Flow') ? 'true' : '';
+    document.getElementById('vf-cab-type').value      = has(allSel, 'Enclosed Cab') ? 'true' : '';
+    var heatAc = has(allSel, 'Heat / AC');
+    document.getElementById('vf-heater').value        = heatAc ? 'true' : 'false';
+    document.getElementById('vf-ac').value            = heatAc ? 'true' : 'false';
+    document.getElementById('vf-two-speed').value     = has(allSel, '2-Speed') ? 'true' : '';
+    document.getElementById('vf-ride-control').value  = has(allSel, 'Ride Control') ? 'true' : 'false';
+    document.getElementById('vf-backup-camera').value = has(allSel, 'Backup Camera') ? 'true' : 'false';
+    document.getElementById('vf-self-leveling').value = has(allSel, 'Self-Leveling') ? 'true' : 'false';
+    document.getElementById('vf-coupler-type').value  = has(allSel, 'Quick Attach') ? 'hydraulic' : '';
+    document.getElementById('vf-attachments-out').value = atts.join(', ');
+  }
+
+  function bindAllChips(){
+    document.querySelectorAll(
+      '#fa-primary button, #fa-secondary button:not(.chip-add), #fa-attachments button:not(.chip-add), ' +
+      '#m-fa-primary button, #m-fa-secondary button:not(.m-chip-add), #m-fa-attachments button:not(.m-chip-add)'
+    ).forEach(function(btn){
+      if(btn._wired) return;
+      btn._wired = true;
+      btn.addEventListener('click', function(e){
+        if(e.target && e.target.classList.contains('x') && e.target.dataset.rm){
+          e.stopPropagation();
+          var lbl = e.target.dataset.rm;
+          var idx = customAttachments.indexOf(lbl);
+          if(idx !== -1){ customAttachments.splice(idx,1); }
+          renderAttachments(); bindAllChips(); updateAll();
+          return;
+        }
+        if(e.target && e.target.classList.contains('x') && e.target.dataset.rmSec){
+          e.stopPropagation();
+          var lblS = e.target.dataset.rmSec;
+          var idxS = customSecondary.indexOf(lblS);
+          if(idxS !== -1){ customSecondary.splice(idxS,1); }
+          renderSecondary(); bindAllChips(); bindFeatureAdd(); updateAll();
+          return;
+        }
+        var pressed = btn.getAttribute('aria-pressed') === 'true';
+        var next = pressed ? 'false' : 'true';
+        btn.setAttribute('aria-pressed', next);
+        var label = (btn.dataset.label || btn.textContent.replace(/\s*✕\s*$/,'')).trim().toLowerCase();
+        document.querySelectorAll(
+          '#fa-primary button, #fa-secondary button:not(.chip-add), #fa-attachments button:not(.chip-add), ' +
+          '#m-fa-primary button, #m-fa-secondary button:not(.m-chip-add), #m-fa-attachments button:not(.m-chip-add)'
+        ).forEach(function(o){
+          if(o === btn) return;
+          var olabel = (o.dataset.label || o.textContent.replace(/\s*✕\s*$/,'')).trim().toLowerCase();
+          if(olabel === label){ o.setAttribute('aria-pressed', next); }
+        });
+        updateAll();
+      });
+    });
+  }
+
+  function openBfAdd(add, host){
+    add.classList.add('editing');
+    var ph = host && host.id === 'm-best-for' ? 'Use case…' : 'Custom use case…';
+    add.innerHTML = '<input type="text" placeholder="'+ph+'" maxlength="32" />';
+    var input = add.querySelector('input');
+    input.focus();
+    var done = false;
+    function commit(reopen){
+      if(done) return; done = true;
+      var v = (input.value||'').trim();
+      var added = false;
+      if(v && bfState.indexOf(v) === -1){
+        bfState.push(v); bfCustom[v] = true; added = true;
+      }
+      renderBestFor();
+      if(added && reopen){
+        var h = document.getElementById(host.id);
+        var freshAdd = h && h.querySelector('[data-bf-add]');
+        if(freshAdd) openBfAdd(freshAdd, h);
+      }
+    }
+    input.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter'){ ev.preventDefault(); commit(true); }
+      if(ev.key === 'Escape'){ ev.preventDefault(); done = true; renderBestFor(); }
+    });
+    input.addEventListener('blur', function(){ commit(false); });
+  }
+
+  function bindBestFor(){
+    ['best-for','m-best-for'].forEach(function(id){
+      var host = document.getElementById(id);
+      if(!host || host._wired) return;
+      host._wired = true;
+      host.addEventListener('click', function(e){
+        var rm = e.target.closest('[data-rm]');
+        if(rm){
+          var lbl = rm.dataset.rm;
+          var idx = bfState.indexOf(lbl);
+          if(idx !== -1){ bfState.splice(idx,1); delete bfCustom[lbl]; }
+          renderBestFor();
+          return;
+        }
+        var add = e.target.closest('[data-bf-add]');
+        if(add && !add.classList.contains('editing')){
+          openBfAdd(add, host);
+        }
+      });
+    });
+  }
+
+  function openAttAdd(add, host){
+    add.classList.add('editing');
+    var isMobile = host.id === 'm-fa-attachments';
+    var ph = isMobile ? 'Custom…' : 'Custom attachment…';
+    add.innerHTML = '<input type="text" placeholder="'+ph+'" maxlength="32" />';
+    var input = add.querySelector('input');
+    input.focus();
+    var done = false;
+    function commit(reopen){
+      if(done) return; done = true;
+      var v = (input.value||'').trim();
+      var added = false;
+      if(v && EQ.attachments.indexOf(v) === -1 && customAttachments.indexOf(v) === -1){
+        customAttachments.push(v);
+        EQ.defaults.attachments = EQ.defaults.attachments.concat([v]);
+        added = true;
+      }
+      renderAttachments(); bindAllChips(); bindAttachAdd(); updateAll();
+      if(added && reopen){
+        var h = document.getElementById(host.id);
+        var freshAdd = h && h.querySelector('.chip-add, .m-chip-add');
+        if(freshAdd) openAttAdd(freshAdd, h);
+      }
+    }
+    input.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter'){ ev.preventDefault(); commit(true); }
+      if(ev.key === 'Escape'){ ev.preventDefault(); done = true; renderAttachments(); bindAllChips(); bindAttachAdd(); }
+    });
+    input.addEventListener('blur', function(){ commit(false); });
+  }
+
+  function bindAttachAdd(){
+    var dHost = document.getElementById('fa-attachments');
+    var mHost = document.getElementById('m-fa-attachments');
+    [dHost, mHost].forEach(function(host){
+      if(!host || host._wiredAdd) return;
+      host._wiredAdd = true;
+      host.addEventListener('click', function(e){
+        var add = e.target.closest('.chip-add, .m-chip-add');
+        if(!add) return;
+        if(add.classList.contains('editing')) return;
+        openAttAdd(add, host);
+      });
+    });
+  }
+
+  function openFeatAdd(add, host){
+    add.classList.add('editing');
+    var isMobile = host.id === 'm-fa-secondary';
+    var ph = isMobile ? 'Custom…' : 'Custom feature…';
+    add.innerHTML = '<input type="text" placeholder="'+ph+'" maxlength="32" />';
+    var input = add.querySelector('input');
+    input.focus();
+    var done = false;
+    function commit(reopen){
+      if(done) return; done = true;
+      var v = (input.value||'').trim();
+      var added = false;
+      if(v && EQ.secondary.indexOf(v) === -1 && customSecondary.indexOf(v) === -1
+            && EQ.primary.indexOf(v) === -1){
+        customSecondary.push(v);
+        EQ.defaults.secondary = EQ.defaults.secondary.concat([v]);
+        added = true;
+      }
+      renderSecondary(); bindAllChips(); bindFeatureAdd(); updateAll();
+      if(added && reopen){
+        var h = document.getElementById(host.id);
+        var freshAdd = h && h.querySelector('#sec-add-btn, #m-sec-add-btn');
+        if(freshAdd) openFeatAdd(freshAdd, h);
+      }
+    }
+    input.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter'){ ev.preventDefault(); commit(true); }
+      if(ev.key === 'Escape'){ ev.preventDefault(); done = true; renderSecondary(); bindAllChips(); bindFeatureAdd(); }
+    });
+    input.addEventListener('blur', function(){ commit(false); });
+  }
+
+  function bindFeatureAdd(){
+    var dHost = document.getElementById('fa-secondary');
+    var mHost = document.getElementById('m-fa-secondary');
+    [dHost, mHost].forEach(function(host){
+      if(!host || host._wiredAdd) return;
+      host._wiredAdd = true;
+      host.addEventListener('click', function(e){
+        var add = e.target.closest('.chip-add, .m-chip-add');
+        if(!add) return;
+        if(add.classList.contains('editing')) return;
+        openFeatAdd(add, host);
+      });
+    });
+  }
+
+  function bindHeadline(){
+    ['headline-preview','m-headline-preview'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el || el._wired) return;
+      el._wired = true;
+      el.addEventListener('input', function(){
+        headlineEdited = true;
+        var st = document.getElementById('headline-state');
+        if(st) st.textContent = 'DEALER REFINED';
+        var twin = document.getElementById(id === 'headline-preview' ? 'm-headline-preview' : 'headline-preview');
+        if(twin && twin !== el){ twin.innerHTML = el.innerHTML; }
+        var hd = document.getElementById('vf-headline');
+        if(hd){ hd.value = (el.textContent || '').trim(); }
+      });
+      el.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+      });
+    });
+  }
+
+  function init(){
+    renderChips(document.getElementById('fa-primary'),     EQ.primary,     'chip-primary',   EQ.defaults.primary);
+    renderSecondary();
+    renderAttachments();
+    renderChips(document.getElementById('m-fa-primary'),   EQ.primary,     'm-chip-primary', EQ.defaults.primary);
+    renderBestFor();
+    bindAllChips();
+    bindBestFor();
+    bindAttachAdd();
+    bindFeatureAdd();
+    bindHeadline();
+    updateAll();
+  }
+  init();
+})();
+
+// ============================================================
+// B-section input sync (desktop ↔ mobile + hidden form fields)
+// ============================================================
+(function(){
+  function strip(v, chars){
+    var s = String(v||'');
+    chars.split('').forEach(function(c){ s = s.split(c).join(''); });
+    return s.trim();
+  }
+  function syncPair(idA, idB, hiddenId, cleanFn){
+    var a = document.getElementById(idA);
+    var b = document.getElementById(idB);
+    var h = document.getElementById(hiddenId);
+    function push(src){
+      var v = src.value;
+      if(a && a !== src) a.value = v;
+      if(b && b !== src) b.value = v;
+      if(h) h.value = cleanFn ? cleanFn(v) : v;
+    }
+    [a,b].forEach(function(el){
+      if(!el) return;
+      el.addEventListener('input', function(){ push(el); });
+      el.addEventListener('blur',  function(){ push(el); });
+    });
+  }
+  syncPair('vf-hours',    'vf-m-hours',    'vf-hours-out',    function(v){ return strip(v, ', '); });
+  syncPair('vf-trackpct', 'vf-m-trackpct', 'vf-trackpct-out', function(v){ return strip(v, '% '); });
+  syncPair('vf-grade',    'vf-m-grade',    'vf-grade-out',    function(v){ return String(v||'').trim(); });
+})();
+
+// ============================================================
+// Form submission — fetch + redirect to result page
+// ============================================================
+(function(){
+  var form = document.getElementById('verify-form');
+  var statusEl = document.getElementById('verify-status');
+  var dBtn = document.getElementById('d-generate-btn');
+  var mBtn = document.getElementById('m-generate-btn');
+  function setStatus(msg, isError){
+    if(!statusEl) return;
+    statusEl.hidden = !msg;
+    statusEl.textContent = msg || '';
+    statusEl.classList.toggle('error', !!isError);
+  }
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if(dBtn) dBtn.disabled = true;
+    if(mBtn) mBtn.disabled = true;
+    setStatus('Generating package…', false);
+    try {
+      var fd = new FormData(form);
+      // Strip _display fields — server only needs the canonical hidden inputs
+      ['hours_display','track_pct_display','grade_display'].forEach(function(k){ fd.delete(k); });
+      var resp = await fetch(form.action, { method:'POST', body: fd });
+      if(!resp.ok){
+        var detail = 'Server error ' + resp.status;
+        try { var j = await resp.json(); detail = j.detail || detail; } catch(_){}
+        setStatus('Error: ' + detail, true);
+        if(dBtn) dBtn.disabled = false;
+        if(mBtn) mBtn.disabled = false;
+        return;
+      }
+      var data = await resp.json();
+      if(data.result_url){
+        window.location.href = data.result_url;
+      } else {
+        setStatus('Pack generated but no result URL returned.', true);
+        if(dBtn) dBtn.disabled = false;
+        if(mBtn) mBtn.disabled = false;
+      }
+    } catch(err){
+      setStatus('Network error: ' + err.message, true);
+      if(dBtn) dBtn.disabled = false;
+      if(mBtn) mBtn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

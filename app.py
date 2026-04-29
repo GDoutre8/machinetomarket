@@ -534,11 +534,31 @@ async def build_listing_result(request: Request, session_id: str):
     can_refine = os.path.isfile(os.path.join(session_dir, "dealer_input.json"))
 
     # Derive Best For UI items (label + descriptor) for the result page card.
-    # Requires saved dealer_input.json + resolved_specs.json; fails silently.
+    # Dealer's verify-page override (best_for_override.json) takes priority;
+    # otherwise re-run the scorer from saved dealer_input.json + resolved_specs.json.
     best_for_ui: list[dict] = []
+    _bf_override_path = os.path.join(session_dir, "best_for_override.json")
+    _bf_override_labels: list[str] = []
+    if os.path.isfile(_bf_override_path):
+        try:
+            with open(_bf_override_path, encoding="utf-8") as f:
+                _bf_override_labels = list((json.load(f) or {}).get("best_for") or [])
+        except Exception:
+            _bf_override_labels = []
+
     _di_path  = os.path.join(session_dir, "dealer_input.json")
     _rs_path2 = os.path.join(session_dir, "resolved_specs.json")
-    if os.path.isfile(_di_path) and os.path.isfile(_rs_path2):
+    if _bf_override_labels:
+        try:
+            from listing_builder import _UC_DESCRIPTOR  # type: ignore
+        except Exception:
+            _UC_DESCRIPTOR = {}  # type: ignore
+        for label in _bf_override_labels[:6]:
+            best_for_ui.append({
+                "label":      label,
+                "descriptor": _UC_DESCRIPTOR.get(label, "") if isinstance(_UC_DESCRIPTOR, dict) else "",
+            })
+    elif os.path.isfile(_di_path) and os.path.isfile(_rs_path2):
         try:
             with open(_di_path, encoding="utf-8") as f:
                 _di_data = json.load(f)
@@ -1281,6 +1301,850 @@ async def build_listing_endpoint(
     return JSONResponse({
         "success":      True,
         "result_url":   f"/build-listing/result/{session_id}",
+        "spec_sheet_url": f"/build-listing/spec-sheet/{session_id}",
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /build-listing/verify — intermediate Verify Specs (Step 03 / 05) review page
+# Sits between intake (POST /build-listing/verify) and final pack generation
+# (POST /build-listing/generate/{session_id}). Photos are staged on disk in
+# the session dir so they don't need to be re-uploaded by the verify form.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _verify_bool(v: str) -> bool:
+    return str(v).lower() in ("true", "1", "on", "yes")
+
+
+def _verify_tristatus(v: str) -> Optional[str]:
+    s = str(v).lower().strip()
+    if s in ("true", "1", "on", "yes"):    return "yes"
+    if s in ("false", "0", "off", "no"):   return "no"
+    if s == "optional":                    return "optional"
+    return None
+
+
+def _verify_build_dealer_input(d: dict) -> DealerInput:
+    """Build DealerInput from a flat dict of form values.
+    Mirrors the construction inside POST /build-listing — kept in sync."""
+    asking_price_raw = (d.get("asking_price") or "").strip()
+    price_int: Optional[int] = None
+    if asking_price_raw:
+        try:
+            price_int = int(asking_price_raw.replace("$", "").replace(",", ""))
+        except ValueError:
+            raise HTTPException(status_code=422, detail="asking_price must be a number")
+
+    cab_type_raw = d.get("cab_type")
+    cab_type = ("enclosed" if cab_type_raw and cab_type_raw.strip().lower() == "true"
+                else (cab_type_raw.strip() or None if cab_type_raw else None))
+
+    control_type_raw = d.get("control_type")
+    joystick = _verify_bool(d.get("joystick_controls", "false"))
+    control_type = ((control_type_raw.strip() or None if control_type_raw else None)
+                    or ("joystick" if joystick else None))
+
+    coupler_raw = (d.get("coupler_type") or d.get("quick_attach") or "").strip().lower()
+    coupler_type = coupler_raw if coupler_raw in {"hydraulic", "manual", "pin-on"} else None
+
+    def _opt(key: str) -> Optional[str]:
+        v = d.get(key)
+        return v.strip() or None if isinstance(v, str) and v.strip() else None
+
+    return DealerInput(
+        year=int(d["year"]),
+        make=str(d["make"]),
+        model=str(d["model"]),
+        hours=int(d["hours"]),
+        asking_price=price_int,
+        cab_type=cab_type,
+        heater=_verify_bool(d.get("heater", "false")),
+        ac=_verify_bool(d.get("ac", "false")),
+        high_flow=_verify_tristatus(d.get("high_flow", "")),
+        two_speed_travel=_verify_tristatus(d.get("two_speed", "")),
+        ride_control=_verify_bool(d.get("ride_control", "false")),
+        backup_camera=_verify_bool(d.get("backup_camera", "false")),
+        radio=_verify_bool(d.get("radio", "false")),
+        control_type=control_type,
+        one_owner=_verify_bool(d.get("one_owner", "false")),
+        thumb_type="hydraulic" if _verify_bool(d.get("thumb", "false")) else None,
+        aux_hydraulics=_verify_bool(d.get("aux_hydraulics", "false")),
+        blade_type="straight" if _verify_bool(d.get("blade", "false")) else None,
+        zero_tail_swing=_verify_bool(d.get("zero_tail_swing", "false")),
+        rubber_tracks=_verify_bool(d.get("rubber_tracks", "false")),
+        coupler_type=coupler_type,
+        tire_condition=_opt("tire_condition"),
+        track_condition=_opt("track_condition"),
+        track_percent_remaining=(int(d["track_percent_remaining"])
+                                 if d.get("track_percent_remaining") is not None
+                                 and str(d.get("track_percent_remaining")).strip() else None),
+        attachments_included=_opt("attachments_included"),
+        condition_notes=_opt("condition_notes"),
+        condition_grade=_opt("condition_grade"),
+        serial_number=_opt("serial_number"),
+        stock_number=_opt("stock_number"),
+        air_ride_seat=_verify_bool(d.get("air_ride_seat", "false")),
+        self_leveling=_verify_bool(d.get("self_leveling", "false")),
+        reversing_fan=_verify_bool(d.get("reversing_fan", "false")),
+        bucket_included=_verify_bool(d.get("bucket_included", "false")),
+        bucket_size=_opt("bucket_size"),
+        warranty_status=_opt("warranty_status"),
+    )
+
+
+def _verify_resolve_specs(dealer_input: DealerInput):
+    parsed = {
+        "make":        dealer_input.make,
+        "model":       dealer_input.model,
+        "make_source": "explicit",
+    }
+    specs, confidence = safe_lookup_machine(parsed)
+    full_record = specs.get("full_record") if specs else None
+    resolved_machine = None
+    resolved_specs: dict = {}
+    if specs is not None:
+        eq_type = (specs or {}).get("equipment_type", "").lower()
+        is_ssl_or_ctl = eq_type in ("skid_steer", "compact_track_loader")
+        modifiers = _structured_modifiers_from_flags({
+            "high_flow": None if is_ssl_or_ctl else dealer_input.high_flow,
+            "two_speed": None if is_ssl_or_ctl else dealer_input.two_speed_travel,
+            "thumb": dealer_input.thumb_type,
+        })
+        resolved_machine = _run_spec_resolver(
+            "", parsed, specs, confidence,
+            parsed_year=dealer_input.year,
+            detected_modifiers=modifiers,
+        )
+        if resolved_machine:
+            resolved_specs = resolved_machine.get("resolved_specs") or {}
+    else:
+        resolved_machine = web_match_fallback(
+            dealer_input.make, dealer_input.model, dealer_input.year,
+        )
+    return resolved_machine, resolved_specs, full_record, parsed
+
+
+def _verify_decode_dealer_info(session_dir: str, dealer_profile_json: Optional[str]) -> Optional[dict]:
+    if not dealer_profile_json:
+        return None
+    try:
+        import base64 as _b64
+        _dp = json.loads(dealer_profile_json)
+        if not (isinstance(_dp, dict) and (_dp.get("companyName") or "").strip()):
+            return None
+        _logo_save_path: Optional[str] = None
+        _logo_url = (_dp.get("logoDataUrl") or "").strip()
+        if _logo_url.startswith("data:") and "base64," in _logo_url:
+            _logo_bytes = _b64.b64decode(_logo_url.split("base64,", 1)[1])
+            _uploads_dir = os.path.join(session_dir, "_uploads")
+            os.makedirs(_uploads_dir, exist_ok=True)
+            _logo_save_path = os.path.join(_uploads_dir, "dealer_logo.png")
+            with open(_logo_save_path, "wb") as _lf:
+                _lf.write(_logo_bytes)
+        return {
+            "dealer_name":  (_dp.get("companyName")  or "").strip() or None,
+            "contact_name": (_dp.get("contactName")  or "").strip() or None,
+            "phone":        (_dp.get("phone")        or "").strip() or None,
+            "logo_path":    _logo_save_path,
+            "accent_color": (_dp.get("accentColor") or "yellow"),
+        }
+    except Exception:
+        return None
+
+
+# Canonical spec key + alias mirrors. When the dealer overrides one of these,
+# we mirror the value into every alias so downstream consumers (build_listing_text,
+# build_spec_sheet_entries, build_use_case_payload) all see the override regardless
+# of which key they read.
+_VERIFY_SPEC_ALIASES: dict[str, list[str]] = {
+    "engine_model":         ["engine_model"],
+    "net_hp":               ["net_hp", "horsepower_hp"],
+    "operating_weight_lb":  ["operating_weight_lb", "operating_weight_lbs"],
+    "roc_lb":               ["roc_lb", "rated_operating_capacity_lbs"],
+    "hydraulic_flow_gpm":   ["hydraulic_flow_gpm", "aux_flow_standard_gpm"],
+    "track_width_in":       ["track_width_in", "width_over_tracks_in", "width_over_tires_in"],
+}
+
+
+def _verify_coerce_value(raw: str, type_hint: str):
+    """Parse a dealer-edited value back to the type the spec field expects."""
+    s = (raw or "").strip()
+    if not s:
+        return None
+    if type_hint == "int":
+        try:
+            return int(s.replace(",", "").split(".")[0])
+        except (ValueError, AttributeError):
+            return None
+    if type_hint == "float":
+        try:
+            return float(s.replace(",", ""))
+        except ValueError:
+            return None
+    return s
+
+
+def _verify_apply_spec_overrides(resolved_specs: dict, spec_overrides_json: Optional[str]) -> dict:
+    """Merge dealer spec overrides into a copy of resolved_specs (with alias mirrors).
+    Returns the mutated dict and a normalized {key: value} audit dict."""
+    if not spec_overrides_json:
+        return {}
+    try:
+        payload = json.loads(spec_overrides_json)
+    except Exception:
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    audit: dict = {}
+    for key, entry in payload.items():
+        if not isinstance(entry, dict):
+            continue
+        aliases = _VERIFY_SPEC_ALIASES.get(key, [key])
+        coerced = _verify_coerce_value(entry.get("value", ""), entry.get("type", "string"))
+        if coerced is None:
+            continue
+        for alias in aliases:
+            resolved_specs[alias] = coerced
+        audit[key] = coerced
+    return audit
+
+
+def _verify_patch_listing_text_best_for(listing_path: str, best_for_labels: list[str]) -> None:
+    """Replace the 'Best For:' bullet block in listing_description.txt.
+    No-op when the file has no Best For block (preserves existing layout)."""
+    if not os.path.isfile(listing_path) or not best_for_labels:
+        return
+    try:
+        with open(listing_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        lines = text.split("\n")
+        out: list[str] = []
+        i = 0
+        replaced = False
+        while i < len(lines):
+            ln = lines[i]
+            if not replaced and ln.strip() == "Best For:":
+                out.append("Best For:")
+                for label in best_for_labels[:6]:
+                    out.append(f"  • {label}")
+                # Skip the original bullet lines (any line starting with "  •")
+                j = i + 1
+                while j < len(lines) and (lines[j].startswith("  •") or lines[j].startswith("  *")):
+                    j += 1
+                i = j
+                replaced = True
+                continue
+            out.append(ln)
+            i += 1
+        if replaced:
+            with open(listing_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(out))
+    except Exception:
+        pass
+
+
+def _verify_safe_session_id(session_id: str) -> str:
+    safe_chars = set("abcdefghijklmnopqrstuvwxyz0123456789_-")
+    if not session_id or not all(c in safe_chars for c in session_id):
+        raise HTTPException(status_code=400, detail="Invalid session id")
+    return session_id
+
+
+@app.post("/build-listing/verify")
+async def build_listing_verify_create(
+    year:                 int            = Form(...),
+    make:                 str            = Form(...),
+    model:                str            = Form(...),
+    hours:                int            = Form(...),
+    cab_type:             Optional[str]  = Form(None),
+    heater:               str            = Form("false"),
+    ac:                   str            = Form("false"),
+    high_flow:            str            = Form("false"),
+    two_speed:            str            = Form("false"),
+    ride_control:         str            = Form("false"),
+    backup_camera:        str            = Form("false"),
+    radio:                str            = Form("false"),
+    control_type:         Optional[str]  = Form(None),
+    joystick_controls:    str            = Form("false"),
+    one_owner:            str            = Form("false"),
+    thumb:                str            = Form("false"),
+    aux_hydraulics:       str            = Form("false"),
+    blade:                str            = Form("false"),
+    zero_tail_swing:      str            = Form("false"),
+    rubber_tracks:        str            = Form("false"),
+    quick_attach:         Optional[str]  = Form(None),
+    coupler_type:         Optional[str]  = Form(None),
+    tire_condition:       Optional[str]  = Form(None),
+    asking_price:         Optional[str]  = Form(None),
+    track_condition:      Optional[str]  = Form(None),
+    attachments_included: Optional[str]  = Form(None),
+    condition_notes:      Optional[str]  = Form(None),
+    condition_grade:      Optional[str]  = Form(None),
+    serial_number:        Optional[str]  = Form(None),
+    stock_number:         Optional[str]  = Form(None),
+    track_percent_remaining: Optional[int] = Form(None),
+    air_ride_seat:        str            = Form("false"),
+    self_leveling:        str            = Form("false"),
+    reversing_fan:        str            = Form("false"),
+    bucket_included:      str            = Form("false"),
+    bucket_size:          Optional[str]  = Form(None),
+    warranty_status:      Optional[str]  = Form(None),
+    dealer_profile_json:  Optional[str]  = Form(None),
+    photos: List[UploadFile] = File(default=[]),
+):
+    """
+    Stage intake → render Verify Specs (Step 03 / 05).
+
+    Saves photos + dealer profile + intake snapshot to a session dir, runs
+    registry lookup so OEM specs can be displayed for review, and returns
+    {verify_url} pointing at the Verify Specs page. No pack is generated here.
+    """
+    form_values = {
+        "year": year, "make": make, "model": model, "hours": hours,
+        "cab_type": cab_type, "heater": heater, "ac": ac,
+        "high_flow": high_flow, "two_speed": two_speed,
+        "ride_control": ride_control, "backup_camera": backup_camera,
+        "radio": radio, "control_type": control_type,
+        "joystick_controls": joystick_controls, "one_owner": one_owner,
+        "thumb": thumb, "aux_hydraulics": aux_hydraulics, "blade": blade,
+        "zero_tail_swing": zero_tail_swing, "rubber_tracks": rubber_tracks,
+        "quick_attach": quick_attach, "coupler_type": coupler_type,
+        "tire_condition": tire_condition, "asking_price": asking_price,
+        "track_condition": track_condition,
+        "attachments_included": attachments_included,
+        "condition_notes": condition_notes, "condition_grade": condition_grade,
+        "serial_number": serial_number, "stock_number": stock_number,
+        "track_percent_remaining": track_percent_remaining,
+        "air_ride_seat": air_ride_seat, "self_leveling": self_leveling,
+        "reversing_fan": reversing_fan, "bucket_included": bucket_included,
+        "bucket_size": bucket_size, "warranty_status": warranty_status,
+    }
+
+    try:
+        dealer_input = _verify_build_dealer_input(form_values)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    resolved_machine, resolved_specs, full_record, parsed = _verify_resolve_specs(dealer_input)
+
+    session_dir, session_web = _make_session_dir(parsed)
+
+    # Save photos to session staging dir
+    photo_paths: list[str] = []
+    if photos:
+        staging_dir = os.path.join(session_dir, "_uploads")
+        os.makedirs(staging_dir, exist_ok=True)
+        for upload in photos:
+            if not upload.filename:
+                continue
+            safe_name = "".join(
+                c for c in upload.filename if c.isalnum() or c in "._- "
+            ).strip() or f"photo_{uuid.uuid4().hex[:6]}.jpg"
+            dest = os.path.join(staging_dir, safe_name)
+            try:
+                content = await upload.read()
+                with open(dest, "wb") as f:
+                    f.write(content)
+                photo_paths.append(dest)
+            except Exception:
+                pass
+
+    dealer_info = _verify_decode_dealer_info(session_dir, dealer_profile_json)
+
+    # Persist intake snapshot for the Verify GET + Generate POST round-trip.
+    try:
+        di_dict = dealer_input.model_dump()
+        if dealer_profile_json:
+            try:
+                _dp = json.loads(dealer_profile_json)
+                if isinstance(_dp, dict):
+                    di_dict["dealer_profile"] = _dp
+            except Exception:
+                pass
+        with open(os.path.join(session_dir, "dealer_input.json"), "w", encoding="utf-8") as f:
+            json.dump(di_dict, f)
+        with open(os.path.join(session_dir, "resolved_specs.json"), "w", encoding="utf-8") as f:
+            json.dump(resolved_specs or {}, f)
+        with open(os.path.join(session_dir, "ui_hints.json"), "w", encoding="utf-8") as f:
+            json.dump((resolved_machine or {}).get("ui_hints") or {}, f)
+        with open(os.path.join(session_dir, "verify_meta.json"), "w", encoding="utf-8") as f:
+            json.dump({
+                "equipment_type": (resolved_machine or {}).get("equipment_type"),
+                "full_record_present": bool(full_record),
+                "photo_filenames": [os.path.basename(p) for p in photo_paths],
+                "dealer_info": {**dealer_info, "logo_path": None} if dealer_info else None,
+            }, f)
+    except Exception:
+        pass
+
+    session_id = os.path.basename(session_dir)
+    return JSONResponse({
+        "success":    True,
+        "verify_url": f"/build-listing/verify/{session_id}",
+    })
+
+
+@app.get("/build-listing/verify/{session_id}", response_class=HTMLResponse)
+async def build_listing_verify_view(request: Request, session_id: str):
+    """Render the Verify Specs (Step 03 / 05) review page."""
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    def _read_json(name: str, default):
+        path = os.path.join(session_dir, name)
+        if not os.path.isfile(path):
+            return default
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return default
+
+    dealer_input_data = _read_json("dealer_input.json", {})
+    resolved_specs    = _read_json("resolved_specs.json", {}) or {}
+    verify_meta       = _read_json("verify_meta.json", {}) or {}
+
+    equipment_type = (verify_meta.get("equipment_type") or "").lower()
+    eq_label = _EQ_TYPE_LABELS.get(equipment_type, "Equipment")
+    eq_code_map = {
+        "compact_track_loader": "CTL",
+        "skid_steer":           "SSL",
+        "mini_excavator":       "MEX",
+        "excavator":            "EXC",
+        "wheel_loader":         "WL",
+        "backhoe_loader":       "BHL",
+        "telehandler":          "TH",
+        "dozer":                "DZR",
+        "scissor_lift":         "SL",
+        "boom_lift":            "BL",
+    }
+    eq_code = eq_code_map.get(equipment_type, "MTM")
+
+    # Hero photo URL — first staged photo if any
+    hero_photo_url = ""
+    photo_filenames = verify_meta.get("photo_filenames") or []
+    if photo_filenames:
+        hero_photo_url = f"/outputs/{session_id}/_uploads/{photo_filenames[0]}"
+
+    def _fmt_int(v) -> str:
+        try:
+            return f"{int(v):,}"
+        except (TypeError, ValueError):
+            return ""
+
+    def _fmt_dec(v, places: int = 1) -> str:
+        try:
+            f = float(v)
+            return f"{f:.{places}f}".rstrip("0").rstrip(".")
+        except (TypeError, ValueError):
+            return ""
+
+    # OEM spec card payloads (A1–A6) sourced from resolved_specs
+    engine_model_val   = (resolved_specs.get("engine_model")
+                          or resolved_specs.get("engine_manufacturer")
+                          or "OEM Data Pending")
+    displacement_l     = resolved_specs.get("displacement_l")
+    emissions_tier     = resolved_specs.get("emissions_tier") or ""
+    fuel_type          = resolved_specs.get("fuel_type") or "Diesel"
+    engine_sub_bits = []
+    if displacement_l:
+        engine_sub_bits.append(f"{_fmt_dec(displacement_l)}L")
+    if emissions_tier:
+        engine_sub_bits.append(str(emissions_tier))
+    engine_sub_bits.append(fuel_type)
+    engine_sub = " · ".join(b for b in engine_sub_bits if b) or "Engine details"
+
+    hp_val = (resolved_specs.get("net_hp")
+              or resolved_specs.get("horsepower_hp")
+              or resolved_specs.get("gross_hp")
+              or resolved_specs.get("horsepower_gross_hp"))
+    hp_str = _fmt_int(hp_val) or "—"
+
+    op_wt_val = resolved_specs.get("operating_weight_lb") or resolved_specs.get("operating_weight_lbs")
+    op_wt_str = _fmt_int(op_wt_val) or "—"
+
+    roc_val = resolved_specs.get("roc_lb") or resolved_specs.get("rated_operating_capacity_lbs")
+    roc_str = _fmt_int(roc_val) or "—"
+
+    aux_val = (resolved_specs.get("hydraulic_flow_gpm")
+               or resolved_specs.get("aux_flow_standard_gpm"))
+    aux_str = _fmt_dec(aux_val) or "—"
+
+    track_w_val = (resolved_specs.get("track_width_in")
+                   or resolved_specs.get("width_over_tracks_in")
+                   or resolved_specs.get("width_over_tires_in"))
+    track_w_str = _fmt_dec(track_w_val) or "—"
+
+    # B-section seller inputs from staged dealer_input.
+    # Hours staged as 0 from the homepage intake bootstrap renders as empty
+    # so the input shows its placeholder instead of a literal "0". Real values
+    # entered by the dealer (>0) format normally.
+    _hours_raw = dealer_input_data.get("hours")
+    try:
+        _hours_int = int(_hours_raw) if _hours_raw is not None else 0
+    except (TypeError, ValueError):
+        _hours_int = 0
+    hours_str = _fmt_int(_hours_raw) if _hours_int > 0 else ""
+    track_pct = dealer_input_data.get("track_percent_remaining")
+    track_pct_str = (f"{int(track_pct)}%" if isinstance(track_pct, (int, float)) and track_pct else "")
+    grade_val = dealer_input_data.get("condition_grade") or "Excellent"
+
+    # Summary strip values
+    year  = dealer_input_data.get("year") or ""
+    make  = (dealer_input_data.get("make") or "").upper()
+    model = dealer_input_data.get("model") or ""
+    machine_label = f"{make} {model}".strip() or "Machine"
+    asking_price = dealer_input_data.get("asking_price")
+    price_str = f"${_fmt_int(asking_price)}" if asking_price else "—"
+    stock_no = dealer_input_data.get("stock_number") or "—"
+
+    # Pre-selection state for chips, derived from staged dealer_input
+    def _b(k: str) -> bool:
+        return bool(dealer_input_data.get(k))
+
+    cab_t = (dealer_input_data.get("cab_type") or "")
+    enclosed_cab = (cab_t.lower() == "enclosed") if isinstance(cab_t, str) else False
+    high_flow_on = dealer_input_data.get("high_flow") == "yes"
+    two_speed_on = dealer_input_data.get("two_speed_travel") == "yes"
+
+    preselected = {
+        "high_flow":     high_flow_on,
+        "enclosed_cab":  enclosed_cab,
+        "heat_ac":       _b("heater") or _b("ac"),
+        "two_speed":     two_speed_on,
+        "ride_control":  _b("ride_control"),
+        "quick_attach":  bool((dealer_input_data.get("coupler_type") or "").strip()),
+        "self_leveling": _b("self_leveling"),
+        "backup_camera": _b("backup_camera"),
+    }
+
+    # Attachments (text → list)
+    att_raw = (dealer_input_data.get("attachments_included") or "").strip()
+    att_preselected = [a.strip() for a in att_raw.split(",") if a.strip()] or ["Bucket"]
+
+    # Best For — dealer override takes priority, else run the same use-case
+    # scorer used by /generate and the result page so chips match downstream.
+    best_for_labels: list[str] = []
+    _bf_override_path = os.path.join(session_dir, "best_for_override.json")
+    if os.path.isfile(_bf_override_path):
+        try:
+            with open(_bf_override_path, encoding="utf-8") as f:
+                best_for_labels = [
+                    str(x).strip() for x in (json.load(f) or {}).get("best_for") or []
+                    if str(x).strip()
+                ]
+        except Exception:
+            best_for_labels = []
+    if not best_for_labels and dealer_input_data:
+        try:
+            _di_obj = DealerInput(**{
+                k: v for k, v in dealer_input_data.items() if k != "dealer_profile"
+            })
+            _uc_pay = build_use_case_payload(equipment_type, _di_obj, resolved_specs)
+            best_for_labels = [
+                it.get("label", "") for it in (build_use_case_ui_items(_uc_pay) or [])
+                if it.get("label")
+            ]
+        except Exception:
+            best_for_labels = []
+    best_for_labels = best_for_labels[:6]
+
+    # Headline — server-generated. Prefer saved title_override.json,
+    # else compute via build_headline using session DealerInput + use-case payload.
+    # Falls through to "" so the template can keep its client-side fallback.
+    headline: str = ""
+    _title_override_path = os.path.join(session_dir, "title_override.json")
+    if os.path.isfile(_title_override_path):
+        try:
+            with open(_title_override_path, encoding="utf-8") as f:
+                headline = ((json.load(f) or {}).get("title") or "").strip()
+        except Exception:
+            headline = ""
+    if not headline and dealer_input_data:
+        try:
+            from listing_builder import build_headline as _build_headline
+            _di_obj_h = DealerInput(**{
+                k: v for k, v in dealer_input_data.items() if k != "dealer_profile"
+            })
+            _uc_pay_h = build_use_case_payload(equipment_type, _di_obj_h, resolved_specs)
+            headline = (_build_headline(_di_obj_h, _uc_pay_h) or "").strip()
+        except Exception:
+            headline = ""
+
+    ctx = {
+        "request":        request,
+        "session_id":     session_id,
+        "year":           year,
+        "make":           make,
+        "model":          model,
+        "machine_label":  machine_label,
+        "equipment_type": equipment_type,
+        "eq_label":       eq_label,
+        "eq_code":        eq_code,
+        "hours_str":      hours_str,
+        "price_str":      price_str,
+        "stock_no":       stock_no,
+        "track_pct_str":  track_pct_str or "85%",
+        "grade_val":      grade_val,
+        "hero_photo_url": hero_photo_url,
+        "engine_model":   engine_model_val,
+        "engine_sub":     engine_sub,
+        "hp_str":         hp_str,
+        "op_wt_str":      op_wt_str,
+        "roc_str":        roc_str,
+        "aux_str":        aux_str,
+        "track_w_str":    track_w_str,
+        "preselected":    preselected,
+        "att_preselected": att_preselected,
+        "best_for":       best_for_labels,
+        "headline":       headline,
+    }
+    return templates.TemplateResponse("verify_specs.html", ctx)
+
+
+@app.post("/build-listing/generate/{session_id}")
+async def build_listing_generate(
+    session_id:           str,
+    year:                 int            = Form(...),
+    make:                 str            = Form(...),
+    model:                str            = Form(...),
+    hours:                int            = Form(...),
+    cab_type:             Optional[str]  = Form(None),
+    heater:               str            = Form("false"),
+    ac:                   str            = Form("false"),
+    high_flow:            str            = Form("false"),
+    two_speed:            str            = Form("false"),
+    ride_control:         str            = Form("false"),
+    backup_camera:        str            = Form("false"),
+    radio:                str            = Form("false"),
+    control_type:         Optional[str]  = Form(None),
+    joystick_controls:    str            = Form("false"),
+    one_owner:            str            = Form("false"),
+    thumb:                str            = Form("false"),
+    aux_hydraulics:       str            = Form("false"),
+    blade:                str            = Form("false"),
+    zero_tail_swing:      str            = Form("false"),
+    rubber_tracks:        str            = Form("false"),
+    quick_attach:         Optional[str]  = Form(None),
+    coupler_type:         Optional[str]  = Form(None),
+    tire_condition:       Optional[str]  = Form(None),
+    asking_price:         Optional[str]  = Form(None),
+    track_condition:      Optional[str]  = Form(None),
+    attachments_included: Optional[str]  = Form(None),
+    condition_notes:      Optional[str]  = Form(None),
+    condition_grade:      Optional[str]  = Form(None),
+    serial_number:        Optional[str]  = Form(None),
+    stock_number:         Optional[str]  = Form(None),
+    track_percent_remaining: Optional[int] = Form(None),
+    air_ride_seat:        str            = Form("false"),
+    self_leveling:        str            = Form("false"),
+    reversing_fan:        str            = Form("false"),
+    bucket_included:      str            = Form("false"),
+    bucket_size:          Optional[str]  = Form(None),
+    warranty_status:      Optional[str]  = Form(None),
+    # Verify-page overrides (session-scoped; never write back to registry)
+    spec_overrides_json:  Optional[str]  = Form(None),
+    best_for_override:    Optional[str]  = Form(None),
+    headline_override:    Optional[str]  = Form(None),
+):
+    """
+    Generate the listing pack for a Verify-staged session.
+
+    Reuses photos/dealer-profile already on disk in session_dir; runs the same
+    registry-lookup + spec-resolver + listing_pack_builder pipeline as the
+    legacy POST /build-listing endpoint (no schema, API, or output changes).
+    """
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+    session_web = f"/outputs/{session_id}"
+
+    form_values = {
+        "year": year, "make": make, "model": model, "hours": hours,
+        "cab_type": cab_type, "heater": heater, "ac": ac,
+        "high_flow": high_flow, "two_speed": two_speed,
+        "ride_control": ride_control, "backup_camera": backup_camera,
+        "radio": radio, "control_type": control_type,
+        "joystick_controls": joystick_controls, "one_owner": one_owner,
+        "thumb": thumb, "aux_hydraulics": aux_hydraulics, "blade": blade,
+        "zero_tail_swing": zero_tail_swing, "rubber_tracks": rubber_tracks,
+        "quick_attach": quick_attach, "coupler_type": coupler_type,
+        "tire_condition": tire_condition, "asking_price": asking_price,
+        "track_condition": track_condition,
+        "attachments_included": attachments_included,
+        "condition_notes": condition_notes, "condition_grade": condition_grade,
+        "serial_number": serial_number, "stock_number": stock_number,
+        "track_percent_remaining": track_percent_remaining,
+        "air_ride_seat": air_ride_seat, "self_leveling": self_leveling,
+        "reversing_fan": reversing_fan, "bucket_included": bucket_included,
+        "bucket_size": bucket_size, "warranty_status": warranty_status,
+    }
+
+    try:
+        dealer_input = _verify_build_dealer_input(form_values)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    resolved_machine, resolved_specs, full_record, _parsed = _verify_resolve_specs(dealer_input)
+
+    # Apply dealer-supplied OEM spec overrides (package-scoped only).
+    spec_override_audit = _verify_apply_spec_overrides(resolved_specs, spec_overrides_json)
+
+    # Parse Best For override (if any)
+    best_for_labels: list[str] = []
+    if best_for_override:
+        try:
+            _bf = json.loads(best_for_override)
+            if isinstance(_bf, list):
+                best_for_labels = [str(x).strip() for x in _bf if str(x).strip()]
+        except Exception:
+            best_for_labels = []
+
+    headline_override_clean = (headline_override or "").strip()
+
+    # Persist override audit + best_for + title overrides BEFORE pack build so
+    # the result page can read them even if pack assembly partially fails.
+    try:
+        if spec_override_audit or best_for_labels or headline_override_clean:
+            with open(os.path.join(session_dir, "verify_overrides.json"), "w", encoding="utf-8") as f:
+                json.dump({
+                    "spec_overrides": spec_override_audit,
+                    "best_for":       best_for_labels,
+                    "headline":       headline_override_clean,
+                }, f)
+        if best_for_labels:
+            with open(os.path.join(session_dir, "best_for_override.json"), "w", encoding="utf-8") as f:
+                json.dump({"best_for": best_for_labels}, f)
+        else:
+            _bf_path = os.path.join(session_dir, "best_for_override.json")
+            if os.path.isfile(_bf_path):
+                os.remove(_bf_path)
+        if headline_override_clean:
+            with open(os.path.join(session_dir, "title_override.json"), "w", encoding="utf-8") as f:
+                json.dump({"title": headline_override_clean}, f)
+        else:
+            _t_path = os.path.join(session_dir, "title_override.json")
+            if os.path.isfile(_t_path):
+                os.remove(_t_path)
+    except Exception:
+        pass
+
+    # Load photos from staged uploads dir
+    staging_dir = os.path.join(session_dir, "_uploads")
+    photo_paths: list[str] = []
+    if os.path.isdir(staging_dir):
+        for name in sorted(os.listdir(staging_dir)):
+            if name == "dealer_logo.png":
+                continue
+            full = os.path.join(staging_dir, name)
+            if os.path.isfile(full):
+                photo_paths.append(full)
+
+    # Re-hydrate dealer_info from the staged dealer_input.json (logo path on disk)
+    dealer_info: Optional[dict] = None
+    di_path = os.path.join(session_dir, "dealer_input.json")
+    if os.path.isfile(di_path):
+        try:
+            with open(di_path, "r", encoding="utf-8") as f:
+                _di = json.load(f)
+            _dp = (_di or {}).get("dealer_profile") or {}
+            if isinstance(_dp, dict) and (_dp.get("companyName") or "").strip():
+                _logo_path = os.path.join(staging_dir, "dealer_logo.png")
+                dealer_info = {
+                    "dealer_name":  (_dp.get("companyName")  or "").strip() or None,
+                    "contact_name": (_dp.get("contactName")  or "").strip() or None,
+                    "phone":        (_dp.get("phone")        or "").strip() or None,
+                    "logo_path":    _logo_path if os.path.isfile(_logo_path) else None,
+                    "accent_color": (_dp.get("accentColor") or "yellow"),
+                }
+        except Exception:
+            pass
+
+    try:
+        pack = build_listing_pack_v1(
+            dealer_input=dealer_input,
+            resolved_specs=resolved_specs,
+            resolved_machine=resolved_machine,
+            image_input_paths=photo_paths,
+            dealer_info=dealer_info,
+            session_dir=session_dir,
+            session_web=session_web,
+            full_record=full_record,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Pack generation error: {exc}")
+
+    if not pack.get("success") or not pack.get("zip_path"):
+        raise HTTPException(status_code=500, detail="Pack generation failed")
+
+    # ── Apply post-build text overrides (Best For + Headline) ────────────────
+    # Both write to listing_description.txt inside the pack so the ZIP, the
+    # result page, and any downstream consumer all see the dealer's edits.
+    listing_txt_path = os.path.join(session_dir, "listing_output", "listing_description.txt")
+    if best_for_labels:
+        _verify_patch_listing_text_best_for(listing_txt_path, best_for_labels)
+    if headline_override_clean and os.path.isfile(listing_txt_path):
+        try:
+            with open(listing_txt_path, "r", encoding="utf-8") as f:
+                _existing = f.read()
+            with open(listing_txt_path, "w", encoding="utf-8") as f:
+                f.write(_apply_title_override(_existing, headline_override_clean))
+        except Exception:
+            pass
+
+    # Rebuild the pack ZIP so it captures the post-build text overrides.
+    # build_listing_pack_v1 writes the ZIP before the route patches Best For /
+    # headline into listing_description.txt, which left the ZIP stale.
+    if best_for_labels or headline_override_clean:
+        try:
+            from listing_pack_builder import _zip_folder as _rezip
+            pack_dir = os.path.join(session_dir, "listing_output")
+            zip_path = os.path.join(session_dir, "listing_output.zip")
+            if os.path.isdir(pack_dir):
+                _rezip(pack_dir, zip_path)
+        except Exception:
+            pass
+
+    # Re-persist with edited values + enriched specs (overwrites verify-stage snapshot).
+    try:
+        di_dict = dealer_input.model_dump()
+        # Preserve dealer_profile snapshot from the original verify stage.
+        if os.path.isfile(di_path):
+            try:
+                with open(di_path, "r", encoding="utf-8") as f:
+                    _prev = json.load(f)
+                if isinstance(_prev, dict) and "dealer_profile" in _prev:
+                    di_dict["dealer_profile"] = _prev["dealer_profile"]
+            except Exception:
+                pass
+        with open(di_path, "w", encoding="utf-8") as f:
+            json.dump(di_dict, f)
+
+        _persist_eq = (resolved_machine or {}).get("equipment_type", "").lower()
+        _persist_rs = pack.get("enriched_specs") or dict(resolved_specs)
+        with open(os.path.join(session_dir, "resolved_specs.json"), "w", encoding="utf-8") as f:
+            json.dump(_persist_rs, f)
+
+        ui_hints = dict((resolved_machine or {}).get("ui_hints") or {})
+        if _persist_eq in ("skid_steer", "compact_track_loader"):
+            ui_hints.pop("_displayHiFlow",    None)
+            ui_hints.pop("_detectedTwoSpeed", None)
+        with open(os.path.join(session_dir, "ui_hints.json"), "w", encoding="utf-8") as f:
+            json.dump(ui_hints, f)
+    except Exception:
+        pass
+
+    return JSONResponse({
+        "success":        True,
+        "result_url":     f"/build-listing/result/{session_id}",
         "spec_sheet_url": f"/build-listing/spec-sheet/{session_id}",
     })
 
