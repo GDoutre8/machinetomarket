@@ -1731,6 +1731,17 @@ async def build_listing_verify_view(request: Request, session_id: str):
     if photo_filenames:
         hero_photo_url = f"/outputs/{session_id}/_uploads/{photo_filenames[0]}"
 
+    # Dealer Identity prefill (block C1 — DEALER)
+    _dp_pref = (dealer_input_data.get("dealer_profile") or {}) if isinstance(dealer_input_data, dict) else {}
+    dealer_company = (_dp_pref.get("companyName")  or "").strip()
+    dealer_contact = (_dp_pref.get("contactName")  or "").strip()
+    dealer_phone   = (_dp_pref.get("phone")        or "").strip()
+    _logo_disk_path = os.path.join(session_dir, "_uploads", "dealer_logo.png")
+    dealer_logo_url = (
+        f"/outputs/{session_id}/_uploads/dealer_logo.png"
+        if os.path.isfile(_logo_disk_path) else ""
+    )
+
     def _fmt_int(v) -> str:
         try:
             return f"{int(v):,}"
@@ -1792,7 +1803,7 @@ async def build_listing_verify_view(request: Request, session_id: str):
     hours_str = _fmt_int(_hours_raw) if _hours_int > 0 else ""
     track_pct = dealer_input_data.get("track_percent_remaining")
     track_pct_str = (f"{int(track_pct)}%" if isinstance(track_pct, (int, float)) and track_pct else "")
-    grade_val = dealer_input_data.get("condition_grade") or "Excellent"
+    grade_val = dealer_input_data.get("condition_grade") or "Like New"
 
     # Summary strip values
     year  = dealer_input_data.get("year") or ""
@@ -1903,6 +1914,10 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "att_preselected": att_preselected,
         "best_for":       best_for_labels,
         "headline":       headline,
+        "dealer_company": dealer_company,
+        "dealer_contact": dealer_contact,
+        "dealer_phone":   dealer_phone,
+        "dealer_logo_url": dealer_logo_url,
     }
     return templates.TemplateResponse("verify_specs.html", ctx)
 
@@ -1966,6 +1981,110 @@ async def build_listing_verify_photos_upload(
         except Exception:
             continue
     return JSONResponse({"photos": _verify_list_photos(uploads_dir)})
+
+
+@app.get("/build-listing/verify/{session_id}/dealer")
+async def build_listing_verify_dealer_get(session_id: str):
+    """Return the staged dealer identity (company / contact / phone) and
+    whether a session-scoped dealer logo has been uploaded. Drives the
+    Dealer Identity block prefill on the Verify Specs page."""
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    di_path = os.path.join(session_dir, "dealer_input.json")
+    profile: dict = {}
+    if os.path.isfile(di_path):
+        try:
+            with open(di_path, "r", encoding="utf-8") as f:
+                _di = json.load(f) or {}
+            _dp = (_di or {}).get("dealer_profile") or {}
+            if isinstance(_dp, dict):
+                profile = _dp
+        except Exception:
+            profile = {}
+
+    logo_path = os.path.join(session_dir, "_uploads", "dealer_logo.png")
+    logo_url = (
+        f"/outputs/{session_id}/_uploads/dealer_logo.png"
+        if os.path.isfile(logo_path) else ""
+    )
+    return JSONResponse({
+        "company_name":  (profile.get("companyName")  or "").strip(),
+        "contact_name":  (profile.get("contactName")  or "").strip(),
+        "contact_phone": (profile.get("phone")        or "").strip(),
+        "logo_url":      logo_url,
+    })
+
+
+@app.post("/build-listing/verify/{session_id}/dealer")
+async def build_listing_verify_dealer_save(
+    session_id:    str,
+    company_name:  Optional[str]      = Form(None),
+    contact_name:  Optional[str]      = Form(None),
+    contact_phone: Optional[str]      = Form(None),
+    dealer_logo:   Optional[UploadFile] = File(None),
+):
+    """Persist dealer identity into the session's dealer_input.json (under the
+    dealer_profile sub-dict) and optionally save an uploaded logo to
+    _uploads/dealer_logo.png. Generate already reads dealer_profile from
+    dealer_input.json, so no pipeline change is needed."""
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    uploads_dir = os.path.join(session_dir, "_uploads")
+    os.makedirs(uploads_dir, exist_ok=True)
+    logo_dest = os.path.join(uploads_dir, "dealer_logo.png")
+
+    if dealer_logo and dealer_logo.filename:
+        ext = os.path.splitext(dealer_logo.filename)[1].lower()
+        if ext not in (".png", ".jpg", ".jpeg", ".webp"):
+            raise HTTPException(status_code=415, detail="Logo must be PNG, JPG, or WebP")
+        try:
+            content = await dealer_logo.read()
+            with open(logo_dest, "wb") as f:
+                f.write(content)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Logo save failed: {exc}")
+
+    di_path = os.path.join(session_dir, "dealer_input.json")
+    di_dict: dict = {}
+    if os.path.isfile(di_path):
+        try:
+            with open(di_path, "r", encoding="utf-8") as f:
+                di_dict = json.load(f) or {}
+        except Exception:
+            di_dict = {}
+
+    profile = dict(di_dict.get("dealer_profile") or {})
+    if company_name is not None:
+        profile["companyName"] = (company_name or "").strip()
+    if contact_name is not None:
+        profile["contactName"] = (contact_name or "").strip()
+    if contact_phone is not None:
+        profile["phone"] = (contact_phone or "").strip()
+    di_dict["dealer_profile"] = profile
+
+    try:
+        with open(di_path, "w", encoding="utf-8") as f:
+            json.dump(di_dict, f)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Persist failed: {exc}")
+
+    logo_url = (
+        f"/outputs/{session_id}/_uploads/dealer_logo.png"
+        if os.path.isfile(logo_dest) else ""
+    )
+    return JSONResponse({
+        "success":       True,
+        "company_name":  profile.get("companyName", ""),
+        "contact_name":  profile.get("contactName", ""),
+        "contact_phone": profile.get("phone", ""),
+        "logo_url":      logo_url,
+    })
 
 
 @app.post("/build-listing/generate/{session_id}")

@@ -729,6 +729,49 @@
             </div>
           </div>
 
+          <!-- C1 · DEALER IDENTITY -->
+          <div class="block">
+            <div class="block-head">
+              <div class="l">
+                <div class="tag">// C1 — DEALER</div>
+                <h2>Dealer Identity</h2>
+              </div>
+              <div class="r">
+                <span>BRANDS PHOTO BADGE &amp; PACKAGE</span>
+                <span><b id="vf-dealer-state">SESSION-SCOPED</b></span>
+              </div>
+            </div>
+            <div class="seller-grid" style="grid-template-columns:repeat(3,1fr)">
+              <div class="seller-card">
+                <div class="sl-head"><span class="lbl">Company Name</span><span class="ix">D1</span></div>
+                <div class="sl-body"><input type="text" id="vf-dealer-company" autocomplete="organization" placeholder="Acme Equipment Co." value="{{ dealer_company }}" /></div>
+                <div class="sl-foot"><span>BUSINESS</span><span>OPTIONAL</span></div>
+              </div>
+              <div class="seller-card">
+                <div class="sl-head"><span class="lbl">Contact Name</span><span class="ix">D2</span></div>
+                <div class="sl-body"><input type="text" id="vf-dealer-contact" autocomplete="name" placeholder="Jane Dealer" value="{{ dealer_contact }}" /></div>
+                <div class="sl-foot"><span>SALESPERSON</span><span>OPTIONAL</span></div>
+              </div>
+              <div class="seller-card">
+                <div class="sl-head"><span class="lbl">Contact Phone</span><span class="ix">D3</span></div>
+                <div class="sl-body"><input type="tel" id="vf-dealer-phone" autocomplete="tel" placeholder="(555) 123-4567" value="{{ dealer_phone }}" /></div>
+                <div class="sl-foot"><span>DIRECT</span><span>OPTIONAL</span></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:stretch;gap:14px;margin-top:14px">
+              <div id="vf-logo-drop" style="flex:1;border:1.5px dashed var(--rule);padding:18px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02);transition:border-color .15s,background .15s">
+                <div style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:4px">// DEALER LOGO · DROP OR CLICK</div>
+                <div style="font-size:12px;color:var(--text-faint)">PNG · JPG · WEBP &middot; replaces default badge logo</div>
+                <input type="file" id="vf-logo-input" accept="image/png,image/jpeg,image/webp" style="display:none">
+              </div>
+              <div id="vf-logo-preview-wrap" style="width:120px;height:90px;border:1px solid var(--rule);background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                {% if dealer_logo_url %}<img id="vf-logo-preview" src="{{ dealer_logo_url }}" alt="Dealer logo" style="max-width:100%;max-height:100%;object-fit:contain;display:block">{% else %}<img id="vf-logo-preview" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:none">
+                <span id="vf-logo-empty" style="font-family:'JetBrains Mono';font-size:9px;letter-spacing:.18em;color:var(--text-faint)">DEFAULT</span>{% endif %}
+              </div>
+            </div>
+            <div id="vf-dealer-status" style="margin-top:8px;font-size:12px;color:var(--text-faint);min-height:1em"></div>
+          </div>
+
           <!-- C2 · PHOTOS -->
           <div class="block">
             <div class="block-head">
@@ -1025,6 +1068,28 @@
         <div class="b">
           <div class="e">// TAP TO REFINE</div>
           <div class="l" id="m-headline-preview" contenteditable="true" spellcheck="false">{% if headline %}{{ headline }}{% else %}{{ year }} {{ make }} {{ model }} · {{ hours_str }} hrs{% endif %}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// C1 — DEALER</span><h3>Dealer Identity</h3></div>
+        <div class="r"><b>SESSION</b></div>
+      </div>
+      <div class="m-seller-grid">
+        <div class="m-input"><div class="h">COMPANY</div><div class="b"><input type="text" id="vf-m-dealer-company" autocomplete="organization" placeholder="Acme Equipment Co." value="{{ dealer_company }}" /></div></div>
+        <div class="m-input"><div class="h">CONTACT</div><div class="b"><input type="text" id="vf-m-dealer-contact" autocomplete="name" placeholder="Jane Dealer" value="{{ dealer_contact }}" /></div></div>
+        <div class="m-input"><div class="h">PHONE</div><div class="b"><input type="tel" id="vf-m-dealer-phone" autocomplete="tel" placeholder="(555) 123-4567" value="{{ dealer_phone }}" /></div></div>
+      </div>
+      <div style="display:flex;align-items:stretch;gap:10px;margin-top:10px">
+        <div id="vf-m-logo-drop" style="flex:1;border:1.5px dashed var(--rule);padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02)">
+          <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:2px">// LOGO · TAP TO UPLOAD</div>
+          <div style="font-size:11px;color:var(--text-faint)">PNG · JPG · WEBP</div>
+          <input type="file" id="vf-m-logo-input" accept="image/png,image/jpeg,image/webp" style="display:none">
+        </div>
+        <div style="width:78px;height:64px;border:1px solid var(--rule);background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+          {% if dealer_logo_url %}<img id="vf-m-logo-preview" src="{{ dealer_logo_url }}" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain">{% else %}<img id="vf-m-logo-preview" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:none"><span id="vf-m-logo-empty" style="font-family:'JetBrains Mono';font-size:8px;letter-spacing:.16em;color:var(--text-faint)">DEFAULT</span>{% endif %}
         </div>
       </div>
     </div>
@@ -1875,6 +1940,131 @@ window.MTM_VERIFY_PRESEL = {
   });
 
   refresh();
+})();
+
+// ============================================================
+// Dealer Identity — debounced text save + logo upload via
+// POST /build-listing/verify/{session_id}/dealer. Persists into
+// dealer_input.json so /generate stamps the photo badge with the
+// dealer's company / contact / phone / uploaded logo.
+// ============================================================
+(function(){
+  var SESSION_ID = "{{ session_id }}";
+  var ENDPOINT = '/build-listing/verify/' + SESSION_ID + '/dealer';
+  var statusEl = document.getElementById('vf-dealer-status');
+
+  var dCompany = document.getElementById('vf-dealer-company');
+  var dContact = document.getElementById('vf-dealer-contact');
+  var dPhone   = document.getElementById('vf-dealer-phone');
+  var mCompany = document.getElementById('vf-m-dealer-company');
+  var mContact = document.getElementById('vf-m-dealer-contact');
+  var mPhone   = document.getElementById('vf-m-dealer-phone');
+  var dPreview = document.getElementById('vf-logo-preview');
+  var dEmpty   = document.getElementById('vf-logo-empty');
+  var mPreview = document.getElementById('vf-m-logo-preview');
+  var mEmpty   = document.getElementById('vf-m-logo-empty');
+
+  function setStatus(msg, err){
+    if(!statusEl) return;
+    statusEl.textContent = msg || '';
+    statusEl.style.color = err ? 'var(--accent)' : 'var(--text-faint)';
+  }
+
+  function mirror(srcEl, mateEl){
+    if(srcEl && mateEl && mateEl !== srcEl) mateEl.value = srcEl.value;
+  }
+
+  function showLogo(url){
+    if(!url) return;
+    var bust = url + (url.indexOf('?')>-1?'&':'?') + 't=' + Date.now();
+    [dPreview, mPreview].forEach(function(img){
+      if(!img) return;
+      img.src = bust;
+      img.style.display = 'block';
+    });
+    [dEmpty, mEmpty].forEach(function(el){ if(el) el.style.display = 'none'; });
+  }
+
+  async function saveText(){
+    var fd = new FormData();
+    fd.append('company_name',  (dCompany||mCompany||{}).value || '');
+    fd.append('contact_name',  (dContact||mContact||{}).value || '');
+    fd.append('contact_phone', (dPhone  ||mPhone  ||{}).value || '');
+    try {
+      var r = await fetch(ENDPOINT, { method:'POST', body: fd });
+      if(!r.ok){ setStatus('Save failed (' + r.status + ')', true); return; }
+      setStatus('Saved · session-scoped');
+    } catch(err){ setStatus('Network error: ' + err.message, true); }
+  }
+
+  var saveTimer = null;
+  function debouncedSave(){
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveText, 450);
+  }
+
+  function bindText(el, mateEl){
+    if(!el) return;
+    el.addEventListener('input', function(){
+      mirror(el, mateEl);
+      setStatus('Saving…');
+      debouncedSave();
+    });
+    el.addEventListener('blur', function(){
+      mirror(el, mateEl);
+      if(saveTimer){ clearTimeout(saveTimer); saveTimer = null; }
+      saveText();
+    });
+  }
+  bindText(dCompany, mCompany); bindText(mCompany, dCompany);
+  bindText(dContact, mContact); bindText(mContact, dContact);
+  bindText(dPhone,   mPhone);   bindText(mPhone,   dPhone);
+
+  async function uploadLogo(file){
+    if(!file) return;
+    if(!/^image\/(png|jpe?g|webp)$/i.test(file.type)){
+      setStatus('Logo must be PNG, JPG, or WebP', true); return;
+    }
+    var fd = new FormData();
+    fd.append('dealer_logo', file);
+    fd.append('company_name',  (dCompany||mCompany||{}).value || '');
+    fd.append('contact_name',  (dContact||mContact||{}).value || '');
+    fd.append('contact_phone', (dPhone  ||mPhone  ||{}).value || '');
+    setStatus('Uploading logo…');
+    try {
+      var r = await fetch(ENDPOINT, { method:'POST', body: fd });
+      if(!r.ok){
+        var detail = 'Logo upload failed (' + r.status + ')';
+        try { var j = await r.json(); detail = j.detail || detail; } catch(_){}
+        setStatus(detail, true); return;
+      }
+      var data = await r.json();
+      if(data.logo_url) showLogo(data.logo_url);
+      setStatus('Logo uploaded · used for photo badge');
+    } catch(err){ setStatus('Network error: ' + err.message, true); }
+  }
+
+  function bindDrop(dropEl, inputEl){
+    if(!dropEl || !inputEl) return;
+    dropEl.addEventListener('click', function(){ inputEl.click(); });
+    inputEl.addEventListener('change', function(){
+      if(inputEl.files && inputEl.files[0]) uploadLogo(inputEl.files[0]);
+      inputEl.value = '';
+    });
+    ['dragover','dragenter'].forEach(function(ev){
+      dropEl.addEventListener(ev, function(e){ e.preventDefault(); dropEl.style.borderColor = 'var(--accent)'; dropEl.style.background = 'rgba(255,255,255,.05)'; });
+    });
+    ['dragleave','drop'].forEach(function(ev){
+      dropEl.addEventListener(ev, function(e){ e.preventDefault(); dropEl.style.borderColor = ''; dropEl.style.background = ''; });
+    });
+    dropEl.addEventListener('drop', function(e){
+      if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+        uploadLogo(e.dataTransfer.files[0]);
+      }
+    });
+  }
+  bindDrop(document.getElementById('vf-logo-drop'),   document.getElementById('vf-logo-input'));
+  bindDrop(document.getElementById('vf-m-logo-drop'), document.getElementById('vf-m-logo-input'));
 })();
 </script>
 </body>
