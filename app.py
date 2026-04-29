@@ -1889,7 +1889,7 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "hours_str":      hours_str,
         "price_str":      price_str,
         "stock_no":       stock_no,
-        "track_pct_str":  track_pct_str or "85%",
+        "track_pct_str":  track_pct_str,
         "grade_val":      grade_val,
         "hero_photo_url": hero_photo_url,
         "engine_model":   engine_model_val,
@@ -1905,6 +1905,67 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "headline":       headline,
     }
     return templates.TemplateResponse("verify_specs.html", ctx)
+
+
+def _verify_uploads_dir(session_id: str) -> str:
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+    uploads_dir = os.path.join(session_dir, "_uploads")
+    os.makedirs(uploads_dir, exist_ok=True)
+    return uploads_dir
+
+
+def _verify_list_photos(uploads_dir: str) -> list[str]:
+    if not os.path.isdir(uploads_dir):
+        return []
+    out = []
+    for name in sorted(os.listdir(uploads_dir)):
+        if name == "dealer_logo.png":
+            continue
+        if os.path.isfile(os.path.join(uploads_dir, name)):
+            out.append(name)
+    return out
+
+
+@app.get("/build-listing/verify/{session_id}/photos")
+async def build_listing_verify_photos_list(session_id: str):
+    """List photos currently staged for a verify session (drives the thumb grid)."""
+    uploads_dir = _verify_uploads_dir(session_id)
+    return JSONResponse({"photos": _verify_list_photos(uploads_dir)})
+
+
+@app.post("/build-listing/verify/{session_id}/photos")
+async def build_listing_verify_photos_upload(
+    session_id: str,
+    photos: List[UploadFile] = File(default=[]),
+):
+    """
+    Accept additional photos for a verify session and stage them in the
+    session's _uploads/ dir. /generate already reads from that dir, so no
+    pipeline change is needed — these photos flow into the pack on submit.
+    """
+    uploads_dir = _verify_uploads_dir(session_id)
+    for upload in photos or []:
+        if not upload.filename:
+            continue
+        safe_name = "".join(
+            c for c in upload.filename if c.isalnum() or c in "._- "
+        ).strip() or f"photo_{uuid.uuid4().hex[:6]}.jpg"
+        # Avoid clobbering an existing file with the same name
+        dest = os.path.join(uploads_dir, safe_name)
+        if os.path.exists(dest):
+            stem, ext = os.path.splitext(safe_name)
+            safe_name = f"{stem}_{uuid.uuid4().hex[:4]}{ext}"
+            dest = os.path.join(uploads_dir, safe_name)
+        try:
+            content = await upload.read()
+            with open(dest, "wb") as f:
+                f.write(content)
+        except Exception:
+            continue
+    return JSONResponse({"photos": _verify_list_photos(uploads_dir)})
 
 
 @app.post("/build-listing/generate/{session_id}")
