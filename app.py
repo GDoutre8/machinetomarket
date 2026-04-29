@@ -1736,6 +1736,10 @@ async def build_listing_verify_view(request: Request, session_id: str):
     dealer_company = (_dp_pref.get("companyName")  or "").strip()
     dealer_contact = (_dp_pref.get("contactName")  or "").strip()
     dealer_phone   = (_dp_pref.get("phone")        or "").strip()
+    _accent_pref = (_dp_pref.get("accentColor") or "yellow").strip().lower()
+    if _accent_pref not in ("yellow", "red", "blue", "green", "orange"):
+        _accent_pref = "yellow"
+    dealer_accent_color = _accent_pref
     _logo_disk_path = os.path.join(session_dir, "_uploads", "dealer_logo.png")
     dealer_logo_url = (
         f"/outputs/{session_id}/_uploads/dealer_logo.png"
@@ -1918,6 +1922,7 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "dealer_contact": dealer_contact,
         "dealer_phone":   dealer_phone,
         "dealer_logo_url": dealer_logo_url,
+        "dealer_accent_color": dealer_accent_color,
     }
     return templates.TemplateResponse("verify_specs.html", ctx)
 
@@ -2024,6 +2029,7 @@ async def build_listing_verify_dealer_save(
     company_name:  Optional[str]      = Form(None),
     contact_name:  Optional[str]      = Form(None),
     contact_phone: Optional[str]      = Form(None),
+    accent_color:  Optional[str]      = Form(None),
     dealer_logo:   Optional[UploadFile] = File(None),
 ):
     """Persist dealer identity into the session's dealer_input.json (under the
@@ -2066,6 +2072,10 @@ async def build_listing_verify_dealer_save(
         profile["contactName"] = (contact_name or "").strip()
     if contact_phone is not None:
         profile["phone"] = (contact_phone or "").strip()
+    if accent_color is not None:
+        _ac = (accent_color or "").strip().lower()
+        if _ac in ("yellow", "red", "blue", "green", "orange"):
+            profile["accentColor"] = _ac
     di_dict["dealer_profile"] = profile
 
     try:
@@ -2083,6 +2093,7 @@ async def build_listing_verify_dealer_save(
         "company_name":  profile.get("companyName", ""),
         "contact_name":  profile.get("contactName", ""),
         "contact_phone": profile.get("phone", ""),
+        "accent_color":  profile.get("accentColor", "yellow"),
         "logo_url":      logo_url,
     })
 
