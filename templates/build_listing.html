@@ -122,6 +122,19 @@
     .intake-foot .foot-link{display:inline-flex;align-items:center;justify-content:center;font-family:var(--body);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#e6e9ef;background:transparent;border:1px solid #2f3645;border-radius:var(--radius-sm);padding:9px 14px;text-decoration:none;cursor:pointer}
     .intake-foot .foot-link:hover{border-color:var(--mtm-yellow);color:var(--mtm-yellow)}
 
+    /* ── Listing-style selector ───────────────────────────────────────── */
+    .style-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:6px}
+    @media (max-width:640px){.style-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .style-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--line-strong);background:#fff;border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;text-align:left;font-family:var(--body);transition:border-color .14s,box-shadow .14s,background .14s}
+    .style-card:hover{border-color:var(--mtm-yellow-deep);background:var(--mtm-yellow-bg)}
+    .style-card .style-name{font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:.01em}
+    .style-card .style-desc{font-size:11.5px;color:var(--muted);line-height:1.35}
+    .style-card.selected{border-color:var(--mtm-yellow);background:var(--mtm-yellow-bg);box-shadow:0 0 0 3px rgba(234,179,8,.18)}
+    .style-card.selected .style-name{color:var(--mtm-yellow-deep)}
+    .style-card:focus-visible{outline:none;border-color:var(--mtm-yellow);box-shadow:0 0 0 3px rgba(234,179,8,.25)}
+    .style-card .style-check{position:absolute;top:8px;right:10px;font-size:13px;font-weight:700;color:var(--mtm-yellow-deep);opacity:0;transition:opacity .14s}
+    .style-card.selected .style-check{opacity:1}
+
     /* ── Status / spinner ─────────────────────────────────────────────── */
     .status-msg{font-size:13px;min-height:18px;color:var(--muted)}
     .status-msg.error{color:#c8302a}
@@ -670,6 +683,33 @@
         <div class="form-card"><div class="step-header-row" style="margin-bottom:14px;"><span class="step-badge">2</span><div><div class="step-title">Features &amp; Options</div><div class="step-sub" id="features-sub">Check all that apply</div></div></div><div class="toggles-grid" id="features-container"></div></div>
         <div class="form-card"><div class="section-label">Hours &amp; Condition</div><div class="field-row" style="grid-template-columns:repeat(3,minmax(0,1fr));"><div class="field"><label for="hours">Hours <span class="req">*</span></label><input type="number" id="hours" name="hours" placeholder="1450" min="0"></div><div class="field"><label for="condition_field" id="condition-pct-label">Track Condition</label><select id="condition_field" name="condition_field"><option value="">-- Select --</option><option value="New">New</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="Worn">Worn</option></select></div><div class="field"><label for="condition_grade">Grade</label><select id="condition_grade" name="condition_grade"><option value="">-- Select --</option><option value="Like New">Like New</option><option value="Well Maintained">Well Maintained</option><option value="Ready to Work">Ready to Work</option><option value="Needs Work">Needs Work</option></select></div><div class="field"><label for="serial_number">Serial Number</label><input type="text" id="serial_number" name="serial_number" placeholder="CAT0259D3XXXXX"></div><div class="field"><label for="stock_number">Stock Number</label><input type="text" id="stock_number" name="stock_number" placeholder="STK-1042"></div><div class="field"><label for="track_percent_remaining">Track % Remaining <span style="font-weight:400;color:var(--dim);font-size:11px;">0–100</span></label><input type="number" id="track_percent_remaining" name="track_percent_remaining" placeholder="85" min="0" max="100"></div></div></div>
         <div class="form-card"><div class="section-label">Attachments</div><div class="field-row" style="grid-template-columns:160px 1fr;"><div class="field"><label for="bucket_size">Bucket Size <span style="font-weight:400;color:var(--dim);font-size:11px;">inches</span></label><input type="number" id="bucket_size" name="bucket_size" placeholder="84" min="0"></div><div class="field"><label for="attachments_included">Attachments Included</label><input type="text" id="attachments_included" name="attachments_included" placeholder="Bucket, pallet forks, grapple"></div></div></div>
+        <div class="form-card">
+          <div class="section-label">Listing Style</div>
+          <div class="step-sub" style="margin-bottom:10px;">Choose the featured card layout for your listing</div>
+          <div class="style-grid" id="style-grid" role="radiogroup" aria-label="Listing style">
+            <button type="button" class="style-card selected" data-style="price_tag" role="radio" aria-checked="true">
+              <span class="style-check">&#10003;</span>
+              <span class="style-name">Price Tag</span>
+              <span class="style-desc">Classic price-forward card</span>
+            </button>
+            <button type="button" class="style-card" data-style="wide_shot" role="radio" aria-checked="false">
+              <span class="style-check">&#10003;</span>
+              <span class="style-name">Wide Shot</span>
+              <span class="style-desc">Cinematic full-width hero</span>
+            </button>
+            <button type="button" class="style-card" data-style="auction_ticket" role="radio" aria-checked="false">
+              <span class="style-check">&#10003;</span>
+              <span class="style-name">Auction Ticket</span>
+              <span class="style-desc">Stamped lot-style ticket</span>
+            </button>
+            <button type="button" class="style-card" data-style="badge_only" role="radio" aria-checked="false">
+              <span class="style-check">&#10003;</span>
+              <span class="style-name">Badge Only</span>
+              <span class="style-desc">Minimal dealer badge</span>
+            </button>
+          </div>
+          <input type="hidden" id="featured_template" name="featured_template" value="price_tag">
+        </div>
         <div class="form-card">
           <div class="section-label">Photos</div>
           <div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()">
@@ -1437,6 +1477,32 @@
     addPhotos(e.dataTransfer.files);
   });
 
+  // ── Listing-style selector ────────────────────────────────────────────────
+  (function initStyleSelector() {
+    const grid  = document.getElementById('style-grid');
+    const input = document.getElementById('featured_template');
+    if (!grid || !input) return;
+    const cards = grid.querySelectorAll('.style-card');
+    function select(value) {
+      cards.forEach(function(c) {
+        const isSel = c.getAttribute('data-style') === value;
+        c.classList.toggle('selected', isSel);
+        c.setAttribute('aria-checked', isSel ? 'true' : 'false');
+      });
+      input.value = value;
+    }
+    cards.forEach(function(c) {
+      c.addEventListener('click', function() { select(c.getAttribute('data-style')); });
+      c.addEventListener('keydown', function(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          select(c.getAttribute('data-style'));
+        }
+      });
+    });
+    if (!input.value) select('price_tag');
+  })();
+
   // ── Use-case preview ──────────────────────────────────────────────────────
   let ucTimer = null;
 
@@ -1595,6 +1661,9 @@
 
     const askingPrice = document.getElementById('h-asking-price').value.trim();
     if (askingPrice) fd.append('asking_price', askingPrice);
+
+    const featuredTemplate = (document.getElementById('featured_template').value || 'price_tag').trim();
+    fd.append('featured_template', featuredTemplate);
 
     // Send every possible boolean feature — default false if not rendered.
     // high_flow and two_speed are tri-state: send '' (not 'false') when unchecked

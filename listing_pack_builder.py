@@ -432,15 +432,23 @@ def build_listing_pack(
     #   ONLY  *_listing.jpg  (glob pattern, applied after generate_image_pack)
     #   NEVER *_01_card.png / *_02_spec_sheet.png  (generated assets — untouched)
     #
-    # Skips silently when logo_path is absent — never blocks ZIP.
-    _logo_path = (dealer or {}).get("logo_path")
-    if _logo_path and valid_images:
+    # The "badge_only" featured template writes its already-badged hero to
+    # *_01_card.png, which the glob below intentionally excludes — so the
+    # hero is never re-stamped, and image #1 carries exactly one badge
+    # while images #2+ keep the standard light-branded listing badge.
+    #
+    # Branding gate: render when EITHER a logo OR a usable dealer name/contact
+    # is present. apply_badge_to_photo handles the variant selection (logo
+    # badge vs. text/initials badge). Skips cleanly when neither is provided.
+    _logo_path     = (dealer or {}).get("logo_path")
+    _badge_name    = (dealer or {}).get("contact_name") or (dealer or {}).get("dealer_name") or (dealer or {}).get("company_name") or None
+    _badge_phone   = (dealer or {}).get("phone") or None
+    _has_branding  = bool(_logo_path) or bool(_badge_name) or bool(_badge_phone)
+    if _has_branding and valid_images:
         try:
             from renderers.badge_renderer import apply_badge_to_photo
             _lp_badge      = Path(os.path.join(pack_dir, "Listing_Photos"))
             _badge_targets = sorted(_lp_badge.glob("*_listing.jpg"))
-            _badge_name    = (dealer or {}).get("contact_name") or (dealer or {}).get("dealer_name") or None
-            _badge_phone   = (dealer or {}).get("phone") or None
             _badge_accent  = (dealer or {}).get("accent_color", "yellow")
             _badged = sum(
                 1 for _bp in _badge_targets

@@ -1589,6 +1589,7 @@ async def build_listing_verify_create(
     bucket_included:      str            = Form("false"),
     bucket_size:          Optional[str]  = Form(None),
     warranty_status:      Optional[str]  = Form(None),
+    featured_template:    str            = Form("price_tag"),
     dealer_profile_json:  Optional[str]  = Form(None),
     photos: List[UploadFile] = File(default=[]),
 ):
@@ -1663,6 +1664,10 @@ async def build_listing_verify_create(
                     di_dict["dealer_profile"] = _dp
             except Exception:
                 pass
+        _ft = (featured_template or "price_tag").strip().lower()
+        if _ft not in ("price_tag", "wide_shot", "auction_ticket", "badge_only"):
+            _ft = "price_tag"
+        di_dict["featured_template"] = _ft
         with open(os.path.join(session_dir, "dealer_input.json"), "w", encoding="utf-8") as f:
             json.dump(di_dict, f)
         with open(os.path.join(session_dir, "resolved_specs.json"), "w", encoding="utf-8") as f:
@@ -1922,6 +1927,10 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "dealer_phone":   dealer_phone,
         "dealer_logo_url": dealer_logo_url,
         "dealer_accent_color": dealer_accent_color,
+        "featured_template": (
+            (dealer_input_data.get("featured_template") or "price_tag").strip().lower()
+            if isinstance(dealer_input_data, dict) else "price_tag"
+        ),
     }
     return templates.TemplateResponse("verify_specs.html", ctx)
 
@@ -2137,6 +2146,7 @@ async def build_listing_generate(
     bucket_included:      str            = Form("false"),
     bucket_size:          Optional[str]  = Form(None),
     warranty_status:      Optional[str]  = Form(None),
+    featured_template:    str            = Form("price_tag"),
     # Verify-page overrides (session-scoped; never write back to registry)
     spec_overrides_json:  Optional[str]  = Form(None),
     best_for_override:    Optional[str]  = Form(None),
@@ -2258,6 +2268,23 @@ async def build_listing_generate(
         except Exception:
             pass
 
+    # Featured template: prefer this request's value, then staged dealer_input.json,
+    # then default. Validated against the supported template set so a stray value
+    # can't escape past the renderer dispatch.
+    _ft = (featured_template or "").strip().lower()
+    if _ft not in ("price_tag", "wide_shot", "auction_ticket", "badge_only"):
+        try:
+            with open(di_path, "r", encoding="utf-8") as _f:
+                _ft_saved = (json.load(_f) or {}).get("featured_template")
+            _ft = (_ft_saved or "").strip().lower() if isinstance(_ft_saved, str) else ""
+        except Exception:
+            _ft = ""
+        if _ft not in ("price_tag", "wide_shot", "auction_ticket", "badge_only"):
+            _ft = "price_tag"
+    if dealer_info is None:
+        dealer_info = {}
+    dealer_info["featured_template"] = _ft
+
     try:
         pack = build_listing_pack_v1(
             dealer_input=dealer_input,
@@ -2315,6 +2342,7 @@ async def build_listing_generate(
                     di_dict["dealer_profile"] = _prev["dealer_profile"]
             except Exception:
                 pass
+        di_dict["featured_template"] = _ft
         with open(di_path, "w", encoding="utf-8") as f:
             json.dump(di_dict, f)
 

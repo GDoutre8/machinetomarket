@@ -216,15 +216,93 @@ def export_listing_card(
     """
     try:
         payload  = _build_render_payload(full_record, dealer_dict)
-        html_str = render_card(payload)
-        _screenshot_card(html_str, output_path)
-        log.info("[card] exported %s", output_path)
+        chosen   = (payload.get("featured_template") or "").lower()
+        if chosen == "badge_only":
+            _export_badge_only(payload, output_path)
+        else:
+            html_str = render_card(payload)
+            _screenshot_card(html_str, output_path)
+        log.info("[card] exported %s (template=%s)", output_path, chosen or "default")
         return output_path
     except Exception as exc:
         log.warning("[card] export failed: %s", exc, exc_info=True)
         if not fail_silently:
             raise
         return None
+
+
+def _export_badge_only(payload: dict, output_path: Path) -> None:
+    """Export the badge_only featured-listing variant.
+
+    Uses the first uploaded machine photo as the hero image and applies the
+    same dealer badge rules as the listing-photo pipeline (logo badge if a
+    logo is uploaded, text/initials badge if only name/phone, clean photo
+    if no dealer identity). No price tag, no spec rail, no full overlay.
+
+    The hero is sized to 1080×1350 (Facebook portrait) by center-cropping
+    to 4:5 then resizing — same frame as the price_tag / wide_shot /
+    auction_ticket exports — so all four templates produce parity output.
+    """
+    from PIL import Image
+    from renderers.badge_renderer import apply_badge_to_photo
+
+    machine = payload.get("machine") or {}
+    dealer  = payload.get("dealer")  or {}
+    photo_path = machine.get("photo_path")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    HERO_W, HERO_H = 1080, 1350
+
+    if not photo_path or not Path(photo_path).is_file():
+        # No photo to badge — write a neutral placeholder so the pack build
+        # doesn't crash; downstream code expects the card file to exist.
+        Image.new("RGB", (HERO_W, HERO_H), (26, 26, 24)).save(output_path)
+        return
+
+    # Center-crop to 4:5 then resize to 1080×1350. Matches the export size
+    # of the HTML-rendered templates so the hero sits in the same Facebook
+    # portrait frame regardless of the dealer's source aspect ratio.
+    src = Image.open(photo_path).convert("RGB")
+    sw, sh = src.size
+    target_ratio = HERO_W / HERO_H  # 0.8
+    if sw / sh > target_ratio:
+        new_w = int(round(sh * target_ratio))
+        x0 = (sw - new_w) // 2
+        cropped = src.crop((x0, 0, x0 + new_w, sh))
+    else:
+        new_h = int(round(sw / target_ratio))
+        y0 = (sh - new_h) // 2
+        cropped = src.crop((0, y0, sw, y0 + new_h))
+    hero = cropped.resize((HERO_W, HERO_H), Image.LANCZOS)
+    hero.save(output_path, quality=92)
+
+    logo_path = dealer.get("logo_path")
+    name      = dealer.get("rep") or dealer.get("name")
+    phone     = dealer.get("phone")
+    accent    = dealer.get("theme") or "yellow"
+
+    has_logo = bool(logo_path) and Path(logo_path).is_file()
+    has_name = bool(name) or bool(phone)
+
+    if not has_logo and not has_name:
+        # Hero already written at 1080×1350 above; no dealer identity to badge.
+        return
+
+    # Apply the existing dealer-badge compositor to the resized hero in-place.
+    # This reuses the adaptive light/dark variant selection from
+    # renderers.badge_renderer (detect_logo_background) — logos with a white
+    # backing land on a white badge, transparent/dark logos land on a charcoal
+    # badge, and in both cases the logo blends into the badge body instead
+    # of sitting in a hard rectangle.
+    apply_badge_to_photo(
+        photo_path  = str(output_path),
+        logo_path   = logo_path if has_logo else None,
+        name        = name or "",
+        phone       = phone or "",
+        accent      = accent,
+        output_path = str(output_path),
+    )
 
 
 def _screenshot_card(html_str: str, output_path: Path) -> None:

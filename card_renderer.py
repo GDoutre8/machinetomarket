@@ -281,7 +281,9 @@ def _render_price_tag(data: dict) -> str:
     price = listing.get("price_usd")
     hours = listing.get("hours")
 
-    # Dealer badge
+    # Dealer badge — gated on dealer.name. Logo-only hero branding is deferred:
+    # the per-template mark slot is sized for 2-letter initials, not horizontal
+    # logos. See badge_only export for the photo+logo composite path.
     show_dealer = bool(dealer.get("show_branding", True)) and bool(dealer.get("name"))
     d_name  = dealer.get("name") or ""
     d_short = (dealer.get("short_mark") or _initials(d_name)).upper()[:2]
@@ -1620,6 +1622,31 @@ _PAGE_TEMPLATE_WIDE = """<!DOCTYPE html>
 """
 
 _TEMPLATES["wide_shot"] = _render_wide_shot
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template 4 — "badge_only"
+#
+# Image-only export (no HTML render). The hero is the original machine photo,
+# center-cropped to the 1080×1350 portrait frame, with the existing dealer
+# badge composited bottom-left via renderers.badge_renderer. The PNG is
+# produced directly by card_renderer_adapter._export_badge_only(), which
+# export_listing_card() dispatches to before reaching render_card().
+#
+# This sentinel exists so introspection of _TEMPLATES (and any future
+# template-aware tooling) sees badge_only as a first-class registered
+# template. render_card() itself should never be called for badge_only —
+# if it is, surface a clear error rather than silently rendering price_tag.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_badge_only(data: dict) -> str:  # noqa: ARG001
+    raise NotImplementedError(
+        "badge_only is an image-only featured template — use "
+        "card_renderer_adapter.export_listing_card(), which dispatches to "
+        "_export_badge_only() instead of render_card()."
+    )
+
+_TEMPLATES["badge_only"] = _render_badge_only
 
 
 # ─────────────────────────────────────────────────────────────────────────────

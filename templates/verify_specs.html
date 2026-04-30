@@ -1116,6 +1116,9 @@
 <input type="hidden" name="self_leveling"   id="vf-self-leveling" value="false">
 <input type="hidden" name="coupler_type"    id="vf-coupler-type"  value="">
 
+<!-- Featured listing template (carried from homepage selector) -->
+<input type="hidden" name="featured_template" id="vf-featured-template" value="{{ featured_template|default('price_tag', true) }}">
+
 <!-- Verify-page overrides (session-scoped, applied at /generate) -->
 <input type="hidden" name="spec_overrides_json" id="vf-spec-overrides" value="{}">
 <input type="hidden" name="best_for_override"   id="vf-best-for"       value="">
