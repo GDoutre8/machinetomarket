@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css?v=20260428-0025" />
+  <script src="/static/posthog_init.js"></script>
   <style>
     html,body{max-width:100%;overflow-x:hidden}
     .result-wrap {
@@ -1375,7 +1376,7 @@
     {# ── Repeat primary download at bottom for long pages ── #}
     {% if zip_url %}
     <div class="action-bar" style="margin-top: 8px;">
-      <a class="btn-download" href="{{ zip_url }}" download>
+      <a class="btn-download" href="{{ zip_url }}" download data-dl="full-pack">
         ↓ Download Full Pack
       </a>
       <a class="btn-back" href="/build-listing">← Build Another Listing</a>
@@ -1396,6 +1397,37 @@ function toggleImprove() {
   btn.setAttribute("aria-expanded", open ? "false" : "true");
   icon.textContent = open ? "+" : "−";
 }
+
+// ── PostHog: pack_downloaded + asset_downloaded ────────────────────────────
+(function () {
+  var MACHINE = {{ machine_label|tojson }};
+  var FEATURED_TEMPLATE = {{ featured_template|tojson }};
+  var ASSET_MAP = {
+    "full-pack":    null, // handled separately (pack_downloaded)
+    "hero-image":   "featured_image",
+    "spec-sheet":   "spec_sheet",
+    "listing-text": "listing_text",
+  };
+  document.querySelectorAll("[data-dl]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var kind = el.getAttribute("data-dl");
+      try {
+        if (kind === "full-pack") {
+          window.mtmTrack && window.mtmTrack("pack_downloaded", {
+            machine: MACHINE,
+            featured_template: FEATURED_TEMPLATE,
+          });
+        } else if (ASSET_MAP[kind]) {
+          window.mtmTrack && window.mtmTrack("asset_downloaded", {
+            asset_type: ASSET_MAP[kind],
+            machine: MACHINE,
+            featured_template: FEATURED_TEMPLATE,
+          });
+        }
+      } catch (_) {}
+    });
+  });
+})();
 
 // ── Downloads / Quick Share helpers ────────────────────────────────────────
 (function () {

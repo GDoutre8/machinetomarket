@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css?v=20260428-0025" />
+  <script src="/static/posthog_init.js"></script>
   <style>
     /* ── Light-theme override for /build-listing ──────────────────────────── */
     :root {
@@ -1194,6 +1195,16 @@
 
     identifyBtn.disabled = true;
     showStep1Status('<span class="spinner"></span>Staging your listing&hellip;', '');
+
+    try {
+      var _ftEl = document.getElementById('featured_template');
+      window.mtmTrack && window.mtmTrack('listing_started', {
+        make: make,
+        model: model,
+        year: year,
+        featured_template: (_ftEl && _ftEl.value) ? _ftEl.value.trim() : 'price_tag',
+      });
+    } catch (_) {}
 
     const fd = new FormData();
     fd.append('year', year);

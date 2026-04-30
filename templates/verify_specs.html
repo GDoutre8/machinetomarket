@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="/static/posthog_init.js"></script>
 <style>
   :root{
     --paper:#ffffff;
@@ -1799,6 +1800,19 @@ window.MTM_VERIFY_PRESEL = {
       var data;
       try { data = await resp.json(); } catch(_){ data = {}; }
       if(data && data.result_url){
+        try {
+          var _ftEl = document.getElementById('vf-featured-template');
+          var _logoImg = document.getElementById('vf-logo-preview');
+          var _photoCountEl = document.getElementById('vf-photo-count');
+          var _photoCount = _photoCountEl ? parseInt(_photoCountEl.textContent || '0', 10) : 0;
+          var _hasLogo = !!(_logoImg && _logoImg.src && _logoImg.style.display !== 'none' && !/^$/.test(_logoImg.getAttribute('src') || ''));
+          window.mtmTrack && window.mtmTrack('package_generated', {
+            machine: {{ machine_label|tojson }},
+            featured_template: (_ftEl && _ftEl.value) ? _ftEl.value.trim() : 'price_tag',
+            has_logo: _hasLogo,
+            photo_count: isNaN(_photoCount) ? 0 : _photoCount,
+          });
+        } catch (_) {}
         setStatus('Redirecting…', false);
         // Hard-navigate — keep buttons disabled so the in-flight
         // page stays visually inert until the result page loads.
@@ -2068,6 +2082,18 @@ window.MTM_VERIFY_PRESEL = {
   }
   bindDrop(document.getElementById('vf-logo-drop'),   document.getElementById('vf-logo-input'));
   bindDrop(document.getElementById('vf-m-logo-drop'), document.getElementById('vf-m-logo-input'));
+})();
+
+// ── PostHog: verify_viewed ───────────────────────────────────────────
+(function(){
+  try {
+    var _ftEl = document.getElementById('vf-featured-template');
+    window.mtmTrack && window.mtmTrack('verify_viewed', {
+      machine: {{ machine_label|tojson }},
+      category: {{ equipment_type|tojson }},
+      featured_template: (_ftEl && _ftEl.value) ? _ftEl.value.trim() : 'price_tag',
+    });
+  } catch (_) {}
 })();
 </script>
 </body>

@@ -573,10 +573,21 @@ async def build_listing_result(request: Request, session_id: str):
         except Exception:
             pass
 
+    _ft_for_result = "price_tag"
+    try:
+        if os.path.isfile(_di_path):
+            with open(_di_path, encoding="utf-8") as _f_ft:
+                _ft_saved = (json.load(_f_ft) or {}).get("featured_template")
+                if _ft_saved:
+                    _ft_for_result = str(_ft_saved).strip().lower() or "price_tag"
+    except Exception:
+        pass
+
     return templates.TemplateResponse("build_listing_result.html", {
         "request":        request,
         "session_id":     session_id,
         "machine_label":  machine_label,
+        "featured_template": _ft_for_result,
         "metadata":       metadata,
         "listing_text":   listing_text,
         "listing_title":  listing_title,
