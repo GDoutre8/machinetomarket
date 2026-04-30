@@ -38,16 +38,13 @@ CHARCOAL_BG        = DARK_BG                  # legacy alias
 
 NAME_ON_LIGHT      = ( 13,  13,  12)          # #0D0D0C — INK
 NAME_ON_DARK       = (255, 255, 255)          # #FFFFFF
-PHONE_ON_LIGHT     = ( 13,  13,  12)          # matches name (ink on white)
-PHONE_ON_DARK      = (255, 255, 255)          # matches name (white on charcoal)
-LABEL_ON_LIGHT     = (115, 115, 113)          # ≈ rgba(13,13,12,0.50) — CONTACT label
-LABEL_ON_DARK      = (170, 170, 170)          # ≈ rgba(255,255,255,0.66) — CONTACT label
+PHONE_ON_LIGHT     = ( 13,  13,  12)          # ink on white — name + phone share weight
+# Phone on dark variant is accent-tinted at render time (drives CTA emphasis)
 
-# Separator — pre-multiplied rgba(*, 0.14) over badge bg, per IntegratedBadge spec
-# rgba(13,13,12,0.14) over #FFF   ≈ (221,221,221)
-# rgba(255,255,255,0.14) over #0d0d0c ≈ (47,47,47)
+# Separator — pre-multiplied rgba(*, 0.14) over badge bg.
+# Light: soft gray hairline. Dark: accent-tinted muted divider (computed from
+# the resolved accent color at render time so dealer themes carry through).
 SEP_ON_LIGHT      = (221, 221, 221)
-SEP_ON_DARK       = ( 47,  47,  47)
 
 # Theme accent palette — mirrors spec_sheet_renderer themes exactly.
 # Badge accent bar and charcoal-variant phone text both use the resolved value.
@@ -402,20 +399,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives top accent rail color
     *,
     force_variant: Optional[Literal["light", "dark", "white", "charcoal"]] = None,  # QA override; None = auto-detect
-    logo_box_w: int = 230,
-    logo_box_h: Optional[int] = None,  # auto: 64 (dark) / 72 (light) per integrated spec
+    logo_box_w: int = 200,          # ~13% smaller than prior 230 — tighter logo footprint
+    logo_box_h: Optional[int] = None,  # auto: 56 (dark) / 64 (light) — matches reduced width
     padding_x: int = 18,
     padding_y: int = 10,
-    gap: int = 14,                  # gap between logo right edge and divider/text column
+    gap: int = 16,                  # gap between logo right edge and divider/text column
     sep_width: int = 1,             # 1px hairline divider
     text_gap: int = 4,
-    label_gap: int = 4,
     corner_radius: int = 8,
     accent_bar_h: int = 4,
-    label_size: int = 9,
-    label_tracking: int = 2,
     name_size: int = 22,
-    phone_size: int = 13,
+    phone_size: int = 14,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -450,18 +444,23 @@ def build_badge(
         badge_bg    = LIGHT_BG
         name_color  = NAME_ON_LIGHT
         phone_color = PHONE_ON_LIGHT
-        label_color = LABEL_ON_LIGHT
         sep_color   = SEP_ON_LIGHT
     else:
         badge_bg    = DARK_BG
         name_color  = NAME_ON_DARK
-        phone_color = PHONE_ON_DARK
-        label_color = LABEL_ON_DARK
-        sep_color   = SEP_ON_DARK
+        # Phone takes the resolved accent color on dark — strongest CTA without
+        # outsizing the dealer name. Falls back to white-ish if math degenerates.
+        phone_color = accent_rgb
+        # Muted accent divider on dark = 30% accent + 70% bg (visible but quiet).
+        sep_color   = (
+            int(accent_rgb[0] * 0.30 + DARK_BG[0] * 0.70),
+            int(accent_rgb[1] * 0.30 + DARK_BG[1] * 0.70),
+            int(accent_rgb[2] * 0.30 + DARK_BG[2] * 0.70),
+        )
 
-    # Integrated logo zone heights — dark ≈64, light ≈72 (per JSX spec).
+    # Integrated logo zone heights — dark ≈56, light ≈64 (~13% reduction).
     if logo_box_h is None:
-        logo_box_h = 64 if bg_kind == "dark" else 72
+        logo_box_h = 56 if bg_kind == "dark" else 64
 
     # Logo cleanup before compositing.
     # Light mode  : trim excess whitespace, preserve white backing — blends into #F5F3EE.
@@ -483,24 +482,21 @@ def build_badge(
     logo_ph = max(1, int(lh * scale))
     logo_scaled = logo_src.resize((logo_pw, logo_ph), Image.LANCZOS)
 
-    # Fonts — label: small tracked uppercase, name: SemiBold uppercase, phone: Medium
-    label_font = _load_font(label_size, "semibold")
+    # Fonts — name: bold uppercase (anchor), phone: medium (CTA, accent on dark)
     name_font  = _load_font(name_size,  "black")
     phone_font = _load_font(phone_size, "mono")
     name_disp  = (name or "").upper()
     phone_disp = _format_phone_us(phone)
-    label_text = "CONTACT"
 
     # Measure text
     scratch    = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-    label_w, label_h = _measure_tracked(label_font, label_text, tracking=label_tracking)
     name_bbox  = scratch.textbbox((0, 0), name_disp, font=name_font)
     name_w     = name_bbox[2] - name_bbox[0]
     name_h     = name_bbox[3] - name_bbox[1]
     phone_w, phone_h = _measure_tracked(phone_font, phone_disp, tracking=phone_tracking)
 
-    text_block_w = max(label_w, name_w, phone_w)
-    text_block_h = label_h + label_gap + name_h + text_gap + phone_h
+    text_block_w = max(name_w, phone_w)
+    text_block_h = name_h + text_gap + phone_h
 
     # Badge dimensions — width uses actual logo_pw so no dead space is allocated
     # around the logo; wide logos naturally fill their column.
@@ -565,25 +561,20 @@ def build_badge(
     draw.rectangle((sep_x, sep_top_y, sep_x + sep_width - 1, sep_bot_y), fill=sep_color + (255,))
 
     # Text block — left-aligned, vertically centered in content area.
-    # Stacks: CONTACT label (small, tracked) → agent name (uppercase bold) → phone.
+    # Stack: dealer name (uppercase bold) → phone (accent CTA on dark).
     text_col_x = sm + padding_x + logo_pw + gap
     text_top_y = content_top + (content_h - text_block_h) // 2
 
-    # CONTACT label
-    _draw_tracked(draw, (text_col_x, text_top_y), label_text,
-                  font=label_font, fill=label_color, tracking=label_tracking)
-
-    # Agent name — uppercase, condensed-bold
-    name_y = text_top_y + label_h + label_gap
+    # Agent / company name — uppercase, condensed-bold (primary anchor)
     draw.text(
-        (text_col_x - name_bbox[0], name_y - name_bbox[1]),
+        (text_col_x - name_bbox[0], text_top_y - name_bbox[1]),
         name_disp,
         font=name_font,
         fill=name_color,
     )
 
-    # Phone — secondary
-    phone_y_px = name_y + name_h + text_gap
+    # Phone — secondary text size, accent-tinted on dark = strongest CTA
+    phone_y_px = text_top_y + name_h + text_gap
     _draw_tracked(draw, (text_col_x, phone_y_px), phone_disp,
                   font=phone_font, fill=phone_color, tracking=phone_tracking)
 
@@ -626,8 +617,12 @@ def build_text_badge(
     accent_rgb  = ACCENTS.get((accent or "yellow").lower().strip(), ACCENT_YELLOW)
     badge_bg    = DARK_BG
     name_color  = NAME_ON_DARK
-    phone_color = PHONE_ON_DARK
-    sep_color   = SEP_ON_DARK
+    phone_color = accent_rgb            # CTA emphasis — matches build_badge dark variant
+    sep_color   = (
+        int(accent_rgb[0] * 0.30 + DARK_BG[0] * 0.70),
+        int(accent_rgb[1] * 0.30 + DARK_BG[1] * 0.70),
+        int(accent_rgb[2] * 0.30 + DARK_BG[2] * 0.70),
+    )
 
     initials = _initials(name) or "MTM"
     name_font  = _load_font(name_size,      "semibold")
