@@ -275,6 +275,44 @@
       .result-hero h1 { font-size: 26px; }
     }
 
+    /* Above-the-fold featured image preview (hero card) */
+    .result-hero-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+      padding: 0;
+    }
+    .result-hero-preview-label {
+      font-family: var(--body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #6b6b66;
+    }
+    .result-hero-preview-frame {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 4 / 5;
+      background: #0d0d0c;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    }
+    .result-hero-preview-frame img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    @media (max-width: 600px) {
+      .result-hero-preview { margin-bottom: 14px; gap: 8px; }
+      .result-hero-preview-frame { max-width: 200px; }
+      .result-hero-preview-label { font-size: 10px; letter-spacing: 0.16em; }
+    }
+
     /* Action bar */
     .action-bar {
       display: flex;
@@ -942,6 +980,15 @@
       <p>Built and optimized for Facebook Marketplace, Craigslist, and dealer sites. Download the full pack or grab any single asset below.</p>
     </div>
 
+    {% if card_png_url %}
+    <section class="result-hero-preview" aria-label="Featured listing image preview">
+      <span class="result-hero-preview-label">Featured Listing Image</span>
+      <div class="result-hero-preview-frame">
+        <img src="{{ card_png_url }}" alt="Featured Listing Image - {{ machine_label }}" />
+      </div>
+    </section>
+    {% endif %}
+
     <!-- ── Downloads grid ── -->
     <div class="result-card result-card-primary downloads-card">
       <div class="result-card-header">Downloads</div>
@@ -1216,22 +1263,10 @@
     </script>
     {% endif %}
 
-    <!-- ── Actual Output Preview ── -->
-    {% if card_png_url or spec_sheet_url %}
+    <!-- ── Actual Output Preview (spec sheet) ── -->
+    {% if spec_sheet_url %}
     <section class="output-section" aria-label="Actual output preview">
       <div class="output-grid">
-        {% if card_png_url %}
-        <article class="output-card">
-          <div class="output-card-head">
-            <span class="label">FEATURED LISTING IMAGE</span>
-          </div>
-          <div class="demo-media">
-            <div class="frame">
-              <img src="{{ card_png_url }}" alt="Featured Listing Image - {{ machine_label }}" />
-            </div>
-          </div>
-        </article>
-        {% endif %}
         {% if spec_sheet_url %}
         <article class="output-card">
           <div class="output-card-head">
