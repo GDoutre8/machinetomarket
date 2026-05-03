@@ -32,9 +32,7 @@ const outputsLevel  = document.getElementById("outputs-level");
 const toggleSpecSheet  = document.getElementById("toggle-spec-sheet");
 const toggleVariants   = document.getElementById("toggle-variants");
 const togglePackage    = document.getElementById("toggle-package");
-const toggleWalkaround = document.getElementById("toggle-walkaround");
 const wrapVariants     = document.getElementById("wrap-variants");
-const wrapWalkaround   = document.getElementById("wrap-walkaround");
 
 // ── Pack / photo upload refs ──────────────────────────────────────────────────
 
@@ -83,22 +81,13 @@ function updatePhotoDrop() {
     photoDropLabel.textContent = "Drop photos here or click to upload";
     photoDrop.classList.remove("has-files");
     photoBadge.style.display = "none";
-    // Walkaround needs photos — disable when none selected
-    toggleWalkaround.disabled = true;
-    wrapWalkaround.classList.add("disabled");
   } else {
     photoDropLabel.textContent = `${n} photo${n > 1 ? "s" : ""} selected — click to change`;
     photoDrop.classList.add("has-files");
     photoBadge.textContent = n;
     photoBadge.style.display = "inline-block";
-    toggleWalkaround.disabled = false;
-    wrapWalkaround.classList.remove("disabled");
   }
 }
-
-// Disable walkaround on load (no photos yet)
-toggleWalkaround.disabled = true;
-wrapWalkaround.classList.add("disabled");
 
 // ── Reset all result panels (call before every new run) ───────────────────────
 
@@ -188,9 +177,7 @@ async function fixListing() {
 
   const genPackage  = togglePackage.checked;
   const isPackBuild = selectedPhotos.length > 0 && genPackage;
-  const loadLabel   = isPackBuild
-    ? (toggleWalkaround.checked ? "Generating pack + video..." : "Generating pack...")
-    : "Processing...";
+  const loadLabel   = isPackBuild ? "Generating pack..." : "Processing...";
   setLoading(true, loadLabel);
 
   // When photos are uploaded + ZIP Package is checked → use pack endpoint
@@ -241,7 +228,6 @@ async function buildListingPack(raw) {
     fd.append("spec_level", specLevel);
     fd.append("generate_spec_sheet_flag",   toggleSpecSheet.checked  ? "true" : "false");
     fd.append("generate_image_pack_flag",   "true");
-    fd.append("generate_walkaround_flag",   toggleWalkaround.checked ? "true" : "false");
 
     const dealerName     = document.getElementById("dealer-name")?.value.trim()     || "";
     const dealerPhone    = document.getElementById("dealer-phone")?.value.trim()    || "";
@@ -539,7 +525,6 @@ async function copyListing() {
 
 function renderPackReady(data) {
   const outs = data.outputs || {};
-  const wk   = data.walkaround || {};
 
   // Machine name + stats
   packCardMachine.textContent = data.machine_match || "Machine";
@@ -559,7 +544,6 @@ function renderPackReady(data) {
     { label: "Listing Text",     ok: !!outs.listing_txt,    url: outs.listing_txt,    requested: true },
     { label: "Spec Sheet PNG",   ok: !!outs.spec_sheet_png, url: outs.spec_sheet_png, requested: data.spec_count > 0 },
     { label: "Image Pack",       ok: !!outs.image_pack_folder, url: null,             requested: data.image_count > 0 },
-    { label: "Walkaround Video", ok: wk.included,           url: outs.walkaround_mp4, requested: wk.requested, status: wk.status },
   ];
   for (const item of manifestItems) {
     let icon, iconClass, statusText;

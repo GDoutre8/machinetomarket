@@ -40,7 +40,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from image_pack_generator  import generate_image_pack, SUPPORTED_EXTENSIONS
-from walkaround_generator  import generate_walkaround_video
 from dealer_input          import DealerInput
 from listing_builder              import build_listing_text
 from listing_use_case_enrichment  import build_use_case_payload
@@ -237,9 +236,6 @@ def build_listing_pack(
     spec_sheet_entries: "list[tuple[str, str]]",
     image_input_paths: "list[str]",
     dealer_info: "dict | None" = None,
-    # Walkaround — two independent modes:
-    generate_walkaround: bool = False,          # generate from photos via ffmpeg
-    walkaround_video_path: "str | None" = None, # pass a pre-existing .mp4 to copy in
     session_dir: str = "",
     session_web: str = "",
     use_case_payload: "dict | None" = None,
@@ -262,8 +258,6 @@ def build_listing_pack(
     spec_sheet_entries     : [(label, value)] tuples for spec sheet PNG.
     image_input_paths      : Absolute paths to source photos.
     dealer_info            : Dict with dealer_name / phone / email / location.
-    generate_walkaround    : If True, generate walkaround.mp4 from photos.
-    walkaround_video_path  : Pre-existing video to copy in (ignores generate_walkaround).
     session_dir            : Per-request session directory (absolute path).
     session_web            : Web URL prefix for session_dir.
 
@@ -278,7 +272,6 @@ def build_listing_pack(
         zip_web_url      str | None
         zip_size_bytes   int
         outputs          dict  — per-asset absolute paths (None if not generated)
-        walkaround       dict  — {requested, included, status, path}
         warnings         list[str]
     """
     warnings: list[str] = []
@@ -290,7 +283,6 @@ def build_listing_pack(
         "image_pack_folder":     None,
         "listing_photos":        None,   # list[str] of *_listing.jpg absolute paths
         "primary_preview_image": None,   # first *_listing.jpg; used by result page
-        "walkaround_mp4":        None,
         "zip_file":              None,
     }
 
@@ -301,11 +293,6 @@ def build_listing_pack(
     eq_type     = parsed_listing.get("equipment_type") or ""
     machine_name  = _safe_machine_name(make, model)
     machine_match = " ".join(str(p) for p in [year, make.upper() if make else None, model] if p) or "Unknown Machine"
-
-    walkaround_requested = generate_walkaround or bool(walkaround_video_path)
-    walkaround_included  = False
-    walkaround_status    = "not_requested"
-    walkaround_final_path: str | None = None
 
     # ── Create listing_output/ folder ─────────────────────────────────────────
     pack_dir = os.path.join(session_dir, "listing_output")
@@ -488,47 +475,6 @@ def build_listing_pack(
     except Exception as _oe:
         warnings.append(f"outputs_explicit.json write failed (non-fatal): {_oe}")
 
-    # ── 4. Walkaround video (lowest priority — failure never blocks ZIP) ───────
-    if walkaround_requested:
-        walkaround_status = "pending"
-
-        # Mode A: a pre-generated video was supplied — just copy it in
-        if walkaround_video_path and os.path.isfile(walkaround_video_path):
-            try:
-                dest = os.path.join(pack_dir, "walkaround.mp4")
-                shutil.copy2(walkaround_video_path, dest)
-                walkaround_included   = True
-                walkaround_status     = "included"
-                walkaround_final_path = dest
-                outputs["walkaround_mp4"] = dest
-            except Exception as exc:
-                walkaround_status = "failed"
-                warnings.append(f"Walkaround video copy failed: {exc}")
-
-        # Mode B: generate from photos using ffmpeg
-        elif generate_walkaround:
-            if not valid_images:
-                walkaround_status = "failed_no_photos"
-                warnings.append("Walkaround video requested but no photos available.")
-            else:
-                try:
-                    video_out = os.path.join(pack_dir, "walkaround.mp4")
-                    generate_walkaround_video(
-                        image_paths = valid_images,
-                        output_path = video_out,
-                    )
-                    walkaround_included   = True
-                    walkaround_status     = "included"
-                    walkaround_final_path = video_out
-                    outputs["walkaround_mp4"] = video_out
-                except Exception as exc:
-                    walkaround_status = "failed"
-                    warnings.append(f"Walkaround video generation failed: {exc}")
-
-        elif walkaround_video_path and not os.path.isfile(walkaround_video_path):
-            walkaround_status = "failed_path_not_found"
-            warnings.append(f"Walkaround video not found: {walkaround_video_path}")
-
     # ── 5. metadata_internal.json ────────────────────────────────────────────
     spec_level_label = (
         "FULL" if spec_count >= 8
@@ -540,7 +486,6 @@ def build_listing_pack(
     included_outputs = []
     if outputs["listing_txt"]:       included_outputs.append("listing_description.txt")
     if outputs["image_pack_folder"]: included_outputs.append("images_*")
-    if walkaround_included:          included_outputs.append("walkaround.mp4")
 
     # Optional photo-level warning: flag sessions where every image is too tight.
     _all_too_close = (
@@ -559,10 +504,6 @@ def build_listing_pack(
         "image_count":           len(valid_images),
         "generated_at":          datetime.now(timezone.utc).isoformat(),
         "included_outputs":      included_outputs,
-        "walkaround_requested":  walkaround_requested,
-        "walkaround_included":   walkaround_included,
-        "walkaround_status":     walkaround_status,
-        "walkaround_path":       walkaround_final_path,
         "photo_analysis":        photo_analysis,
         **({"photo_warning": "all_images_too_tight"} if _all_too_close else {}),
         "warnings":              warnings,
@@ -611,12 +552,10 @@ Use these if you need to re-edit or upload to platforms with their own crop tool
     zip_web_url = f"{session_web}/listing_output.zip" if (zip_path and session_web) else None
 
     # ── Summary ───────────────────────────────────────────────────────────────
-    wk_tag = "OK" if walkaround_included else ("SKIP" if not walkaround_requested else f"FAIL ({walkaround_status})")
     print(f"\n  [Pack] {machine_match}")
     print(f"  [Pack] listing_description.txt : {'OK' if outputs['listing_txt'] else 'FAIL'}")
     print(f"  [Pack] spec_sheet img : see Listing_Photos/_02_spec_sheet.png ({spec_count} specs)")
     print(f"  [Pack] image_pack     : {'OK' if outputs['image_pack_folder'] else 'SKIP'} ({len(valid_images)} photos)")
-    print(f"  [Pack] walkaround.mp4 : {wk_tag}")
     print(f"  [Pack] ZIP            : {_fmt_size(zip_size) if zip_size else 'FAILED'}")
     for w in warnings:
         print(f"  [Pack] WARNING: {w}")
@@ -630,12 +569,6 @@ Use these if you need to re-edit or upload to platforms with their own crop tool
         "zip_web_url":    zip_web_url,
         "zip_size_bytes": zip_size,
         "outputs":        outputs,
-        "walkaround": {
-            "requested": walkaround_requested,
-            "included":  walkaround_included,
-            "status":    walkaround_status,
-            "path":      walkaround_final_path,
-        },
         "warnings": warnings,
     }
 
@@ -650,8 +583,6 @@ def build_listing_pack_v1(
     resolved_machine:      "dict | None" = None,
     image_input_paths:     "list[str] | None" = None,
     dealer_info:           "dict | None" = None,
-    generate_walkaround:   bool = False,
-    walkaround_video_path: "str | None" = None,
     session_dir:           str = "",
     session_web:           str = "",
     equipment_type:        "str | None" = None,
@@ -671,8 +602,6 @@ def build_listing_pack_v1(
     resolved_machine    : Full resolver output dict (for confidence metadata), or None.
     image_input_paths   : Absolute paths to source photos (optional).
     dealer_info         : Dict with dealer_name / phone / email / location (optional).
-    generate_walkaround : Generate walkaround video from photos via ffmpeg.
-    walkaround_video_path: Pre-existing .mp4 to copy into the pack.
     session_dir         : Per-request session directory (absolute path).
     session_web         : Web URL prefix for session_dir.
     equipment_type      : "skid_steer" | "compact_track_loader" | "mini_excavator"
@@ -868,8 +797,6 @@ def build_listing_pack_v1(
         spec_sheet_entries      = spec_sheet_entries,
         image_input_paths       = image_input_paths or [],
         dealer_info             = dealer_info,
-        generate_walkaround     = generate_walkaround,
-        walkaround_video_path   = walkaround_video_path,
         session_dir             = session_dir,
         session_web             = session_web,
         use_case_payload        = use_case_payload,

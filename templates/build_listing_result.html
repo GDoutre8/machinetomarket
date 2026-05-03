@@ -1193,9 +1193,6 @@
           {% if metadata.get("equipment_type") %}
           <span class="meta-pill">{{ metadata.equipment_type | replace("_", " ") | title }}</span>
           {% endif %}
-          {% if metadata.get("walkaround_included") %}
-          <span class="meta-pill green">Walkaround Video</span>
-          {% endif %}
           {% if metadata.get("resolver_confidence") %}
           <span class="meta-pill">Confidence: {{ metadata.resolver_confidence }}</span>
           {% endif %}
@@ -1383,18 +1380,149 @@
     </div>
     {% endif %}
 
-    <!-- ── Walkaround Video ── -->
-    {% if walkaround_url %}
-    <div class="result-card result-card-secondary">
+    <!-- ── Walkaround Video (async) ── -->
+    <div class="result-card result-card-secondary" id="walkaround-card"
+         data-state="{{ walkaround_state or 'absent' }}"
+         data-session-id="{{ session_id }}"
+         data-video-url="{{ walkaround_url or '' }}"
+         data-filename="{{ walkaround_filename or '' }}">
       <div class="result-card-header">Walkaround Video</div>
       <div class="result-card-body">
-        <video class="walkaround-video" controls preload="metadata">
-          <source src="{{ walkaround_url }}" type="video/mp4">
-          Your browser does not support video playback.
-        </video>
+        <div id="walkaround-absent" style="display:none;">
+          <p style="margin:0 0 12px 0;">Generate a vertical 1080x1920 walkaround video from your uploaded photos. Takes about 30 seconds.</p>
+          <button type="button" id="walkaround-start-btn" class="qs-btn">Create walkaround video</button>
+          <p id="walkaround-error" style="display:none; color:#c00; margin:10px 0 0 0; font-size:0.9em;"></p>
+        </div>
+        <div id="walkaround-rendering" style="display:none;">
+          <p style="margin:0;">Rendering your walkaround&hellip; ~30s</p>
+          <div style="margin-top:10px; height:4px; background:#eee; overflow:hidden; border-radius:2px;">
+            <div style="width:40%; height:100%; background:#FFCC00; animation: wk-pulse 1.4s ease-in-out infinite;"></div>
+          </div>
+        </div>
+        <div id="walkaround-complete" style="display:none;">
+          <video class="walkaround-video" controls preload="metadata" id="walkaround-video-el"></video>
+          <div style="margin-top:10px;">
+            <a id="walkaround-download" href="#" download class="qs-btn qs-btn-stack">
+              <span>Download walkaround video</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-    {% endif %}
+
+    <style>
+      @keyframes wk-pulse {
+        0%   { transform: translateX(-50%); }
+        50%  { transform: translateX(150%); }
+        100% { transform: translateX(-50%); }
+      }
+    </style>
+
+    <script>
+    (function() {
+      var card = document.getElementById("walkaround-card");
+      if (!card) return;
+      var sessionId = card.getAttribute("data-session-id");
+      var videoUrlInit = card.getAttribute("data-video-url");
+      var filenameInit = card.getAttribute("data-filename");
+      var startBtn = document.getElementById("walkaround-start-btn");
+      var errorEl  = document.getElementById("walkaround-error");
+      var videoEl  = document.getElementById("walkaround-video-el");
+      var dlEl     = document.getElementById("walkaround-download");
+      var pollTimer = null;
+
+      function show(stateName) {
+        ["absent", "rendering", "complete"].forEach(function(s) {
+          var el = document.getElementById("walkaround-" + s);
+          if (el) el.style.display = "none";
+        });
+        var bucket = stateName;
+        if (stateName === "pending" || stateName === "rendering") bucket = "rendering";
+        else if (stateName === "complete") bucket = "complete";
+        else bucket = "absent";
+        var target = document.getElementById("walkaround-" + bucket);
+        if (target) target.style.display = "";
+      }
+
+      function setComplete(videoUrl, filename) {
+        if (videoEl && videoUrl) {
+          videoEl.src = videoUrl;
+        }
+        if (dlEl && videoUrl) {
+          dlEl.href = videoUrl;
+          if (filename) dlEl.setAttribute("download", filename);
+        }
+        show("complete");
+      }
+
+      function poll() {
+        fetch("/build-listing/result/" + sessionId + "/walkaround-status", {cache: "no-store"})
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            var st = data.state || "absent";
+            if (st === "complete") {
+              if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+              setComplete(data.video_url, data.filename);
+            } else if (st === "failed") {
+              if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+              show("absent");
+            } else if (st === "pending" || st === "rendering") {
+              show("rendering");
+            } else {
+              show("absent");
+            }
+          })
+          .catch(function() { /* swallow; keep polling */ });
+      }
+
+      function startPolling() {
+        if (pollTimer) return;
+        poll();
+        pollTimer = setInterval(poll, 3000);
+      }
+
+      if (startBtn) {
+        startBtn.addEventListener("click", function() {
+          if (errorEl) { errorEl.style.display = "none"; errorEl.textContent = ""; }
+          startBtn.disabled = true;
+          fetch("/build-listing/result/" + sessionId + "/walkaround/start", {method: "POST"})
+            .then(function(r) {
+              return r.json().then(function(body) { return {ok: r.ok, status: r.status, body: body}; });
+            })
+            .then(function(res) {
+              startBtn.disabled = false;
+              if (!res.ok) {
+                var msg = (res.body && res.body.error) ? res.body.error : "Could not start walkaround.";
+                if (res.status !== 400 && (!res.body || !res.body.error)) {
+                  msg = "Could not start walkaround. Please try again.";
+                }
+                if (errorEl) { errorEl.textContent = msg; errorEl.style.display = ""; }
+                return;
+              }
+              show("rendering");
+              startPolling();
+            })
+            .catch(function() {
+              startBtn.disabled = false;
+              if (errorEl) {
+                errorEl.textContent = "Network error. Please try again.";
+                errorEl.style.display = "";
+              }
+            });
+        });
+      }
+
+      var initState = card.getAttribute("data-state") || "absent";
+      if (initState === "complete" && videoUrlInit) {
+        setComplete(videoUrlInit, filenameInit);
+      } else if (initState === "pending" || initState === "rendering") {
+        show("rendering");
+        startPolling();
+      } else {
+        show("absent");
+      }
+    })();
+    </script>
 
     {# ── Quick Share (placeholder helpers — no backend) ── #}
     {% if listing_text or image_packs %}

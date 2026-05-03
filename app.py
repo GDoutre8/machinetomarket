@@ -504,9 +504,32 @@ async def build_listing_result(request: Request, session_id: str):
     _listing_urls = image_packs[0]["urls"]
     primary_preview_image: str | None = _listing_urls[0] if _listing_urls else None
 
-    # Walkaround video
-    walkaround_abs = os.path.join(pack_dir, "walkaround.mp4")
-    walkaround_url = f"{web_base}/walkaround.mp4" if os.path.isfile(walkaround_abs) else None
+    # Walkaround video — async job state lives in walkaround_status.json.
+    # Stale pending/rendering older than 10 min is treated as failed.
+    walkaround_state    = "absent"
+    walkaround_url      = None
+    walkaround_filename_str = None
+    _wk_status_path = os.path.join(pack_dir, "walkaround_status.json")
+    if os.path.isfile(_wk_status_path):
+        try:
+            with open(_wk_status_path, encoding="utf-8") as _wf:
+                _wk = json.load(_wf) or {}
+            _state = str(_wk.get("state") or "absent")
+            _started = float(_wk.get("started_at") or 0)
+            if _state in ("pending", "rendering"):
+                if _started and (time.time() - _started) > 600:
+                    _state = "failed"
+            _fname = _wk.get("filename")
+            if _state == "complete" and _fname:
+                _abs_video = os.path.join(pack_dir, _fname)
+                if os.path.isfile(_abs_video):
+                    walkaround_url = f"{web_base}/{_fname}"
+                    walkaround_filename_str = _fname
+                else:
+                    _state = "failed"
+            walkaround_state = _state
+        except Exception:
+            walkaround_state = "absent"
 
     # ZIP download URL
     zip_abs = os.path.join(session_dir, "listing_output.zip")
@@ -597,6 +620,8 @@ async def build_listing_result(request: Request, session_id: str):
         "image_packs":           image_packs,
         "primary_preview_image": primary_preview_image,
         "walkaround_url":        walkaround_url,
+        "walkaround_state":      walkaround_state,
+        "walkaround_filename":   walkaround_filename_str,
         "zip_url":               zip_url,
         "can_refine":            can_refine,
         "best_for_ui":           best_for_ui,
@@ -732,6 +757,169 @@ async def save_listing_text_direct(
     return RedirectResponse(url=f"/build-listing/result/{session_id}", status_code=303)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Async walkaround video job
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _walkaround_status_path(session_id: str) -> str:
+    return os.path.join(_OUTPUTS_DIR, session_id, "listing_output", "walkaround_status.json")
+
+
+def _walkaround_status_read(session_id: str) -> dict:
+    p = _walkaround_status_path(session_id)
+    if not os.path.isfile(p):
+        return {"state": "absent"}
+    try:
+        with open(p, encoding="utf-8") as f:
+            data = json.load(f) or {}
+    except Exception:
+        return {"state": "absent"}
+    state = str(data.get("state") or "absent")
+    started = float(data.get("started_at") or 0)
+    if state in ("pending", "rendering") and started and (time.time() - started) > 600:
+        data["state"] = "failed"
+        data["error_detail"] = data.get("error_detail") or "stale_timeout"
+    return data
+
+
+def _walkaround_status_write(session_id: str, data: dict) -> None:
+    p = _walkaround_status_path(session_id)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    os.replace(tmp, p)
+
+
+def _gather_walkaround_photos(session_id: str) -> list[str]:
+    uploads = os.path.join(_OUTPUTS_DIR, session_id, "_uploads")
+    if not os.path.isdir(uploads):
+        return []
+    valid_ext = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".tif"}
+    found: list[str] = []
+    for name in sorted(os.listdir(uploads)):
+        if name == "dealer_logo.png":
+            continue
+        full = os.path.join(uploads, name)
+        if not os.path.isfile(full):
+            continue
+        if os.path.splitext(name)[1].lower() not in valid_ext:
+            continue
+        found.append(full)
+    return found[:10]
+
+
+@app.post("/build-listing/result/{session_id}/walkaround/start")
+async def walkaround_start(session_id: str):
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    di_path = os.path.join(session_dir, "dealer_input.json")
+    if not os.path.isfile(di_path):
+        raise HTTPException(status_code=422, detail="dealer_input.json missing")
+    try:
+        with open(di_path, encoding="utf-8") as f:
+            di = json.load(f) or {}
+    except Exception:
+        raise HTTPException(status_code=422, detail="dealer_input.json unreadable")
+
+    photos = _gather_walkaround_photos(session_id)
+    if len(photos) < 4:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Need at least 4 machine photos to create a walkaround video."},
+        )
+
+    current = _walkaround_status_read(session_id)
+    if current.get("state") in ("pending", "rendering"):
+        raise HTTPException(status_code=409, detail="Walkaround already in progress")
+
+    year  = di.get("year") or 0
+    make  = (di.get("make") or "").strip()
+    model = (di.get("model") or "").strip()
+    _dp = di.get("dealer_profile") or {}
+    dealer_name  = (_dp.get("companyName") or "").strip() or None
+    dealer_phone = (_dp.get("phone")       or "").strip() or None
+    accent_color = (_dp.get("accentColor") or "yellow")
+
+    from walkaround_generator import generate_walkaround_video, walkaround_filename
+    filename = walkaround_filename(year, make, model)
+    pack_dir = os.path.join(session_dir, "listing_output")
+    os.makedirs(pack_dir, exist_ok=True)
+    output_path = os.path.join(pack_dir, filename)
+
+    _walkaround_status_write(session_id, {
+        "state": "pending",
+        "started_at": time.time(),
+        "finished_at": None,
+        "filename": filename,
+        "error_detail": None,
+    })
+
+    async def _runner():
+        try:
+            _walkaround_status_write(session_id, {
+                "state": "rendering",
+                "started_at": time.time(),
+                "finished_at": None,
+                "filename": filename,
+                "error_detail": None,
+            })
+            await asyncio.to_thread(
+                generate_walkaround_video,
+                photos,
+                output_path,
+                int(year) if year else 0,
+                make,
+                model,
+                dealer_name,
+                dealer_phone,
+                accent_color,
+            )
+            _walkaround_status_write(session_id, {
+                "state": "complete",
+                "started_at": time.time(),
+                "finished_at": time.time(),
+                "filename": filename,
+                "error_detail": None,
+            })
+        except Exception as exc:
+            _walkaround_status_write(session_id, {
+                "state": "failed",
+                "started_at": time.time(),
+                "finished_at": time.time(),
+                "filename": filename,
+                "error_detail": str(exc)[:500],
+            })
+
+    asyncio.create_task(_runner())
+    return {"state": "pending"}
+
+
+@app.get("/build-listing/result/{session_id}/walkaround-status")
+async def walkaround_status(session_id: str):
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    data = _walkaround_status_read(session_id)
+    state = data.get("state") or "absent"
+    resp: dict = {"state": state}
+    if state == "complete":
+        fname = data.get("filename")
+        if fname:
+            abs_video = os.path.join(session_dir, "listing_output", fname)
+            if os.path.isfile(abs_video):
+                resp["filename"] = fname
+                resp["video_url"] = f"/outputs/{session_id}/listing_output/{fname}"
+            else:
+                resp["state"] = "failed"
+    return resp
+
+
 @app.get("/download-pack/{session_id}")
 async def download_pack_by_session(session_id: str):
     """Return the listing pack ZIP for a given session."""
@@ -777,7 +965,6 @@ async def generate_listing_pack_endpoint(
     location:     str  = Form(""),
     generate_spec_sheet_flag:   bool = Form(True),
     generate_image_pack_flag:   bool = Form(True),
-    generate_walkaround_flag:   bool = Form(False),
     photos: List[UploadFile] = File(default=[]),
 ):
     """
@@ -860,7 +1047,6 @@ async def generate_listing_pack_endpoint(
             spec_sheet_entries     = spec_entries,
             image_input_paths      = photo_paths,
             dealer_info            = dealer_info,
-            generate_walkaround    = generate_walkaround_flag,
             session_dir            = session_dir,
             session_web            = session_web,
         )
@@ -874,9 +1060,6 @@ async def generate_listing_pack_endpoint(
     # ── Merge upload warnings + pack warnings ─────────────────────────────────
     all_warnings = warnings + (pack.get("warnings") or [])
 
-    wk      = pack.get("walkaround") or {}
-    wk_path = pack["outputs"].get("walkaround_mp4")
-
     # ── Scoring ───────────────────────────────────────────────────────────────
     pack_scoring:           dict | None = None
     pack_fix_my_listing:    dict | None = None
@@ -889,7 +1072,7 @@ async def generate_listing_pack_endpoint(
             raw_text             = raw,
             photo_count          = len(photo_paths),
             eq_type_fallback     = _registry_eq_type,
-            has_walkaround_video = wk.get("included", False),
+            has_walkaround_video = False,
             has_spec_sheet_pdf   = bool(pack["outputs"].get("spec_sheet_png")),
         )
         pack_scoring        = _score_listing(scorer_input)
@@ -931,14 +1114,8 @@ async def generate_listing_pack_endpoint(
             "listing_txt":       _asset_url(pack["outputs"].get("listing_txt"),    session_web),
             "spec_sheet_png":    _asset_url(pack["outputs"].get("spec_sheet_png"), session_web + "/listing_output/Listing_Photos"),
             "image_pack_folder": session_web + "/listing_output" if pack["outputs"].get("image_pack_folder") else None,
-            "walkaround_mp4":    _asset_url(wk_path, session_web + "/listing_output") if wk_path else None,
             "zip_file":          pack.get("zip_web_url"),
             "zip_path":          pack.get("zip_path"),
-        },
-        "walkaround": {
-            "requested": wk.get("requested", False),
-            "included":  wk.get("included",  False),
-            "status":    wk.get("status",    "not_requested"),
         },
         "warnings": all_warnings,
     }
