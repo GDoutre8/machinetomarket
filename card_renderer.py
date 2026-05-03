@@ -624,8 +624,10 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   }}
 
   /* Spec rail */
+  /* bottom offset reserves a clean bottom-left zone for the standard
+     dealer badge composited by card_renderer_adapter. */
   .spec-rail {{
-    position: absolute; left: 0; right: 0; bottom: 0;
+    position: absolute; left: 0; right: 0; bottom: 110px;
     background: #0d0d0c;
     border-top: 4px solid var(--accent);
     padding: 22px 28px 26px;
@@ -1070,8 +1072,10 @@ _PAGE_TEMPLATE_AUCTION = """<!DOCTYPE html>
   }}
 
   /* BOTTOM GRID */
+  /* bottom padding reserves a clean badge zone inside the paper for the
+     standard dealer badge composited by card_renderer_adapter. */
   .bottom-grid {{
-    padding: 16px 36px 24px;
+    padding: 16px 36px 110px;
     display: grid;
     grid-template-columns: {ledger_grid_cols};
     gap: 22px;

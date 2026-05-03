@@ -220,8 +220,17 @@ def export_listing_card(
         if chosen == "badge_only":
             _export_badge_only(payload, output_path)
         else:
-            html_str = render_card(payload)
+            # Suppress the HTML-rendered dealer badge/footer for templates that
+            # now receive the standard composited badge. The dealer payload is
+            # preserved on a copy so the post-composite step still has logo,
+            # name, phone, accent.
+            dealer_full = dict(payload.get("dealer") or {})
+            html_payload = dict(payload)
+            html_payload["dealer"] = {**dealer_full, "show_branding": False}
+            html_str = render_card(html_payload)
             _screenshot_card(html_str, output_path)
+            if chosen in {"price_tag", "auction_ticket", "wide_shot"}:
+                _apply_standard_badge_to_card(output_path, dealer_full)
         log.info("[card] exported %s (template=%s)", output_path, chosen or "default")
         return output_path
     except Exception as exc:
@@ -229,6 +238,38 @@ def export_listing_card(
         if not fail_silently:
             raise
         return None
+
+
+def _apply_standard_badge_to_card(output_path: Path, dealer: dict) -> None:
+    """Composite the standard dealer badge onto a rendered card PNG in place.
+
+    Reuses the same renderer + dealer fields as the listing-photo and
+    badge_only paths so the featured listing image (`*_01_card.png`) shows
+    the exact same badge style as photos #2-6.
+    """
+    from renderers.badge_renderer import apply_badge_to_photo
+
+    if not bool(dealer.get("show_branding", True)):
+        return
+
+    logo_path = dealer.get("logo_path")
+    name      = dealer.get("rep") or dealer.get("name")
+    phone     = dealer.get("phone")
+    accent    = dealer.get("theme") or "yellow"
+
+    has_logo = bool(logo_path) and Path(logo_path).is_file()
+    has_name = bool(name) or bool(phone)
+    if not has_logo and not has_name:
+        return
+
+    apply_badge_to_photo(
+        photo_path  = str(output_path),
+        logo_path   = logo_path if has_logo else None,
+        name        = name or "",
+        phone       = phone or "",
+        accent      = accent,
+        output_path = str(output_path),
+    )
 
 
 def _export_badge_only(payload: dict, output_path: Path) -> None:
@@ -244,7 +285,6 @@ def _export_badge_only(payload: dict, output_path: Path) -> None:
     auction_ticket exports — so all four templates produce parity output.
     """
     from PIL import Image
-    from renderers.badge_renderer import apply_badge_to_photo
 
     machine = payload.get("machine") or {}
     dealer  = payload.get("dealer")  or {}
@@ -277,32 +317,9 @@ def _export_badge_only(payload: dict, output_path: Path) -> None:
     hero = cropped.resize((HERO_W, HERO_H), Image.LANCZOS)
     hero.save(output_path, quality=92)
 
-    logo_path = dealer.get("logo_path")
-    name      = dealer.get("rep") or dealer.get("name")
-    phone     = dealer.get("phone")
-    accent    = dealer.get("theme") or "yellow"
-
-    has_logo = bool(logo_path) and Path(logo_path).is_file()
-    has_name = bool(name) or bool(phone)
-
-    if not has_logo and not has_name:
-        # Hero already written at 1080×1350 above; no dealer identity to badge.
-        return
-
-    # Apply the existing dealer-badge compositor to the resized hero in-place.
-    # This reuses the adaptive light/dark variant selection from
-    # renderers.badge_renderer (detect_logo_background) — logos with a white
-    # backing land on a white badge, transparent/dark logos land on a charcoal
-    # badge, and in both cases the logo blends into the badge body instead
-    # of sitting in a hard rectangle.
-    apply_badge_to_photo(
-        photo_path  = str(output_path),
-        logo_path   = logo_path if has_logo else None,
-        name        = name or "",
-        phone       = phone or "",
-        accent      = accent,
-        output_path = str(output_path),
-    )
+    # Reuse the shared helper so badge_only and the HTML-rendered featured
+    # templates apply identical badge logic (single source of truth).
+    _apply_standard_badge_to_card(output_path, dealer)
 
 
 def _screenshot_card(html_str: str, output_path: Path) -> None:
