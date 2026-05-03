@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>window.MTM_POSTHOG_KEY = {{ POSTHOG_KEY|tojson }}; window.MTM_POSTHOG_HOST = {{ POSTHOG_HOST|tojson }};</script>
 <script src="/static/posthog_init.js"></script>
 <style>
   :root{
@@ -1970,6 +1971,14 @@ window.MTM_VERIFY_PRESEL = {
       var data = await r.json();
       renderThumbs(data.photos || []);
       setStatus('Uploaded · ' + (data.photos || []).length + ' total');
+      try {
+        window.mtmTrack && window.mtmTrack('photo_uploaded', {
+          session_id:    SESSION_ID,
+          equipment_type: {{ equipment_type|tojson }},
+          added_count:   files.length,
+          photo_count:   (data.photos || []).length,
+        });
+      } catch(_){}
       if((data.photos || []).length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
         window.MTM_RENDER_FEATURED_PREVIEWS(data.photos[0]);
       }
@@ -2100,6 +2109,13 @@ window.MTM_VERIFY_PRESEL = {
     if(valid.indexOf(key) === -1) key = 'price_tag';
     hidden.value = key;
     applySelectionStyles();
+    try {
+      window.mtmTrack && window.mtmTrack('featured_template_selected', {
+        session_id:        SESSION_ID,
+        equipment_type:    {{ equipment_type|tojson }},
+        featured_template: key,
+      });
+    } catch(_){}
   }
 
   function applyPreviews(previews, failed){

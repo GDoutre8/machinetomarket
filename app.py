@@ -133,6 +133,8 @@ _OUTPUTS_DIR = os.path.join(_BASE, "outputs")
 os.makedirs(_OUTPUTS_DIR, exist_ok=True)
 app.mount("/outputs", StaticFiles(directory=_OUTPUTS_DIR), name="outputs")
 templates = Jinja2Templates(directory=os.path.join(_BASE, "templates"))
+templates.env.globals["POSTHOG_KEY"]  = (os.getenv("POSTHOG_KEY")  or "").strip()
+templates.env.globals["POSTHOG_HOST"] = (os.getenv("POSTHOG_HOST") or "https://us.i.posthog.com").strip()
 
 
 # ── Equipment-type feature config ─────────────────────────────────────────────

@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Teko:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles_v2.css?v=20260428-0025" />
+  <script>window.MTM_POSTHOG_KEY = {{ POSTHOG_KEY|tojson }}; window.MTM_POSTHOG_HOST = {{ POSTHOG_HOST|tojson }};</script>
   <script src="/static/posthog_init.js"></script>
   <style>
     html,body{max-width:100%;overflow-x:hidden}
@@ -1430,6 +1431,11 @@
       var videoEl  = document.getElementById("walkaround-video-el");
       var dlEl     = document.getElementById("walkaround-download");
       var pollTimer = null;
+      var WA_MACHINE          = {{ machine_label|tojson }};
+      var WA_EQUIPMENT_TYPE   = {{ (metadata.get("equipment_type") if metadata else "")|tojson }};
+      var WA_FEATURED_TEMPLATE = {{ featured_template|tojson }};
+      var waStartedAt = null;
+      var waLastReportedState = null;
 
       function show(stateName) {
         ["absent", "rendering", "complete"].forEach(function(s) {
@@ -1455,6 +1461,20 @@
         show("complete");
       }
 
+      function reportTerminal(eventName, extra) {
+        try {
+          var props = {
+            session_id:        sessionId,
+            machine:           WA_MACHINE,
+            equipment_type:    WA_EQUIPMENT_TYPE,
+            featured_template: WA_FEATURED_TEMPLATE,
+          };
+          if (waStartedAt) props.render_duration_ms = Date.now() - waStartedAt;
+          if (extra) for (var k in extra) props[k] = extra[k];
+          window.mtmTrack && window.mtmTrack(eventName, props);
+        } catch(_) {}
+      }
+
       function poll() {
         fetch("/build-listing/result/" + sessionId + "/walkaround-status", {cache: "no-store"})
           .then(function(r) { return r.json(); })
@@ -1463,9 +1483,17 @@
             if (st === "complete") {
               if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
               setComplete(data.video_url, data.filename);
+              if (waLastReportedState !== "complete") {
+                reportTerminal("walkaround_video_completed", {filename: data.filename || null});
+                waLastReportedState = "complete";
+              }
             } else if (st === "failed") {
               if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
               show("absent");
+              if (waLastReportedState !== "failed") {
+                reportTerminal("walkaround_video_failed", {reason: "render_failed"});
+                waLastReportedState = "failed";
+              }
             } else if (st === "pending" || st === "rendering") {
               show("rendering");
             } else {
@@ -1497,8 +1525,27 @@
                   msg = "Could not start walkaround. Please try again.";
                 }
                 if (errorEl) { errorEl.textContent = msg; errorEl.style.display = ""; }
+                try {
+                  window.mtmTrack && window.mtmTrack("walkaround_video_failed", {
+                    session_id:        sessionId,
+                    machine:           WA_MACHINE,
+                    equipment_type:    WA_EQUIPMENT_TYPE,
+                    featured_template: WA_FEATURED_TEMPLATE,
+                    reason:            "start_rejected_" + res.status,
+                  });
+                } catch(_) {}
                 return;
               }
+              waStartedAt = Date.now();
+              waLastReportedState = "rendering";
+              try {
+                window.mtmTrack && window.mtmTrack("walkaround_video_started", {
+                  session_id:        sessionId,
+                  machine:           WA_MACHINE,
+                  equipment_type:    WA_EQUIPMENT_TYPE,
+                  featured_template: WA_FEATURED_TEMPLATE,
+                });
+              } catch(_) {}
               show("rendering");
               startPolling();
             })
