@@ -751,6 +751,24 @@
             <div id="vf-photo-status" style="margin-top:8px;font-size:12px;color:var(--text-faint);min-height:1em"></div>
           </div>
 
+          <!-- C3 · FEATURED CARD CHOOSER (live previews from photo #1) -->
+          <div class="block">
+            <div class="block-head">
+              <div class="l">
+                <div class="tag">// C3 — FEATURED CARD</div>
+                <h2>Choose Your Listing Style</h2>
+              </div>
+              <div class="r">
+                <span>RENDERED FROM YOUR PHOTO #1</span>
+              </div>
+            </div>
+            <div id="vf-tpl-empty" style="font-size:12.5px;color:var(--text-faint);padding:14px 0">
+              Upload at least one photo above to render live previews.
+            </div>
+            <div id="vf-tpl-grid" data-surface="desktop" style="display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:4px"></div>
+            <div id="vf-tpl-status" style="margin-top:10px;font-size:12px;color:var(--text-faint);min-height:1em"></div>
+          </div>
+
           <!-- D · LISTING PREVIEW -->
           <div class="block tinted">
             <div class="block-head">
@@ -1076,6 +1094,18 @@
       </div>
       <div id="vf-m-photo-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
       <div id="vf-m-photo-status" style="margin-top:6px;font-size:11px;color:var(--text-faint);min-height:1em"></div>
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// FEATURED CARD</span><h3>Listing Style</h3></div>
+        <div class="r"><span>FROM PHOTO #1</span></div>
+      </div>
+      <div id="vf-m-tpl-empty" style="font-size:12px;color:var(--text-faint);padding:10px 0">
+        Upload at least one photo to render live previews.
+      </div>
+      <div id="vf-m-tpl-grid" data-surface="mobile" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:4px"></div>
+      <div id="vf-m-tpl-status" style="margin-top:8px;font-size:11px;color:var(--text-faint);min-height:1em"></div>
     </div>
 
     <div class="m-block">
@@ -1918,6 +1948,9 @@ window.MTM_VERIFY_PRESEL = {
       if(!r.ok) return;
       var data = await r.json();
       renderThumbs(data.photos || []);
+      if((data.photos || []).length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
+        window.MTM_RENDER_FEATURED_PREVIEWS(data.photos[0]);
+      }
     } catch(_){}
   }
 
@@ -1937,6 +1970,9 @@ window.MTM_VERIFY_PRESEL = {
       var data = await r.json();
       renderThumbs(data.photos || []);
       setStatus('Uploaded · ' + (data.photos || []).length + ' total');
+      if((data.photos || []).length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
+        window.MTM_RENDER_FEATURED_PREVIEWS(data.photos[0]);
+      }
     } catch(err){
       setStatus('Network error: ' + err.message, true);
     }
@@ -1957,6 +1993,164 @@ window.MTM_VERIFY_PRESEL = {
   });
 
   refresh();
+})();
+
+// ============================================================
+// Featured-card chooser — renders 4 live previews from the
+// user's uploaded photo #1 + staged dealer_input.json. Click
+// sets the hidden featured_template input; selection is carried
+// to /generate via the existing form field.
+// ============================================================
+(function(){
+  var SESSION_ID = "{{ session_id }}";
+  var TEMPLATES = [
+    { key:'price_tag',      label:'Price Tag',      desc:'Price-forward card' },
+    { key:'wide_shot',      label:'Wide Shot',      desc:'Cinematic full hero' },
+    { key:'auction_ticket', label:'Auction Ticket', desc:'Lot-stamp ticket' },
+    { key:'badge_only',     label:'Badge Only',     desc:'Minimal dealer badge' },
+  ];
+  var hidden = document.getElementById('vf-featured-template');
+  var surfaces = [
+    { grid:'vf-tpl-grid',   empty:'vf-tpl-empty',   status:'vf-tpl-status'   },
+    { grid:'vf-m-tpl-grid', empty:'vf-m-tpl-empty', status:'vf-m-tpl-status' },
+  ].map(function(s){
+    return {
+      grid:   document.getElementById(s.grid),
+      empty:  document.getElementById(s.empty),
+      status: document.getElementById(s.status),
+    };
+  }).filter(function(s){ return s.grid; });
+  if(!hidden || !surfaces.length) return;
+
+  function setStatus(msg, err){
+    surfaces.forEach(function(s){
+      if(!s.status) return;
+      s.status.textContent = msg || '';
+      s.status.style.color = err ? 'var(--accent)' : 'var(--text-faint)';
+    });
+  }
+
+  function buildSkeleton(){
+    surfaces.forEach(function(s){
+      s.empty.style.display = 'none';
+      s.grid.style.display = 'grid';
+      s.grid.innerHTML = '';
+      TEMPLATES.forEach(function(t){
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.dataset.tpl = t.key;
+        card.style.cssText =
+          'display:flex;flex-direction:column;align-items:stretch;gap:6px;' +
+          'padding:8px;border:1.5px solid var(--rule);background:#0d0d0c;' +
+          'cursor:pointer;text-align:left;font-family:inherit;color:inherit;' +
+          'transition:border-color .14s,box-shadow .14s';
+        var stage = document.createElement('div');
+        stage.style.cssText =
+          'position:relative;width:100%;aspect-ratio:4/5;background:#000;' +
+          'border:1px solid var(--rule);overflow:hidden;display:flex;' +
+          'align-items:center;justify-content:center';
+        var img = document.createElement('img');
+        img.alt = t.label + ' preview';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:none';
+        var skel = document.createElement('div');
+        skel.className = 'vf-tpl-skel';
+        skel.style.cssText =
+          'font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;' +
+          'color:var(--text-dim);text-transform:uppercase';
+        skel.textContent = 'rendering…';
+        stage.appendChild(img);
+        stage.appendChild(skel);
+        var meta = document.createElement('div');
+        meta.style.cssText =
+          'display:flex;justify-content:space-between;align-items:baseline;' +
+          'font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;' +
+          'text-transform:uppercase;color:var(--text-dim)';
+        var name = document.createElement('span');
+        name.textContent = t.label;
+        name.style.cssText = 'font-weight:700;color:var(--text)';
+        var sel = document.createElement('span');
+        sel.className = 'vf-tpl-sel';
+        sel.textContent = '';
+        meta.appendChild(name);
+        meta.appendChild(sel);
+        card.appendChild(stage);
+        card.appendChild(meta);
+        card.addEventListener('click', function(){ select(t.key); });
+        s.grid.appendChild(card);
+      });
+    });
+  }
+
+  function applySelectionStyles(){
+    var current = (hidden.value || 'price_tag').trim();
+    surfaces.forEach(function(s){
+      s.grid.querySelectorAll('button[data-tpl]').forEach(function(btn){
+        var on = btn.dataset.tpl === current;
+        btn.style.borderColor = on ? 'var(--accent)' : 'var(--rule)';
+        btn.style.boxShadow   = on ? '0 0 0 2px rgba(255,255,255,.06)' : 'none';
+        var sel = btn.querySelector('.vf-tpl-sel');
+        if(sel) sel.textContent = on ? '● selected' : '';
+        if(sel) sel.style.color = on ? 'var(--accent)' : 'var(--text-dim)';
+      });
+    });
+  }
+
+  function select(key){
+    var valid = TEMPLATES.map(function(t){ return t.key; });
+    if(valid.indexOf(key) === -1) key = 'price_tag';
+    hidden.value = key;
+    applySelectionStyles();
+  }
+
+  function applyPreviews(previews, failed){
+    surfaces.forEach(function(s){
+      s.grid.querySelectorAll('button[data-tpl]').forEach(function(btn){
+        var key = btn.dataset.tpl;
+        var img = btn.querySelector('img');
+        var skel = btn.querySelector('.vf-tpl-skel');
+        if(previews && previews[key]){
+          img.src = previews[key];
+          img.style.display = 'block';
+          if(skel) skel.style.display = 'none';
+        } else if(failed && failed.indexOf(key) !== -1){
+          if(skel){ skel.textContent = 'render failed'; skel.style.color = 'var(--accent)'; }
+        }
+      });
+    });
+  }
+
+  var inflight = false;
+  async function render(photoFilename){
+    if(inflight) return;
+    inflight = true;
+    buildSkeleton();
+    applySelectionStyles();
+    setStatus('Rendering 4 previews from your photo…');
+    try {
+      var fd = new FormData();
+      if(photoFilename) fd.append('photo_filename', photoFilename);
+      var r = await fetch(
+        '/build-listing/verify/' + SESSION_ID + '/featured_previews',
+        { method:'POST', body: fd }
+      );
+      if(!r.ok){
+        var detail = 'Preview render failed (' + r.status + ')';
+        try { var j = await r.json(); detail = j.detail || detail; } catch(_){}
+        setStatus(detail, true);
+        return;
+      }
+      var data = await r.json();
+      applyPreviews(data.previews || {}, data.failed || []);
+      var ok = Object.keys(data.previews || {}).length;
+      setStatus(ok + ' of 4 previews ready · click to select');
+    } catch(err){
+      setStatus('Network error: ' + err.message, true);
+    } finally {
+      inflight = false;
+    }
+  }
+
+  window.MTM_RENDER_FEATURED_PREVIEWS = render;
 })();
 
 // ============================================================

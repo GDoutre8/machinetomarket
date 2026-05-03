@@ -2007,6 +2007,101 @@ async def build_listing_verify_photos_upload(
     return JSONResponse({"photos": _verify_list_photos(uploads_dir)})
 
 
+@app.post("/build-listing/verify/{session_id}/featured_previews")
+async def build_listing_verify_featured_previews(
+    session_id: str,
+    photo_filename: Optional[str] = Form(None),
+):
+    """Render 4 featured-card previews (price_tag, wide_shot, auction_ticket,
+    badge_only) using the user's first uploaded photo + the staged
+    dealer_input.json. Used by the Verify page chooser. Writes PNGs to
+    `outputs/{session_id}/_previews/{template}.png` and returns their URLs.
+
+    No persistence — selection flows through the existing hidden
+    `featured_template` form field at /generate.
+    """
+    session_id  = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    uploads_dir = os.path.join(session_dir, "_uploads")
+    photos = _verify_list_photos(uploads_dir)
+    if not photos:
+        raise HTTPException(status_code=409, detail="No photos uploaded yet")
+
+    chosen_photo = (photo_filename or "").strip() or photos[0]
+    if chosen_photo not in photos:
+        chosen_photo = photos[0]
+    photo_path = os.path.join(uploads_dir, chosen_photo)
+
+    di_path = os.path.join(session_dir, "dealer_input.json")
+    if not os.path.isfile(di_path):
+        raise HTTPException(status_code=409, detail="Intake not staged yet")
+    try:
+        with open(di_path, "r", encoding="utf-8") as f:
+            di_dict = json.load(f) or {}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"dealer_input read failed: {exc}")
+
+    profile = di_dict.get("dealer_profile") or {}
+    di_core = {k: v for k, v in di_dict.items()
+               if k not in ("dealer_profile", "featured_template")}
+    try:
+        dealer_input = DealerInput.model_validate(di_core)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"DealerInput rebuild failed: {exc}")
+
+    resolved_machine, resolved_specs, full_record, _parsed = _verify_resolve_specs(dealer_input)
+    if not full_record:
+        raise HTTPException(status_code=409, detail="Registry record unavailable for this machine")
+
+    logo_disk_path = os.path.join(uploads_dir, "dealer_logo.png")
+    dealer_info = {
+        "dealer_name":  (profile.get("companyName")  or "").strip() or None,
+        "contact_name": (profile.get("contactName")  or "").strip() or None,
+        "phone":        (profile.get("phone")        or "").strip() or None,
+        "logo_path":    logo_disk_path if os.path.isfile(logo_disk_path) else None,
+        "accent_color": (profile.get("accentColor") or "yellow"),
+    }
+
+    previews_dir = os.path.join(session_dir, "_previews")
+    os.makedirs(previews_dir, exist_ok=True)
+
+    from card_renderer_adapter import adapt_dealer_input, export_listing_card
+    from pathlib import Path as _Path
+
+    templates = ("price_tag", "wide_shot", "auction_ticket", "badge_only")
+    out_urls: dict[str, str] = {}
+    failed: list[str] = []
+
+    for tpl in templates:
+        try:
+            dealer_dict = adapt_dealer_input(
+                dealer_input,
+                [photo_path],
+                theme=dealer_info["accent_color"] or "yellow",
+                dealer_info=dealer_info,
+                featured_template=tpl,
+            )
+            out_path = _Path(previews_dir) / f"{tpl}.png"
+            result = export_listing_card(full_record, dealer_dict, out_path)
+            if result and out_path.is_file():
+                mtime = int(os.path.getmtime(out_path))
+                out_urls[tpl] = f"/outputs/{session_id}/_previews/{tpl}.png?v={mtime}"
+            else:
+                failed.append(tpl)
+        except Exception as exc:
+            print(f"[verify_previews] {tpl} render failed: {exc}")
+            failed.append(tpl)
+
+    return JSONResponse({
+        "previews":      out_urls,
+        "failed":        failed,
+        "photo_used":    chosen_photo,
+    })
+
+
 @app.get("/build-listing/verify/{session_id}/dealer")
 async def build_listing_verify_dealer_get(session_id: str):
     """Return the staged dealer identity (company / contact / phone) and
