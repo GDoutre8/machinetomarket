@@ -723,6 +723,7 @@
                 <button type="button" data-vf-accent="blue"   aria-pressed="false" title="Blue"   style="width:24px;height:24px;border-radius:50%;background:#1E4D8C;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
                 <button type="button" data-vf-accent="green"  aria-pressed="false" title="Green"  style="width:24px;height:24px;border-radius:50%;background:#2C5F3E;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
                 <button type="button" data-vf-accent="orange" aria-pressed="false" title="Orange" style="width:24px;height:24px;border-radius:50%;background:#D85A15;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
+                <button type="button" data-vf-accent="black"  aria-pressed="false" title="Black"  style="width:24px;height:24px;border-radius:50%;background:#0d0d0c;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
               </div>
               <span style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--text-faint);margin-left:auto">HERO · SPEC SHEET · PHOTO BADGE</span>
             </div>
@@ -1058,8 +1059,23 @@
           <button type="button" data-vf-m-accent="blue"   aria-pressed="false" title="Blue"   style="width:22px;height:22px;border-radius:50%;background:#1E4D8C;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
           <button type="button" data-vf-m-accent="green"  aria-pressed="false" title="Green"  style="width:22px;height:22px;border-radius:50%;background:#2C5F3E;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
           <button type="button" data-vf-m-accent="orange" aria-pressed="false" title="Orange" style="width:22px;height:22px;border-radius:50%;background:#D85A15;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
+          <button type="button" data-vf-m-accent="black"  aria-pressed="false" title="Black"  style="width:22px;height:22px;border-radius:50%;background:#0d0d0c;border:1px solid var(--rule);cursor:pointer;padding:0;line-height:1"></button>
         </div>
       </div>
+    </div>
+
+    <div class="m-block">
+      <div class="m-block-head">
+        <div class="l"><span class="tag">// C2 — MEDIA</span><h3>Photos</h3></div>
+        <div class="r"><span>FIRST IS HERO</span> · <b id="vf-m-photo-count">0</b> UP</div>
+      </div>
+      <div id="vf-m-photo-drop" style="border:1.5px dashed var(--rule);padding:18px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02)">
+        <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:4px">// TAP TO UPLOAD PHOTOS</div>
+        <div style="font-size:12px;color:var(--text-faint)">JPG · PNG · WEBP · multiple allowed</div>
+        <input type="file" id="vf-m-photo-input" accept="image/*" multiple style="display:none">
+      </div>
+      <div id="vf-m-photo-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+      <div id="vf-m-photo-status" style="margin-top:6px;font-size:11px;color:var(--text-faint);min-height:1em"></div>
     </div>
 
     <div class="m-block">
@@ -1853,32 +1869,47 @@ window.MTM_VERIFY_PRESEL = {
 // ============================================================
 (function(){
   var SESSION_ID = "{{ session_id }}";
-  var drop   = document.getElementById('vf-photo-drop');
-  var input  = document.getElementById('vf-photo-input');
-  var thumbs = document.getElementById('vf-photo-thumbs');
-  var countEl= document.getElementById('vf-photo-count');
-  var statusEl = document.getElementById('vf-photo-status');
-  if(!drop || !input || !thumbs) return;
+  // Bind to desktop and mobile uploader pairs. Each pair shares one
+  // upload handler + one thumbs/status surface; both render the same
+  // server-side photo list, so users can switch viewports mid-session.
+  var pairs = [
+    {drop:'vf-photo-drop',   input:'vf-photo-input',   thumbs:'vf-photo-thumbs',   count:'vf-photo-count',   status:'vf-photo-status'  },
+    {drop:'vf-m-photo-drop', input:'vf-m-photo-input', thumbs:'vf-m-photo-thumbs', count:'vf-m-photo-count', status:'vf-m-photo-status'},
+  ].map(function(p){
+    return {
+      drop:   document.getElementById(p.drop),
+      input:  document.getElementById(p.input),
+      thumbs: document.getElementById(p.thumbs),
+      count:  document.getElementById(p.count),
+      status: document.getElementById(p.status),
+    };
+  }).filter(function(p){ return p.drop && p.input && p.thumbs; });
+  if(!pairs.length) return;
 
   function setStatus(msg, err){
-    statusEl.textContent = msg || '';
-    statusEl.style.color = err ? 'var(--accent)' : 'var(--text-faint)';
+    pairs.forEach(function(p){
+      if(!p.status) return;
+      p.status.textContent = msg || '';
+      p.status.style.color = err ? 'var(--accent)' : 'var(--text-faint)';
+    });
   }
 
   function renderThumbs(filenames){
-    thumbs.innerHTML = '';
-    (filenames || []).forEach(function(name){
-      var url = '/outputs/' + SESSION_ID + '/_uploads/' + encodeURIComponent(name);
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'position:relative;width:96px;height:96px;border:1px solid var(--rule);background:#000;overflow:hidden';
-      var img = document.createElement('img');
-      img.src = url;
-      img.alt = name;
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-      wrap.appendChild(img);
-      thumbs.appendChild(wrap);
+    pairs.forEach(function(p){
+      p.thumbs.innerHTML = '';
+      (filenames || []).forEach(function(name){
+        var url = '/outputs/' + SESSION_ID + '/_uploads/' + encodeURIComponent(name);
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;width:96px;height:96px;border:1px solid var(--rule);background:#000;overflow:hidden';
+        var img = document.createElement('img');
+        img.src = url;
+        img.alt = name;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+        wrap.appendChild(img);
+        p.thumbs.appendChild(wrap);
+      });
+      if(p.count) p.count.textContent = String((filenames || []).length);
     });
-    countEl.textContent = String((filenames || []).length);
   }
 
   async function refresh(){
@@ -1911,16 +1942,18 @@ window.MTM_VERIFY_PRESEL = {
     }
   }
 
-  drop.addEventListener('click', function(){ input.click(); });
-  input.addEventListener('change', function(){ upload(input.files); input.value = ''; });
-  ['dragover','dragenter'].forEach(function(ev){
-    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.style.borderColor = 'var(--accent)'; drop.style.background = 'rgba(255,255,255,.05)'; });
-  });
-  ['dragleave','drop'].forEach(function(ev){
-    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.style.borderColor = ''; drop.style.background = ''; });
-  });
-  drop.addEventListener('drop', function(e){
-    if(e.dataTransfer && e.dataTransfer.files) upload(e.dataTransfer.files);
+  pairs.forEach(function(p){
+    p.drop.addEventListener('click', function(){ p.input.click(); });
+    p.input.addEventListener('change', function(){ upload(p.input.files); p.input.value = ''; });
+    ['dragover','dragenter'].forEach(function(ev){
+      p.drop.addEventListener(ev, function(e){ e.preventDefault(); p.drop.style.borderColor = 'var(--accent)'; p.drop.style.background = 'rgba(255,255,255,.05)'; });
+    });
+    ['dragleave','drop'].forEach(function(ev){
+      p.drop.addEventListener(ev, function(e){ e.preventDefault(); p.drop.style.borderColor = ''; p.drop.style.background = ''; });
+    });
+    p.drop.addEventListener('drop', function(e){
+      if(e.dataTransfer && e.dataTransfer.files) upload(e.dataTransfer.files);
+    });
   });
 
   refresh();

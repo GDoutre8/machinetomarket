@@ -30,6 +30,7 @@ _THEMES: dict[str, dict[str, str]] = {
     "red":    {"accent": "#E0252B", "accent_ink": "#ffffff"},
     "blue":   {"accent": "#1F6FEB", "accent_ink": "#ffffff"},
     "green":  {"accent": "#1F8A3B", "accent_ink": "#ffffff"},
+    "black":  {"accent": "#0d0d0c", "accent_ink": "#ffffff"},
 }
 
 _EQ_TYPE_DISPLAY = {
@@ -265,7 +266,7 @@ def _render_price_tag(data: dict) -> str:
     accent = theme["accent"]
     accent_ink = theme["accent_ink"]
     # Dark accent variant flips the dealer-mark contrast
-    is_dark_accent = theme_key in ("red", "blue", "green")
+    is_dark_accent = theme_key in ("red", "blue", "green", "black")
 
     # Machine
     year  = machine.get("year")
@@ -710,7 +711,7 @@ def _render_auction_ticket(data: dict) -> str:
     theme = _THEMES.get(theme_key, _THEMES["yellow"])
     accent = theme["accent"]
     accent_ink = theme["accent_ink"]
-    is_dark_accent = theme_key in ("red", "blue", "green")
+    is_dark_accent = theme_key in ("red", "blue", "green", "black")
 
     year   = machine.get("year")
     make   = (machine.get("make") or "").upper()

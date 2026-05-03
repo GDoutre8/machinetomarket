@@ -26,7 +26,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-_VALID_THEMES = {"yellow", "red", "blue", "green", "orange"}
+_VALID_THEMES = {"yellow", "red", "blue", "green", "orange", "black"}
 
 _GOOGLE_FONTS = (
     "https://fonts.googleapis.com/css2?"
@@ -49,6 +49,7 @@ _THEME_ACCENTS = {
     "blue":   "#1E4D8C",
     "green":  "#2C5F3E",
     "orange": "#D85A15",
+    "black":  "#0d0d0c",
 }
 
 

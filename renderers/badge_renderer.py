@@ -54,6 +54,10 @@ ACCENTS = {
     "blue":   ( 30,  77, 140),        # #1E4D8C
     "green":  ( 44,  95,  62),        # #2C5F3E
     "orange": (216,  90,  21),        # #D85A15
+    "black":  ( 13,  13,  12),        # #0D0D0C — mono theme; on dark badge bodies
+                                      # the renderer swaps to white for the visible
+                                      # accent (rail / phone / divider) so contrast
+                                      # is preserved against the dark backdrop.
 }
 
 # Shadow margin baked into every badge canvas — must stay in sync with apply_badge_to_photo
@@ -399,17 +403,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives top accent rail color
     *,
     force_variant: Optional[Literal["light", "dark", "white", "charcoal"]] = None,  # QA override; None = auto-detect
-    logo_box_w: int = 200,          # ~13% smaller than prior 230 — tighter logo footprint
-    logo_box_h: Optional[int] = None,  # auto: 56 (dark) / 64 (light) — matches reduced width
-    padding_x: int = 18,
-    padding_y: int = 10,
-    gap: int = 16,                  # gap between logo right edge and divider/text column
+    logo_box_w: int = 156,          # ~22% smaller footprint vs. prior 200
+    logo_box_h: Optional[int] = None,  # auto: 44 (dark) / 50 (light) — matches reduced width
+    padding_x: int = 14,
+    padding_y: int = 8,
+    gap: int = 12,                  # gap between logo right edge and divider/text column
     sep_width: int = 1,             # 1px hairline divider
-    text_gap: int = 4,
-    corner_radius: int = 8,
-    accent_bar_h: int = 4,
-    name_size: int = 22,
-    phone_size: int = 14,
+    text_gap: int = 3,
+    corner_radius: int = 7,
+    accent_bar_h: int = 3,
+    name_size: int = 18,
+    phone_size: int = 12,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -438,7 +442,12 @@ def build_badge(
         bg_kind = detect_logo_background(logo)
 
     # Resolve accent color from theme name — fallback to MTM yellow
-    accent_rgb = ACCENTS.get((accent or "yellow").lower().strip(), ACCENT_YELLOW)
+    accent_key = (accent or "yellow").lower().strip()
+    accent_rgb = ACCENTS.get(accent_key, ACCENT_YELLOW)
+    # Black accent on dark badge body would vanish; swap to white for the
+    # rail / phone / divider so the visible accent stays legible.
+    if accent_key == "black" and bg_kind == "dark":
+        accent_rgb = (255, 255, 255)
 
     if bg_kind == "light":
         badge_bg    = LIGHT_BG
@@ -458,9 +467,9 @@ def build_badge(
             int(accent_rgb[2] * 0.30 + DARK_BG[2] * 0.70),
         )
 
-    # Integrated logo zone heights — dark ≈56, light ≈64 (~13% reduction).
+    # Integrated logo zone heights — dark ≈44, light ≈50 (~22% reduction).
     if logo_box_h is None:
-        logo_box_h = 56 if bg_kind == "dark" else 64
+        logo_box_h = 44 if bg_kind == "dark" else 50
 
     # Logo cleanup before compositing.
     # Light mode  : trim excess whitespace, preserve white backing — blends into #F5F3EE.
@@ -595,18 +604,18 @@ def build_text_badge(
     phone: str,
     accent: str = "yellow",
     *,
-    padding_x: int = 14,
-    padding_y: int = 12,
-    gap: int = 14,
+    padding_x: int = 11,
+    padding_y: int = 9,
+    gap: int = 11,
     sep_width: int = 1,
-    text_gap: int = 5,
-    corner_radius: int = 8,
-    accent_bar_h: int = 4,
-    name_size: int = 18,
-    phone_size: int = 14,
+    text_gap: int = 4,
+    corner_radius: int = 7,
+    accent_bar_h: int = 3,
+    name_size: int = 15,
+    phone_size: int = 12,
     phone_tracking: int = 0,
-    mark_size: int = 56,
-    mark_text_size: int = 22,
+    mark_size: int = 44,
+    mark_text_size: int = 17,
 ) -> Image.Image:
     """Logoless badge variant — initials mark + name/phone on charcoal.
 
@@ -614,7 +623,11 @@ def build_text_badge(
     Visual contract matches build_badge: same accent bar, drop shadow, and
     text column geometry — only the left column swaps the logo for an
     accent-tinted initials mark."""
-    accent_rgb  = ACCENTS.get((accent or "yellow").lower().strip(), ACCENT_YELLOW)
+    accent_key  = (accent or "yellow").lower().strip()
+    accent_rgb  = ACCENTS.get(accent_key, ACCENT_YELLOW)
+    # Black accent on a dark text-badge body would vanish; swap to white.
+    if accent_key == "black":
+        accent_rgb = (255, 255, 255)
     badge_bg    = DARK_BG
     name_color  = NAME_ON_DARK
     phone_color = accent_rgb            # CTA emphasis — matches build_badge dark variant

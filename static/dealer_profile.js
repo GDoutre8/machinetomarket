@@ -278,6 +278,7 @@
               '<button type="button" data-accent-swatch="blue"   aria-pressed="false" title="Blue"   style="width:22px;height:22px;border-radius:50%;background:#1E4D8C;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
               '<button type="button" data-accent-swatch="green"  aria-pressed="false" title="Green"  style="width:22px;height:22px;border-radius:50%;background:#2C5F3E;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
               '<button type="button" data-accent-swatch="orange" aria-pressed="false" title="Orange" style="width:22px;height:22px;border-radius:50%;background:#D85A15;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
+              '<button type="button" data-accent-swatch="black"  aria-pressed="false" title="Black"  style="width:22px;height:22px;border-radius:50%;background:#0d0d0c;border:none;cursor:pointer;box-shadow:none;flex-shrink:0;"></button>',
             '</div>',
           '</div>',
         '</div>',

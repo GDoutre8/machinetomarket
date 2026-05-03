@@ -152,6 +152,55 @@ def _resize_for_listing(img: Image.Image, max_dim: int = MAX_LISTING_DIM) -> Ima
     return img.resize((round(w * scale), round(h * scale)), Image.LANCZOS)
 
 
+# Listing-photo canvas — 4:5 portrait (matches the featured hero card frame so
+# Marketplace and similar platforms display the listing pack without further
+# cropping). The full uploaded photo is fit inside; surrounding canvas is
+# filled with a blurred copy of the same photo for a soft contextual backdrop.
+LISTING_FRAME_W = 1080
+LISTING_FRAME_H = 1350
+
+
+def _frame_for_listing(
+    img: Image.Image,
+    frame_w: int = LISTING_FRAME_W,
+    frame_h: int = LISTING_FRAME_H,
+) -> Image.Image:
+    """Letterbox `img` inside a fixed-aspect canvas with a blurred-photo fill.
+
+    The full uploaded photo is preserved (contain/fit-inside) — never cropped.
+    The canvas behind it is the same photo center-cropped to the canvas aspect,
+    upscaled to the canvas size, then heavily blurred. That keeps the backdrop
+    coherent with the subject and looks neutral on bright or dark photos alike.
+    """
+    src = img.convert("RGB")
+    sw, sh = src.size
+    target_ratio = frame_w / frame_h
+
+    # Background: cover-crop + blur. Center-crop the source to canvas AR,
+    # then resize to canvas size, then blur. Matches behavior of Instagram
+    # / TikTok auto-blur backdrops without any third-party deps.
+    if sw / sh > target_ratio:
+        new_w = int(round(sh * target_ratio))
+        x0 = (sw - new_w) // 2
+        bg_crop = src.crop((x0, 0, x0 + new_w, sh))
+    else:
+        new_h = int(round(sw / target_ratio))
+        y0 = (sh - new_h) // 2
+        bg_crop = src.crop((0, y0, sw, y0 + new_h))
+    bg = bg_crop.resize((frame_w, frame_h), Image.LANCZOS).filter(
+        ImageFilter.GaussianBlur(radius=42)
+    )
+
+    # Foreground: contain-fit the full photo inside the canvas.
+    fg_scale = min(frame_w / sw, frame_h / sh)
+    fw, fh = max(1, round(sw * fg_scale)), max(1, round(sh * fg_scale))
+    fg = src.resize((fw, fh), Image.LANCZOS)
+
+    canvas = bg
+    canvas.paste(fg, ((frame_w - fw) // 2, (frame_h - fh) // 2))
+    return canvas
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Step 4: Gentle sharpen
 # ─────────────────────────────────────────────────────────────────────────────
@@ -243,8 +292,12 @@ def _process_image(
     orig_size = _save_original(img.copy(), orig_path)
     results["original"] = (orig_path, orig_size)
 
-    # Step 3: Scale to listing size — original aspect ratio preserved, no cropping
+    # Step 3: Frame for listing — full photo fit-inside a 4:5 canvas with a
+    # blurred-photo fill (no cropping of the subject). Followed by a gentle
+    # sharpen. The hero featured card uses its own crop pipeline; this
+    # framing applies only to *_listing.jpg outputs.
     listing_img = _resize_for_listing(img.copy())
+    listing_img = _frame_for_listing(listing_img)
     listing_img = _sharpen(listing_img)
 
     out_path = os.path.join(dirs["listing"], f"{base}_listing.jpg")
