@@ -1929,7 +1929,7 @@ async def build_listing_verify_view(request: Request, session_id: str):
     dealer_contact = (_dp_pref.get("contactName")  or "").strip()
     dealer_phone   = (_dp_pref.get("phone")        or "").strip()
     _accent_pref = (_dp_pref.get("accentColor") or "yellow").strip().lower()
-    if _accent_pref not in ("yellow", "red", "blue", "green", "orange"):
+    if _accent_pref not in ("yellow", "red", "blue", "green", "orange", "black"):
         _accent_pref = "yellow"
     dealer_accent_color = _accent_pref
     _logo_disk_path = os.path.join(session_dir, "_uploads", "dealer_logo.png")
@@ -2226,8 +2226,17 @@ async def build_listing_verify_featured_previews(
                if k not in ("dealer_profile", "featured_template")}
     try:
         dealer_input = DealerInput.model_validate(di_core)
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"DealerInput rebuild failed: {exc}")
+    except Exception:
+        bare = {
+            "year":  di_core.get("year"),
+            "make":  di_core.get("make"),
+            "model": di_core.get("model"),
+            "hours": di_core.get("hours") or 0,
+        }
+        try:
+            dealer_input = DealerInput.model_validate(bare)
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"DealerInput rebuild failed: {exc}")
 
     resolved_machine, resolved_specs, full_record, _parsed = _verify_resolve_specs(dealer_input)
     if not full_record:
@@ -2365,7 +2374,7 @@ async def build_listing_verify_dealer_save(
         profile["phone"] = (contact_phone or "").strip()
     if accent_color is not None:
         _ac = (accent_color or "").strip().lower()
-        if _ac in ("yellow", "red", "blue", "green", "orange"):
+        if _ac in ("yellow", "red", "blue", "green", "orange", "black"):
             profile["accentColor"] = _ac
     di_dict["dealer_profile"] = profile
 

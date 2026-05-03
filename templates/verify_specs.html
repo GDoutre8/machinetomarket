@@ -2136,6 +2136,7 @@ window.MTM_VERIFY_PRESEL = {
       if(!r.ok){
         var detail = 'Preview render failed (' + r.status + ')';
         try { var j = await r.json(); detail = j.detail || detail; } catch(_){}
+        applyPreviews({}, TEMPLATES.map(function(t){ return t.key; }));
         setStatus(detail, true);
         return;
       }
@@ -2144,6 +2145,7 @@ window.MTM_VERIFY_PRESEL = {
       var ok = Object.keys(data.previews || {}).length;
       setStatus(ok + ' of 4 previews ready · click to select');
     } catch(err){
+      applyPreviews({}, TEMPLATES.map(function(t){ return t.key; }));
       setStatus('Network error: ' + err.message, true);
     } finally {
       inflight = false;
@@ -2197,7 +2199,7 @@ window.MTM_VERIFY_PRESEL = {
   }
 
   // ── Accent color picker ──────────────────────────────────────────────
-  var ACCENT_VALID = ['yellow','red','blue','green','orange'];
+  var ACCENT_VALID = ['yellow','red','blue','green','orange','black'];
   var currentAccent = ({{ (dealer_accent_color or 'yellow') | tojson }} || 'yellow');
   if (ACCENT_VALID.indexOf(currentAccent) < 0) currentAccent = 'yellow';
 
