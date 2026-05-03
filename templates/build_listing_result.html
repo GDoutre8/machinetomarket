@@ -293,6 +293,7 @@
       color: #6b6b66;
     }
     .result-hero-preview-frame {
+      display: block;
       width: 100%;
       max-width: 360px;
       aspect-ratio: 4 / 5;
@@ -300,13 +301,27 @@
       border-radius: 6px;
       overflow: hidden;
       box-shadow: 0 12px 28px rgba(0,0,0,.18);
+      cursor: zoom-in;
+      transition: box-shadow .14s, transform .14s;
     }
+    .result-hero-preview-frame:hover { box-shadow: 0 14px 32px rgba(0,0,0,.26); transform: translateY(-1px); }
+    .result-hero-preview-frame:focus-visible { outline: 2px solid var(--mtm-yellow, #eab308); outline-offset: 3px; }
     .result-hero-preview-frame img {
       display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+    .result-hero-preview-fullsize {
+      font-family: var(--body);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: #6b6b66;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color .12s, border-color .12s;
+    }
+    .result-hero-preview-fullsize:hover { color: var(--mtm-black, #0d0d0c); border-bottom-color: currentColor; }
     @media (max-width: 600px) {
       .result-hero-preview { margin-bottom: 14px; gap: 8px; }
       .result-hero-preview-frame { max-width: 200px; }
@@ -983,9 +998,10 @@
     {% if card_png_url %}
     <section class="result-hero-preview" aria-label="Featured listing image preview">
       <span class="result-hero-preview-label">Featured Listing Image</span>
-      <div class="result-hero-preview-frame">
+      <a class="result-hero-preview-frame" href="{{ card_png_url }}" target="_blank" rel="noopener" aria-label="View full-size featured listing image in a new tab">
         <img src="{{ card_png_url }}" alt="Featured Listing Image - {{ machine_label }}" />
-      </div>
+      </a>
+      <a class="result-hero-preview-fullsize" href="{{ card_png_url }}" target="_blank" rel="noopener">View full-size image &rsaquo;</a>
     </section>
     {% endif %}
 
