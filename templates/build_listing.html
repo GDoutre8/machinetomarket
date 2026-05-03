@@ -124,6 +124,9 @@
     .intake-foot .foot-link:hover{border-color:var(--mtm-yellow);color:var(--mtm-yellow)}
 
     /* ── Listing-style selector ───────────────────────────────────────── */
+    .mkt-intake-style{display:flex;flex-direction:column;gap:8px}
+    .mkt-intake-style-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--paper);font-weight:700}
+    .mkt-intake-style-sub{font-size:12.5px;line-height:1.45;color:#9a978c;margin-bottom:4px}
     .style-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:6px}
     @media (max-width:640px){.style-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .style-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--line-strong);background:#fff;border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;text-align:left;font-family:var(--body);transition:border-color .14s,box-shadow .14s,background .14s}
@@ -657,6 +660,45 @@
                   </div>
                 </div>
 
+                <div class="mkt-intake-style">
+                  <div class="mkt-intake-style-label">LISTING STYLE</div>
+                  <div class="mkt-intake-style-sub">Choose the featured card layout for your listing</div>
+                  <div class="style-grid" id="style-grid" role="radiogroup" aria-label="Listing style">
+                    <button type="button" class="style-card selected" data-style="price_tag" role="radio" aria-checked="true">
+                      <span class="style-check">&#10003;</span>
+                      <span class="style-name">Price Tag</span>
+                      <span class="style-desc">Classic price-forward card</span>
+                    </button>
+                    <button type="button" class="style-card" data-style="wide_shot" role="radio" aria-checked="false">
+                      <span class="style-check">&#10003;</span>
+                      <span class="style-name">Wide Shot</span>
+                      <span class="style-desc">Cinematic full-width hero</span>
+                    </button>
+                    <button type="button" class="style-card" data-style="auction_ticket" role="radio" aria-checked="false">
+                      <span class="style-check">&#10003;</span>
+                      <span class="style-name">Auction Ticket</span>
+                      <span class="style-desc">Stamped lot-style ticket</span>
+                    </button>
+                    <button type="button" class="style-card" data-style="badge_only" role="radio" aria-checked="false">
+                      <span class="style-check">&#10003;</span>
+                      <span class="style-name">Badge Only</span>
+                      <span class="style-desc">Minimal dealer badge</span>
+                    </button>
+                  </div>
+                  <input type="hidden" id="featured_template" name="featured_template" value="price_tag">
+                  <div class="tpl-carousel" id="tpl-carousel" data-template="price_tag" data-index="0">
+                    <div class="tpl-carousel-stage">
+                      <img class="tpl-carousel-img" id="tpl-carousel-img"
+                           src="/static/assets/previews/price_tag/example_01.png"
+                           alt="Price Tag preview, example 1 of 3"
+                           draggable="false">
+                      <button type="button" class="tpl-arrow tpl-arrow-prev" id="tpl-arrow-prev" aria-label="Previous preview">&lsaquo;</button>
+                      <button type="button" class="tpl-arrow tpl-arrow-next" id="tpl-arrow-next" aria-label="Next preview">&rsaquo;</button>
+                    </div>
+                    <div class="tpl-carousel-counter" id="tpl-carousel-counter" aria-live="polite">1 / 3</div>
+                  </div>
+                </div>
+
                 <button type="button" id="identify-btn" class="mkt-build-btn btn-generate">BUILD MY LISTING <span class="arrow">&rsaquo;</span></button>
 
                 <span class="status-msg hidden" id="step1-status"></span>
@@ -699,44 +741,6 @@
         <div class="form-card"><div class="step-header-row" style="margin-bottom:14px;"><span class="step-badge">2</span><div><div class="step-title">Features &amp; Options</div><div class="step-sub" id="features-sub">Check all that apply</div></div></div><div class="toggles-grid" id="features-container"></div></div>
         <div class="form-card"><div class="section-label">Hours &amp; Condition</div><div class="field-row" style="grid-template-columns:repeat(3,minmax(0,1fr));"><div class="field"><label for="hours">Hours <span class="req">*</span></label><input type="number" id="hours" name="hours" placeholder="1450" min="0"></div><div class="field"><label for="condition_field" id="condition-pct-label">Track Condition</label><select id="condition_field" name="condition_field"><option value="">-- Select --</option><option value="New">New</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="Worn">Worn</option></select></div><div class="field"><label for="condition_grade">Grade</label><select id="condition_grade" name="condition_grade"><option value="">-- Select --</option><option value="Like New">Like New</option><option value="Well Maintained">Well Maintained</option><option value="Ready to Work">Ready to Work</option><option value="Needs Work">Needs Work</option></select></div><div class="field"><label for="serial_number">Serial Number</label><input type="text" id="serial_number" name="serial_number" placeholder="CAT0259D3XXXXX"></div><div class="field"><label for="stock_number">Stock Number</label><input type="text" id="stock_number" name="stock_number" placeholder="STK-1042"></div><div class="field"><label for="track_percent_remaining">Track % Remaining <span style="font-weight:400;color:var(--dim);font-size:11px;">0–100</span></label><input type="number" id="track_percent_remaining" name="track_percent_remaining" placeholder="85" min="0" max="100"></div></div></div>
         <div class="form-card"><div class="section-label">Attachments</div><div class="field-row" style="grid-template-columns:160px 1fr;"><div class="field"><label for="bucket_size">Bucket Size <span style="font-weight:400;color:var(--dim);font-size:11px;">inches</span></label><input type="number" id="bucket_size" name="bucket_size" placeholder="84" min="0"></div><div class="field"><label for="attachments_included">Attachments Included</label><input type="text" id="attachments_included" name="attachments_included" placeholder="Bucket, pallet forks, grapple"></div></div></div>
-        <div class="form-card">
-          <div class="section-label">Listing Style</div>
-          <div class="step-sub" style="margin-bottom:10px;">Choose the featured card layout for your listing</div>
-          <div class="style-grid" id="style-grid" role="radiogroup" aria-label="Listing style">
-            <button type="button" class="style-card selected" data-style="price_tag" role="radio" aria-checked="true">
-              <span class="style-check">&#10003;</span>
-              <span class="style-name">Price Tag</span>
-              <span class="style-desc">Classic price-forward card</span>
-            </button>
-            <button type="button" class="style-card" data-style="wide_shot" role="radio" aria-checked="false">
-              <span class="style-check">&#10003;</span>
-              <span class="style-name">Wide Shot</span>
-              <span class="style-desc">Cinematic full-width hero</span>
-            </button>
-            <button type="button" class="style-card" data-style="auction_ticket" role="radio" aria-checked="false">
-              <span class="style-check">&#10003;</span>
-              <span class="style-name">Auction Ticket</span>
-              <span class="style-desc">Stamped lot-style ticket</span>
-            </button>
-            <button type="button" class="style-card" data-style="badge_only" role="radio" aria-checked="false">
-              <span class="style-check">&#10003;</span>
-              <span class="style-name">Badge Only</span>
-              <span class="style-desc">Minimal dealer badge</span>
-            </button>
-          </div>
-          <input type="hidden" id="featured_template" name="featured_template" value="price_tag">
-          <div class="tpl-carousel" id="tpl-carousel" data-template="price_tag" data-index="0">
-            <div class="tpl-carousel-stage">
-              <img class="tpl-carousel-img" id="tpl-carousel-img"
-                   src="/static/assets/previews/price_tag/example_01.png"
-                   alt="Price Tag preview, example 1 of 3"
-                   draggable="false">
-              <button type="button" class="tpl-arrow tpl-arrow-prev" id="tpl-arrow-prev" aria-label="Previous preview">&lsaquo;</button>
-              <button type="button" class="tpl-arrow tpl-arrow-next" id="tpl-arrow-next" aria-label="Next preview">&rsaquo;</button>
-            </div>
-            <div class="tpl-carousel-counter" id="tpl-carousel-counter" aria-live="polite">1 / 3</div>
-          </div>
-        </div>
         <div class="form-card">
           <div class="section-label">Photos</div>
           <div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()">
