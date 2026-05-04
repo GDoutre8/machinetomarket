@@ -62,7 +62,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB Loadall 509-42 OEM spec sheet — jcb.com product page",
+        "JCB Loadall 509-42 OEM spec sheet \u2014 jcb.com product page",
         "LECTURA Specs (11.5t = 25,353 lb confirmed)",
         "AllMachines",
         "MachineryTrader listings (9,000 lb capacity confirmed)",
@@ -74,7 +74,7 @@
           "ref": "All JCB LOADALL telehandlers are diesel",
           "patch": "pass2_b1b2 2026-03-27"
         },
-        "JCB LOADALL | 506-36 / 509-42 / 510-56 / 512-56 — sunbeltrentals.com (JCB-authored OEM spec sheet)"
+        "JCB LOADALL | 506-36 / 509-42 / 510-56 / 512-56 \u2014 sunbeltrentals.com (JCB-authored OEM spec sheet)"
       ],
       "notes": [
         "engine_hp SOFT: JCB EcoMAX available in 74hp (55kW) and 109hp (81kW) configs. 109hp is primary NA-market config. Registry pins to 109hp.",
@@ -138,7 +138,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "Genie OEM spec sheet — genielift.com GTH-636 product page",
+        "Genie OEM spec sheet \u2014 genielift.com GTH-636 product page",
         "VeriTread (16,975 lb confirmed)",
         "LECTURA Specs (7.7t = 16,975 lb confirmed)",
         "MAK Equipment",
@@ -212,7 +212,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG/SkyTrak OEM spec sheet — macallisterrentals.com/files/SkyTrak-10042-Spec-Sheet.pdf",
+        "JLG/SkyTrak OEM spec sheet \u2014 macallisterrentals.com/files/SkyTrak-10042-Spec-Sheet.pdf",
         "MJ Equipment skytrak.com/EquipmentModels/10042",
         "VeriTread",
         "Carleton Equipment",
@@ -225,9 +225,9 @@
       "notes": [
         "PLATFORM: 10042 shares core drivetrain (Cummins QSF3.8 hydrostatic) with 8042 and 10054. Shorter boom distinguishes from 10054.",
         "engine_hp SOFT: 74hp standard (DEF-free Cummins QSF3.8); 110hp available on 10042L variant. Registry pins to 74hp standard.",
-        "operating_weight SOFT: Range 27,000–27,200 lb across model years. Registry uses 27,150 lb midpoint; pending OEM PDF confirmation.",
+        "operating_weight SOFT: Range 27,000\u201327,200 lb across model years. Registry uses 27,150 lb midpoint; pending OEM PDF confirmation.",
         "fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets).",
-        "JLG/SkyTrak OEM spec sheet, Part No. 3132401, R021507. Generation: T4F_powershift. REGISTRY CORRECTIONS: prior entry had hydrostatic/74hp — both wrong for this generation. OEM supersedes."
+        "JLG/SkyTrak OEM spec sheet, Part No. 3132401, R021507. Generation: T4F_powershift. REGISTRY CORRECTIONS: prior entry had hydrostatic/74hp \u2014 both wrong for this generation. OEM supersedes."
       ]
     },
     {
@@ -289,7 +289,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG G5-18A OEM spec sheet — jlg.com product page",
+        "JLG G5-18A OEM spec sheet \u2014 jlg.com product page",
         "LECTURA Specs (3.17t = 6,988 lb confirmed)",
         "AllMachines",
         "MachineryTrader listings",
@@ -306,7 +306,7 @@
       "notes": [
         "COMPACT CLASS: G5-18A is a compact/mini telehandler. Operating weight, fuel capacity, engine, and travel speed are not comparable to full-size registry entries.",
         "Engine: Kubota D1105 diesel 24.8hp.",
-        "steering_modes NOTE: 2-mode (4-wheel + crab) only — no front-wheel-only mode.",
+        "steering_modes NOTE: 2-mode (4-wheel + crab) only \u2014 no front-wheel-only mode.",
         "fuel_capacity 6.6 gal (25L) confirmed from OEM spec sheet.",
         "travel_speed 6.2 mph confirmed from OEM spec sheet.",
         "OEM lock 2026-04-10 (_apply_jlg_oem_lock_v4_1): core perf+powertrain fields updated from OEM spec sheet. JLG OEM spec sheet Part No. 3132221 Form SS-G5-18A R021805. Rated Cap=5,500 lb. Max Lift=18 ft 4 in=18.33 ft. Cap at Max Height=4,400 lb. Max Forward Reach=10 ft 11 in=10.92 ft. Engine: Deutz TD 2.9 L4 74hp. Hydrostatic. OW=11,000 lb. Superseded by JLG 519 in 2025."
@@ -366,7 +366,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "Gehl RS5-19 OEM spec sheet — gehl.com product page",
+        "Gehl RS5-19 OEM spec sheet \u2014 gehl.com product page",
         "LECTURA Specs (5.08t = 11,200 lb confirmed)",
         "AllMachines",
         "MachineryTrader listings",
@@ -382,9 +382,9 @@
       "notes": [
         "COMPACT CLASS: RS5-19 is a compact telehandler. Specs not comparable to full-size registry entries.",
         "Engine: Deutz D2011 L03i diesel 50hp.",
-        "steering_modes NOTE: Constant 4WS — all 4 wheels always steer simultaneously. Same architecture as Genie GTH-5519 in existing registry.",
+        "steering_modes NOTE: Constant 4WS \u2014 all 4 wheels always steer simultaneously. Same architecture as Genie GTH-5519 in existing registry.",
         "fuel_capacity 15.9 gal (60L) confirmed from OEM spec sheet.",
-        "PLATFORM: Manitou-sourced compact platform — related to Manitou MLT 526 series."
+        "PLATFORM: Manitou-sourced compact platform \u2014 related to Manitou MLT 526 series."
       ]
     },
     {
@@ -441,7 +441,7 @@
       },
       "spec_confidence": "medium",
       "source_refs": [
-        "CAT TL642 OEM spec sheet — earlier C-series generation (macallisterrentals.com)",
+        "CAT TL642 OEM spec sheet \u2014 earlier C-series generation (macallisterrentals.com)",
         "VeriTread",
         "LECTURA Specs",
         "MachineryTrader listings (6,000 lb confirmed)",
@@ -461,7 +461,7 @@
       "notes": [
         "GENERATION: TL642 is the C-series predecessor to the TL642D. This record covers C-series (non-D) only.",
         "engine_hp SOFT: CAT C-series 3054C or 3054E; 97hp most commonly documented but varies by production year.",
-        "operating_weight SOFT: LECTURA and VeriTread show range of 19,800–21,200 lb across C-series years. Registry uses 21,000 lb midpoint.",
+        "operating_weight SOFT: LECTURA and VeriTread show range of 19,800\u201321,200 lb across C-series years. Registry uses 21,000 lb midpoint.",
         "fuel_capacity SOFT: ~28 gal documented across multiple sources; confirm from OEM PDF for production year.",
         "TL642D (D-series) is a separate entry in this registry."
       ]
@@ -520,7 +520,7 @@
       },
       "spec_confidence": "medium",
       "source_refs": [
-        "CAT TL943 OEM spec sheet — macallisterrentals.com",
+        "CAT TL943 OEM spec sheet \u2014 macallisterrentals.com",
         "VeriTread",
         "LECTURA Specs",
         "MachineryTrader listings (9,000 lb confirmed)",
@@ -540,7 +540,7 @@
       "notes": [
         "PLATFORM: TL943 shares C-series CAT chassis architecture with TL642; 9,000 lb capacity vs 6,000 lb. Same engine family.",
         "engine_hp SOFT: CAT C-series 3054C/3054E; 97hp most commonly documented. Treat as generation_dependent until OEM PDF confirms.",
-        "operating_weight SOFT: Sources show range of 23,500–24,600 lb across years. Registry uses 24,200 lb midpoint.",
+        "operating_weight SOFT: Sources show range of 23,500\u201324,600 lb across years. Registry uses 24,200 lb midpoint.",
         "fuel_capacity SOFT: 28 gal documented across multiple sources; pending OEM PDF confirmation.",
         "max_lift_height NOTE: Some sources state 42.9 ft; registry uses 43.0 ft pending OEM PDF exact."
       ]
@@ -604,7 +604,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG G10-55A OEM spec sheet — jlg.com product page",
+        "JLG G10-55A OEM spec sheet \u2014 jlg.com product page",
         "LECTURA Specs (12.97t = 28,600 lb confirmed)",
         "AllMachines",
         "MachineryTrader listings",
@@ -690,7 +690,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG G12-55A OEM spec sheet — jlg.com product page",
+        "JLG G12-55A OEM spec sheet \u2014 jlg.com product page",
         "LECTURA Specs",
         "AllMachines",
         "MachineryTrader listings",
@@ -770,7 +770,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "Gehl RS10-55 OEM spec sheet — gehl.com product page",
+        "Gehl RS10-55 OEM spec sheet \u2014 gehl.com product page",
         "LECTURA Specs (14.0t = 30,865 lb confirmed)",
         "AllMachines",
         "MachineryTrader listings",
@@ -784,11 +784,11 @@
         }
       ],
       "notes": [
-        "PLATFORM: Manitou-sourced platform — related to Manitou MLT 1035/1040 series.",
+        "PLATFORM: Manitou-sourced platform \u2014 related to Manitou MLT 1035/1040 series.",
         "Engine: Deutz TCD 3.6L T4F 116hp.",
         "operating_weight 30,865 lb (14.0t) confirmed from LECTURA.",
         "fuel_capacity SOFT: 35 gal estimated from Manitou MLT platform; confirm from OEM PDF.",
-        "max_lift_height NOTE: Sources vary 54.8–55.1 ft; registry uses 55.0 ft pending OEM PDF exact."
+        "max_lift_height NOTE: Sources vary 54.8\u201355.1 ft; registry uses 55.0 ft pending OEM PDF exact."
       ]
     },
     {
@@ -850,7 +850,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG G6-42A OEM spec sheet — jlg.com product page",
+        "JLG G6-42A OEM spec sheet \u2014 jlg.com product page",
         "LECTURA Specs (8.94t = 19,710 lb confirmed)",
         "AllMachines",
         "MachineryTrader listings",
@@ -935,7 +935,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG G9-43A OEM spec sheet — jlg.com product page",
+        "JLG G9-43A OEM spec sheet \u2014 jlg.com product page",
         "LECTURA Specs",
         "AllMachines",
         "MachineryTrader listings (9,000 lb confirmed)",
@@ -955,9 +955,9 @@
       ],
       "notes": [
         "Engine: Cummins QSF3.8 100hp T4F.",
-        "operating_weight SOFT: LECTURA and MachineryTrader show range of 24,000–25,000 lb. Registry uses 24,500 lb midpoint; confirm from OEM PDF.",
+        "operating_weight SOFT: LECTURA and MachineryTrader show range of 24,000\u201325,000 lb. Registry uses 24,500 lb midpoint; confirm from OEM PDF.",
         "fuel_capacity SOFT: 35 gal estimated from JLG G-Series platform; confirm from OEM spec sheet.",
-        "PLATFORM NOTE: G9-43A uses powershift — differs from G6-42A (hydrostatic) within G-Series.",
+        "PLATFORM NOTE: G9-43A uses powershift \u2014 differs from G6-42A (hydrostatic) within G-Series.",
         "OEM lock 2026-04-10 (_apply_jlg_oem_lock_v4_1): core perf+powertrain fields updated from OEM spec sheet. JLG OEM brochure Part No. 3131573 Form JLG-TEL-BRO-1108. Multi-model spec table G9-43A column. Rated Cap=9,000 lb @ 24in LC. Max Lift=43 ft (13.11 m)=43.11 ft. Cap at Max Height=7,000 lb. Max Forward Reach=30 ft 6 in=30.5 ft. Engine: John Deere 4045T 99hp @ 2,500rpm. Powershift. OW=25,907 lb (OEM-labeled approximate)."
       ]
     },
@@ -1014,7 +1014,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JLG/SkyTrak OEM spec sheet — macallisterrentals.com/files/SkyTrak-12054-Spec-Sheet.pdf",
+        "JLG/SkyTrak OEM spec sheet \u2014 macallisterrentals.com/files/SkyTrak-12054-Spec-Sheet.pdf",
         "MJ Equipment skytrak.com/EquipmentModels/12054",
         "VeriTread (35,300 lb confirmed)",
         "Carleton Equipment",
@@ -1030,7 +1030,7 @@
         "operating_weight 35,300 lb confirmed from VeriTread and MJ Equipment.",
         "fuel_capacity 44 gal confirmed from OEM spec sheet.",
         "max_lift_height NOTE: OEM spec sheet confirms 54.1 ft; marketed as 54 ft by most dealers. Registry uses OEM exact.",
-        "JLG/SkyTrak OEM spec sheet, Part No. 3132252, R0120. Generation: T4F_powershift. REGISTRY CORRECTION: prior OW = 35,300 lb — incorrect. OEM value is 30,357 lb."
+        "JLG/SkyTrak OEM spec sheet, Part No. 3132252, R0120. Generation: T4F_powershift. REGISTRY CORRECTION: prior OW = 35,300 lb \u2014 incorrect. OEM value is 30,357 lb."
       ]
     },
     {
@@ -1087,7 +1087,7 @@
       },
       "spec_confidence": "medium",
       "source_refs": [
-        "Gehl DL12-55 OEM spec sheet — gehl.com product page",
+        "Gehl DL12-55 OEM spec sheet \u2014 gehl.com product page",
         "LECTURA Specs",
         "AllMachines",
         "MachineryTrader listings (12,000 lb confirmed)",
@@ -1105,9 +1105,9 @@
         }
       ],
       "notes": [
-        "PLATFORM: Manitou-sourced platform — related to Manitou MLT 1240 series.",
+        "PLATFORM: Manitou-sourced platform \u2014 related to Manitou MLT 1240 series.",
         "Engine: Deutz TCD 3.6L T4F 116hp (same engine as Gehl RS10-55).",
-        "operating_weight SOFT: Sources indicate 34,000–35,000 lb range. Registry uses 34,500 lb midpoint; confirm from OEM PDF.",
+        "operating_weight SOFT: Sources indicate 34,000\u201335,000 lb range. Registry uses 34,500 lb midpoint; confirm from OEM PDF.",
         "fuel_capacity SOFT: 37 gal estimated from Manitou MLT 1240 platform; confirm from OEM spec sheet."
       ]
     },
@@ -1165,7 +1165,7 @@
       },
       "spec_confidence": "medium",
       "source_refs": [
-        "CAT D-Series OEM spec sheet PDF — petersoncat.com/sites/cat/files/products/documents/1502812694-32106.pdf (same source as TL1055D/TL1255D)",
+        "CAT D-Series OEM spec sheet PDF \u2014 petersoncat.com/sites/cat/files/products/documents/1502812694-32106.pdf (same source as TL1055D/TL1255D)",
         "MachineryTrader D-series listings",
         "LECTURA Specs",
         "VeriTread",
@@ -1243,9 +1243,9 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "SkyTrak shared platform — fuel_capacity 35 gal confirmed on 10054 OEM sheet per skytrak_10042 registry notes",
+        "SkyTrak shared platform \u2014 fuel_capacity 35 gal confirmed on 10054 OEM sheet per skytrak_10042 registry notes",
         "SUPERSEDED REF: JLG/SkyTrak drivetrain cross-reference to Cummins QSF3.8 hydrostatic (v2 registry) does not apply to this model. OEM spec sheet Part No. 3132404, R011808 confirms T4F powershift. All hydrostatic source references for skytrak_10054 are superseded as of 2026-04-13.",
-        "MTM Top 50 LOCKED v1 — Category: Telehandlers, Slot 1",
+        "MTM Top 50 LOCKED v1 \u2014 Category: Telehandlers, Slot 1",
         {
           "ref": "SkyTrak 10054 uses Deutz diesel engine",
           "patch": "pass2_b1b2 2026-03-27"
@@ -1253,18 +1253,18 @@
         "JLG OEM SkyTrak 10054 operation/safety manual - Maximum Operating Weight (no attachment) 31,500 lb.",
         "JLG OEM SkyTrak 10054 product page (jlg.com) - Maximum Reach 38 ft 9 in (38.75 ft).",
         "https://www.macallisterrentals.com/files/SkyTrak-10054-Spec-Sheet.pdf",
-        "JLG/SkyTrak OEM spec sheet Part No. 3132404, R011808 — confirms T4F powershift transmission. Supersedes all prior hydrostatic references for this model."
+        "JLG/SkyTrak OEM spec sheet Part No. 3132404, R011808 \u2014 confirms T4F powershift transmission. Supersedes all prior hydrostatic references for this model."
       ],
       "notes": [
         "PLATFORM: 10054 shares core drivetrain (Cummins QSF3.8) with 10042 and 8042. Longer boom distinguishes 10054 from 10042 (42 ft vs 54 ft lift height). NOTE: pre-lock registry entries incorrectly referenced hydrostatic transmission for this model; OEM spec sheet (Part No. 3132404, R011808) confirms T4F powershift. All hydrostatic references in source_refs for this record are superseded.",
-        "lift_capacity_lb: 10,000 lb — confirmed by shared platform and model designation. HIGH.",
-        "max_lift_height_ft: 54 ft — encoded in model number. HIGH. Verify exact figure (may be 54.0 or 54.2 ft) against OEM spec sheet.",
-        "fuel_capacity_gal: 35 gal — explicitly confirmed on 10054 OEM sheet per skytrak_10042 registry notes: 'fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)'. HIGH.",
+        "lift_capacity_lb: 10,000 lb \u2014 confirmed by shared platform and model designation. HIGH.",
+        "max_lift_height_ft: 54 ft \u2014 encoded in model number. HIGH. Verify exact figure (may be 54.0 or 54.2 ft) against OEM spec sheet.",
+        "fuel_capacity_gal: 35 gal \u2014 explicitly confirmed on 10054 OEM sheet per skytrak_10042 registry notes: 'fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)'. HIGH.",
         "engine_hp SOFT: 74 hp (DEF-free Cummins QSF3.8) is standard NA-market config, same as 10042. 10054L variant available with 110 hp. Registry pins to 74 hp standard; package_dependent.",
         "max_forward_reach_ft null: 10054 has longer boom than 10042 (28.5 ft); estimated ~37 ft based on geometry but not confirmed from OEM sheet. Set null / manual_review.",
         "operating_weight_lb null: Expected higher than 10042 (27,150 lb) due to longer boom. Not confirmed from OEM sheet. Set null / manual_review.",
-        "travel_speed_mph: 19.0 mph consistent with shared SkyTrak platform. MEDIUM — confirm against OEM sheet.",
-        "REGISTRY ORIGIN: New record — 10054 was previously mapped to skytrak_10042. Distinct machine: longer boom, same capacity, different geometry.",
+        "travel_speed_mph: 19.0 mph consistent with shared SkyTrak platform. MEDIUM \u2014 confirm against OEM sheet.",
+        "REGISTRY ORIGIN: New record \u2014 10054 was previously mapped to skytrak_10042. Distinct machine: longer boom, same capacity, different geometry.",
         "operating_weight_lb = 31,500 lb. HIGH/locked - JLG OEM SkyTrak 10054 operation/safety manual lists maximum operating weight (no attachment) as 31,500 lb.",
         "max_forward_reach_ft = 38.75 ft. HIGH/locked - JLG OEM SkyTrak 10054 product page lists maximum reach of 38 ft 9 in. Lift height (54.0 ft class) and forward reach are distinct specifications and are stored separately.",
         "JLG/SkyTrak OEM spec sheet, Part No. 3132404, R011808. Generation: T4F_powershift. REGISTRY CORRECTIONS: prior entry had hydrostatic (wrong), 74hp (wrong), 31,500lb OW (wrong). OEM supersedes. transmission_type = powershift is OEM-confirmed and locked.",
@@ -1324,9 +1324,9 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "SkyTrak shared platform — fuel_capacity 35 gal confirmed on 8042 OEM sheet per skytrak_10042 registry notes",
+        "SkyTrak shared platform \u2014 fuel_capacity 35 gal confirmed on 8042 OEM sheet per skytrak_10042 registry notes",
         "JLG/SkyTrak drivetrain cross-reference: Cummins QSF3.8 hydrostatic shared with 10042 and 10054 per mtm_telehandler_registry_v2.json",
-        "MTM Top 50 LOCKED v1 — Category: Telehandlers, Slot 2",
+        "MTM Top 50 LOCKED v1 \u2014 Category: Telehandlers, Slot 2",
         {
           "ref": "SkyTrak 8042 uses Deutz diesel engine",
           "patch": "pass2_b1b2 2026-03-27"
@@ -1337,13 +1337,13 @@
       ],
       "notes": [
         "PLATFORM: 8042 shares core drivetrain (Cummins QSF3.8, hydrostatic) with 10042 and 10054. Lower lift capacity (8,000 vs 10,000 lb) and different boom geometry distinguish from 10042.",
-        "lift_capacity_lb: 8,000 lb — encoded in model number. HIGH.",
-        "max_lift_height_ft: 42.2 ft — MEDIUM confidence based on model number and platform geometry. Verify exact figure against OEM spec sheet; 10042 is documented at 42.2 ft, 8042 may match.",
-        "fuel_capacity_gal: 35 gal — explicitly confirmed on 8042 OEM sheet per skytrak_10042 registry notes: 'fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)'. HIGH.",
-        "engine_hp SOFT: 74 hp (DEF-free Cummins QSF3.8) is the standard NA config, same as 10042. Package_dependent — confirm variant.",
+        "lift_capacity_lb: 8,000 lb \u2014 encoded in model number. HIGH.",
+        "max_lift_height_ft: 42.2 ft \u2014 MEDIUM confidence based on model number and platform geometry. Verify exact figure against OEM spec sheet; 10042 is documented at 42.2 ft, 8042 may match.",
+        "fuel_capacity_gal: 35 gal \u2014 explicitly confirmed on 8042 OEM sheet per skytrak_10042 registry notes: 'fuel_capacity 35 gal consistent with shared SkyTrak platform (confirmed on 8042 and 10054 from OEM sheets)'. HIGH.",
+        "engine_hp SOFT: 74 hp (DEF-free Cummins QSF3.8) is the standard NA config, same as 10042. Package_dependent \u2014 confirm variant.",
         "max_forward_reach_ft null: Similar to 10042 (~28.5 ft) but must be confirmed from OEM sheet before lock.",
         "operating_weight_lb null: Expected at or below 10042 (27,150 lb) given lower capacity. Not confirmed from OEM sheet.",
-        "REGISTRY ORIGIN: New record — 8042 was previously mapped to skytrak_10042. Distinct machine: lower rated capacity (8,000 vs 10,000 lb), different boom profile.",
+        "REGISTRY ORIGIN: New record \u2014 8042 was previously mapped to skytrak_10042. Distinct machine: lower rated capacity (8,000 vs 10,000 lb), different boom profile.",
         "operating_weight_lb = 21,200 lb. HIGH/locked - JLG OEM SkyTrak 2024 brochure lists approximate operating weight of 21,200 lb for 8042.",
         "max_forward_reach_ft = 29.5 ft. HIGH/locked - JLG OEM SkyTrak 8042 product page lists maximum reach of 29 ft 6 in. Lift height (42.2 ft) and forward reach are distinct specifications and are stored separately.",
         "JLG/SkyTrak OEM spec sheet, Part No. 3132400, R011811. Generation: T4F_powershift. All 9 fields OEM-locked from this document."
@@ -1432,9 +1432,9 @@
       },
       "spec_confidence": "HIGH",
       "source_refs": [
-        "Official Genie GTH-844 Product Specifications — 2023 (Terex Corporation), ANSI A92.20 / CSA B354.6",
+        "Official Genie GTH-844 Product Specifications \u2014 2023 (Terex Corporation), ANSI A92.20 / CSA B354.6",
         "Max lift height 43 ft 10 in = 43.83 ft. Max forward reach 28 ft 2 in = 28.17 ft.",
-        "engine_hp=74 listed as Deutz TCD 3.6 T4F — net vs gross unspecified. MEDIUM / manual_review.",
+        "engine_hp=74 listed as Deutz TCD 3.6 T4F \u2014 net vs gross unspecified. MEDIUM / manual_review.",
         "Hydraulic flow: auxiliary range 2-15 gpm; 15 gpm max standard used.",
         "OW note: varies by options/country. Base figure 22,600 lb from OEM sheet.",
         {
@@ -1446,7 +1446,7 @@
         "Promoted from staging 2026-03-25 with full 2023 Genie spec sheet.",
         "max_lift_height corrected: staging had 44.0 ft (model-name inferred). OEM = 43 ft 10 in = 43.83 ft.",
         "max_forward_reach unlocked: staging was null/LOW. OEM = 28 ft 2 in = 28.17 ft.",
-        "Lift capacity, height, reach are NOT simultaneously achievable at max — load chart governs.",
+        "Lift capacity, height, reach are NOT simultaneously achievable at max \u2014 load chart governs.",
         "engine_hp MEDIUM: Deutz TCD 3.6 T4F lists 74 hp without net/gross breakdown. Pull Deutz spec to confirm."
       ]
     },
@@ -1494,8 +1494,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) — hosted at cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM multi-model spec sheet, ©2024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)",
-        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) — cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM spec sheet, ©2024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)"
+        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) \u2014 hosted at cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM multi-model spec sheet, \u00a92024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)",
+        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) \u2014 cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM spec sheet, \u00a92024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1546,8 +1546,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) — hosted at cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM multi-model spec sheet, ©2024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)",
-        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) — cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM spec sheet, ©2024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)"
+        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) \u2014 hosted at cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM multi-model spec sheet, \u00a92024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)",
+        "JCB LOADALL | COMPACT CONSTRUCTION RANGE (514-40 / 520-40 / 525-60 Hi-Viz) \u2014 cwplant.co.uk/wp-content/uploads/2021/11/JCB-525-60-Brochure.pdf (JCB-authored OEM spec sheet, \u00a92024 JCB Sales, ref 31736 en-GB 03/24 Issue 3)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1598,8 +1598,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 540-140 — hosted at l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-540-140.pdf (JCB-authored OEM spec sheet, ref 9999/5025 3/04)",
-        "JCB LOADALL | 540-140 — smiths-gloucester.co.uk (JCB-authored OEM spec sheet, ref 9999/5025 01/11 Issue 6)"
+        "JCB LOADALL | 540-140 \u2014 hosted at l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-540-140.pdf (JCB-authored OEM spec sheet, ref 9999/5025 3/04)",
+        "JCB LOADALL | 540-140 \u2014 smiths-gloucester.co.uk (JCB-authored OEM spec sheet, ref 9999/5025 01/11 Issue 6)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1650,8 +1650,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL CONSTRUCTION RANGE (531-70/541-70/535-95/533-105/535-125 HiViz/540-140 HiViz/540-170/540-180 HiViz/540-200) — hosted at d1ssu070pg2v9i.cloudfront.net/pex/morrisleslie/2020/09/06121516/JCB-540-140-2023.pdf (JCB-authored OEM multi-model spec sheet, ©2021 JCB Sales)",
-        "JCB LOADALL CONSTRUCTION RANGE (531-70 through 540-200) — d1ssu070pg2v9i.cloudfront.net/pex/morrisleslie/2020/09/06121516/JCB-540-140-2023.pdf (JCB-authored OEM multi-model spec sheet, ©2021 JCB Sales)"
+        "JCB LOADALL CONSTRUCTION RANGE (531-70/541-70/535-95/533-105/535-125 HiViz/540-140 HiViz/540-170/540-180 HiViz/540-200) \u2014 hosted at d1ssu070pg2v9i.cloudfront.net/pex/morrisleslie/2020/09/06121516/JCB-540-140-2023.pdf (JCB-authored OEM multi-model spec sheet, \u00a92021 JCB Sales)",
+        "JCB LOADALL CONSTRUCTION RANGE (531-70 through 540-200) \u2014 d1ssu070pg2v9i.cloudfront.net/pex/morrisleslie/2020/09/06121516/JCB-540-140-2023.pdf (JCB-authored OEM multi-model spec sheet, \u00a92021 JCB Sales)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1702,8 +1702,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL CONSTRUCTION RANGE (531-70/541-70/535-95/...) — hosted at d1ssu070pg2v9i.cloudfront.net/pex/morrisleslie/2020/09/06121516/JCB-540-140-2023.pdf (JCB-authored OEM multi-model spec sheet, ©2021 JCB Sales); also confirmed in JCB LOADALL | 541-70 at brookshire.com.au (ref 9999/4866 7/06 Issue 4)",
-        "JCB LOADALL | 541-70 — brookshire.com.au/BrooksHire/media/Media/Spec%20Sheets/JCB-TELEHANDLER-541-70CS.pdf (JCB-authored OEM spec sheet, ref 9999/4866 7/06 Issue 4)"
+        "JCB LOADALL CONSTRUCTION RANGE (531-70/541-70/535-95/...) \u2014 hosted at d1ssu070pg2v9i.cloudfront.net/pex/morrisleslie/2020/09/06121516/JCB-540-140-2023.pdf (JCB-authored OEM multi-model spec sheet, \u00a92021 JCB Sales); also confirmed in JCB LOADALL | 541-70 at brookshire.com.au (ref 9999/4866 7/06 Issue 4)",
+        "JCB LOADALL | 541-70 \u2014 brookshire.com.au/BrooksHire/media/Media/Spec%20Sheets/JCB-TELEHANDLER-541-70CS.pdf (JCB-authored OEM spec sheet, ref 9999/4866 7/06 Issue 4)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1754,8 +1754,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 535-125 — hosted at l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-535-125.pdf (JCB-authored OEM spec sheet, ref 9999/5024 9/06 Issue 3)",
-        "JCB LOADALL | 535-125 — l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-535-125.pdf (JCB-authored OEM spec sheet, ref 9999/5024 9/06 Issue 3)"
+        "JCB LOADALL | 535-125 \u2014 hosted at l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-535-125.pdf (JCB-authored OEM spec sheet, ref 9999/5024 9/06 Issue 3)",
+        "JCB LOADALL | 535-125 \u2014 l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-535-125.pdf (JCB-authored OEM spec sheet, ref 9999/5024 9/06 Issue 3)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1806,8 +1806,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 535-140 — hosted at kphplanthire.co.uk/wp-content/uploads/2013/02/jcb-14mtr-telehandler.pdf (JCB-authored OEM spec sheet, ref 9999/5012 7/04 Issue 2)",
-        "JCB LOADALL | 535-140 — kphplanthire.co.uk/wp-content/uploads/2013/02/jcb-14mtr-telehandler.pdf (JCB-authored OEM spec sheet, ref 9999/5012 7/04 Issue 2)"
+        "JCB LOADALL | 535-140 \u2014 hosted at kphplanthire.co.uk/wp-content/uploads/2013/02/jcb-14mtr-telehandler.pdf (JCB-authored OEM spec sheet, ref 9999/5012 7/04 Issue 2)",
+        "JCB LOADALL | 535-140 \u2014 kphplanthire.co.uk/wp-content/uploads/2013/02/jcb-14mtr-telehandler.pdf (JCB-authored OEM spec sheet, ref 9999/5012 7/04 Issue 2)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1858,8 +1858,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "SPECIFICATION LOADALL 505-20 TOOL CARRIER — hosted at usaerials.com/wp-content/uploads/2019/03/us-aerials-equipment-rentals-jcb-505-20-specs.pdf (JCB-authored OEM spec sheet)",
-        "SPECIFICATION LOADALL 505-20 TOOL CARRIER — usaerials.com/wp-content/uploads/2019/03/us-aerials-equipment-rentals-jcb-505-20-specs.pdf (JCB-authored OEM spec sheet)"
+        "SPECIFICATION LOADALL 505-20 TOOL CARRIER \u2014 hosted at usaerials.com/wp-content/uploads/2019/03/us-aerials-equipment-rentals-jcb-505-20-specs.pdf (JCB-authored OEM spec sheet)",
+        "SPECIFICATION LOADALL 505-20 TOOL CARRIER \u2014 usaerials.com/wp-content/uploads/2019/03/us-aerials-equipment-rentals-jcb-505-20-specs.pdf (JCB-authored OEM spec sheet)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1910,8 +1910,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL - Tier 4i | 506-36 / 507-42 / 509-42 / 510-56 / 512-56 / 514-56 — hosted at sunbeltrentals.com/content/dam/.../JCB%2050742%20Spec%20Sheet.pdf (JCB-authored OEM multi-model spec sheet)",
-        "JCB LOADALL | 506-36 / 509-42 / 510-56 / 512-56 — sunbeltrentals.com Sunbelt OEM multi-model spec sheet (JCB-authored)"
+        "JCB LOADALL - Tier 4i | 506-36 / 507-42 / 509-42 / 510-56 / 512-56 / 514-56 \u2014 hosted at sunbeltrentals.com/content/dam/.../JCB%2050742%20Spec%20Sheet.pdf (JCB-authored OEM multi-model spec sheet)",
+        "JCB LOADALL | 506-36 / 509-42 / 510-56 / 512-56 \u2014 sunbeltrentals.com Sunbelt OEM multi-model spec sheet (JCB-authored)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -1962,8 +1962,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 535-95/535-95 SWAY — hosted at kitchingplanthire.co.uk/wp-content/uploads/2018/11/4851-535-95-Sway-Spec-UK-Iss-5.pdf (JCB-authored OEM spec sheet, ref 9999/4851 06/09 Issue 5)",
-        "JCB LOADALL | 535-95/535-95 SWAY — kitchingplanthire.co.uk/wp-content/uploads/2018/11/4851-535-95-Sway-Spec-UK-Iss-5.pdf (JCB-authored OEM spec sheet, ref 9999/4851 06/09 Issue 5)"
+        "JCB LOADALL | 535-95/535-95 SWAY \u2014 hosted at kitchingplanthire.co.uk/wp-content/uploads/2018/11/4851-535-95-Sway-Spec-UK-Iss-5.pdf (JCB-authored OEM spec sheet, ref 9999/4851 06/09 Issue 5)",
+        "JCB LOADALL | 535-95/535-95 SWAY \u2014 kitchingplanthire.co.uk/wp-content/uploads/2018/11/4851-535-95-Sway-Spec-UK-Iss-5.pdf (JCB-authored OEM spec sheet, ref 9999/4851 06/09 Issue 5)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -2014,8 +2014,8 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 531-70 — hosted at l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-531-70.pdf (JCB-authored OEM spec sheet, ref 9999/4952 7/06 Issue 4)",
-        "JCB LOADALL | 531-70 — l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-531-70.pdf (JCB-authored OEM spec sheet, ref 9999/4952 7/06 Issue 4)"
+        "JCB LOADALL | 531-70 \u2014 hosted at l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-531-70.pdf (JCB-authored OEM spec sheet, ref 9999/4952 7/06 Issue 4)",
+        "JCB LOADALL | 531-70 \u2014 l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-531-70.pdf (JCB-authored OEM spec sheet, ref 9999/4952 7/06 Issue 4)"
       ],
       "notes": [
         "Telehandler performance specs extracted from OEM PDF (spec table/load chart). Stabilizer-extended values used where applicable.",
@@ -2058,7 +2058,7 @@
       },
       "spec_confidence": "medium",
       "source_refs": [
-        "JCB LOADALL - Tier 4i | 506-36 / 507-42 / 509-42 / 510-56 / 512-56 / 514-56 — sunbeltrentals.com (JCB-authored OEM multi-model spec sheet)"
+        "JCB LOADALL - Tier 4i | 506-36 / 507-42 / 509-42 / 510-56 / 512-56 / 514-56 \u2014 sunbeltrentals.com (JCB-authored OEM multi-model spec sheet)"
       ],
       "notes": [
         "Powertrain and operating weight specs extracted from OEM PDF spec sheet."
@@ -2097,7 +2097,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 506-36 / 509-42 / 510-56 / 512-56 — sunbeltrentals.com (JCB-authored OEM spec sheet)"
+        "JCB LOADALL | 506-36 / 509-42 / 510-56 / 512-56 \u2014 sunbeltrentals.com (JCB-authored OEM spec sheet)"
       ],
       "notes": [
         "Powertrain and operating weight specs extracted from OEM PDF spec sheet."
@@ -2136,7 +2136,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 512-56 — bd-er.com/wp-content/uploads/2019/01/JCB_512-56.pdf (JCB-authored OEM spec sheet)"
+        "JCB LOADALL | 512-56 \u2014 bd-er.com/wp-content/uploads/2019/01/JCB_512-56.pdf (JCB-authored OEM spec sheet)"
       ],
       "notes": [
         "Powertrain and operating weight specs extracted from OEM PDF spec sheet."
@@ -2175,7 +2175,7 @@
       },
       "spec_confidence": "high",
       "source_refs": [
-        "JCB LOADALL | 540-170 — l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-540-170.pdf (JCB-authored OEM spec sheet, Issue 4, ref 9999/4978 9/06)"
+        "JCB LOADALL | 540-170 \u2014 l-lynch.com/uploads/Product%20Specification%20Sheets/Lynch_Telehandlers-JCB-540-170.pdf (JCB-authored OEM spec sheet, Issue 4, ref 9999/4978 9/06)"
       ],
       "notes": [
         "Powertrain and operating weight specs extracted from OEM PDF spec sheet."
@@ -2225,7 +2225,7 @@
         "https://skytrak.jlg.com/JLG-Skytrak-Telehandler-Brochure.pdf"
       ],
       "notes": [
-        "JLG OEM brochure, Part No. 3132411, R0523_01. Generation: 2023_hydrostatic. All 9 fields from 6034 column. OW originally labeled 'Approximate 14,500 lb' in brochure — stored as numeric point value 14,500 lb. field_behavior updated from package_dependent to locked 2026-04-13: value is a numeric point value and is treated as the authoritative stored figure."
+        "JLG OEM brochure, Part No. 3132411, R0523_01. Generation: 2023_hydrostatic. All 9 fields from 6034 column. OW originally labeled 'Approximate 14,500 lb' in brochure \u2014 stored as numeric point value 14,500 lb. field_behavior updated from package_dependent to locked 2026-04-13: value is a numeric point value and is treated as the authoritative stored figure."
       ]
     },
     {
@@ -2319,7 +2319,7 @@
         "https://www.skytrak.com/Content/files/Brochures/SkyTrak6042SpecSheet.pdf"
       ],
       "notes": [
-        "JLG/SkyTrak OEM spec sheet, Part No. 3132402, R041810. Generation: T4F_powershift. 2023 hydrostatic variant held — requires dedicated spec sheet PDF."
+        "JLG/SkyTrak OEM spec sheet, Part No. 3132402, R041810. Generation: T4F_powershift. 2023 hydrostatic variant held \u2014 requires dedicated spec sheet PDF."
       ]
     },
     {
@@ -2366,7 +2366,7 @@
         "https://www.skytrak.com/Content/files/SkyTrakManuals/SkyTrakTelehandler3013.pdf"
       ],
       "notes": [
-        "JLG/SkyTrak OEM spec sheet, Part No. 3132253, R112002. Generation: single_generation. COMPACT CLASS — not comparable to full-size SkyTrak platform. Steering: 2-wheel rear pivot only."
+        "JLG/SkyTrak OEM spec sheet, Part No. 3132253, R112002. Generation: single_generation. COMPACT CLASS \u2014 not comparable to full-size SkyTrak platform. Steering: 2-wheel rear pivot only."
       ]
     },
     {
@@ -2516,7 +2516,7 @@
         "https://cdn.allcrane.com/sitefinity/docs/default-source/resources/product-guides/742-spec-sheet.pdf"
       ],
       "notes": [
-        "JLG OEM spec sheet Part No. 3132247. Rated Cap=7,000 lb. Max Lift=42 ft. Cap at Max Height=6,000 lb. Max Forward Reach=29 ft 1 in=29.08 ft. Engine: Cummins QSF3.8L T4F 74hp. Powershift 4F/3R. OW=21,476 lb. 110hp engine listed as optional only — not locked."
+        "JLG OEM spec sheet Part No. 3132247. Rated Cap=7,000 lb. Max Lift=42 ft. Cap at Max Height=6,000 lb. Max Forward Reach=29 ft 1 in=29.08 ft. Engine: Cummins QSF3.8L T4F 74hp. Powershift 4F/3R. OW=21,476 lb. 110hp engine listed as optional only \u2014 not locked."
       ]
     },
     {
@@ -3336,7 +3336,7 @@
         "Manitou MT 625 H OEM technical sheet; page 2 specs; page 4 load chart"
       ],
       "notes": [
-        "Aliases: MT625H, MT 625 H. MT 625 H Comfort treated as trim/alias only — not a separate record. Aliases: MT 625 H Comfort, MT625H Comfort.",
+        "Aliases: MT625H, MT 625 H. MT 625 H Comfort treated as trim/alias only \u2014 not a separate record. Aliases: MT 625 H Comfort, MT625H Comfort.",
         "hydraulic_flow_gpm: not published on OEM technical sheet for this model; null pending OEM confirmation."
       ]
     },
@@ -3663,7 +3663,7 @@
         "Manitou MT 1840 ST5 OEM technical sheet; page 2 specs; page 3 load chart"
       ],
       "notes": [
-        "Aliases: MT1840ST5, MT 1840. Separate record from MT 1840 Easy ST5 — different horsepower (100 hp vs 75 hp) and operating weight."
+        "Aliases: MT1840ST5, MT 1840. Separate record from MT 1840 Easy ST5 \u2014 different horsepower (100 hp vs 75 hp) and operating weight."
       ]
     },
     {
@@ -3729,7 +3729,7 @@
       ],
       "notes": [
         "Aliases: MT1840 Easy ST5, MT 1840 EASY. OEM sheet metric-unit; specs converted to imperial.",
-        "Separate record from MT 1840 ST5 — different horsepower (75 hp vs 100 hp), different operating weight, different capacity at full reach."
+        "Separate record from MT 1840 ST5 \u2014 different horsepower (75 hp vs 100 hp), different operating weight, different capacity at full reach."
       ]
     },
     {
@@ -3862,11 +3862,563 @@
         "Aliases: ULM415H.",
         "OEM publishes shipping mass min/max 5,952/6,393 lb. Registry uses 5,952 lb (base/min) as operating-equivalent weight."
       ]
+    },
+    {
+      "model_slug": "gehl_dl12_40_gen3",
+      "manufacturer": "Gehl",
+      "model": "DL12-40 GEN:3",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 12000,
+        "max_lift_height_ft": 40.33,
+        "max_forward_reach_ft": 26.33,
+        "lift_capacity_at_full_height_lbs": 10000,
+        "lift_capacity_at_full_reach_lbs": 2000,
+        "horsepower_hp": 120,
+        "engine_manufacturer": "Cummins",
+        "engine_model": "QSF 3.8 Tier IV",
+        "transmission_type": "Dana 4-Speed Power Shift",
+        "operating_weight_lbs": 25300,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 30,
+        "travel_speed_mph": 22.8,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 43,
+        "hydraulic_pressure_psi": 3000
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl DL12-40 GEN:3 OEM spec sheet"
+      ],
+      "notes": [
+        "Generation-specific record (GEN:3). Operating weight approximate per OEM data.",
+        "Steering: 4-wheel / 2-wheel / crab."
+      ]
+    },
+    {
+      "model_slug": "gehl_rs10_55_gen2",
+      "manufacturer": "Gehl",
+      "model": "RS10-55 GEN:2",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 10000,
+        "max_lift_height_ft": 55.08,
+        "max_forward_reach_ft": 41.17,
+        "lift_capacity_at_full_height_lbs": 5000,
+        "lift_capacity_at_full_reach_lbs": 2000,
+        "horsepower_hp": 120,
+        "engine_manufacturer": "Cummins",
+        "engine_model": "QSF 3.8 Tier IV",
+        "transmission_type": "Dana 4-speed Powershift",
+        "operating_weight_lbs": 27800,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 47,
+        "travel_speed_mph": 20.1,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 41.5,
+        "hydraulic_pressure_psi": 3000
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl RS10-55 GEN:2 OEM spec sheet"
+      ],
+      "notes": [
+        "Generation-specific record (GEN:2). Do not overwrite or merge with existing gehl_rs10_55.",
+        "Operating weight approximate per OEM data.",
+        "Steering: 4-wheel / 2-wheel / crab."
+      ]
+    },
+    {
+      "model_slug": "gehl_rs6_34_gen3",
+      "manufacturer": "Gehl",
+      "model": "RS6-34 GEN:3",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 6000,
+        "max_lift_height_ft": 34.25,
+        "max_forward_reach_ft": 23.0,
+        "lift_capacity_at_full_height_lbs": null,
+        "lift_capacity_at_full_reach_lbs": null,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TD 3.6 L4",
+        "transmission_type": "Torque converter with powershift",
+        "operating_weight_lbs": 15113,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 29,
+        "travel_speed_mph": 18.0,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 29,
+        "hydraulic_pressure_psi": 3002
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "low",
+        "lift_capacity_at_max_reach_lb": "low",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "manual_review",
+        "lift_capacity_at_max_reach_lb": "manual_review",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl RS6-34 GEN:3 OEM spec sheet"
+      ],
+      "notes": [
+        "OEM partial record. Full-height and full-reach capacities not captured in available OEM data; null pending confirmation."
+      ]
+    },
+    {
+      "model_slug": "gehl_rs5_19_gen3",
+      "manufacturer": "Gehl",
+      "model": "RS 5-19 GEN:3",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 5500,
+        "max_lift_height_ft": 19.08,
+        "max_forward_reach_ft": 11.0,
+        "lift_capacity_at_full_height_lbs": null,
+        "lift_capacity_at_full_reach_lbs": null,
+        "horsepower_hp": 69,
+        "engine_manufacturer": "Yanmar",
+        "engine_model": "4TNV98C",
+        "transmission_type": "Hydrostatic",
+        "operating_weight_lbs": 10000,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 17,
+        "travel_speed_mph": 15.0,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 22,
+        "hydraulic_pressure_psi": 3350
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "low",
+        "lift_capacity_at_max_reach_lb": "low",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "manual_review",
+        "lift_capacity_at_max_reach_lb": "manual_review",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl RS 5-19 GEN:3 OEM spec sheet"
+      ],
+      "notes": [
+        "Generation-specific record (GEN:3). Aliases: RS5-19 GEN:3, RS 5-19 GEN:3. Keep separate from existing RS5-19 record.",
+        "Full-height and full-reach capacities not captured in available OEM data; null pending confirmation."
+      ]
+    },
+    {
+      "model_slug": "gehl_th5_19",
+      "manufacturer": "Gehl",
+      "model": "TH5-19",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 5500,
+        "max_lift_height_ft": 19.08,
+        "max_forward_reach_ft": 11.17,
+        "lift_capacity_at_full_height_lbs": null,
+        "lift_capacity_at_full_reach_lbs": null,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Kubota",
+        "engine_model": "V3307-CR-TE5B",
+        "transmission_type": "Hydrostatic",
+        "operating_weight_lbs": 10406,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 17,
+        "travel_speed_mph": 16.0,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 23,
+        "hydraulic_pressure_psi": 3408
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "low",
+        "lift_capacity_at_max_reach_lb": "low",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "manual_review",
+        "lift_capacity_at_max_reach_lb": "manual_review",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl TH5-19 OEM spec sheet"
+      ],
+      "notes": [
+        "OEM partial record. Operating weight is unladen with forks.",
+        "Full-height and full-reach capacities not captured in available OEM data; null pending confirmation."
+      ]
+    },
+    {
+      "model_slug": "gehl_th6_42",
+      "manufacturer": "Gehl",
+      "model": "TH6-42",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 6000,
+        "max_lift_height_ft": 42.5,
+        "max_forward_reach_ft": 28.5,
+        "lift_capacity_at_full_height_lbs": null,
+        "lift_capacity_at_full_reach_lbs": null,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6 L4",
+        "transmission_type": "Powershift",
+        "operating_weight_lbs": 22851,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 38,
+        "travel_speed_mph": 20.0,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 40,
+        "hydraulic_pressure_psi": 4000
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "low",
+        "lift_capacity_at_max_reach_lb": "low",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "manual_review",
+        "lift_capacity_at_max_reach_lb": "manual_review",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl TH6-42 OEM spec sheet"
+      ],
+      "notes": [
+        "OEM partial record. Axial piston pump.",
+        "Full-height and full-reach capacities not captured in available OEM data; null pending confirmation."
+      ]
+    },
+    {
+      "model_slug": "gehl_th8_42",
+      "manufacturer": "Gehl",
+      "model": "TH8-42",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 8000,
+        "max_lift_height_ft": 42.5,
+        "max_forward_reach_ft": 28.5,
+        "lift_capacity_at_full_height_lbs": null,
+        "lift_capacity_at_full_reach_lbs": null,
+        "horsepower_hp": 127,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6 L4",
+        "transmission_type": "Powershift",
+        "operating_weight_lbs": 23951,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 38,
+        "travel_speed_mph": 21.0,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 40,
+        "hydraulic_pressure_psi": 4000
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "low",
+        "lift_capacity_at_max_reach_lb": "low",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "manual_review",
+        "lift_capacity_at_max_reach_lb": "manual_review",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl TH8-42 OEM spec sheet"
+      ],
+      "notes": [
+        "OEM partial record. DEF capacity 4 gal.",
+        "Full-height and full-reach capacities not captured in available OEM data; null pending confirmation."
+      ]
+    },
+    {
+      "model_slug": "gehl_th10_55",
+      "manufacturer": "Gehl",
+      "model": "TH10-55",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 10000,
+        "max_lift_height_ft": 55.58,
+        "max_forward_reach_ft": 42.25,
+        "lift_capacity_at_full_height_lbs": null,
+        "lift_capacity_at_full_reach_lbs": null,
+        "horsepower_hp": 127,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6 L4",
+        "transmission_type": "Powershift",
+        "operating_weight_lbs": 30300,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 38,
+        "travel_speed_mph": 20.0,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 40,
+        "hydraulic_pressure_psi": 4000
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "low",
+        "lift_capacity_at_max_reach_lb": "low",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high",
+        "hydraulic_pressure_psi": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "manual_review",
+        "lift_capacity_at_max_reach_lb": "manual_review",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked",
+        "hydraulic_pressure_psi": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Gehl TH10-55 OEM spec sheet"
+      ],
+      "notes": [
+        "OEM partial record. DEF capacity 4 gal.",
+        "Full-height and full-reach capacities not captured in available OEM data; null pending confirmation."
+      ]
     }
   ],
   "_registry_meta": {
     "merge_notes": [
-      "2026-03-24: Promoted from staging — skytrak_10054, skytrak_8042. Both records are spec_confidence=MEDIUM with HIGH-confidence core fields (lift_capacity_lb, max_lift_height_ft, fuel_capacity_gal confirmed from OEM sheets). Guard passes. operating_weight_lb and max_forward_reach_ft still null — manual_review required before lock.",
+      "2026-03-24: Promoted from staging \u2014 skytrak_10054, skytrak_8042. Both records are spec_confidence=MEDIUM with HIGH-confidence core fields (lift_capacity_lb, max_lift_height_ft, fuel_capacity_gal confirmed from OEM sheets). Guard passes. operating_weight_lb and max_forward_reach_ft still null \u2014 manual_review required before lock.",
       "OEM lock 2026-03-25: genie_gth_844 promoted from staging. Full 2023 Genie spec sheet. max_lift_height corrected 44.0->43.83 ft. max_forward_reach locked 28.17 ft. spec_confidence->HIGH.",
       "Performance lock pass v3.1 2026-04-09: 11 JCB telehandler models written with OEM-PDF-confirmed 5-field performance specs (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs, lift_capacity_at_full_reach_lbs). 7 models skipped (null fields / missing source_pdf / non-high confidence).",
       "Powertrain lock pass v3.2 2026-04-09: 16 models written (horsepower_hp, engine_manufacturer, transmission_type, operating_weight_lbs, drive_type). 7 models skipped (null confidence). Special rule: horsepower_hp suppressed for jcb_507_42. Engine manufacturers normalized to JCB/Perkins.",
@@ -3874,11 +4426,12 @@
       "Schema cleanup pass v3.4 2026-04-09: Removed legacy duplicate field names (lift_capacity_lb, engine_brand, engine_hp, operating_weight_lb) from 4 legacy SkyTrak records. 9 new-convention core fields retained as source of truth. Non-core extras (fuel_capacity_gal, travel_speed_mph, steering_modes, fuel_type) preserved.",
       "Schema lock pass v3.4 2026-04-09: All 8 SkyTrak records confirmed clean. 9 new-convention core fields locked as source of truth. Legacy duplicate fields (lift_capacity_lb, engine_brand, engine_hp, operating_weight_lb) confirmed absent. Non-core extras (fuel_capacity_gal, travel_speed_mph, steering_modes, fuel_type) preserved on 4 legacy records. JCB records untouched.",
       "OEM lock 2026-04-10 (_apply_jlg_oem_lock_v4_1): 5 JLG G-series records corrected (engine, capacity, weight); 8 new JLG records added (519, 742, 943, 1055, 1255, 1644, AG925, 6042). All single-source OEM locked.",
-      "Schema standardization pass v3.5 2026-04-13: Migrated all legacy field names to canonical across 22 records (all manufacturers). Renamed: lift_capacity_lb->lift_capacity_lbs, engine_brand->engine_manufacturer, engine_hp->horsepower_hp, operating_weight_lb->operating_weight_lbs, lift_capacity_at_max_height_lb->lift_capacity_at_full_height_lbs, lift_capacity_at_max_reach_lb->lift_capacity_at_full_reach_lbs. jcb_509_42: legacy duplicates dropped (canonical values from v3.2 preserved). 23 records (14 JCB + 8 SkyTrak + 1 Genie recent) already canonical — untouched. Zero legacy field names remain in registry.",
+      "Schema standardization pass v3.5 2026-04-13: Migrated all legacy field names to canonical across 22 records (all manufacturers). Renamed: lift_capacity_lb->lift_capacity_lbs, engine_brand->engine_manufacturer, engine_hp->horsepower_hp, operating_weight_lb->operating_weight_lbs, lift_capacity_at_max_height_lb->lift_capacity_at_full_height_lbs, lift_capacity_at_max_reach_lb->lift_capacity_at_full_reach_lbs. jcb_509_42: legacy duplicates dropped (canonical values from v3.2 preserved). 23 records (14 JCB + 8 SkyTrak + 1 Genie recent) already canonical \u2014 untouched. Zero legacy field names remain in registry.",
       "JCB OEM core spec patch v3.6 2026-04-13: Applied canonical fields to 15 JCB records (36 field writes, 21 fields held). NEW fields: jcb_507_42 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs, horsepower_hp), jcb_509_42 (lift_capacity_at_full_height_lbs), jcb_510_56 and jcb_512_56 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs), jcb_540_170 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs). Rounding corrections on jcb_525_60, jcb_531_70, jcb_535_95, jcb_535_125, jcb_535_140, jcb_541_70, jcb_540_140, jcb_540_180. HELD: horsepower_hp on jcb_506_36/509_42/510_56/512_56/520_40/535_140/540_140; reach/weight/capacity conflicts on jcb_509_42/520_40/525_60/535_95/535_140/541_70/540_140; engine_manufacturer conflict on jcb_520_40 (Perkins vs JCB). Held fields require OEM source confirmation before write.",
       "Phase 1 telehandler patch 2026-05-04: Added 10 OEM-backed current-production records: caterpillar_th0642, caterpillar_th0842, caterpillar_th1055, caterpillar_th1255, caterpillar_th255c, genie_gth_5519, genie_gth_1056, genie_gth_1256, jlg_1732, jlg_2733. Held jlg_1075 due OEM page/PDF conflict on capacity at full height.",
-      "Phase 2 Manitou patch 2026-05-04: Added 9 OEM-backed Manitou telehandler records: manitou_mt_625_h, manitou_mlt_625_75_h, manitou_mlt_635_130_ps_plus_s2, manitou_mlt_737_130_ps_plus, manitou_mlt_841_145_ps_plus, manitou_mt_1840_st5, manitou_mt_1840_easy_st5, manitou_mt_420_h, manitou_ulm_415_h. MT 625 H Comfort treated as alias/trim of MT 625 H, not separate record. MRT 2660 excluded per patch scope."
+      "Phase 2 Manitou patch 2026-05-04: Added 9 OEM-backed Manitou telehandler records: manitou_mt_625_h, manitou_mlt_625_75_h, manitou_mlt_635_130_ps_plus_s2, manitou_mlt_737_130_ps_plus, manitou_mlt_841_145_ps_plus, manitou_mt_1840_st5, manitou_mt_1840_easy_st5, manitou_mt_420_h, manitou_ulm_415_h. MT 625 H Comfort treated as alias/trim of MT 625 H, not separate record. MRT 2660 excluded per patch scope.",
+      "Phase 3 Gehl patch 2026-05-04: Added 8 OEM-backed Gehl telehandler records: gehl_dl12_40_gen3, gehl_rs10_55_gen2, gehl_rs6_34_gen3, gehl_rs5_19_gen3, gehl_th5_19, gehl_th6_42, gehl_th8_42, gehl_th10_55. DL12-40 GEN:3 and RS10-55 GEN:2 fully locked (all capacities OEM-confirmed). RS6-34, RS5-19, TH5-19, TH6-42, TH8-42, TH10-55: partial records -- lift_capacity_at_full_height_lbs and lift_capacity_at_full_reach_lbs null/manual_review."
     ],
-    "record_count": 64
+    "record_count": 72
   }
 }
