@@ -3,11 +3,11 @@
     "registry_name": "MTM Scissor Lift Registry v1.0",
     "equipment_type": "scissor_lift",
     "status": "ACTIVE",
-    "record_count": 9,
+    "record_count": 12,
     "manufacturers": ["Genie", "JLG", "Skyjack"],
     "build_date": "2026",
     "coverage_note": "Top-volume North American used-market scissor lifts. Covers electric slab and diesel rough-terrain models.",
-    "last_updated": "2026-03-27"
+    "last_updated": "2026-05-04"
   },
   "records": [
     {
@@ -64,12 +64,12 @@
       ],
       "notes": [
         "Representative for Genie GS electric slab scissor series. Specs shown for GS-3232.",
-        "GS-1930 (19ft/500lbs) and GS-2632 (26ft/700lbs) are smaller variants — see dedicated records.",
+        "GS-1930, GS-2632, GS-2646, GS-3232, and GS-3246 have dedicated records — prefer those for lookup.",
         "platform_height_ft = maximum platform deck height (ANSI working height = platform + 6ft = 38ft).",
         "operating_weight_lbs varies by battery config: 5,000–5,800 lbs range. Shown with standard batteries.",
         "drive_speed_stowed_mph: max stowed drive speed (elevated speed limit = 0.5 mph)."
       ],
-      "alias_hints": ["genie_gs3232", "genie_gs_3232", "genie_gs32"]
+      "alias_hints": ["genie_gs_series_rep", "genie_gs_electric_series"]
     },
     {
       "equipment_type": "scissor_lift",
@@ -84,13 +84,13 @@
       "spec_confidence": "HIGH",
       "registry_tier": "production",
       "specs": {
-        "platform_height_ft": 19.0,
+        "platform_height_ft": 19.25,
         "platform_capacity_lbs": 500,
         "platform_length_ft": 5.75,
         "platform_width_ft": 2.5,
-        "operating_weight_lbs": 2639,
-        "power_source": "electric_ac",
-        "stowed_height_in": 44,
+        "operating_weight_lbs": 3209,
+        "power_source": "electric_dc_24v",
+        "stowed_height_in": 71,
         "stowed_length_ft": 6.58,
         "drive_speed_stowed_mph": 2.5,
         "max_ground_slope_pct": 25
@@ -104,7 +104,7 @@
         "power_source": "HIGH",
         "stowed_height_in": "HIGH",
         "stowed_length_ft": "HIGH",
-        "drive_speed_stowed_mph": "MEDIUM",
+        "drive_speed_stowed_mph": "HIGH",
         "max_ground_slope_pct": "HIGH"
       },
       "field_behavior": {
@@ -116,13 +116,19 @@
         "power_source": "locked",
         "stowed_height_in": "locked",
         "stowed_length_ft": "locked",
-        "drive_speed_stowed_mph": "manual_review",
+        "drive_speed_stowed_mph": "locked",
         "max_ground_slope_pct": "locked"
       },
-      "source_refs": ["Genie GS-1930 spec sheet"],
+      "source_refs": [
+        "Genie GS-1930 product page (https://www.genielift.com/en/aerial-lifts/Slab-scissor-lifts/gs1930)",
+        "Genie GS-1930 & GS-1932 Product Specifications 2026 EN-US (https://www.genielift.com/docs/default-source/product-specifications/slab-scissor-lifts-%28ansi%29-or-electric-and-bi-energy-lifts-%28ce%29/en/2026/gs-1930-and-gs-1932-product-specifications---2026.pdf?sfvrsn=4ee5bca7_1)"
+      ],
       "notes": [
         "Genie GS-1930: most compact electric scissor, popular for interior/overhead work.",
-        "Narrow 30-inch (2.5 ft) platform width fits through standard doorways."
+        "Narrow 30-inch (2.5 ft) platform width fits through standard doorways.",
+        "platform_height_ft, operating_weight_lbs, stowed_height_in, power_source: prior locked values superseded by current Genie EN-US OEM PDF (2026). PDF values: 19 ft 3 in, 3,209 lb, 71 in rails-lowered, 24V DC FLA.",
+        "power_source: 24V DC FLA standard; Li-ion optional per OEM 2026 PDF.",
+        "drive_speed_stowed_mph: 2.5 mph confirmed by 2026 OEM PDF."
       ],
       "alias_hints": ["genie_gs1930", "genie_gs19"]
     },
@@ -139,15 +145,15 @@
       "spec_confidence": "HIGH",
       "registry_tier": "production",
       "specs": {
-        "platform_height_ft": 26.0,
-        "platform_capacity_lbs": 700,
-        "platform_length_ft": 6.83,
-        "platform_width_ft": 2.67,
-        "operating_weight_lbs": 4500,
-        "power_source": "electric_ac",
-        "stowed_height_in": 61,
+        "platform_height_ft": 26.08,
+        "platform_capacity_lbs": 500,
+        "platform_length_ft": 7.42,
+        "platform_width_ft": 2.74,
+        "operating_weight_lbs": 4729,
+        "power_source": "electric_dc_24v",
+        "stowed_height_in": 76,
         "stowed_length_ft": 7.83,
-        "drive_speed_stowed_mph": 3.0,
+        "drive_speed_stowed_mph": 2.0,
         "max_ground_slope_pct": 25
       },
       "field_confidence": {
@@ -157,9 +163,9 @@
         "platform_width_ft": "HIGH",
         "operating_weight_lbs": "HIGH",
         "power_source": "HIGH",
-        "stowed_height_in": "MEDIUM",
+        "stowed_height_in": "HIGH",
         "stowed_length_ft": "MEDIUM",
-        "drive_speed_stowed_mph": "MEDIUM",
+        "drive_speed_stowed_mph": "HIGH",
         "max_ground_slope_pct": "HIGH"
       },
       "field_behavior": {
@@ -169,14 +175,207 @@
         "platform_width_ft": "locked",
         "operating_weight_lbs": "locked",
         "power_source": "locked",
-        "stowed_height_in": "manual_review",
+        "stowed_height_in": "locked",
         "stowed_length_ft": "manual_review",
-        "drive_speed_stowed_mph": "manual_review",
+        "drive_speed_stowed_mph": "locked",
         "max_ground_slope_pct": "locked"
       },
-      "source_refs": ["Genie GS-2632 spec sheet"],
-      "notes": ["GS-2632: mid-range electric slab scissor. 700 lb capacity, 26 ft deck height."],
+      "source_refs": [
+        "Genie GS-2632 product page (https://www.genielift.com/en/aerial-lifts/Slab-scissor-lifts/gs2632)",
+        "Genie GS-2632 & GS-2646 Product Specifications 2026 EN-US (https://www.genielift.com/docs/default-source/product-specifications/slab-scissor-lifts-%28ansi%29-or-electric-and-bi-energy-lifts-%28ce%29/en/2026/gs-2632-gs-2646-product-specifications---2026---en-us.pdf?sfvrsn=ef6b7f1c_1)"
+      ],
+      "notes": [
+        "GS-2632: narrow-deck mid-range electric slab scissor. 32-inch platform width, 26 ft deck height.",
+        "platform_capacity_lbs, platform_height_ft, platform_length_ft, platform_width_ft, operating_weight_lbs, power_source: prior locked values superseded by current Genie EN-US OEM PDF (2026). Prior values: 700 lb, 26.0 ft, 6.83 ft, 2.67 ft, 4500 lb, electric_ac.",
+        "stowed_height_in updated to 76 in (rails-lowered, OEM 2026 PDF) from prior MEDIUM value of 61 in.",
+        "drive_speed_stowed_mph updated to 2.0 mph (OEM 2026 PDF) from prior MEDIUM value of 3.0 mph.",
+        "power_source: 24V DC FLA standard; Li-ion optional per OEM 2026 PDF."
+      ],
       "alias_hints": ["genie_gs2632", "genie_gs26"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Genie",
+      "model": "GS-2646",
+      "model_slug": "genie_gs_2646",
+      "model_family": "Genie GS Electric Slab Series",
+      "years_supported": { "start": 2008, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 26.08,
+        "platform_capacity_lbs": 1000,
+        "platform_length_ft": 7.42,
+        "platform_width_ft": 3.83,
+        "operating_weight_lbs": 4346,
+        "power_source": "electric_dc_24v",
+        "stowed_height_in": 67,
+        "stowed_length_ft": null,
+        "drive_speed_stowed_mph": 2.0,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "MEDIUM",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "manual_review",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Genie GS-2646 product page (https://www.genielift.com/en/aerial-lifts/Slab-scissor-lifts/gs2646)",
+        "Genie GS-2632 & GS-2646 Product Specifications 2026 EN-US (https://www.genielift.com/docs/default-source/product-specifications/slab-scissor-lifts-%28ansi%29-or-electric-and-bi-energy-lifts-%28ce%29/en/2026/gs-2632-gs-2646-product-specifications---2026---en-us.pdf?sfvrsn=ef6b7f1c_1)"
+      ],
+      "notes": [
+        "GS-2646: wide-deck variant of GS-2632. 46-inch platform width vs 32-inch on GS-2632. 1,000 lb capacity.",
+        "platform_height_ft = 26 ft 1 in indoor max (19.25 ft canonical); working height = 32 ft 1 in.",
+        "stowed_height_in = 67 in (rails-lowered transport height per OEM PDF).",
+        "power_source: 24V DC FLA standard; Li-ion optional per OEM PDF.",
+        "stowed_length_ft: not published in OEM source reviewed; set null pending verification."
+      ],
+      "alias_hints": ["genie_gs2646", "genie_gs_2646"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Genie",
+      "model": "GS-3232",
+      "model_slug": "genie_gs_3232",
+      "model_family": "Genie GS Electric Slab Series",
+      "years_supported": { "start": 2010, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 32.08,
+        "platform_capacity_lbs": 500,
+        "platform_length_ft": 7.42,
+        "platform_width_ft": 2.74,
+        "operating_weight_lbs": 5367,
+        "power_source": "electric_dc_24v",
+        "stowed_height_in": 82,
+        "stowed_length_ft": null,
+        "drive_speed_stowed_mph": 2.0,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "MEDIUM",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "manual_review",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Genie GS-3232 product page (https://www.genielift.com/en/aerial-lifts/Slab-scissor-lifts/gs3232)",
+        "Genie GS-3232 & GS-3246 Product Specifications 2026 EN-US (https://www.genielift.com/docs/default-source/product-specifications/slab-scissor-lifts-%28ansi%29-or-electric-and-bi-energy-lifts-%28ce%29/en/2026/gs-3232-gs-3246-product-specifications---2026---en-us.pdf?sfvrsn=dfff77a9_1)"
+      ],
+      "notes": [
+        "GS-3232: narrow-deck 32 ft scissor (32-inch platform width). 500 lb capacity.",
+        "platform_height_ft = 32 ft 1 in indoor max; working height = 38 ft 1 in.",
+        "stowed_height_in = 82 in (rails-lowered transport height per OEM PDF).",
+        "power_source: 24V DC FLA standard; Li-ion optional per OEM PDF.",
+        "stowed_length_ft: not published in OEM source reviewed; set null pending verification."
+      ],
+      "alias_hints": ["genie_gs3232", "genie_gs_3232"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Genie",
+      "model": "GS-3246",
+      "model_slug": "genie_gs_3246",
+      "model_family": "Genie GS Electric Slab Series",
+      "years_supported": { "start": 2010, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 32.08,
+        "platform_capacity_lbs": 700,
+        "platform_length_ft": 7.42,
+        "platform_width_ft": 3.83,
+        "operating_weight_lbs": 5218,
+        "power_source": "electric_dc_24v",
+        "stowed_height_in": 72,
+        "stowed_length_ft": null,
+        "drive_speed_stowed_mph": 2.0,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "MEDIUM",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "manual_review",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Genie GS-3246 product page (https://www.genielift.com/en/aerial-lifts/Slab-scissor-lifts/gs-3246)",
+        "Genie GS-3232 & GS-3246 Product Specifications 2025 EN-US (https://www.genielift.com/docs/default-source/product-specifications/slab-scissor-lifts-%28ansi%29-or-electric-and-bi-energy-lifts-%28ce%29/en/2025/gs-3232-gs-3246-product-specifications---2025---en-us.pdf?sfvrsn=9310c21d_1)"
+      ],
+      "notes": [
+        "GS-3246: wide-deck 32 ft scissor (46-inch platform width). 700 lb capacity.",
+        "platform_height_ft = 32 ft 1 in indoor max; working height = 38 ft 1 in.",
+        "stowed_height_in = 72 in (rails-lowered transport height per OEM PDF).",
+        "power_source: 24V DC FLA standard; Li-ion optional per OEM PDF.",
+        "Source: GS-3246 product page links 2025 EN-US PDF. The 2026 GS-3232 sibling PDF shows identical values for shared fields — 2025 PDF used per source-policy compliance.",
+        "stowed_length_ft: not published in OEM source reviewed; set null pending verification."
+      ],
+      "alias_hints": ["genie_gs3246", "genie_gs_3246"]
     },
     {
       "equipment_type": "scissor_lift",
