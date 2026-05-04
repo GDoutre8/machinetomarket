@@ -403,17 +403,17 @@ def build_badge(
     accent: str = "yellow",        # theme name — drives top accent rail color
     *,
     force_variant: Optional[Literal["light", "dark", "white", "charcoal"]] = None,  # QA override; None = auto-detect
-    logo_box_w: int = 156,          # ~22% smaller footprint vs. prior 200
-    logo_box_h: Optional[int] = None,  # auto: 44 (dark) / 50 (light) — matches reduced width
-    padding_x: int = 14,
-    padding_y: int = 8,
-    gap: int = 12,                  # gap between logo right edge and divider/text column
+    logo_box_w: int = 116,          # second pass: ~26% smaller again, logo reduced harder than text
+    logo_box_h: Optional[int] = None,  # auto: 34 (dark) / 38 (light) — matches reduced width
+    padding_x: int = 11,
+    padding_y: int = 6,
+    gap: int = 9,                   # gap between logo right edge and divider/text column
     sep_width: int = 1,             # 1px hairline divider
-    text_gap: int = 3,
+    text_gap: int = 2,
     corner_radius: int = 7,
     accent_bar_h: int = 3,
-    name_size: int = 18,
-    phone_size: int = 12,
+    name_size: int = 14,
+    phone_size: int = 10,
     phone_tracking: int = 0,
 ) -> Image.Image:
     """Build the badge as an RGBA image with drop shadow baked in.
@@ -467,9 +467,9 @@ def build_badge(
             int(accent_rgb[2] * 0.30 + DARK_BG[2] * 0.70),
         )
 
-    # Integrated logo zone heights — dark ≈44, light ≈50 (~22% reduction).
+    # Integrated logo zone heights — dark ≈34, light ≈38 after second-pass reduction.
     if logo_box_h is None:
-        logo_box_h = 44 if bg_kind == "dark" else 50
+        logo_box_h = 34 if bg_kind == "dark" else 38
 
     # Logo cleanup before compositing.
     # Light mode  : trim excess whitespace, preserve white backing — blends into #F5F3EE.
@@ -604,18 +604,18 @@ def build_text_badge(
     phone: str,
     accent: str = "yellow",
     *,
-    padding_x: int = 11,
-    padding_y: int = 9,
-    gap: int = 11,
+    padding_x: int = 8,
+    padding_y: int = 7,
+    gap: int = 8,
     sep_width: int = 1,
-    text_gap: int = 4,
+    text_gap: int = 3,
     corner_radius: int = 7,
     accent_bar_h: int = 3,
-    name_size: int = 15,
-    phone_size: int = 12,
+    name_size: int = 12,
+    phone_size: int = 10,
     phone_tracking: int = 0,
-    mark_size: int = 44,
-    mark_text_size: int = 17,
+    mark_size: int = 34,
+    mark_text_size: int = 14,
 ) -> Image.Image:
     """Logoless badge variant — initials mark + name/phone on charcoal.
 
