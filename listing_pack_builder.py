@@ -323,8 +323,13 @@ def build_listing_pack(
         try:
             _img_tmp = os.path.join(session_dir, "_img_tmp")
             os.makedirs(_img_tmp, exist_ok=True)
-            for src in valid_images:
-                shutil.copy2(src, _img_tmp)
+            # Prefix copies with a zero-padded index so the downstream
+            # generator's alphabetical sort preserves caller-supplied order
+            # (e.g. user-selected featured photo lands at position #1).
+            for _idx, src in enumerate(valid_images):
+                _ext = os.path.splitext(src)[1] or ".jpg"
+                _dest = os.path.join(_img_tmp, f"{_idx:03d}_src{_ext}")
+                shutil.copy2(src, _dest)
             _img_result = generate_image_pack(
                 input_folder  = _img_tmp,
                 output_folder = pack_dir,

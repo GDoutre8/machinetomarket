@@ -757,11 +757,14 @@
             <div class="block-head">
               <div class="l">
                 <div class="tag">// C3 — FEATURED CARD</div>
-                <h2>Choose Your Listing Style</h2>
+                <h2>Choose Your Featured Image Style</h2>
               </div>
               <div class="r">
-                <span>RENDERED FROM YOUR PHOTO #1</span>
+                <span>Applies to your featured image only (Photo #1)</span>
               </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-faint);margin-top:6px">
+              All remaining listing photos use the standard photo layout.
             </div>
             <div id="vf-tpl-empty" style="font-size:12.5px;color:var(--text-faint);padding:14px 0">
               Upload at least one photo above to render live previews.
@@ -1925,22 +1928,84 @@ window.MTM_VERIFY_PRESEL = {
     });
   }
 
-  function renderThumbs(filenames){
+  function renderThumbs(filenames, featured){
+    var list = filenames || [];
+    var feat = featured || (list.length ? list[0] : null);
     pairs.forEach(function(p){
       p.thumbs.innerHTML = '';
-      (filenames || []).forEach(function(name){
+      list.forEach(function(name){
+        var isFeat = (name === feat);
         var url = '/outputs/' + SESSION_ID + '/_uploads/' + encodeURIComponent(name);
         var wrap = document.createElement('div');
-        wrap.style.cssText = 'position:relative;width:96px;height:96px;border:1px solid var(--rule);background:#000;overflow:hidden';
+        wrap.style.cssText = 'position:relative;width:96px;height:124px;border:1px solid ' +
+          (isFeat ? 'var(--accent)' : 'var(--rule)') +
+          ';background:#000;overflow:hidden;display:flex;flex-direction:column';
+        var imgBox = document.createElement('div');
+        imgBox.style.cssText = 'position:relative;width:100%;height:96px;overflow:hidden';
         var img = document.createElement('img');
         img.src = url;
         img.alt = name;
         img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-        wrap.appendChild(img);
+        imgBox.appendChild(img);
+        if(isFeat){
+          var tag = document.createElement('span');
+          tag.textContent = 'FEATURED';
+          tag.style.cssText =
+            'position:absolute;top:4px;left:4px;padding:2px 5px;' +
+            'font-family:"JetBrains Mono",monospace;font-size:8px;letter-spacing:.16em;' +
+            'background:var(--accent);color:#0d0d0c;font-weight:700;line-height:1';
+          imgBox.appendChild(tag);
+        }
+        wrap.appendChild(imgBox);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = isFeat ? 'Featured' : 'Set as featured';
+        btn.disabled = isFeat;
+        btn.style.cssText =
+          'flex:1;border:0;border-top:1px solid var(--rule);' +
+          'background:' + (isFeat ? 'rgba(255,255,255,.04)' : '#0d0d0c') + ';' +
+          'color:' + (isFeat ? 'var(--text-faint)' : 'var(--text-dim)') + ';' +
+          'font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.14em;' +
+          'text-transform:uppercase;cursor:' + (isFeat ? 'default' : 'pointer') + ';padding:0 2px';
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          if(!isFeat) setFeatured(name);
+        });
+        wrap.appendChild(btn);
         p.thumbs.appendChild(wrap);
       });
-      if(p.count) p.count.textContent = String((filenames || []).length);
+      if(p.count) p.count.textContent = String(list.length);
     });
+  }
+
+  async function setFeatured(name){
+    setStatus('Setting featured photo…');
+    try {
+      var fd = new FormData();
+      fd.append('photo_filename', name);
+      var r = await fetch('/build-listing/verify/' + SESSION_ID + '/photos/featured', { method:'POST', body: fd });
+      if(!r.ok){
+        var detail = 'Could not set featured (' + r.status + ')';
+        try { var j = await r.json(); detail = j.detail || detail; } catch(_){}
+        setStatus(detail, true);
+        return;
+      }
+      var data = await r.json();
+      renderThumbs(data.photos || [], data.featured || name);
+      setStatus('Featured photo updated · regenerating previews…');
+      if(window.MTM_RENDER_FEATURED_PREVIEWS){
+        window.MTM_RENDER_FEATURED_PREVIEWS(data.featured || name);
+      }
+      try {
+        window.mtmTrack && window.mtmTrack('photo_featured_set', {
+          session_id: SESSION_ID,
+          equipment_type: {{ equipment_type|tojson }},
+          featured: data.featured || name,
+        });
+      } catch(_){}
+    } catch(err){
+      setStatus('Network error: ' + err.message, true);
+    }
   }
 
   async function refresh(){
@@ -1948,9 +2013,11 @@ window.MTM_VERIFY_PRESEL = {
       var r = await fetch('/build-listing/verify/' + SESSION_ID + '/photos');
       if(!r.ok) return;
       var data = await r.json();
-      renderThumbs(data.photos || []);
-      if((data.photos || []).length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
-        window.MTM_RENDER_FEATURED_PREVIEWS(data.photos[0]);
+      var photos = data.photos || [];
+      var feat = data.featured || (photos.length ? photos[0] : null);
+      renderThumbs(photos, feat);
+      if(photos.length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
+        window.MTM_RENDER_FEATURED_PREVIEWS(feat || photos[0]);
       }
     } catch(_){}
   }
@@ -1969,8 +2036,10 @@ window.MTM_VERIFY_PRESEL = {
         return;
       }
       var data = await r.json();
-      renderThumbs(data.photos || []);
-      setStatus('Uploaded · ' + (data.photos || []).length + ' total');
+      var photos = data.photos || [];
+      var feat = data.featured || (photos.length ? photos[0] : null);
+      renderThumbs(photos, feat);
+      setStatus('Uploaded · ' + photos.length + ' total');
       try {
         window.mtmTrack && window.mtmTrack('photo_uploaded', {
           session_id:    SESSION_ID,
@@ -1979,8 +2048,8 @@ window.MTM_VERIFY_PRESEL = {
           photo_count:   (data.photos || []).length,
         });
       } catch(_){}
-      if((data.photos || []).length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
-        window.MTM_RENDER_FEATURED_PREVIEWS(data.photos[0]);
+      if(photos.length > 0 && window.MTM_RENDER_FEATURED_PREVIEWS){
+        window.MTM_RENDER_FEATURED_PREVIEWS(feat || photos[0]);
       }
     } catch(err){
       setStatus('Network error: ' + err.message, true);

@@ -2135,7 +2135,7 @@ def _verify_uploads_dir(session_id: str) -> str:
     return uploads_dir
 
 
-def _verify_list_photos(uploads_dir: str) -> list[str]:
+def _verify_list_photos(uploads_dir: str, featured: Optional[str] = None) -> list[str]:
     if not os.path.isdir(uploads_dir):
         return []
     out = []
@@ -2144,14 +2144,72 @@ def _verify_list_photos(uploads_dir: str) -> list[str]:
             continue
         if os.path.isfile(os.path.join(uploads_dir, name)):
             out.append(name)
+    if featured and featured in out:
+        out = [featured] + [n for n in out if n != featured]
     return out
+
+
+def _verify_featured_path(session_id: str) -> str:
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    return os.path.join(session_dir, "_featured_photo.txt")
+
+
+def _verify_get_featured(session_id: str) -> Optional[str]:
+    p = _verify_featured_path(session_id)
+    if not os.path.isfile(p):
+        return None
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            v = (f.read() or "").strip()
+        return v or None
+    except Exception:
+        return None
+
+
+def _verify_get_featured_for_dir(session_dir: str) -> Optional[str]:
+    p = os.path.join(session_dir, "_featured_photo.txt")
+    if not os.path.isfile(p):
+        return None
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            v = (f.read() or "").strip()
+        return v or None
+    except Exception:
+        return None
 
 
 @app.get("/build-listing/verify/{session_id}/photos")
 async def build_listing_verify_photos_list(session_id: str):
     """List photos currently staged for a verify session (drives the thumb grid)."""
     uploads_dir = _verify_uploads_dir(session_id)
-    return JSONResponse({"photos": _verify_list_photos(uploads_dir)})
+    featured = _verify_get_featured(session_id)
+    photos = _verify_list_photos(uploads_dir, featured=featured)
+    if not featured or featured not in photos:
+        featured = photos[0] if photos else None
+    return JSONResponse({"photos": photos, "featured": featured})
+
+
+@app.post("/build-listing/verify/{session_id}/photos/featured")
+async def build_listing_verify_photos_set_featured(
+    session_id: str,
+    photo_filename: str = Form(...),
+):
+    """Mark a specific staged photo as the featured (Photo #1) image."""
+    uploads_dir = _verify_uploads_dir(session_id)
+    photos = _verify_list_photos(uploads_dir)
+    name = (photo_filename or "").strip()
+    if name not in photos:
+        raise HTTPException(status_code=404, detail="Photo not found in session")
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    try:
+        with open(os.path.join(session_dir, "_featured_photo.txt"), "w", encoding="utf-8") as f:
+            f.write(name)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Could not save featured: {exc}")
+    return JSONResponse({"ok": True, "featured": name,
+                         "photos": _verify_list_photos(uploads_dir, featured=name)})
 
 
 @app.post("/build-listing/verify/{session_id}/photos")
@@ -2183,7 +2241,11 @@ async def build_listing_verify_photos_upload(
                 f.write(content)
         except Exception:
             continue
-    return JSONResponse({"photos": _verify_list_photos(uploads_dir)})
+    featured = _verify_get_featured(session_id)
+    photos = _verify_list_photos(uploads_dir, featured=featured)
+    if not featured or featured not in photos:
+        featured = photos[0] if photos else None
+    return JSONResponse({"photos": photos, "featured": featured})
 
 
 @app.post("/build-listing/verify/{session_id}/featured_previews")
@@ -2205,7 +2267,8 @@ async def build_listing_verify_featured_previews(
         raise HTTPException(status_code=404, detail="Session not found")
 
     uploads_dir = os.path.join(session_dir, "_uploads")
-    photos = _verify_list_photos(uploads_dir)
+    _featured = _verify_get_featured_for_dir(session_dir)
+    photos = _verify_list_photos(uploads_dir, featured=_featured)
     if not photos:
         raise HTTPException(status_code=409, detail="No photos uploaded yet")
 
@@ -2531,13 +2594,13 @@ async def build_listing_generate(
     except Exception:
         pass
 
-    # Load photos from staged uploads dir
+    # Load photos from staged uploads dir, honoring the featured-photo marker
     staging_dir = os.path.join(session_dir, "_uploads")
     photo_paths: list[str] = []
     if os.path.isdir(staging_dir):
-        for name in sorted(os.listdir(staging_dir)):
-            if name == "dealer_logo.png":
-                continue
+        _featured = _verify_get_featured_for_dir(session_dir)
+        _ordered = _verify_list_photos(staging_dir, featured=_featured)
+        for name in _ordered:
             full = os.path.join(staging_dir, name)
             if os.path.isfile(full):
                 photo_paths.append(full)
@@ -2701,12 +2764,15 @@ async def spec_sheet_view(request: Request, session_id: str):
     # Dealer info: accent_color/logo_path stored in dealer_profile sub-dict of dealer_input.json
     dealer_info: dict = di_data.get("dealer_profile") or {}
 
-    # Scan session _uploads/ for machine photos to embed in the spec sheet
+    # Scan session _uploads/ for machine photos to embed in the spec sheet,
+    # honoring the featured-photo marker so Photo #1 reflects user selection.
     _photo_paths: list[str] = []
     _uploads_dir = os.path.join(session_dir, "_uploads")
     if os.path.isdir(_uploads_dir):
         _supported = {".jpg", ".jpeg", ".png", ".webp"}
-        for _fname in sorted(os.listdir(_uploads_dir)):
+        _featured = _verify_get_featured_for_dir(session_dir)
+        _ordered = _verify_list_photos(_uploads_dir, featured=_featured)
+        for _fname in _ordered:
             if os.path.splitext(_fname)[1].lower() in _supported:
                 _photo_paths.append(os.path.join(_uploads_dir, _fname))
 
