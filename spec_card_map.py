@@ -35,7 +35,7 @@ _ENGINE_CARD = {
 
 _HP_CARD = {
     "key": "net_hp", "label": "Horsepower", "short": "HORSEPOWER", "index": "A2",
-    "type": "int", "unit": "HP", "sub": "Net rated",
+    "type": "int", "unit": "HP", "sub": "Engine HP",
     "aliases": ["net_hp", "horsepower_hp", "gross_hp", "horsepower_gross_hp"],
     "required": True, "warn": False,
 }

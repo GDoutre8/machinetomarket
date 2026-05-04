@@ -795,10 +795,10 @@ _PROVISIONAL_LABELS: dict[str, str] = {
 # have passed through _normalize_spec_keys() in _build_result().
 _FIELD_META: dict[str, dict] = {
     # ── Canonical power fields ─────────────────────────────────────────────
-    "horsepower_hp":                   {"display": "Net HP",                    "unit": "hp"},
+    "horsepower_hp":                   {"display": "Engine HP",                 "unit": "hp"},
     "horsepower_gross_hp":             {"display": "Gross HP",                  "unit": "hp"},
     # ── Legacy source names [kept as fallback; normalized before use] ──────
-    "net_power_hp":                    {"display": "Net HP",                    "unit": "hp"},   # [legacy] → horsepower_hp
+    "net_power_hp":                    {"display": "Engine HP",                 "unit": "hp"},   # [legacy] → horsepower_hp
     "engine_hp":                       {"display": "Engine HP",                 "unit": "hp"},   # [legacy] → horsepower_hp
     # ── Canonical weight / capacity ────────────────────────────────────────
     "rated_operating_capacity_lbs":    {"display": "Rated Operating Capacity",  "unit": "lbs"},
