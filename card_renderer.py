@@ -1138,7 +1138,7 @@ _PAGE_TEMPLATE_AUCTION = """<!DOCTYPE html>
   }}
   .sl-cell {{
     padding: 24px 16px;
-    display: flex; flex-direction: column; justify-content: space-between;
+    display: flex; flex-direction: column; justify-content: flex-start;
     min-width: 0;
   }}
   .sl-cell.has-sep {{ border-left: 1.5px solid rgba(13,13,12,.62); }}
@@ -1168,7 +1168,7 @@ _PAGE_TEMPLATE_AUCTION = """<!DOCTYPE html>
     font-family: 'Inter Tight', sans-serif;
     font-weight: 700; font-size: 11px; letter-spacing: .14em;
     color: rgba(13,13,12,.65); text-transform: uppercase;
-    margin-top: 10px; line-height: 1.2;
+    margin-top: auto; padding-top: 10px; line-height: 1.2;
   }}
 </style>
 </head>
