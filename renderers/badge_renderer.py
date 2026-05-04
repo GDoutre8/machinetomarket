@@ -779,7 +779,13 @@ def apply_badge_to_photo(
     final = photo.convert("RGB")
 
     if output_path:
-        final.save(output_path, quality=92)
+        final.save(
+            output_path,
+            quality=92,
+            optimize=True,
+            progressive=True,
+            subsampling=0,
+        )
     return final
 
 
