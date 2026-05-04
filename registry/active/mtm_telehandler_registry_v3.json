@@ -3274,6 +3274,594 @@
       "notes": [
         "JLG OEM product page and linked spec sheet. Rated Cap=26,600 lb. Max Lift=33 ft 1 in=33.08 ft. Cap at Full Height=15,500 lb. Max Forward Reach=17 ft 7 in=17.58 ft. Cap at Full Reach=8,000 lb. Engine: Cummins QSB4.5L 160hp. Hydrostatic 2-speed. OW=38,775 lb."
       ]
+    },
+    {
+      "model_slug": "manitou_mt_625_h",
+      "manufacturer": "Manitou",
+      "model": "MT 625 H",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 5512,
+        "max_lift_height_ft": 19.17,
+        "max_forward_reach_ft": 11.17,
+        "lift_capacity_at_full_height_lbs": 5511,
+        "lift_capacity_at_full_reach_lbs": 1763,
+        "horsepower_hp": 75,
+        "engine_manufacturer": "Kubota",
+        "engine_model": "V3307-CR-TE5B",
+        "transmission_type": "Hydrostatic",
+        "operating_weight_lbs": 10582,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 17,
+        "travel_speed_mph": 16,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": null
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "manual_review"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MT 625 H OEM technical sheet; page 2 specs; page 4 load chart"
+      ],
+      "notes": [
+        "Aliases: MT625H, MT 625 H. MT 625 H Comfort treated as trim/alias only — not a separate record. Aliases: MT 625 H Comfort, MT625H Comfort.",
+        "hydraulic_flow_gpm: not published on OEM technical sheet for this model; null pending OEM confirmation."
+      ]
+    },
+    {
+      "model_slug": "manitou_mlt_625_75_h",
+      "manufacturer": "Manitou",
+      "model": "MLT 625-75 H",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 5512,
+        "max_lift_height_ft": 19.33,
+        "max_forward_reach_ft": 10.83,
+        "lift_capacity_at_full_height_lbs": 5511,
+        "lift_capacity_at_full_reach_lbs": 1763,
+        "horsepower_hp": 75,
+        "engine_manufacturer": "Kubota",
+        "engine_model": "V3307-CR-T-E5B",
+        "transmission_type": "Hydrostatic",
+        "operating_weight_lbs": 10851,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 17,
+        "travel_speed_mph": 16,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 23
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MLT 625-75 H OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: MLT625-75H, MLT 625 75 H."
+      ]
+    },
+    {
+      "model_slug": "manitou_mlt_635_130_ps_plus_s2",
+      "manufacturer": "Manitou",
+      "model": "MLT 635-130 PS+ (S2)",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 7716,
+        "max_lift_height_ft": 20.08,
+        "max_forward_reach_ft": 10.67,
+        "lift_capacity_at_full_height_lbs": 7716,
+        "lift_capacity_at_full_reach_lbs": 3747,
+        "horsepower_hp": 129,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6 L4",
+        "transmission_type": "Torque converter / Powershift",
+        "operating_weight_lbs": 16513,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 32,
+        "travel_speed_mph": 25,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 40
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MLT 635-130 PS+ (S2) OEM technical sheet; page 2 specs; page 4 load chart"
+      ],
+      "notes": [
+        "Aliases: MLT 635-130 PS+, MLT635-130PS+, MLT 635 130 PS Plus."
+      ]
+    },
+    {
+      "model_slug": "manitou_mlt_737_130_ps_plus",
+      "manufacturer": "Manitou",
+      "model": "MLT 737-130 PS+",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 8100,
+        "max_lift_height_ft": 22.58,
+        "max_forward_reach_ft": 12.75,
+        "lift_capacity_at_full_height_lbs": 5500,
+        "lift_capacity_at_full_reach_lbs": 2800,
+        "horsepower_hp": 129,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6 L",
+        "transmission_type": "Torque converter with Powershift Plus gearbox",
+        "operating_weight_lbs": 16976,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 32,
+        "travel_speed_mph": 25,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 39.6
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MLT 737-130 PS+ OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: MLT737-130PS+, MLT 737 130 PS Plus.",
+        "PDF text extraction degraded; specs confirmed from rendered OEM product page."
+      ]
+    },
+    {
+      "model_slug": "manitou_mlt_841_145_ps_plus",
+      "manufacturer": "Manitou",
+      "model": "MLT 841-145 PS+",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 9039,
+        "max_lift_height_ft": 24.92,
+        "max_forward_reach_ft": 14.58,
+        "lift_capacity_at_full_height_lbs": 9038,
+        "lift_capacity_at_full_reach_lbs": 3196,
+        "horsepower_hp": 141,
+        "engine_manufacturer": "Yanmar",
+        "engine_model": "4TN107FHT-5SMUF",
+        "transmission_type": "Torque converter with powershift gearbox",
+        "operating_weight_lbs": 20194,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 38,
+        "travel_speed_mph": 25,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 53
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MLT 841-145 PS+ OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: MLT841-145PS+, MLT 841 145 PS Plus."
+      ]
+    },
+    {
+      "model_slug": "manitou_mt_1840_st5",
+      "manufacturer": "Manitou",
+      "model": "MT 1840 ST5",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 8818,
+        "max_lift_height_ft": 57.58,
+        "max_forward_reach_ft": 42.92,
+        "lift_capacity_at_full_height_lbs": 8818,
+        "lift_capacity_at_full_reach_lbs": 881,
+        "horsepower_hp": 100,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6",
+        "transmission_type": "Torque converter",
+        "operating_weight_lbs": 26169,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 37,
+        "travel_speed_mph": 15,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 44
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MT 1840 ST5 OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: MT1840ST5, MT 1840. Separate record from MT 1840 Easy ST5 — different horsepower (100 hp vs 75 hp) and operating weight."
+      ]
+    },
+    {
+      "model_slug": "manitou_mt_1840_easy_st5",
+      "manufacturer": "Manitou",
+      "model": "MT 1840 Easy ST5",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 8818,
+        "max_lift_height_ft": 57.58,
+        "max_forward_reach_ft": 42.92,
+        "lift_capacity_at_full_height_lbs": 8818,
+        "lift_capacity_at_full_reach_lbs": 1874,
+        "horsepower_hp": 75,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TD 3.6 L",
+        "transmission_type": "Torque converter",
+        "operating_weight_lbs": 25816,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 37,
+        "travel_speed_mph": 15.5,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 28
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MT 1840 Easy ST5 OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: MT1840 Easy ST5, MT 1840 EASY. OEM sheet metric-unit; specs converted to imperial.",
+        "Separate record from MT 1840 ST5 — different horsepower (75 hp vs 100 hp), different operating weight, different capacity at full reach."
+      ]
+    },
+    {
+      "model_slug": "manitou_mt_420_h",
+      "manufacturer": "Manitou",
+      "model": "MT 420 H",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 4409,
+        "max_lift_height_ft": 14.25,
+        "max_forward_reach_ft": 8.67,
+        "lift_capacity_at_full_height_lbs": 4409,
+        "lift_capacity_at_full_reach_lbs": 1984,
+        "horsepower_hp": 57,
+        "engine_manufacturer": "Kubota",
+        "engine_model": "2607-CR-E5",
+        "transmission_type": "Hydrostatic",
+        "operating_weight_lbs": 9237,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 16,
+        "travel_speed_mph": 15,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 20
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou MT 420 H OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: MT420H."
+      ]
+    },
+    {
+      "model_slug": "manitou_ulm_415_h",
+      "manufacturer": "Manitou",
+      "model": "ULM 415 H",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 3307,
+        "max_lift_height_ft": 14.08,
+        "max_forward_reach_ft": 8.58,
+        "lift_capacity_at_full_height_lbs": 3300,
+        "lift_capacity_at_full_reach_lbs": 1212,
+        "horsepower_hp": 35.1,
+        "engine_manufacturer": "Yanmar",
+        "engine_model": "3TNV88C-DMU",
+        "transmission_type": "Hydrostatic",
+        "operating_weight_lbs": 5952,
+        "fuel_type": "diesel",
+        "fuel_capacity_gal": 9,
+        "travel_speed_mph": 16,
+        "drive_type": "4WD",
+        "hydraulic_flow_gpm": 13
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high",
+        "fuel_capacity_gal": "high",
+        "travel_speed_mph": "high",
+        "drive_type": "high",
+        "hydraulic_flow_gpm": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked",
+        "fuel_capacity_gal": "locked",
+        "travel_speed_mph": "locked",
+        "drive_type": "locked",
+        "hydraulic_flow_gpm": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "Manitou ULM 415 H OEM technical sheet; page 2 specs; page 3 load chart"
+      ],
+      "notes": [
+        "Aliases: ULM415H.",
+        "OEM publishes shipping mass min/max 5,952/6,393 lb. Registry uses 5,952 lb (base/min) as operating-equivalent weight."
+      ]
     }
   ],
   "_registry_meta": {
@@ -3288,8 +3876,9 @@
       "OEM lock 2026-04-10 (_apply_jlg_oem_lock_v4_1): 5 JLG G-series records corrected (engine, capacity, weight); 8 new JLG records added (519, 742, 943, 1055, 1255, 1644, AG925, 6042). All single-source OEM locked.",
       "Schema standardization pass v3.5 2026-04-13: Migrated all legacy field names to canonical across 22 records (all manufacturers). Renamed: lift_capacity_lb->lift_capacity_lbs, engine_brand->engine_manufacturer, engine_hp->horsepower_hp, operating_weight_lb->operating_weight_lbs, lift_capacity_at_max_height_lb->lift_capacity_at_full_height_lbs, lift_capacity_at_max_reach_lb->lift_capacity_at_full_reach_lbs. jcb_509_42: legacy duplicates dropped (canonical values from v3.2 preserved). 23 records (14 JCB + 8 SkyTrak + 1 Genie recent) already canonical — untouched. Zero legacy field names remain in registry.",
       "JCB OEM core spec patch v3.6 2026-04-13: Applied canonical fields to 15 JCB records (36 field writes, 21 fields held). NEW fields: jcb_507_42 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs, horsepower_hp), jcb_509_42 (lift_capacity_at_full_height_lbs), jcb_510_56 and jcb_512_56 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs), jcb_540_170 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs). Rounding corrections on jcb_525_60, jcb_531_70, jcb_535_95, jcb_535_125, jcb_535_140, jcb_541_70, jcb_540_140, jcb_540_180. HELD: horsepower_hp on jcb_506_36/509_42/510_56/512_56/520_40/535_140/540_140; reach/weight/capacity conflicts on jcb_509_42/520_40/525_60/535_95/535_140/541_70/540_140; engine_manufacturer conflict on jcb_520_40 (Perkins vs JCB). Held fields require OEM source confirmation before write.",
-      "Phase 1 telehandler patch 2026-05-04: Added 10 OEM-backed current-production records: caterpillar_th0642, caterpillar_th0842, caterpillar_th1055, caterpillar_th1255, caterpillar_th255c, genie_gth_5519, genie_gth_1056, genie_gth_1256, jlg_1732, jlg_2733. Held jlg_1075 due OEM page/PDF conflict on capacity at full height."
+      "Phase 1 telehandler patch 2026-05-04: Added 10 OEM-backed current-production records: caterpillar_th0642, caterpillar_th0842, caterpillar_th1055, caterpillar_th1255, caterpillar_th255c, genie_gth_5519, genie_gth_1056, genie_gth_1256, jlg_1732, jlg_2733. Held jlg_1075 due OEM page/PDF conflict on capacity at full height.",
+      "Phase 2 Manitou patch 2026-05-04: Added 9 OEM-backed Manitou telehandler records: manitou_mt_625_h, manitou_mlt_625_75_h, manitou_mlt_635_130_ps_plus_s2, manitou_mlt_737_130_ps_plus, manitou_mlt_841_145_ps_plus, manitou_mt_1840_st5, manitou_mt_1840_easy_st5, manitou_mt_420_h, manitou_ulm_415_h. MT 625 H Comfort treated as alias/trim of MT 625 H, not separate record. MRT 2660 excluded per patch scope."
     ],
-    "record_count": 55
+    "record_count": 64
   }
 }
