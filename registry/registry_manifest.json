@@ -1,25 +1,24 @@
 {
   "_manifest_meta": {
     "manifest_name": "MTM Equipment Registry Manifest",
-    "version": "2.0",
-    "last_updated": "2026-03-29T00:00:00Z",
+    "version": "2.1",
+    "last_updated": "2026-05-04T00:00:00Z",
     "description": "Master index of all MTM equipment registry files. Update this manifest when a registry file is promoted, locked, or replaced.",
-    "update_notes": "v2.0 (2026-03-29): Full rescan of /registry directory. 9 new registries added (ctl, skid_steer, wheel_loader, excavator, telehandler, backhoe_loader, dozer, scissor_lift, boom_lift). mini_excavator promoted to v2. All 4 original pending_registries promoted to active. pending_registries section cleared."
+    "update_notes": "v2.1 (2026-05-04): mini_excavator promoted to v2_3 (8 new Kubota records). v2.0 (2026-03-29): Full rescan of /registry directory. 9 new registries added."
   },
   "registries": [
     {
       "registry_id": "mini_excavator",
       "display_name": "Mini Excavator Registry",
-      "current_file": "mtm_mini_ex_registry_v2.json",
-      "version": "v2_migration",
+      "current_file": "mtm_mini_ex_registry_v2_3.json",
+      "version": "v2_3",
       "status": "MIGRATION_COMPLETE_UNLOCKED",
-      "record_count": 63,
-      "registry_hash": "a9def637b9f24668",
-      "registry_hash_note": "Hash inherited from v1_final baseline — not yet recomputed for v2 migration additions.",
-      "last_updated": "2026-03-29T20:54:14Z",
+      "record_count": 77,
+      "registry_hash": "pending_recompute",
+      "last_updated": "2026-05-04T00:00:00Z",
       "equipment_type": "mini_excavator",
       "phase": "Phase 2 — migration complete, unlocked for expansion",
-      "notes": "v2 migration added 15 records to the locked v1_final baseline (48 records). Total 63 records. Status MIGRATION_COMPLETE_UNLOCKED means open for further expansion without explicit unlock.",
+      "notes": "v2_3 added 8 Kubota records (K008-5, U10-5, KX018-4, KX040-5, KX057-5, KX080-5, U48-5, U17-5) from Kubota USA OEM sources. Total 77 records. v2_2 had 69 records (v2 migration + batch expansions). Status MIGRATION_COMPLETE_UNLOCKED means open for further expansion without explicit unlock.",
       "history": [
         {
           "file": "mtm_mini_ex_registry_v1.json",
@@ -50,7 +49,22 @@
           "file": "mtm_mini_ex_registry_v2.json",
           "version": "v2_migration",
           "records": 63,
-          "status": "CURRENT"
+          "status": "superseded",
+          "note": "v2 migration baseline. Superseded by v2_2 (batch expansions)."
+        },
+        {
+          "file": "mtm_mini_ex_registry_v2_2.json",
+          "version": "v2_2",
+          "records": 69,
+          "status": "superseded",
+          "note": "Added 6 records (Yanmar VIO55, VIO35, Kubota U55-5, U35-4, Bobcat E10, Cat series). Superseded by v2_3."
+        },
+        {
+          "file": "mtm_mini_ex_registry_v2_3.json",
+          "version": "v2_3",
+          "records": 77,
+          "status": "CURRENT",
+          "note": "Added 8 Kubota records from Kubota USA OEM sources: K008-5, U10-5, KX018-4, KX040-5, KX057-5, KX080-5, U48-5, U17-5. 2026-05-04."
         }
       ]
     },
