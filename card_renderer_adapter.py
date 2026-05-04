@@ -78,19 +78,125 @@ def _fmt_yd3_str(v: float | None) -> str | None:
 # the machine over a blurred cover-fill background. These helpers apply the
 # same treatment to the featured-template hero.
 
+def _trim_uniform_matte(img, color_thresh: int = 12, min_trim_frac: float = 0.02, max_trim_frac: float = 0.45):
+    """Strip uniform-color border bands (letterbox/pillarbox matte) from a PIL image.
+
+    Detects per-side matte by walking inward from each edge as long as every
+    pixel in that row/column is within `color_thresh` of the corner reference
+    on every channel. Caps each side at `max_trim_frac` of that dimension so a
+    photo that happens to have a calm sky doesn't get gutted, and skips trims
+    smaller than `min_trim_frac` so natural edge gradients aren't disturbed.
+    Operates on a downsampled copy for speed; returns a crop of the original.
+    """
+    from PIL import Image as _Image
+
+    w, h = img.size
+    if w < 8 or h < 8:
+        return img
+
+    small_w = min(w, 240)
+    small_h = max(8, int(round(h * (small_w / w))))
+    s = img.resize((small_w, small_h), _Image.BILINEAR).convert("RGB")
+    px = s.load()
+
+    def _close(a, b):
+        return (
+            abs(a[0] - b[0]) <= color_thresh
+            and abs(a[1] - b[1]) <= color_thresh
+            and abs(a[2] - b[2]) <= color_thresh
+        )
+
+    def _row_uniform(y, ref):
+        for x in range(small_w):
+            if not _close(px[x, y], ref):
+                return False
+        return True
+
+    def _col_uniform(x, ref):
+        for y in range(small_h):
+            if not _close(px[x, y], ref):
+                return False
+        return True
+
+    max_top = int(small_h * max_trim_frac)
+    max_bot = small_h - int(small_h * max_trim_frac) - 1
+    max_lft = int(small_w * max_trim_frac)
+    max_rgt = small_w - int(small_w * max_trim_frac) - 1
+
+    top_ref = px[small_w // 2, 0]
+    top = 0
+    while top < max_top and _row_uniform(top, top_ref):
+        top += 1
+
+    bot_ref = px[small_w // 2, small_h - 1]
+    bot = small_h - 1
+    while bot > max_bot and _row_uniform(bot, bot_ref):
+        bot -= 1
+    bot_excl = bot + 1
+
+    lft_ref = px[0, small_h // 2]
+    lft = 0
+    while lft < max_lft and _col_uniform(lft, lft_ref):
+        lft += 1
+
+    rgt_ref = px[small_w - 1, small_h // 2]
+    rgt = small_w - 1
+    while rgt > max_rgt and _col_uniform(rgt, rgt_ref):
+        rgt -= 1
+    rgt_excl = rgt + 1
+
+    min_trim_h = max(1, int(small_h * min_trim_frac))
+    min_trim_w = max(1, int(small_w * min_trim_frac))
+    if top < min_trim_h:
+        top = 0
+    if (small_h - bot_excl) < min_trim_h:
+        bot_excl = small_h
+    if lft < min_trim_w:
+        lft = 0
+    if (small_w - rgt_excl) < min_trim_w:
+        rgt_excl = small_w
+
+    if top == 0 and bot_excl == small_h and lft == 0 and rgt_excl == small_w:
+        return img
+
+    sx = w / small_w
+    sy = h / small_h
+    box = (
+        max(0, int(round(lft * sx))),
+        max(0, int(round(top * sy))),
+        min(w, int(round(rgt_excl * sx))),
+        min(h, int(round(bot_excl * sy))),
+    )
+    if box[2] - box[0] < 8 or box[3] - box[1] < 8:
+        return img
+    return img.crop(box)
+
+
 def _contain_on_blur_image(
     photo_path: str | Path,
     w: int,
     h: int,
     blur_radius: int = 42,
+    foreground_scale: float = 1.18,
 ):
-    """Return a (w, h) RGB PIL Image: blurred cover-fill background + contain-fit source on top."""
+    """Return a (w, h) RGB PIL Image: blurred cover-fill background + enlarged contain-fit source on top.
+
+    `foreground_scale` multiplies the pure-contain scale so the machine reads
+    larger inside the featured zone. Anything that overflows the zone is mildly
+    cropped by the canvas paste (centered), but the cover-fill blurred backdrop
+    still fills any remaining gap on the short axis. Use ~1.0 for true contain;
+    1.15-1.25 trades a tight edge crop for noticeably larger machine read.
+    """
     from PIL import Image, ImageFilter
 
     src = Image.open(photo_path).convert("RGB")
-    sw, sh = src.size
-    if sw <= 0 or sh <= 0:
+    if src.size[0] <= 0 or src.size[1] <= 0:
         return Image.new("RGB", (w, h), (13, 13, 12))
+
+    # Strip uniform letterbox/pillarbox matte before fitting so dealer uploads
+    # with embedded coloured borders don't render as a frame-inside-a-frame.
+    src = _trim_uniform_matte(src)
+    sw, sh = src.size
 
     target_ratio = w / h
     src_ratio = sw / sh
@@ -108,8 +214,10 @@ def _contain_on_blur_image(
         ImageFilter.GaussianBlur(radius=blur_radius)
     )
 
-    # Contain-fit foreground.
-    scale = min(w / sw, h / sh)
+    # Enlarged-contain foreground. Centered paste with a negative offset clips
+    # silently against the canvas, giving a mild edge crop on the long axis
+    # while preserving the full machine body on the short axis.
+    scale = min(w / sw, h / sh) * max(0.1, foreground_scale)
     fw = max(1, int(round(sw * scale)))
     fh = max(1, int(round(sh * scale)))
     foreground = src.resize((fw, fh), Image.LANCZOS)
