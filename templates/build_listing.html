@@ -1169,8 +1169,10 @@
     fd.append('year', year);
     fd.append('make', make);
     fd.append('model', model);
-    // Verify endpoint requires hours; user edits the real value on the verify page.
-    fd.append('hours', '0');
+    // Carry hours from intake when entered; otherwise stage as 0 so the verify
+    // page renders a placeholder and the dealer enters the real value there.
+    const _hoursIntake = (document.getElementById('hours')?.value || '').trim();
+    fd.append('hours', _hoursIntake || '0');
     if (price) fd.append('asking_price', price);
 
     // Featured template selection (from the Page 1 style selector). Server validates
