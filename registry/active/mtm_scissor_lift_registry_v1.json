@@ -3,7 +3,7 @@
     "registry_name": "MTM Scissor Lift Registry v1.0",
     "equipment_type": "scissor_lift",
     "status": "ACTIVE",
-    "record_count": 15,
+    "record_count": 20,
     "manufacturers": ["Genie", "JLG", "Skyjack"],
     "build_date": "2026",
     "coverage_note": "Top-volume North American used-market scissor lifts. Covers electric slab and diesel rough-terrain models.",
@@ -750,6 +750,300 @@
       "source_refs": ["Skyjack SJIII 3219 spec sheet"],
       "notes": ["SJIII 3219: 19 ft platform height (25 ft ANSI working height). Compact interior model."],
       "alias_hints": ["skyjack_sj3219", "skyjack_3219"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Skyjack",
+      "model": "SJIII 3220",
+      "model_slug": "skyjack_sjiii_3220",
+      "model_family": "Skyjack SJIII Electric Series",
+      "years_supported": { "start": 2005, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 19.5,
+        "platform_capacity_lbs": 900,
+        "platform_length_ft": 6.92,
+        "platform_width_ft": 2.33,
+        "operating_weight_lbs": 3917,
+        "power_source": "electric_dc",
+        "stowed_height_in": 69,
+        "stowed_length_ft": 7.63,
+        "drive_speed_stowed_mph": 2.4,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "HIGH",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "locked",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Skyjack SJ3220/26 product page (https://www.skyjack.com/product/sj322026)",
+        "Skyjack SJIII 3220/26 spec sheet (https://www.skyjack.com/sites/default/files/specifications/SJ3220_26.pdf)"
+      ],
+      "notes": [
+        "SJIII 3220: 19 ft 6 in platform height, 25 ft 6 in work height, 900 lb overall capacity.",
+        "stowed_height_in uses OEM rails-down stowed height. stowed_length_ft uses OEM overall length.",
+        "power_source: 24V DC per Skyjack OEM spec sheet."
+      ],
+      "alias_hints": ["skyjack_sj3220", "skyjack_3220", "skyjack_sjiii3220"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Skyjack",
+      "model": "SJIII 3226",
+      "model_slug": "skyjack_sjiii_3226",
+      "model_family": "Skyjack SJIII Electric Series",
+      "years_supported": { "start": 2005, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 25.58,
+        "platform_capacity_lbs": 500,
+        "platform_length_ft": 6.92,
+        "platform_width_ft": 2.33,
+        "operating_weight_lbs": 4190,
+        "power_source": "electric_dc",
+        "stowed_height_in": 76,
+        "stowed_length_ft": 7.63,
+        "drive_speed_stowed_mph": 2.4,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "HIGH",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "locked",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Skyjack SJ3220/26 product page (https://www.skyjack.com/product/sj322026)",
+        "Skyjack SJIII 3220/26 spec sheet (https://www.skyjack.com/sites/default/files/specifications/SJ3220_26.pdf)"
+      ],
+      "notes": [
+        "SJIII 3226: 25 ft 7 in platform height, 31 ft 7 in work height, 500 lb overall capacity.",
+        "stowed_height_in uses OEM rails-down stowed height. stowed_length_ft uses OEM overall length.",
+        "Dedicated record added so model lookup can prefer SJIII 3226 over the existing SJIII series representative."
+      ],
+      "alias_hints": ["skyjack_sj3226", "skyjack_3226", "skyjack_sjiii3226"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Skyjack",
+      "model": "SJIII 4626",
+      "model_slug": "skyjack_sjiii_4626",
+      "model_family": "Skyjack SJIII Electric Series",
+      "years_supported": { "start": 2005, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 26.0,
+        "platform_capacity_lbs": 1000,
+        "platform_length_ft": 7.0,
+        "platform_width_ft": 3.5,
+        "operating_weight_lbs": 4700,
+        "power_source": "electric_dc",
+        "stowed_height_in": 70.5,
+        "stowed_length_ft": 7.58,
+        "drive_speed_stowed_mph": 2.0,
+        "max_ground_slope_pct": 30
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "HIGH",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "locked",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Skyjack SJIII 4626/32 tear sheet (https://www.skyjack.com/sites/default/files/literature-library/SJ4626_32.pdf)"
+      ],
+      "notes": [
+        "SJIII 4626: 26 ft platform height, 32 ft work height, 1,000 lb overall capacity.",
+        "stowed_height_in uses OEM rails-down stowed height. stowed_length_ft uses OEM overall length.",
+        "OEM tear sheet lists 30% gradeability for SJIII 4626."
+      ],
+      "alias_hints": ["skyjack_sj4626", "skyjack_4626", "skyjack_sjiii4626"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Skyjack",
+      "model": "SJIII 4632",
+      "model_slug": "skyjack_sjiii_4632",
+      "model_family": "Skyjack SJIII Electric Series",
+      "years_supported": { "start": 2005, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 32.0,
+        "platform_capacity_lbs": 700,
+        "platform_length_ft": 7.0,
+        "platform_width_ft": 3.5,
+        "operating_weight_lbs": 5075,
+        "power_source": "electric_dc",
+        "stowed_height_in": 74,
+        "stowed_length_ft": 7.58,
+        "drive_speed_stowed_mph": 2.0,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "HIGH",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "locked",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Skyjack SJIII 4632 product page (https://www.skyjack.com/es/product/sjiii-4632)",
+        "Skyjack SJIII 4626/32 tear sheet (https://www.skyjack.com/sites/default/files/literature-library/SJ4626_32.pdf)"
+      ],
+      "notes": [
+        "SJIII 4632: 32 ft platform height, 38 ft work height, 700 lb overall capacity.",
+        "stowed_height_in uses OEM rails-down stowed height. stowed_length_ft uses OEM overall length.",
+        "OEM sources list 25% gradeability for SJIII 4632."
+      ],
+      "alias_hints": ["skyjack_sj4632", "skyjack_4632", "skyjack_sjiii4632"]
+    },
+    {
+      "equipment_type": "scissor_lift",
+      "category": "scissor_lift",
+      "manufacturer": "Skyjack",
+      "model": "SJIII 4740",
+      "model_slug": "skyjack_sjiii_4740",
+      "model_family": "Skyjack SJIII Electric Series",
+      "years_supported": { "start": 2016, "end": null },
+      "status": "active_used_market",
+      "series_record": false,
+      "spec_confidence": "HIGH",
+      "registry_tier": "production",
+      "specs": {
+        "platform_height_ft": 38.92,
+        "platform_capacity_lbs": 770,
+        "platform_length_ft": 7.17,
+        "platform_width_ft": 3.5,
+        "operating_weight_lbs": 6467,
+        "power_source": "electric_dc",
+        "stowed_height_in": 79.5,
+        "stowed_length_ft": 7.88,
+        "drive_speed_stowed_mph": 1.9,
+        "max_ground_slope_pct": 25
+      },
+      "field_confidence": {
+        "platform_height_ft": "HIGH",
+        "platform_capacity_lbs": "HIGH",
+        "platform_length_ft": "HIGH",
+        "platform_width_ft": "HIGH",
+        "operating_weight_lbs": "HIGH",
+        "power_source": "HIGH",
+        "stowed_height_in": "HIGH",
+        "stowed_length_ft": "HIGH",
+        "drive_speed_stowed_mph": "HIGH",
+        "max_ground_slope_pct": "HIGH"
+      },
+      "field_behavior": {
+        "platform_height_ft": "locked",
+        "platform_capacity_lbs": "locked",
+        "platform_length_ft": "locked",
+        "platform_width_ft": "locked",
+        "operating_weight_lbs": "locked",
+        "power_source": "locked",
+        "stowed_height_in": "locked",
+        "stowed_length_ft": "locked",
+        "drive_speed_stowed_mph": "locked",
+        "max_ground_slope_pct": "locked"
+      },
+      "source_refs": [
+        "Skyjack SJ4740 product page (https://www.skyjack.com/product/sj4740)",
+        "Skyjack SJIII 4740 spec sheet (https://www.skyjack.com/sites/default/files/specifications/NA_SJIII_4740_0.pdf)"
+      ],
+      "notes": [
+        "SJIII 4740: 38 ft 11 in platform height, 44 ft 11 in work height, 770 lb overall capacity.",
+        "stowed_height_in uses OEM rails-down stowed height. stowed_length_ft uses OEM overall length.",
+        "Skyjack introduced the SJIII 4740 around 2016; years_supported start set from OEM launch context."
+      ],
+      "alias_hints": ["skyjack_sj4740", "skyjack_4740", "skyjack_sjiii4740"]
     },
     {
       "equipment_type": "scissor_lift",
