@@ -2768,6 +2768,512 @@
       "notes": [
         "JLG OEM spec sheet Part No. 3132249 R05182. Rated Cap=15,650 lb. Max Lift=43 ft 7 in=43.58 ft. Cap at Max Height=6,750 lb. Max Forward Reach=31 ft 1 in=31.08 ft. Engine: Deutz TCD 3.6L 134hp. Hydrostatic 2-speed. OW=33,660 lb."
       ]
+    },
+    {
+      "model_slug": "caterpillar_th0642",
+      "manufacturer": "Caterpillar",
+      "model": "TH0642",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 6000,
+        "max_lift_height_ft": 42.1,
+        "max_forward_reach_ft": 27.6,
+        "lift_capacity_at_full_height_lbs": 6000,
+        "lift_capacity_at_full_reach_lbs": 900,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Caterpillar",
+        "engine_model": "C3.6",
+        "operating_weight_lbs": 21647,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.cat.com/en_US/products/new/equipment/telehandlers/telehandlers/128920.html"
+      ],
+      "notes": [
+        "Cat OEM product page. Rated Cap=6,000 lb. Max Lift=42.1 ft. Max Forward Reach=27.6 ft. Cap at Full Height=6,000 lb. Cap at Full Reach=900 lb. Engine: Cat C3.6 74hp. OW=21,647 lb."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_th0842",
+      "manufacturer": "Caterpillar",
+      "model": "TH0842",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 8000,
+        "max_lift_height_ft": 42.1,
+        "max_forward_reach_ft": 27.6,
+        "lift_capacity_at_full_height_lbs": 6000,
+        "lift_capacity_at_full_reach_lbs": 1700,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Caterpillar",
+        "engine_model": "C3.6",
+        "operating_weight_lbs": 23366,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.cat.com/en_US/products/new/equipment/telehandlers/telehandlers/128900.html"
+      ],
+      "notes": [
+        "Cat OEM product page. Rated Cap=8,000 lb. Max Lift=42.1 ft. Max Forward Reach=27.6 ft. Cap at Full Height=6,000 lb. Cap at Full Reach=1,700 lb. Engine: Cat C3.6 74hp standard; 115hp optional. Registry uses primary standard engine power. OW=23,366 lb."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_th1055",
+      "manufacturer": "Caterpillar",
+      "model": "TH1055",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 10000,
+        "max_lift_height_ft": 54.6,
+        "max_forward_reach_ft": 41.0,
+        "lift_capacity_at_full_height_lbs": 5000,
+        "lift_capacity_at_full_reach_lbs": 3000,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Caterpillar",
+        "engine_model": "C3.6",
+        "operating_weight_lbs": 29838,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.cat.com/en_US/products/new/equipment/telehandlers/telehandlers/128880.html"
+      ],
+      "notes": [
+        "Cat OEM product page. Rated Cap=10,000 lb. Max Lift=54.6 ft. Max Forward Reach=41 ft. Cap at Full Height=5,000 lb. Cap at Full Reach=3,000 lb. Engine: Cat C3.6 74hp standard; higher-power option available. Registry uses primary standard engine power. OW=29,838 lb."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_th1255",
+      "manufacturer": "Caterpillar",
+      "model": "TH1255",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 12000,
+        "max_lift_height_ft": 54.6,
+        "max_forward_reach_ft": 41.0,
+        "lift_capacity_at_full_height_lbs": 5000,
+        "lift_capacity_at_full_reach_lbs": 3500,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Caterpillar",
+        "engine_model": "C3.6",
+        "operating_weight_lbs": 31238,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.cat.com/en_US/products/new/equipment/telehandlers/telehandlers/128840.html"
+      ],
+      "notes": [
+        "Cat OEM product page. Rated Cap=12,000 lb. Max Lift=54.6 ft. Max Forward Reach=41 ft. Cap at Full Height=5,000 lb. Cap at Full Reach=3,500 lb. Engine: Cat C3.6 74hp standard; 115hp optional. Registry uses primary standard engine power. OW=31,238 lb."
+      ]
+    },
+    {
+      "model_slug": "caterpillar_th255c",
+      "manufacturer": "Caterpillar",
+      "model": "TH255C",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 5500,
+        "max_lift_height_ft": 18.37,
+        "max_forward_reach_ft": 10.83,
+        "lift_capacity_at_full_height_lbs": 4400,
+        "lift_capacity_at_full_reach_lbs": 1850,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Caterpillar",
+        "operating_weight_lbs": 11000,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.cat.com/en_US/products/new/equipment/telehandlers/telehandlers/18477506.html/"
+      ],
+      "notes": [
+        "Cat OEM product page. Standard-coupler baseline. Rated Cap=5,500 lb. Max Lift=18 ft 4.4 in=18.37 ft. Max Forward Reach=10 ft 10 in=10.83 ft. Cap at Full Height=4,400 lb. Cap at Full Reach=1,850 lb. Engine power=74hp. OW=11,000 lb."
+      ]
+    },
+    {
+      "model_slug": "genie_gth_5519",
+      "manufacturer": "Genie",
+      "model": "GTH-5519",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 5500,
+        "max_lift_height_ft": 18.83,
+        "max_forward_reach_ft": 11.25,
+        "lift_capacity_at_full_height_lbs": 4400,
+        "lift_capacity_at_full_reach_lbs": 1900,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TD 2.9 L04",
+        "operating_weight_lbs": 10360,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.genielift.com/en/material-handling/telehandlers/gth5519",
+        "https://www.genielift.com/docs/default-source/product-specifications/telehandlers/en/gth-5519_spec_2019.pdf"
+      ],
+      "notes": [
+        "Genie OEM product page and spec PDF. Rated Cap=5,500 lb. Max Lift=18 ft 10 in=18.83 ft. Max Forward Reach=11 ft 3 in=11.25 ft. Cap at Full Height=4,400 lb. Cap at Full Reach=1,900 lb. Engine: Deutz TD 2.9 L04 74hp. OW=10,360 lb."
+      ]
+    },
+    {
+      "model_slug": "genie_gth_1056",
+      "manufacturer": "Genie",
+      "model": "GTH-1056",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 10000,
+        "max_lift_height_ft": 56.58,
+        "max_forward_reach_ft": 42.0,
+        "lift_capacity_at_full_height_lbs": 5000,
+        "lift_capacity_at_full_reach_lbs": 3000,
+        "horsepower_hp": 74,
+        "engine_manufacturer": "Deutz",
+        "operating_weight_lbs": 31900,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.genielift.com/en/material-handling/telehandlers/gth1056",
+        "https://www.genielift.com/docs/default-source/product-specifications/telehandlers/en/2025/gth-1056-product-specifications---2025---en-us.pdf"
+      ],
+      "notes": [
+        "Genie OEM product page and 2025 spec PDF. Rated Cap=10,000 lb. Max Lift=56 ft 7 in=56.58 ft. Max Forward Reach=42 ft. Cap at Full Height=5,000 lb. Cap at Full Reach=3,000 lb. 74hp standard with 121hp option; registry uses primary standard engine power. OW=31,900 lb."
+      ]
+    },
+    {
+      "model_slug": "genie_gth_1256",
+      "manufacturer": "Genie",
+      "model": "GTH-1256",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 12000,
+        "max_lift_height_ft": 56.25,
+        "max_forward_reach_ft": 42.0,
+        "lift_capacity_at_full_height_lbs": 6000,
+        "lift_capacity_at_full_reach_lbs": 3500,
+        "horsepower_hp": 121,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6",
+        "transmission_type": "4-speed powershift",
+        "operating_weight_lbs": 34500,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.genielift.com/en/material-handling/telehandlers/gth1256",
+        "https://www.genielift.com/docs/default-source/product-specifications/telehandlers/en/2025/gth-1256-product-specifications---2025---en-us.pdf"
+      ],
+      "notes": [
+        "Genie OEM product page and 2025 spec PDF. Rated Cap=12,000 lb. Max Lift=56 ft 3 in=56.25 ft. Max Forward Reach=42 ft. Cap at Full Height=6,000 lb. Cap at Full Reach=3,500 lb. Engine: Deutz TCD 3.6 121hp. 4-speed powershift. OW=34,500 lb."
+      ]
+    },
+    {
+      "model_slug": "jlg_1732",
+      "manufacturer": "JLG",
+      "model": "1732",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 16755,
+        "max_lift_height_ft": 31.67,
+        "max_forward_reach_ft": 18.58,
+        "lift_capacity_at_full_height_lbs": 9900,
+        "lift_capacity_at_full_reach_lbs": 5500,
+        "horsepower_hp": 134,
+        "engine_manufacturer": "Deutz",
+        "engine_model": "TCD 3.6L",
+        "transmission_type": "hydrostatic 2-speed",
+        "operating_weight_lbs": 31145,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.jlg.com/dfsmedia/e4042b10c9ce4595b4cc059f1299f079/1692-source"
+      ],
+      "notes": [
+        "JLG OEM spec sheet. Rated Cap=16,755 lb. Max Lift=31 ft 8 in=31.67 ft. Cap at Full Height=9,900 lb. Max Forward Reach=18 ft 7 in=18.58 ft. Cap at Full Reach=5,500 lb. Engine: Deutz TCD 3.6L 134hp. Hydrostatic 2-speed. OW=31,145 lb."
+      ]
+    },
+    {
+      "model_slug": "jlg_2733",
+      "manufacturer": "JLG",
+      "model": "2733",
+      "category": "telehandler",
+      "equipment_type": "telehandler",
+      "specs": {
+        "lift_capacity_lbs": 26600,
+        "max_lift_height_ft": 33.08,
+        "max_forward_reach_ft": 17.58,
+        "lift_capacity_at_full_height_lbs": 15500,
+        "lift_capacity_at_full_reach_lbs": 8000,
+        "horsepower_hp": 160,
+        "engine_manufacturer": "Cummins",
+        "engine_model": "QSB4.5L",
+        "transmission_type": "hydrostatic 2-speed",
+        "operating_weight_lbs": 38775,
+        "fuel_type": "diesel"
+      },
+      "field_confidence": {
+        "lift_capacity_lb": "high",
+        "max_lift_height_ft": "high",
+        "max_forward_reach_ft": "high",
+        "lift_capacity_at_max_height_lb": "high",
+        "lift_capacity_at_max_reach_lb": "high",
+        "engine_hp": "high",
+        "engine_brand": "high",
+        "engine_model": "high",
+        "transmission_type": "high",
+        "operating_weight_lb": "high",
+        "fuel_type": "high"
+      },
+      "field_behavior": {
+        "lift_capacity_lb": "locked",
+        "max_lift_height_ft": "locked",
+        "max_forward_reach_ft": "locked",
+        "lift_capacity_at_max_height_lb": "locked",
+        "lift_capacity_at_max_reach_lb": "locked",
+        "engine_hp": "locked",
+        "engine_brand": "locked",
+        "engine_model": "locked",
+        "transmission_type": "locked",
+        "operating_weight_lb": "locked",
+        "fuel_type": "locked"
+      },
+      "spec_confidence": "high",
+      "source_refs": [
+        "https://www.jlg.com/en/equipment/telehandlers/jlg/2733"
+      ],
+      "notes": [
+        "JLG OEM product page and linked spec sheet. Rated Cap=26,600 lb. Max Lift=33 ft 1 in=33.08 ft. Cap at Full Height=15,500 lb. Max Forward Reach=17 ft 7 in=17.58 ft. Cap at Full Reach=8,000 lb. Engine: Cummins QSB4.5L 160hp. Hydrostatic 2-speed. OW=38,775 lb."
+      ]
     }
   ],
   "_registry_meta": {
@@ -2781,8 +3287,9 @@
       "Schema lock pass v3.4 2026-04-09: All 8 SkyTrak records confirmed clean. 9 new-convention core fields locked as source of truth. Legacy duplicate fields (lift_capacity_lb, engine_brand, engine_hp, operating_weight_lb) confirmed absent. Non-core extras (fuel_capacity_gal, travel_speed_mph, steering_modes, fuel_type) preserved on 4 legacy records. JCB records untouched.",
       "OEM lock 2026-04-10 (_apply_jlg_oem_lock_v4_1): 5 JLG G-series records corrected (engine, capacity, weight); 8 new JLG records added (519, 742, 943, 1055, 1255, 1644, AG925, 6042). All single-source OEM locked.",
       "Schema standardization pass v3.5 2026-04-13: Migrated all legacy field names to canonical across 22 records (all manufacturers). Renamed: lift_capacity_lb->lift_capacity_lbs, engine_brand->engine_manufacturer, engine_hp->horsepower_hp, operating_weight_lb->operating_weight_lbs, lift_capacity_at_max_height_lb->lift_capacity_at_full_height_lbs, lift_capacity_at_max_reach_lb->lift_capacity_at_full_reach_lbs. jcb_509_42: legacy duplicates dropped (canonical values from v3.2 preserved). 23 records (14 JCB + 8 SkyTrak + 1 Genie recent) already canonical — untouched. Zero legacy field names remain in registry.",
-      "JCB OEM core spec patch v3.6 2026-04-13: Applied canonical fields to 15 JCB records (36 field writes, 21 fields held). NEW fields: jcb_507_42 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs, horsepower_hp), jcb_509_42 (lift_capacity_at_full_height_lbs), jcb_510_56 and jcb_512_56 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs), jcb_540_170 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs). Rounding corrections on jcb_525_60, jcb_531_70, jcb_535_95, jcb_535_125, jcb_535_140, jcb_541_70, jcb_540_140, jcb_540_180. HELD: horsepower_hp on jcb_506_36/509_42/510_56/512_56/520_40/535_140/540_140; reach/weight/capacity conflicts on jcb_509_42/520_40/525_60/535_95/535_140/541_70/540_140; engine_manufacturer conflict on jcb_520_40 (Perkins vs JCB). Held fields require OEM source confirmation before write."
+      "JCB OEM core spec patch v3.6 2026-04-13: Applied canonical fields to 15 JCB records (36 field writes, 21 fields held). NEW fields: jcb_507_42 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs, horsepower_hp), jcb_509_42 (lift_capacity_at_full_height_lbs), jcb_510_56 and jcb_512_56 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs), jcb_540_170 (lift_capacity_lbs, max_lift_height_ft, max_forward_reach_ft, lift_capacity_at_full_height_lbs). Rounding corrections on jcb_525_60, jcb_531_70, jcb_535_95, jcb_535_125, jcb_535_140, jcb_541_70, jcb_540_140, jcb_540_180. HELD: horsepower_hp on jcb_506_36/509_42/510_56/512_56/520_40/535_140/540_140; reach/weight/capacity conflicts on jcb_509_42/520_40/525_60/535_95/535_140/541_70/540_140; engine_manufacturer conflict on jcb_520_40 (Perkins vs JCB). Held fields require OEM source confirmation before write.",
+      "Phase 1 telehandler patch 2026-05-04: Added 10 OEM-backed current-production records: caterpillar_th0642, caterpillar_th0842, caterpillar_th1055, caterpillar_th1255, caterpillar_th255c, genie_gth_5519, genie_gth_1056, genie_gth_1256, jlg_1732, jlg_2733. Held jlg_1075 due OEM page/PDF conflict on capacity at full height."
     ],
-    "record_count": 45
+    "record_count": 55
   }
 }
