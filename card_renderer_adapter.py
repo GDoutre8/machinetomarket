@@ -18,6 +18,8 @@ export_listing_card(full_record, dealer_dict, output_path, *, fail_silently) -> 
 
 from __future__ import annotations
 
+import base64
+import io
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -63,6 +65,83 @@ def _fmt_yd3_str(v: float | None) -> str | None:
         return None
     fv = float(v)
     return str(int(fv)) if fv == int(fv) else f"{fv:.2f}".rstrip("0")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured-template image fit helpers
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Featured templates frame the machine in a fixed photo zone (1080×1350,
+# 1008×540, etc.). Plain object-fit:cover crops the source to fill that zone,
+# which can lop off attachments on wide horizontals and chop the cab on
+# portraits. The standard listing-photo pipeline avoids this by contain-fitting
+# the machine over a blurred cover-fill background. These helpers apply the
+# same treatment to the featured-template hero.
+
+def _contain_on_blur_image(
+    photo_path: str | Path,
+    w: int,
+    h: int,
+    blur_radius: int = 42,
+):
+    """Return a (w, h) RGB PIL Image: blurred cover-fill background + contain-fit source on top."""
+    from PIL import Image, ImageFilter
+
+    src = Image.open(photo_path).convert("RGB")
+    sw, sh = src.size
+    if sw <= 0 or sh <= 0:
+        return Image.new("RGB", (w, h), (13, 13, 12))
+
+    target_ratio = w / h
+    src_ratio = sw / sh
+
+    # Cover-cropped + blurred backdrop.
+    if src_ratio > target_ratio:
+        new_w = int(round(sh * target_ratio))
+        x0 = (sw - new_w) // 2
+        bg_crop = src.crop((x0, 0, x0 + new_w, sh))
+    else:
+        new_h = int(round(sw / target_ratio))
+        y0 = (sh - new_h) // 2
+        bg_crop = src.crop((0, y0, sw, y0 + new_h))
+    background = bg_crop.resize((w, h), Image.LANCZOS).filter(
+        ImageFilter.GaussianBlur(radius=blur_radius)
+    )
+
+    # Contain-fit foreground.
+    scale = min(w / sw, h / sh)
+    fw = max(1, int(round(sw * scale)))
+    fh = max(1, int(round(sh * scale)))
+    foreground = src.resize((fw, fh), Image.LANCZOS)
+    fx = (w - fw) // 2
+    fy = (h - fh) // 2
+    background.paste(foreground, (fx, fy))
+    return background
+
+
+def _contain_on_blur_data_uri(
+    photo_path: str | Path | None,
+    w: int,
+    h: int,
+    blur_radius: int = 42,
+) -> str | None:
+    """Compose a contain-on-blur image and return it as a base64 JPEG data URI."""
+    if not photo_path:
+        return None
+    p = Path(photo_path)
+    if not p.is_file():
+        return None
+    img = _contain_on_blur_image(p, w, h, blur_radius=blur_radius)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=92)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+
+_FEATURED_PHOTO_ZONES = {
+    "price_tag":      (1080, 1350),
+    "auction_ticket": (1008, 540),
+    "wide_shot":      (1080, 746),
+}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -220,6 +299,12 @@ def export_listing_card(
         if chosen == "badge_only":
             _export_badge_only(payload, output_path)
         else:
+            zone = _FEATURED_PHOTO_ZONES.get(chosen)
+            if zone is not None:
+                src_photo = (payload.get("machine") or {}).get("photo_path")
+                fit_uri = _contain_on_blur_data_uri(src_photo, zone[0], zone[1])
+                if fit_uri is not None:
+                    payload["machine"]["photo_path"] = fit_uri
             # Suppress the HTML-rendered dealer badge/footer for templates that
             # now receive the standard composited badge. The dealer payload is
             # preserved on a copy so the post-composite step still has logo,
@@ -280,9 +365,11 @@ def _export_badge_only(payload: dict, output_path: Path) -> None:
     logo is uploaded, text/initials badge if only name/phone, clean photo
     if no dealer identity). No price tag, no spec rail, no full overlay.
 
-    The hero is sized to 1080×1350 (Facebook portrait) by center-cropping
-    to 4:5 then resizing — same frame as the price_tag / wide_shot /
-    auction_ticket exports — so all four templates produce parity output.
+    The hero is sized to 1080×1350 (Facebook portrait) by contain-fitting
+    the source over a blurred cover-fill background — same frame as the
+    price_tag / wide_shot / auction_ticket exports — so all four templates
+    produce parity output and the full machine remains visible regardless
+    of the dealer's source aspect ratio.
     """
     from PIL import Image
 
@@ -300,21 +387,7 @@ def _export_badge_only(payload: dict, output_path: Path) -> None:
         Image.new("RGB", (HERO_W, HERO_H), (26, 26, 24)).save(output_path)
         return
 
-    # Center-crop to 4:5 then resize to 1080×1350. Matches the export size
-    # of the HTML-rendered templates so the hero sits in the same Facebook
-    # portrait frame regardless of the dealer's source aspect ratio.
-    src = Image.open(photo_path).convert("RGB")
-    sw, sh = src.size
-    target_ratio = HERO_W / HERO_H  # 0.8
-    if sw / sh > target_ratio:
-        new_w = int(round(sh * target_ratio))
-        x0 = (sw - new_w) // 2
-        cropped = src.crop((x0, 0, x0 + new_w, sh))
-    else:
-        new_h = int(round(sw / target_ratio))
-        y0 = (sh - new_h) // 2
-        cropped = src.crop((0, y0, sw, y0 + new_h))
-    hero = cropped.resize((HERO_W, HERO_H), Image.LANCZOS)
+    hero = _contain_on_blur_image(photo_path, HERO_W, HERO_H)
     hero.save(output_path, quality=92)
 
     # Reuse the shared helper so badge_only and the HTML-rendered featured

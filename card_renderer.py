@@ -101,6 +101,8 @@ def _icon(key: str, size: int = 22, stroke: float = 2.0) -> str:
 def _photo_data_uri(photo_path: str | None) -> str | None:
     if not photo_path:
         return None
+    if isinstance(photo_path, str) and photo_path.startswith("data:"):
+        return photo_path
     p = Path(photo_path)
     if not p.is_file():
         return None
