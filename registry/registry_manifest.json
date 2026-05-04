@@ -172,12 +172,12 @@
       "current_file": "mtm_scissor_lift_registry_v1.json",
       "version": "v1.0",
       "status": "ACTIVE",
-      "record_count": 9,
+      "record_count": 20,
       "registry_hash": "unknown",
-      "last_updated": "2026-03-27",
+      "last_updated": "2026-05-04",
       "equipment_type": "scissor_lift",
       "phase": "Phase 1 — initial build",
-      "notes": "9 records: Genie GS-1930, GS-2632, GS-3232 (series rep), GRT3246 (RT rep); JLG 1930ES, 2630ES (series rep), 3246R (RT rep); Skyjack SJIII 3219, SJIII 3226 (series rep). Covers electric slab and diesel rough-terrain. Not present in original manifest — newly discovered in scan.",
+      "notes": "20 records: original 9 (Genie GS-1930, GS-2632, GS-3232 series rep, GRT3246 RT rep; JLG 1930ES, 2630ES series rep, 3246R RT rep; Skyjack SJIII 3219, SJIII 3226 series rep) plus 11 added 2026-05-04 (Genie GS-2646, GS-3232, GS-3246, GS-4047, GS-4069 RT, GS-5390 RT; Skyjack SJIII 3220, SJIII 3226, SJIII 4626, SJIII 4632, SJIII 4740). Covers electric slab and diesel rough-terrain.",
       "history": []
     },
     {
