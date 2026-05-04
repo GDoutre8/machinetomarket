@@ -857,6 +857,15 @@ def _render_auction_ticket(data: dict) -> str:
         "PLATFORM CAP":      "PLAT CAP",
         "HORIZ REACH":       "REACH",
     }
+    # Parallel full-name descriptors shown beneath each value. Keyed by the
+    # internal spec label produced by _build_specs(); falls back to the spec
+    # label itself if a key is unmapped.
+    descriptor_map = {
+        "RATED OP CAPACITY": "Rated Operating Capacity",
+        "NET HORSEPOWER":    "Net Horsepower",
+        "AUX FLOW":          "Auxiliary Hydraulic Flow",
+        "HIGH FLOW":         "Auxiliary Hydraulic Flow",
+    }
     for i, spec in enumerate(specs):
         sep_cls = "" if i == 0 else " has-sep"
         long_label = spec["label"]
@@ -871,10 +880,8 @@ def _render_auction_ticket(data: dict) -> str:
             value_html = (
                 f'<span class="sl-val">{html.escape(spec["value"])}</span>{unit_html}'
             )
-        sub_html = (
-            f'<div class="sl-label">{html.escape(long_label)}</div>'
-            if short_label != long_label else ""
-        )
+        descriptor = descriptor_map.get(long_label, long_label)
+        sub_html = f'<div class="sl-label">{html.escape(descriptor)}</div>'
         spec_cells.append(
             f'<div class="sl-cell{sep_cls}">'
             f'  <div class="sl-head">'
