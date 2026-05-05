@@ -846,7 +846,15 @@ async def walkaround_start(session_id: str):
     dealer_phone = (_dp.get("phone")       or "").strip() or None
     accent_color = (_dp.get("accentColor") or "yellow")
 
-    from walkaround_generator import generate_walkaround_video, walkaround_filename
+    from walkaround_generator import generate_walkaround_video, walkaround_filename, check_ffmpeg_available
+    try:
+        check_ffmpeg_available()
+    except RuntimeError:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Video generation is unavailable on this server (FFmpeg not installed)."},
+        )
+
     filename = walkaround_filename(year, make, model)
     pack_dir = os.path.join(session_dir, "listing_output")
     os.makedirs(pack_dir, exist_ok=True)
@@ -887,6 +895,35 @@ async def walkaround_start(session_id: str):
                 "filename": filename,
                 "error_detail": None,
             })
+            # Sync MP4 completion into outputs_explicit.json and metadata_internal.json.
+            # MP4 is a standalone artifact — it is NOT added to listing_output.zip.
+            try:
+                _exp_path = os.path.join(pack_dir, "outputs_explicit.json")
+                _exp: dict = {}
+                if os.path.isfile(_exp_path):
+                    with open(_exp_path, encoding="utf-8") as _ef:
+                        _exp = json.load(_ef) or {}
+                _exp["walkaround_video_mp4"] = os.path.abspath(output_path)
+                _exp_tmp = _exp_path + ".tmp"
+                with open(_exp_tmp, "w", encoding="utf-8") as _ef:
+                    json.dump(_exp, _ef, indent=2)
+                os.replace(_exp_tmp, _exp_path)
+            except Exception:
+                pass
+            try:
+                _meta_path = os.path.join(pack_dir, "metadata_internal.json")
+                _meta: dict = {}
+                if os.path.isfile(_meta_path):
+                    with open(_meta_path, encoding="utf-8") as _mf:
+                        _meta = json.load(_mf) or {}
+                _meta["has_walkaround_video"] = True
+                _meta["walkaround_video_filename"] = filename
+                _meta_tmp = _meta_path + ".tmp"
+                with open(_meta_tmp, "w", encoding="utf-8") as _mf:
+                    json.dump(_meta, _mf, indent=2)
+                os.replace(_meta_tmp, _meta_path)
+            except Exception:
+                pass
         except Exception as exc:
             _walkaround_status_write(session_id, {
                 "state": "failed",
@@ -919,6 +956,8 @@ async def walkaround_status(session_id: str):
                 resp["video_url"] = f"/outputs/{session_id}/listing_output/{fname}"
             else:
                 resp["state"] = "failed"
+    if resp.get("state") == "failed":
+        resp["error_detail"] = data.get("error_detail") or ""
     return resp
 
 
@@ -1074,7 +1113,7 @@ async def generate_listing_pack_endpoint(
             raw_text             = raw,
             photo_count          = len(photo_paths),
             eq_type_fallback     = _registry_eq_type,
-            has_walkaround_video = False,
+            has_walkaround_video = _walkaround_status_read(os.path.basename(session_dir)).get("state") == "complete",
             has_spec_sheet_pdf   = bool(pack["outputs"].get("spec_sheet_png")),
         )
         pack_scoring        = _score_listing(scorer_input)

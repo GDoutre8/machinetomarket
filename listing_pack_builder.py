@@ -16,14 +16,13 @@ Output structure:
             {machine}_NN_listing.jpg  (per uploaded photo)
         Original_Photos/
         metadata_internal.json
-        walkaround.mp4   (only if generated or provided)
-    {session_dir}/listing_output.zip
+    {session_dir}/listing_output.zip  (static listing assets only — MP4 never included)
+    {session_dir}/listing_output/{year}_{make}_{model}_Walkaround.mp4  (separate optional download)
 
 Priority order (graceful fallback):
     1. listing_description.txt — always attempted
     2. spec sheet PNG   — skipped if no resolved specs
     3. image pack       — skipped if no photos
-    4. walkaround video — last; failure never blocks ZIP
 
 Usage:
     from listing_pack_builder import build_listing_pack
@@ -179,16 +178,17 @@ def _renumber_listing_photos(listing_dir: Path, machine_name: str) -> None:
 
 
 # Desired top-level entry order in the ZIP (lower index = earlier)
-# Files written to pack_dir for server-side use but excluded from the user ZIP
+# Files written to pack_dir for server-side use but excluded from the user ZIP.
+# .mp4 is intentionally excluded: walkaround video is a separate optional
+# standalone download and must never be bundled into listing_output.zip.
 _ZIP_EXCLUDE = {"metadata_internal.json"}
-_ZIP_EXCLUDE_SUFFIXES = {".debug.html"}
+_ZIP_EXCLUDE_SUFFIXES = {".debug.html", ".mp4"}
 
 _ZIP_ORDER = [
     "START_HERE.txt",
     "listing_description.txt",
     "Listing_Photos",
     "Original_Photos",
-    "walkaround.mp4",
 ]
 
 

@@ -88,6 +88,11 @@ def _find_ffmpeg() -> str:
     raise RuntimeError("ffmpeg not found on PATH or known install locations.")
 
 
+def check_ffmpeg_available() -> None:
+    """Raise RuntimeError if ffmpeg cannot be located. Call before starting a job."""
+    _find_ffmpeg()
+
+
 def _load_font(size: int) -> ImageFont.ImageFont:
     """Best-effort font load; fall back to default."""
     candidates = [

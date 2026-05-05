@@ -1491,6 +1491,14 @@
             } else if (st === "failed") {
               if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
               show("absent");
+              if (errorEl) {
+                var detail = data.error_detail || "";
+                var failMsg = (detail.toLowerCase().indexOf("ffmpeg") !== -1)
+                  ? "Video generation is unavailable on this server (FFmpeg not installed)."
+                  : "Rendering failed. Please try again.";
+                errorEl.textContent = failMsg;
+                errorEl.style.display = "";
+              }
               if (waLastReportedState !== "failed") {
                 reportTerminal("walkaround_video_failed", {reason: "render_failed"});
                 waLastReportedState = "failed";
