@@ -4,7 +4,7 @@ walkaround_generator.py
 MTM Walkaround Video Generator (async-friendly, vertical 1080x1920).
 
 Produces a 1080x1920 H.264 MP4 with a silent AAC stereo track, intro card,
-per-photo Ken-Burns slides, and outro card. Designed to be invoked from
+static photo slides, and outro card. Designed to be invoked from
 `asyncio.to_thread(...)` by an async job runner. Synchronous internals.
 
 Public API:
@@ -32,7 +32,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants
@@ -57,6 +57,8 @@ MAX_PHOTOS = 10
 MIN_PHOTOS = 4
 DEFAULT_TIMEOUT = 240
 DEFAULT_ACCENT = "#FFCC00"
+MAX_CROP_FRACTION = 0.10  # max overflow of a canvas edge before scale is reduced
+BLUR_RADIUS = 40          # GaussianBlur radius on background fill
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -214,22 +216,93 @@ def _make_outro_card(
     img.save(out_path, "PNG")
 
 
-def _letterbox_photo(src: str, dst: str) -> bool:
-    """Letterbox a source photo onto a 1080x1920 black canvas. Returns True on success."""
+def _foreground_scale_for_ratio(src_w: int, src_h: int) -> float:
+    """
+    Return a target foreground scale multiplier based on photo aspect ratio.
+    The caller applies crop protection to cap this before use.
+
+    ratio < 0.75  → portrait / vertical  → 1.04 (machine tall, minimal boost)
+    0.75–1.20     → near-square          → 1.12
+    1.20–1.80     → standard horizontal  → 1.18
+    > 1.80        → very wide            → 1.22
+    """
+    ratio = src_w / max(src_h, 1)
+    if ratio < 0.75:
+        return 1.04
+    elif ratio < 1.20:
+        return 1.12
+    elif ratio < 1.80:
+        return 1.18
+    else:
+        return 1.22
+
+
+def _compose_photo_slide(src: str, dst: str) -> bool:
+    """
+    Compose a 1080x1920 photo slide with blurred cover-fill background.
+
+    Background: same photo scaled to cover the full canvas, then blurred + dimmed.
+    Foreground: contain-fit × adaptive scale (ratio-dependent), with crop protection
+    ensuring neither canvas edge is overflowed by more than MAX_CROP_FRACTION.
+    """
     try:
         with Image.open(src) as im:
             im = im.convert("RGB")
             sw, sh = im.size
-            scale = min(TARGET_W / sw, TARGET_H / sh)
-            new_w = max(1, int(sw * scale))
-            new_h = max(1, int(sh * scale))
-            resized = im.resize((new_w, new_h), Image.LANCZOS)
-            canvas = Image.new("RGB", (TARGET_W, TARGET_H), (0, 0, 0))
-            canvas.paste(resized, ((TARGET_W - new_w) // 2, (TARGET_H - new_h) // 2))
+
+            # --- Background: cover-fill → center-crop → blur → dim ---
+            bg_scale = max(TARGET_W / sw, TARGET_H / sh)
+            bg_w = max(1, int(sw * bg_scale))
+            bg_h = max(1, int(sh * bg_scale))
+            bg = im.resize((bg_w, bg_h), Image.LANCZOS)
+            bx = (bg_w - TARGET_W) // 2
+            by = (bg_h - TARGET_H) // 2
+            bg = bg.crop((bx, by, bx + TARGET_W, by + TARGET_H))
+            bg = bg.filter(ImageFilter.GaussianBlur(radius=BLUR_RADIUS))
+            bg = bg.point(lambda p: int(p * 0.55))  # dim so foreground pops
+
+            # --- Foreground: contain-fit × adaptive scale with crop protection ---
+            contain_scale = min(TARGET_W / sw, TARGET_H / sh)
+            contain_w_px = contain_scale * sw   # equals TARGET_W or TARGET_H at constraint
+            contain_h_px = contain_scale * sh
+
+            adaptive = _foreground_scale_for_ratio(sw, sh)
+
+            # Crop protection: each canvas edge may overflow by at most MAX_CROP_FRACTION.
+            # For the constrained dimension (which already fills the canvas edge), this
+            # caps the scale at (1 + MAX_CROP_FRACTION). The unconstrained dimension has
+            # room to grow and will not be the binding limit.
+            max_scale_w = (TARGET_W * (1.0 + MAX_CROP_FRACTION)) / contain_w_px
+            max_scale_h = (TARGET_H * (1.0 + MAX_CROP_FRACTION)) / contain_h_px
+            effective = min(adaptive, max_scale_w, max_scale_h)
+
+            print(
+                f"  [Walkaround] {os.path.basename(src)}: "
+                f"{sw}x{sh} ratio={sw/sh:.2f} "
+                f"target={adaptive:.3f} effective={effective:.3f}"
+            )
+
+            fg_scale = contain_scale * effective
+            fg_w = max(1, int(sw * fg_scale))
+            fg_h = max(1, int(sh * fg_scale))
+            fg = im.resize((fg_w, fg_h), Image.LANCZOS)
+
+            # Center position; if foreground overflows, crop it symmetrically
+            dst_x = (TARGET_W - fg_w) // 2
+            dst_y = (TARGET_H - fg_h) // 2
+            crop_l = max(0, -dst_x)
+            crop_t = max(0, -dst_y)
+            crop_r = fg_w - max(0, dst_x + fg_w - TARGET_W)
+            crop_b = fg_h - max(0, dst_y + fg_h - TARGET_H)
+            if crop_l or crop_t or crop_r < fg_w or crop_b < fg_h:
+                fg = fg.crop((crop_l, crop_t, crop_r, crop_b))
+
+            canvas = bg.copy()
+            canvas.paste(fg, (max(0, dst_x), max(0, dst_y)))
             canvas.save(dst, "PNG")
         return True
     except Exception as exc:
-        print(f"  [Walkaround] photo letterbox failed for {src}: {exc}")
+        print(f"  [Walkaround] photo compose failed for {src}: {exc}")
         return False
 
 
@@ -239,20 +312,16 @@ def _letterbox_photo(src: str, dst: str) -> bool:
 
 def _build_filter_complex(n_photos: int) -> str:
     """
-    Build a filter_complex graph: intro + N photo zoompan slides + outro,
+    Build a filter_complex graph: intro + N static photo slides + outro,
     concatenated. Inputs order:
       [0] intro_card.png  (loop, t=INTRO_SECS)
       [1..n] photo_NN.png (loop, t=SLIDE_SECS each)
       [n+1] outro_card.png (loop, t=OUTRO_SECS)
-    All inputs are already 1080x1920 so we just set sar=1 and run zoompan
-    on photo inputs for a subtle ken-burns effect.
+    All inputs are already 1080x1920. Photos hold completely still for their
+    full duration — no zoom, no pan, no drift.
     """
     parts: list[str] = []
     labels: list[str] = []
-
-    intro_frames = max(1, int(round(INTRO_SECS * FPS)))
-    slide_frames = max(1, int(round(SLIDE_SECS * FPS)))
-    outro_frames = max(1, int(round(OUTRO_SECS * FPS)))
 
     # Intro
     parts.append(
@@ -260,14 +329,11 @@ def _build_filter_complex(n_photos: int) -> str:
     )
     labels.append("[vintro]")
 
-    # Photo slides with zoompan
+    # Photo slides — static hold, no motion
     for i in range(n_photos):
         in_idx = i + 1
-        # zoompan: start at 1.0, end at 1.08 across slide_frames
-        zoom_expr = f"min(zoom+0.0008,1.08)"
         parts.append(
             f"[{in_idx}:v]setsar=1,fps={FPS},format=yuv420p,"
-            f"zoompan=z='{zoom_expr}':d={slide_frames}:s={TARGET_W}x{TARGET_H}:fps={FPS},"
             f"trim=duration={SLIDE_SECS},setpts=PTS-STARTPTS[vp{i}]"
         )
         labels.append(f"[vp{i}]")
@@ -334,11 +400,11 @@ def generate_walkaround_video(
         _make_intro_card(intro_path, year, make, model, accent_rgb)
         _make_outro_card(outro_path, dealer_name, dealer_phone, accent_rgb)
 
-        # 2. Letterbox photos to PNG
+        # 2. Compose photo slides (blurred bg + scaled fg)
         photo_pngs: list[str] = []
         for i, src in enumerate(valid):
             dst = os.path.join(tmp_dir, f"photo_{i:02d}.png")
-            if _letterbox_photo(src, dst):
+            if _compose_photo_slide(src, dst):
                 photo_pngs.append(dst)
 
         if len(photo_pngs) < MIN_PHOTOS:
