@@ -794,20 +794,20 @@ def _walkaround_status_write(session_id: str, data: dict) -> None:
 
 
 def _gather_walkaround_photos(session_id: str) -> list[str]:
-    uploads = os.path.join(_OUTPUTS_DIR, session_id, "_uploads")
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    uploads = os.path.join(session_dir, "_uploads")
     if not os.path.isdir(uploads):
         return []
     valid_ext = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".tif"}
+    explicit_order = _read_photo_order(session_dir)
+    names = _verify_list_photos(uploads, explicit_order=explicit_order)
     found: list[str] = []
-    for name in sorted(os.listdir(uploads)):
-        if name == "dealer_logo.png":
-            continue
-        full = os.path.join(uploads, name)
-        if not os.path.isfile(full):
-            continue
+    for name in names:
         if os.path.splitext(name)[1].lower() not in valid_ext:
             continue
-        found.append(full)
+        full = os.path.join(uploads, name)
+        if os.path.isfile(full):
+            found.append(full)
     return found[:10]
 
 
@@ -2179,17 +2179,32 @@ def _verify_uploads_dir(session_id: str) -> str:
     return uploads_dir
 
 
-def _verify_list_photos(uploads_dir: str, featured: Optional[str] = None) -> list[str]:
+def _verify_list_photos(
+    uploads_dir: str,
+    featured: Optional[str] = None,
+    explicit_order: Optional[list] = None,
+) -> list[str]:
     if not os.path.isdir(uploads_dir):
         return []
-    out = []
-    for name in sorted(os.listdir(uploads_dir)):
+    on_disk: set[str] = set()
+    for name in os.listdir(uploads_dir):
         if name == "dealer_logo.png":
             continue
         if os.path.isfile(os.path.join(uploads_dir, name)):
+            on_disk.add(name)
+    if explicit_order is not None:
+        seen: set[str] = set()
+        out: list[str] = []
+        for name in explicit_order:
+            if name in on_disk and name not in seen:
+                out.append(name)
+                seen.add(name)
+        for name in sorted(on_disk - seen):
             out.append(name)
-    if featured and featured in out:
-        out = [featured] + [n for n in out if n != featured]
+    else:
+        out = sorted(on_disk)
+        if featured and featured in out:
+            out = [featured] + [n for n in out if n != featured]
     return out
 
 
@@ -2211,6 +2226,32 @@ def _verify_get_featured(session_id: str) -> Optional[str]:
         return None
 
 
+def _photo_order_path(session_dir: str) -> str:
+    return os.path.join(session_dir, "photo_order.json")
+
+
+def _read_photo_order(session_dir: str) -> Optional[list[str]]:
+    p = _photo_order_path(session_dir)
+    if not os.path.isfile(p):
+        return None
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, list):
+            return [str(x) for x in data if x]
+    except Exception:
+        pass
+    return None
+
+
+def _write_photo_order(session_dir: str, order: list[str]) -> None:
+    p = _photo_order_path(session_dir)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(order, f)
+    os.replace(tmp, p)
+
+
 def _verify_get_featured_for_dir(session_dir: str) -> Optional[str]:
     p = os.path.join(session_dir, "_featured_photo.txt")
     if not os.path.isfile(p):
@@ -2227,11 +2268,36 @@ def _verify_get_featured_for_dir(session_dir: str) -> Optional[str]:
 async def build_listing_verify_photos_list(session_id: str):
     """List photos currently staged for a verify session (drives the thumb grid)."""
     uploads_dir = _verify_uploads_dir(session_id)
+    session_dir = os.path.dirname(uploads_dir)
     featured = _verify_get_featured(session_id)
-    photos = _verify_list_photos(uploads_dir, featured=featured)
+    explicit_order = _read_photo_order(session_dir)
+    photos = _verify_list_photos(uploads_dir, featured=featured, explicit_order=explicit_order)
     if not featured or featured not in photos:
         featured = photos[0] if photos else None
     return JSONResponse({"photos": photos, "featured": featured})
+
+
+@app.post("/build-listing/verify/{session_id}/photos/order")
+async def build_listing_verify_photos_set_order(session_id: str, request: Request):
+    """Persist dealer-defined photo sequence."""
+    session_id = _verify_safe_session_id(session_id)
+    session_dir = os.path.join(_OUTPUTS_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found")
+    try:
+        body = await request.json()
+        order = body.get("order", [])
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid JSON body")
+    if not isinstance(order, list):
+        raise HTTPException(status_code=422, detail="order must be a list")
+    uploads_dir = os.path.join(session_dir, "_uploads")
+    existing = set(_verify_list_photos(uploads_dir))
+    valid_order = [str(n) for n in order if isinstance(n, str) and n in existing]
+    _write_photo_order(session_dir, valid_order)
+    featured = _verify_get_featured(session_id)
+    photos = _verify_list_photos(uploads_dir, explicit_order=valid_order)
+    return JSONResponse({"ok": True, "photos": photos, "featured": featured})
 
 
 @app.post("/build-listing/verify/{session_id}/photos/featured")
@@ -2252,8 +2318,9 @@ async def build_listing_verify_photos_set_featured(
             f.write(name)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Could not save featured: {exc}")
+    explicit_order = _read_photo_order(session_dir)
     return JSONResponse({"ok": True, "featured": name,
-                         "photos": _verify_list_photos(uploads_dir, featured=name)})
+                         "photos": _verify_list_photos(uploads_dir, explicit_order=explicit_order)})
 
 
 @app.post("/build-listing/verify/{session_id}/photos")
@@ -2285,8 +2352,17 @@ async def build_listing_verify_photos_upload(
                 f.write(content)
         except Exception:
             continue
+    # Append any newly uploaded files to the persisted order
+    session_dir = os.path.dirname(uploads_dir)
+    existing_order = _read_photo_order(session_dir) or []
+    order_set = set(existing_order)
+    for name in _verify_list_photos(uploads_dir):
+        if name not in order_set:
+            existing_order.append(name)
+            order_set.add(name)
+    _write_photo_order(session_dir, existing_order)
     featured = _verify_get_featured(session_id)
-    photos = _verify_list_photos(uploads_dir, featured=featured)
+    photos = _verify_list_photos(uploads_dir, featured=featured, explicit_order=existing_order)
     if not featured or featured not in photos:
         featured = photos[0] if photos else None
     return JSONResponse({"photos": photos, "featured": featured})
@@ -2638,12 +2714,13 @@ async def build_listing_generate(
     except Exception:
         pass
 
-    # Load photos from staged uploads dir, honoring the featured-photo marker
+    # Load photos from staged uploads dir, honoring dealer-defined order
     staging_dir = os.path.join(session_dir, "_uploads")
     photo_paths: list[str] = []
     if os.path.isdir(staging_dir):
+        _explicit_order = _read_photo_order(session_dir)
         _featured = _verify_get_featured_for_dir(session_dir)
-        _ordered = _verify_list_photos(staging_dir, featured=_featured)
+        _ordered = _verify_list_photos(staging_dir, featured=_featured, explicit_order=_explicit_order)
         for name in _ordered:
             full = os.path.join(staging_dir, name)
             if os.path.isfile(full):
