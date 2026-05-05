@@ -845,6 +845,8 @@ async def walkaround_start(session_id: str):
     dealer_name  = (_dp.get("companyName") or "").strip() or None
     dealer_phone = (_dp.get("phone")       or "").strip() or None
     accent_color = (_dp.get("accentColor") or "yellow")
+    _logo_disk   = os.path.join(session_dir, "_uploads", "dealer_logo.png")
+    dealer_logo_path = _logo_disk if os.path.isfile(_logo_disk) else None
 
     from walkaround_generator import generate_walkaround_video, walkaround_filename, check_ffmpeg_available
     try:
@@ -887,6 +889,7 @@ async def walkaround_start(session_id: str):
                 dealer_name,
                 dealer_phone,
                 accent_color,
+                dealer_logo_path,
             )
             _walkaround_status_write(session_id, {
                 "state": "complete",
@@ -1301,6 +1304,7 @@ async def build_listing_endpoint(
     bucket_included:        str                  = Form("false"),
     bucket_size:            Optional[str]        = Form(None),
     warranty_status:        Optional[str]        = Form(None),
+    copy_mode:              str                  = Form("dealer_clean"),
     dealer_profile_json:    Optional[str]        = Form(None),
     photos: List[UploadFile] = File(default=[]),
 ):
@@ -1371,6 +1375,7 @@ async def build_listing_endpoint(
             bucket_included=_bool(bucket_included),
             bucket_size=bucket_size.strip() or None if bucket_size else None,
             warranty_status=warranty_status.strip() or None if warranty_status else None,
+            copy_mode=copy_mode,
         )
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc))
