@@ -68,9 +68,12 @@ BLUR_RADIUS = 40          # GaussianBlur radius on background fill
 RAIL_H = 130              # total rail height in pixels
 RAIL_ALPHA = 184          # matte black opacity (~72% of 255)
 RAIL_ACCENT_H = 3         # yellow accent line height at rail top
-LOGO_MAX_H = 118          # max logo height inside rail
-LOGO_LEFT_PAD = 18        # logo left margin
-LOGO_TEXT_GAP = 10        # gap between logo and text
+LOGO_MAX_H = 110          # max logo height inside rail
+LOGO_MAX_W = 300          # hard width cap — prevents wide logos eating CTA space
+LOGO_LEFT_PAD = 28        # logo left margin
+LOGO_TEXT_GAP = 20        # gap between logo zone and text block
+TEXT_ZONE_MIN_W = 360     # minimum px required for dealer name + phone; else drop logo
+RAIL_RIGHT_PAD = 30       # right margin for text block
 RAIL_NAME_SIZE = 46       # font pt for dealer name
 RAIL_PHONE_SIZE = 32      # font pt for phone line
 RAIL_MIN_BLUR_MARGIN = 10 # min px of blur zone required below fg before drawing rail
@@ -292,6 +295,29 @@ def score_dealer_logo(logo_path: str) -> int:
         return 0
 
 
+def _fit_text(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.ImageFont,
+    max_w: int,
+    ellipsis: str = "…",
+) -> str:
+    """Return text truncated with ellipsis so it renders within max_w pixels."""
+    bb = draw.textbbox((0, 0), text, font=font)
+    if bb[2] - bb[0] <= max_w:
+        return text
+    # Binary-search the longest prefix that fits (with ellipsis appended)
+    lo, hi = 0, len(text)
+    while lo < hi - 1:
+        mid = (lo + hi) // 2
+        bb2 = draw.textbbox((0, 0), text[:mid] + ellipsis, font=font)
+        if bb2[2] - bb2[0] <= max_w:
+            lo = mid
+        else:
+            hi = mid
+    return text[:lo] + ellipsis if lo > 0 else ellipsis
+
+
 def _apply_lower_rail(
     canvas: "Image.Image",
     dealer_name: Optional[str],
@@ -337,22 +363,12 @@ def _apply_lower_rail(
     else:
         phone_str = raw_phone.upper()
 
-    # --- Measure text block ---
+    # --- Load fonts and layout constants ---
     name_font  = _load_font_condensed(RAIL_NAME_SIZE)
     phone_font = _load_font_mono(RAIL_PHONE_SIZE)
-    tmp = ImageDraw.Draw(base)
-    name_h = phone_h = 0
-    if name_str:
-        nb = tmp.textbbox((0, 0), name_str, font=name_font)
-        name_h = nb[3] - nb[1]
-    if phone_str:
-        pb = tmp.textbbox((0, 0), phone_str, font=phone_font)
-        phone_h = pb[3] - pb[1]
-    line_gap = 7
-    block_h   = name_h + (line_gap + phone_h if phone_str else 0)
-    usable_h  = RAIL_H - RAIL_ACCENT_H
-    text_top  = rail_top + RAIL_ACCENT_H + (usable_h - block_h) // 2 - 12
-    x_text    = 30
+    line_gap   = 7
+    usable_h   = RAIL_H - RAIL_ACCENT_H
+    x_text     = RAIL_RIGHT_PAD  # default for text-only; overridden when logo fits
 
     # --- Logo (quality-gated) ---
     logo_score = score_dealer_logo(logo_path) if logo_path else 0
@@ -362,19 +378,60 @@ def _apply_lower_rail(
         try:
             with Image.open(logo_path) as lim:
                 lim = lim.convert("RGBA")
-                lw, lh    = lim.size
-                fit_h     = min(LOGO_MAX_H, usable_h - 16)
-                fit_w     = max(1, int(lw * fit_h / max(lh, 1)))
-                lim       = lim.resize((fit_w, fit_h), Image.LANCZOS)
-                logo_x    = LOGO_LEFT_PAD
-                logo_y    = rail_top + RAIL_ACCENT_H + (usable_h - fit_h) // 2
-                base.paste(lim, (logo_x, logo_y), lim)
-                x_text    = LOGO_LEFT_PAD + fit_w + LOGO_TEXT_GAP
+                lw, lh = lim.size
+                # Scale to max height first
+                fit_h = min(LOGO_MAX_H, usable_h - 16)
+                fit_w = max(1, int(lw * fit_h / max(lh, 1)))
+                # Cap width; re-derive height proportionally if width is the binding limit
+                if fit_w > LOGO_MAX_W:
+                    fit_w = LOGO_MAX_W
+                    fit_h = max(1, int(lh * LOGO_MAX_W / max(lw, 1)))
+                # Verify text zone still has enough room after logo
+                candidate_x_text = LOGO_LEFT_PAD + fit_w + LOGO_TEXT_GAP
+                text_zone_w = TARGET_W - RAIL_RIGHT_PAD - candidate_x_text
+                if text_zone_w < TEXT_ZONE_MIN_W:
+                    print(
+                        f"  [Walkaround] logo too wide ({fit_w}px) — "
+                        f"text zone would be {text_zone_w}px < {TEXT_ZONE_MIN_W}px; "
+                        f"falling back to text-only rail"
+                    )
+                    use_logo = False
+                else:
+                    lim = lim.resize((fit_w, fit_h), Image.LANCZOS)
+                    logo_x = LOGO_LEFT_PAD
+                    logo_y = rail_top + RAIL_ACCENT_H + (usable_h - fit_h) // 2
+                    base.paste(lim, (logo_x, logo_y), lim)
+                    x_text = candidate_x_text
         except Exception as exc:
             print(f"  [Walkaround] logo render failed: {exc}")
 
-    # --- Draw text ---
+    # --- Compute available text width and truncate name if needed ---
+    text_available_w = TARGET_W - RAIL_RIGHT_PAD - x_text
     tdraw = ImageDraw.Draw(base)
+
+    # Phone takes priority — measure it first; name gets whatever remains
+    if phone_str:
+        pb2 = tdraw.textbbox((0, 0), phone_str, font=phone_font)
+        phone_render_w = pb2[2] - pb2[0]
+        if phone_render_w > text_available_w:
+            # Phone itself is too long — truncate it (rare: very long formatted strings)
+            phone_str = _fit_text(tdraw, phone_str, phone_font, text_available_w)
+
+    if name_str:
+        name_str = _fit_text(tdraw, name_str, name_font, text_available_w)
+
+    # Recompute block height after potential truncation
+    name_h = phone_h = 0
+    if name_str:
+        nb2 = tdraw.textbbox((0, 0), name_str, font=name_font)
+        name_h = nb2[3] - nb2[1]
+    if phone_str:
+        pb3 = tdraw.textbbox((0, 0), phone_str, font=phone_font)
+        phone_h = pb3[3] - pb3[1]
+    block_h  = name_h + (line_gap + phone_h if phone_str else 0)
+    text_top = rail_top + RAIL_ACCENT_H + (usable_h - block_h) // 2 - 12
+
+    # --- Draw text ---
     if name_str:
         tdraw.text((x_text, text_top), name_str, font=name_font, fill=(255, 255, 255, 255))
     if phone_str:
