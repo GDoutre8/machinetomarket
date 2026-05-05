@@ -1,0 +1,1180 @@
+# =============================================================================
+# MTM Listing Copy Engine v3 — Operational Value Translation Maps
+# File: docs/op_value_maps_v1.yaml
+# Purpose: Translate raw OEM specs and feature flags into contractor-facing
+#          outcome language. Every spec must answer "so what does this do for
+#          me on the job site?"
+#
+# Lookup contract:
+#   spec field → operational_meaning → buyer_value → ideal_for use cases
+#   weak phrasing list (avoid) → strong phrasing list (use)
+#
+# Confidence levels:
+#   high   — phrase is dealer-validated, used by top dealers, low risk
+#   medium — phrase is supportable, but should be backed by spec value
+#   low    — context-dependent; use only when surrounding facts confirm it
+#
+# Versioning:
+#   v1 — Initial build. CTL, SSL, mini-ex, telehandler, full excavator,
+#        wheel loader, dozer.
+# =============================================================================
+
+meta:
+  version: "v1.0"
+  schema_version: 1
+  generated_for: "MTM Listing Copy Engine v3"
+  policy_notes:
+    - "Op-value phrases reference specs already injected by spec_resolver. Never invent values."
+    - "Phrases marked confidence: low require a corroborating numeric spec to use."
+    - "Use case labels align with mtm_*_use_case_scorer.py outputs (CTL/SSL/MiniEx)."
+    - "Listing copy may use a phrase only if the underlying field is non-null and not in requires_confirm."
+    - "Generic spec-only phrases (left column) are blocked or downranked by the v3 copy engine."
+
+# =============================================================================
+# 1. COMPACT TRACK LOADERS (CTL)
+# =============================================================================
+compact_track_loader:
+
+  # ---- General fields ----
+
+  horsepower_hp:
+    operational_meaning: "Sustained engine output drives hydraulic pump capacity and push force."
+    buyer_value: "More HP = larger attachments run at full speed and the machine doesn't bog under load."
+    ideal_for: [land_clearing, forestry_mulching, grading, snow_pushing]
+    avoid_generic_phrase: ["powerful engine", "strong performance", "great power"]
+    stronger_phrase:
+      - "Net {horsepower_hp} HP — handles full-size mulchers and brush cutters without losing rpm under load."
+      - "{horsepower_hp} HP keeps hydraulic flow up when grading, pushing, and running attachments at the same time."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total machine weight determines stability for lift, push, and crowd."
+    buyer_value: "Heavier machines push harder, lift more at reach, and stay planted on slopes."
+    ideal_for: [grading, dirt_work, push_loading, slope_work]
+    avoid_generic_phrase: ["heavy duty", "solid build", "well built"]
+    stronger_phrase:
+      - "{operating_weight_lbs} lb operating weight gives it the planted stance you need for full-bucket grading and pushing dirt without hop."
+      - "At {operating_weight_lbs} lbs, this machine stays stable when lifting at full reach."
+    confidence: high
+
+  travel_speed_high_mph:
+    operational_meaning: "Top travel speed in 2-speed high range. Drives site-to-site movement time."
+    buyer_value: "Faster cross-site transit on larger jobs saves real cycle time."
+    ideal_for: [snow_pushing, large_grade_jobs, site_prep, site_clearing]
+    avoid_generic_phrase: ["fast", "quick"]
+    stronger_phrase:
+      - "{travel_speed_high_mph} mph 2-speed cuts travel time on long pushes and big sites."
+      - "Two-speed travel up to {travel_speed_high_mph} mph — meaningful on stockpile and snow work."
+    confidence: high
+
+  fuel_capacity_gal:
+    operational_meaning: "Tank size determines runtime between fill-ups."
+    buyer_value: "Larger tanks mean a full day of forestry/mulching/heavy load work without stopping mid-job."
+    ideal_for: [forestry_mulching, land_clearing, snow_removal_routes]
+    avoid_generic_phrase: ["good fuel capacity"]
+    stronger_phrase:
+      - "{fuel_capacity_gal}-gallon tank runs a full day under mulching loads."
+    confidence: medium
+
+  one_owner:
+    operational_meaning: "Single ownership history."
+    buyer_value: "Maintenance is usually consistent and traceable; fewer surprises."
+    ideal_for: [risk_averse_buyers, fleet_additions, financed_purchases]
+    avoid_generic_phrase: ["clean machine", "well kept"]
+    stronger_phrase:
+      - "One-owner machine — maintenance history is consistent and verifiable."
+      - "Single owner from new — service was done on a single schedule."
+    confidence: high
+
+  enclosed_cab:
+    operational_meaning: "Sealed cab structure with door and glass."
+    buyer_value: "Lets the machine work in dust, cold, rain, and snow without operator burnout."
+    ideal_for: [year_round_work, snow_removal, demolition, forestry_mulching]
+    avoid_generic_phrase: ["nice cab", "comfortable"]
+    stronger_phrase:
+      - "Fully enclosed cab — keeps operators productive in dust, cold, and snow."
+      - "Enclosed cab makes this a true year-round machine, not a fair-weather loader."
+    confidence: high
+
+  heat_ac:
+    operational_meaning: "HVAC system in the cab."
+    buyer_value: "Operators stay sharp through summer heat and winter cold; longer productive shifts."
+    ideal_for: [snow_removal, summer_grading, year_round_use]
+    avoid_generic_phrase: ["climate controlled"]
+    stronger_phrase:
+      - "Heat and A/C — long days in the cab without operator fatigue dragging cycle times."
+      - "A/C and heat — keeps your operator productive through the full season."
+    confidence: high
+
+  ride_control:
+    operational_meaning: "Hydraulic accumulator dampens the loader arms over uneven ground."
+    buyer_value: "Material stays in the bucket on rough transit; faster cycles and less spillage."
+    ideal_for: [stockpile_work, material_hauling_across_site, snow_loading]
+    avoid_generic_phrase: ["smooth ride"]
+    stronger_phrase:
+      - "Ride control keeps material in the bucket across rough ground — fewer spills, fewer cleanup passes."
+      - "Loader-arm ride control speeds up haul cycles by keeping the bucket loaded."
+    confidence: high
+
+  backup_camera:
+    operational_meaning: "Rear-mounted camera with cab display."
+    buyer_value: "Visibility behind the machine on tight residential lots and around foot traffic."
+    ideal_for: [residential_work, landscaping, parking_lots, demolition]
+    avoid_generic_phrase: ["safety features"]
+    stronger_phrase:
+      - "Backup camera — eyes behind the machine on tight residential lots."
+    confidence: high
+
+  machine_width_inches:
+    operational_meaning: "Overall machine width, typically over tracks."
+    buyer_value: "Determines what gates, hallways, and tight job-site access the machine can clear."
+    ideal_for: [residential_work, landscaping, basement_remodels, side_yard_access]
+    avoid_generic_phrase: ["compact size", "narrow"]
+    stronger_phrase:
+      - "{machine_width_inches}\" wide — clears most standard backyard gates and side-yard accesses."
+      - "Sub-{machine_width_inches}\" overall — gets through gates that bigger CTLs can't."
+    confidence: high
+
+  # ---- CTL-specific fields ----
+
+  rated_operating_capacity_lbs:
+    operational_meaning: "Working lift capacity (MTM-stored at 50% of tipping; OEM publishes at 35%)."
+    buyer_value: "Real-world load size — pallets of sod, block, mulch, and full buckets handled safely."
+    ideal_for: [pallet_handling, landscape_supply, masonry_loading, material_hauling]
+    avoid_generic_phrase: ["good lifting capacity", "plenty of muscle"]
+    stronger_phrase:
+      - "Rated for {rated_operating_capacity_lbs} lbs at standard 50% tipping — handles standard pallets and full buckets."
+      - "{rated_operating_capacity_lbs}-lb rated capacity moves block, sod, and material pallets all day."
+    confidence: high
+
+  tipping_load_lbs:
+    operational_meaning: "Stability ceiling — load at which the machine will tip forward."
+    buyer_value: "Spec to compare across machines for true lift class."
+    ideal_for: [comparison_shopping, fleet_specification]
+    avoid_generic_phrase: ["high tipping load"]
+    stronger_phrase:
+      - "{tipping_load_lbs}-lb tipping load — places this machine in the {frame_size} CTL class."
+    confidence: high
+
+  hydraulic_flow_gpm:
+    operational_meaning: "Auxiliary circuit flow rate at standard pressure."
+    buyer_value: "Defines what attachments will run at full speed without starving."
+    ideal_for: [grapple_work, planer_use, augers, snow_blowers]
+    avoid_generic_phrase: ["good hydraulic flow", "high flow capable"]
+    stronger_phrase:
+      - "{hydraulic_flow_gpm} GPM standard flow — runs grapples, augers, and trenchers at rated speed."
+      - "Pumps {hydraulic_flow_gpm} GPM standard — supports the attachments contractors use every day."
+    confidence: high
+
+  high_flow:
+    operational_meaning: "High-flow auxiliary circuit option (typically 30+ GPM)."
+    buyer_value: "Runs the heavy attachment-driven work — mulching, planing, cold planing, brush cutting — at full rated speed."
+    ideal_for: [forestry_mulching, cold_planing, brush_cutting, asphalt_planing]
+    avoid_generic_phrase: ["high flow hydraulics", "high flow ready"]
+    stronger_phrase:
+      - "Equipped with high-flow hydraulics — runs mulchers, planers, and stump grinders without bogging."
+      - "High-flow circuit means production-grade attachments stay at full speed under load."
+      - "High flow opens this machine up to the attachments that actually pay — mulching heads, cold planers, large brush cutters."
+    confidence: high
+
+  two_speed:
+    operational_meaning: "Two-range travel transmission with high-speed mode."
+    buyer_value: "Fast site-to-site repositioning on big lots — measurable cycle-time gain."
+    ideal_for: [snow_pushing, large_site_grading, parking_lot_work]
+    avoid_generic_phrase: ["two speed transmission"]
+    stronger_phrase:
+      - "Two-speed travel — flips into high range to cross big sites without crawling."
+      - "2-speed gets you from one end of a parking lot to the other before the next push."
+    confidence: high
+
+  track_percent_remaining:
+    operational_meaning: "Estimated rubber-track tread/lug life remaining."
+    buyer_value: "Tracks at 70%+ are ready to work; below 50% means a track replacement is on the horizon ($1.5–4k+ pair)."
+    ideal_for: [resale_decision, near_term_cost_planning]
+    avoid_generic_phrase: ["good tracks"]
+    stronger_phrase:
+      - "Tracks at {track_percent_remaining}% — plenty of life before replacement."
+      - "Tracks at {track_percent_remaining}% — factor that into your offer; replacement is around $2k–4k a pair."
+    confidence: high
+
+  quick_attach_type:
+    operational_meaning: "Universal SSL/CTL coupler standard (mechanical or hydraulic)."
+    buyer_value: "Universal mount swaps thousands of attachment options without tools (hydraulic) or with one lever (mechanical)."
+    ideal_for: [attachment_heavy_workflows, multi_task_operations, rental_fleet_consideration]
+    avoid_generic_phrase: ["quick attach"]
+    stronger_phrase:
+      - "Universal hydraulic quick-attach — swap buckets, forks, and grapples without leaving the cab."
+      - "Universal coupler accepts the full SSL/CTL attachment ecosystem."
+    confidence: high
+
+  bucket_type:
+    operational_meaning: "Bucket configuration — tooth, smooth, grading, low-profile, snow."
+    buyer_value: "Matches the work — tooth bucket digs, smooth grades, low-profile lifts loose material at height."
+    ideal_for: [job_specific_match, attachment_inventory_planning]
+    avoid_generic_phrase: ["bucket included"]
+    stronger_phrase:
+      - "Comes with a {bucket_type} bucket — sized for {ideal_for_bucket_type}."
+      - "{bucket_type} bucket is the right pick for digging, loading, and grading mixed material."
+    confidence: medium
+
+# =============================================================================
+# 2. SKID STEER LOADERS (SSL)
+# =============================================================================
+skid_steer_loader:
+
+  horsepower_hp:
+    operational_meaning: "Engine output. Drives pump capacity and crowd force."
+    buyer_value: "More HP runs heavier attachments and digs harder material without bogging."
+    ideal_for: [paving, asphalt_milling, demolition, scrap_yard_work]
+    avoid_generic_phrase: ["powerful", "strong"]
+    stronger_phrase:
+      - "{horsepower_hp} HP — pushes through tough material and runs heavy attachments without losing rpm."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total weight on tires. Drives stability and counterweight."
+    buyer_value: "Heavier wheel skids push and dig with authority on hard surfaces."
+    ideal_for: [paving, demolition_cleanup, hardsurface_work, scrap_yard_work]
+    avoid_generic_phrase: ["heavy duty"]
+    stronger_phrase:
+      - "{operating_weight_lbs} lbs — plants firmly when crowding into a pile or pushing material."
+    confidence: high
+
+  travel_speed_high_mph:
+    operational_meaning: "Top speed in high range, 2-speed equipped."
+    buyer_value: "Cycle time across paved lots and warehouse floors."
+    ideal_for: [snow_clearing, parking_lots, warehouse_work, paving_yards]
+    avoid_generic_phrase: ["fast travel"]
+    stronger_phrase:
+      - "Two-speed up to {travel_speed_high_mph} mph — cuts cycle time on long pushes."
+    confidence: high
+
+  fuel_capacity_gal:
+    operational_meaning: "Tank size."
+    buyer_value: "Longer runtime on heavy-load days."
+    ideal_for: [snow_routes, demolition, paving]
+    avoid_generic_phrase: ["good fuel range"]
+    stronger_phrase:
+      - "{fuel_capacity_gal}-gallon tank gets you through a full snow event without stopping."
+    confidence: medium
+
+  one_owner:
+    operational_meaning: "Single ownership history."
+    buyer_value: "Predictable maintenance pattern, traceable history."
+    ideal_for: [financed_purchases, fleet_additions]
+    avoid_generic_phrase: ["clean machine"]
+    stronger_phrase:
+      - "One-owner since new — single maintenance record, no mystery hours."
+    confidence: high
+
+  enclosed_cab:
+    operational_meaning: "Sealed cab structure."
+    buyer_value: "Year-round usability — dust, cold, demo work."
+    ideal_for: [demolition, snow_work, year_round_use]
+    avoid_generic_phrase: ["cab"]
+    stronger_phrase:
+      - "Enclosed cab — keeps operators in the seat through dust, snow, and cold."
+    confidence: high
+
+  heat_ac:
+    operational_meaning: "Cab HVAC."
+    buyer_value: "All-season operator productivity."
+    ideal_for: [snow_work, summer_paving, demolition]
+    avoid_generic_phrase: ["climate control"]
+    stronger_phrase:
+      - "Heat and A/C — long shifts without operator drop-off."
+    confidence: high
+
+  ride_control:
+    operational_meaning: "Loader arm dampening accumulator."
+    buyer_value: "Material stays in the bucket across rough surfaces."
+    ideal_for: [stockpile_loading, snow_yard_work, asphalt_yard_work]
+    avoid_generic_phrase: ["smooth ride"]
+    stronger_phrase:
+      - "Ride control keeps the bucket loaded across rough yards — fewer spills, faster cycles."
+    confidence: high
+
+  backup_camera:
+    operational_meaning: "Rear-view camera."
+    buyer_value: "Visibility around foot traffic and walls."
+    ideal_for: [warehouse_work, residential, demolition]
+    avoid_generic_phrase: ["camera equipped"]
+    stronger_phrase:
+      - "Backup camera — adds visibility on tight lots and around walls."
+    confidence: high
+
+  machine_width_inches:
+    operational_meaning: "Width over tires."
+    buyer_value: "Tight access — gates, hallways, alleys."
+    ideal_for: [residential, landscaping, alleyway_work]
+    avoid_generic_phrase: ["compact"]
+    stronger_phrase:
+      - "{machine_width_inches}\" overall — fits through standard backyard gates."
+    confidence: high
+
+  rated_operating_capacity_lbs:
+    operational_meaning: "Lift capacity at MTM-stored 50% of tipping (OEM at 35%)."
+    buyer_value: "Real-world pallet and bucket capacity."
+    ideal_for: [pallet_handling, landscape_supply, masonry, paving_aggregate]
+    avoid_generic_phrase: ["good lift"]
+    stronger_phrase:
+      - "{rated_operating_capacity_lbs} lbs rated — handles standard pallet weights without compromise."
+      - "Rated for {rated_operating_capacity_lbs} lbs — the right class for {ideal_for_class}."
+    confidence: high
+
+  tipping_load_lbs:
+    operational_meaning: "Forward-tip stability ceiling."
+    buyer_value: "Class-comparison spec for real lift capacity."
+    ideal_for: [comparison_shopping]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{tipping_load_lbs}-lb tipping load places this in the {frame_size} class."
+    confidence: high
+
+  hydraulic_flow_gpm:
+    operational_meaning: "Aux flow standard."
+    buyer_value: "Sets the universe of attachments that run at full speed."
+    ideal_for: [trenching, augering, sweeping, snow_blowing]
+    avoid_generic_phrase: ["high flow", "good flow"]
+    stronger_phrase:
+      - "{hydraulic_flow_gpm} GPM standard flow — drives trenchers, augers, and sweepers at rated speed."
+    confidence: high
+
+  high_flow:
+    operational_meaning: "Optional high-flow circuit."
+    buyer_value: "Production attachments — mulchers, planers, brush cutters."
+    ideal_for: [forestry_mulching, cold_planing, brush_clearing, snow_blowing]
+    avoid_generic_phrase: ["high flow capable"]
+    stronger_phrase:
+      - "High-flow equipped — runs mulchers, cold planers, and stump grinders at production speed."
+      - "High flow opens up the attachments that actually pay."
+    confidence: high
+
+  two_speed:
+    operational_meaning: "Two-range travel."
+    buyer_value: "Long cross-site moves."
+    ideal_for: [snow_routes, parking_lots, large_yards]
+    avoid_generic_phrase: ["2-speed"]
+    stronger_phrase:
+      - "2-speed travel — measurable cycle-time gain on big sites."
+    confidence: high
+
+  quick_attach_type:
+    operational_meaning: "Universal SSL coupler."
+    buyer_value: "Full attachment ecosystem compatibility."
+    ideal_for: [attachment_heavy_work, multi_use_operations]
+    avoid_generic_phrase: ["quick coupler"]
+    stronger_phrase:
+      - "Universal quick-attach — accepts thousands of attachments across brands."
+    confidence: high
+
+  bucket_type:
+    operational_meaning: "Bucket configuration."
+    buyer_value: "Right cutting edge / capacity for the job."
+    ideal_for: [job_match]
+    avoid_generic_phrase: ["bucket"]
+    stronger_phrase:
+      - "{bucket_type} bucket — paired right for {bucket_use_case}."
+    confidence: medium
+
+# =============================================================================
+# 3. MINI EXCAVATORS
+# =============================================================================
+mini_excavator:
+
+  horsepower_hp:
+    operational_meaning: "Engine output. Drives hydraulic pump pressure and dig force."
+    buyer_value: "More HP keeps cycle times tight when digging hard ground or loading trucks."
+    ideal_for: [utility_trenching, foundation_digging, septic_install]
+    avoid_generic_phrase: ["plenty of power"]
+    stronger_phrase:
+      - "{horsepower_hp} HP — keeps cycle times tight in tough ground and on high-cycle work."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total machine weight. Drives stability and dig power."
+    buyer_value: "Heavier mini-ex digs harder, lifts more at reach, holds steadier on slope work."
+    ideal_for: [utility_install, footings, slope_grading]
+    avoid_generic_phrase: ["heavy"]
+    stronger_phrase:
+      - "{operating_weight_lbs}-lb weight class — pulls full buckets through hardpan without hopping."
+    confidence: high
+
+  travel_speed_mph:
+    operational_meaning: "Top track travel speed."
+    buyer_value: "Site repositioning time — meaningful on long-trench utility runs."
+    ideal_for: [utility_trenching, long_trench_runs]
+    avoid_generic_phrase: ["fast"]
+    stronger_phrase:
+      - "{travel_speed_mph} mph travel — moves faster between trench segments."
+    confidence: medium
+
+  fuel_capacity_gal:
+    operational_meaning: "Tank size."
+    buyer_value: "Full-day runtime without stopping for fuel mid-trench."
+    ideal_for: [remote_jobs, full_day_excavation]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{fuel_capacity_gal}-gallon tank — full work day on a single fill."
+    confidence: medium
+
+  one_owner:
+    operational_meaning: "Single ownership."
+    buyer_value: "Single maintenance line."
+    ideal_for: [financed_purchases]
+    avoid_generic_phrase: ["clean"]
+    stronger_phrase:
+      - "One-owner — single maintenance trail since new."
+    confidence: high
+
+  enclosed_cab:
+    operational_meaning: "Sealed cab."
+    buyer_value: "Year-round operation in dust, cold, rain."
+    ideal_for: [year_round_excavation, utility_work, winter_install]
+    avoid_generic_phrase: ["cab"]
+    stronger_phrase:
+      - "Enclosed cab — works through winter utility installs without operator drop-off."
+    confidence: high
+
+  heat_ac:
+    operational_meaning: "Cab HVAC."
+    buyer_value: "Operator stays sharp through long trenching and grading shifts."
+    ideal_for: [year_round_use, utility_work]
+    avoid_generic_phrase: ["climate"]
+    stronger_phrase:
+      - "Heat and A/C — keeps operators productive through full-day trench runs."
+    confidence: high
+
+  backup_camera:
+    operational_meaning: "Rear-view camera."
+    buyer_value: "Visibility around tight residential excavation sites."
+    ideal_for: [residential_excavation, urban_work]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "Backup camera — useful around tight residential foundation work."
+    confidence: medium
+
+  machine_width_inches:
+    operational_meaning: "Track width / chassis width."
+    buyer_value: "Backyard, gate, and side-yard access."
+    ideal_for: [residential_excavation, landscaping_install, pool_excavation]
+    avoid_generic_phrase: ["compact"]
+    stronger_phrase:
+      - "{machine_width_inches}\" wide — fits through standard residential gates for backyard work."
+    confidence: high
+
+  dig_depth_ft:
+    operational_meaning: "Maximum digging depth at full stick extension."
+    buyer_value: "Determines what footings, utilities, and pools the machine can dig in one pass."
+    ideal_for: [utility_install, foundation_footings, pool_excavation, septic_install]
+    avoid_generic_phrase: ["deep digging"]
+    stronger_phrase:
+      - "{dig_depth_ft}-ft dig depth — clears standard residential footings in a single pass."
+      - "Reaches {dig_depth_ft} ft on the bottom of the trench — handles standard utility laterals without benching."
+    confidence: high
+
+  max_reach_ft:
+    operational_meaning: "Horizontal reach from swing center at ground line."
+    buyer_value: "Working envelope from one set-up — fewer machine repositions per job."
+    ideal_for: [trenching, foundation_work, demolition, landscaping_install]
+    avoid_generic_phrase: ["good reach"]
+    stronger_phrase:
+      - "{max_reach_ft}-ft reach — covers more ground from each setup, fewer repositions per shift."
+    confidence: high
+
+  hydraulic_thumb:
+    operational_meaning: "Boom-mounted thumb attachment, hydraulically actuated."
+    buyer_value: "Picks logs, rocks, debris, and material — turns the machine into a true grappler."
+    ideal_for: [land_clearing, demolition_cleanup, landscaping, debris_handling]
+    avoid_generic_phrase: ["thumb included"]
+    stronger_phrase:
+      - "Hydraulic thumb — pulls logs, rocks, and demo debris cleanly without the second man on the ground."
+      - "Hydraulic thumb pays for itself on every land-clearing and demo cleanup job."
+    confidence: high
+
+  thumb_type:
+    operational_meaning: "Hydraulic vs manual vs progressive-link thumb."
+    buyer_value: "Hydraulic = full productivity grappling; manual = occasional debris pinning."
+    ideal_for: [job_match, productivity_consideration]
+    avoid_generic_phrase: ["has a thumb"]
+    stronger_phrase:
+      - "{thumb_type} thumb — {thumb_use_case}."
+      - "Progressive-link hydraulic thumb tracks the bucket through full curl — clamps tight on irregular shapes."
+    confidence: high
+
+  aux_hydraulics:
+    operational_meaning: "Auxiliary hydraulic circuit on the boom."
+    buyer_value: "Runs breakers, augers, compactors, mulchers — extends what the machine can do."
+    ideal_for: [breaker_work, post_setting, compaction, demolition]
+    avoid_generic_phrase: ["aux hydraulics"]
+    stronger_phrase:
+      - "Aux hydraulics plumbed and tested — runs breakers, augers, and compactors out of the box."
+      - "Auxiliary circuit means this machine isn't just a digger — it's a multi-tool platform."
+    confidence: high
+
+  blade_width:
+    operational_meaning: "Dozer blade width."
+    buyer_value: "Backfill and grading reach in one pass."
+    ideal_for: [backfilling, finish_grading_after_trench, site_cleanup]
+    avoid_generic_phrase: ["dozer blade"]
+    stronger_phrase:
+      - "{blade_width} blade — backfills your trench in fewer passes."
+      - "Wide blade saves time on backfill and rough grading after a trench run."
+    confidence: high
+
+  swing_type:
+    operational_meaning: "Swing bracket configuration — house/conventional/zero/short tail."
+    buyer_value: "Defines how close to walls and obstacles the machine can work."
+    ideal_for: [residential, urban_excavation, parallel_to_structures]
+    avoid_generic_phrase: ["good swing"]
+    stronger_phrase:
+      - "{swing_type} swing — works tight to walls without contact."
+    confidence: high
+
+  zero_tail_swing:
+    operational_meaning: "Counterweight stays within track width through full rotation."
+    buyer_value: "Works flush against walls, fences, and curbs without rear contact."
+    ideal_for: [residential_install, urban_excavation, alongside_buildings, road_shoulder]
+    avoid_generic_phrase: ["zero tail"]
+    stronger_phrase:
+      - "Zero tail swing — rotates 360° flush against walls and fences without contact."
+      - "Zero tail swing keeps you legal on lane closures and tight against structures."
+    confidence: high
+
+# =============================================================================
+# 4. TELEHANDLERS
+# =============================================================================
+telehandler:
+
+  horsepower_hp:
+    operational_meaning: "Engine output. Drives hydraulics and travel."
+    buyer_value: "Sustained boom and travel performance under full load."
+    ideal_for: [framing, masonry, roofing, agricultural]
+    avoid_generic_phrase: ["powerful"]
+    stronger_phrase:
+      - "{horsepower_hp} HP — sustained boom speed under full pallet weight."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total machine weight."
+    buyer_value: "Counterweight for forward reach lifts; stability at extension."
+    ideal_for: [high_reach_placement, max_forward_reach]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{operating_weight_lbs}-lb weight gives the counterweight needed for full-chart placements at extension."
+    confidence: high
+
+  travel_speed_mph:
+    operational_meaning: "Top travel speed."
+    buyer_value: "Yard-to-yard repositioning, especially on agricultural and large jobsite work."
+    ideal_for: [agricultural, large_construction_yards]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{travel_speed_mph} mph travel — moves between bays and stockyards efficiently."
+    confidence: medium
+
+  fuel_capacity_gal:
+    operational_meaning: "Tank size."
+    buyer_value: "Full day on agricultural and high-cycle framing jobs."
+    ideal_for: [agricultural, multi_day_loading]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{fuel_capacity_gal}-gallon tank — full day of feed-loading or pallet placement."
+    confidence: medium
+
+  enclosed_cab:
+    operational_meaning: "Sealed cab."
+    buyer_value: "Year-round operation, weather protection."
+    ideal_for: [year_round_construction, agricultural]
+    avoid_generic_phrase: ["cab"]
+    stronger_phrase:
+      - "Enclosed cab — keeps the operator out of the weather on multi-month framing jobs."
+    confidence: high
+
+  heat_ac:
+    operational_meaning: "Cab HVAC."
+    buyer_value: "All-season productivity."
+    ideal_for: [year_round_use]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "Heat and A/C — long-day productivity through summer and winter cycles."
+    confidence: high
+
+  backup_camera:
+    operational_meaning: "Rear-view camera."
+    buyer_value: "Visibility around foot traffic on framing sites."
+    ideal_for: [framing_sites, mixed_traffic]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "Backup camera — eyes behind on busy framing sites."
+    confidence: medium
+
+  lift_capacity_lbs:
+    operational_meaning: "Maximum lift at full retraction (chart maximum)."
+    buyer_value: "Pallet weight class — defines what you can pick at the truck."
+    ideal_for: [pallet_placement, masonry_block, framing_loads, agricultural_bales]
+    avoid_generic_phrase: ["good lift", "high capacity"]
+    stronger_phrase:
+      - "{lift_capacity_lbs}-lb max lift — handles full pallets of block and framing material at the truck."
+      - "Rated to {lift_capacity_lbs} lbs at the boom base — the right class for masonry and framing crews."
+    confidence: high
+
+  max_lift_height_ft:
+    operational_meaning: "Maximum vertical placement height of forks."
+    buyer_value: "Defines what stories and rooflines the machine can place onto."
+    ideal_for: [rooftop_placement, multi_story_framing, masonry_to_height]
+    avoid_generic_phrase: ["high lift"]
+    stronger_phrase:
+      - "{max_lift_height_ft}-ft max lift — places pallets onto third-story rooflines and higher."
+      - "Reaches {max_lift_height_ft} ft straight up — covers everything from single-story to commercial framing heights."
+    confidence: high
+
+  max_forward_reach_ft:
+    operational_meaning: "Horizontal reach at boom extension."
+    buyer_value: "Place loads over foundations, trenches, and obstacles without repositioning."
+    ideal_for: [over_trench_placement, second_story_setbacks, foundation_clearance, ag_loading]
+    avoid_generic_phrase: ["good reach"]
+    stronger_phrase:
+      - "{max_forward_reach_ft}-ft forward reach — places loads over the foundation without parking on it."
+      - "Forward reach to {max_forward_reach_ft} ft — sets pallets at the second-story setback from outside the work zone."
+    confidence: high
+
+  stabilizers:
+    operational_meaning: "Outrigger stabilizers (hydraulic-deployed)."
+    buyer_value: "Unlocks the full lift chart at full extension and height."
+    ideal_for: [max_capacity_lifts, max_height_placement, masonry, rooftop_work]
+    avoid_generic_phrase: ["with outriggers"]
+    stronger_phrase:
+      - "Stabilizers deploy — unlocks the full lift chart at max boom extension and height."
+      - "Outriggers mean you don't lose capacity when you need full reach."
+    confidence: high
+
+  frame_leveling:
+    operational_meaning: "Hydraulic chassis tilt for side-slope work."
+    buyer_value: "Plumb lifts on side slopes without resetting the machine."
+    ideal_for: [hillside_residential, sloped_construction_sites]
+    avoid_generic_phrase: ["frame leveling"]
+    stronger_phrase:
+      - "Frame leveling — plumb lifts on side-slope sites without machine resetting."
+      - "Lateral chassis tilt lets you keep the load level on the worst grades."
+    confidence: high
+
+  auxiliary_hydraulics:
+    operational_meaning: "Aux circuit at the boom head."
+    buyer_value: "Runs grapple buckets, sweepers, augers, and trash forks — beyond just pallet handling."
+    ideal_for: [agricultural, multi_function_use, sweeping, snow_pushing]
+    avoid_generic_phrase: ["aux hydraulics"]
+    stronger_phrase:
+      - "Boom-tip aux hydraulics — runs grapple buckets, sweepers, and rotating forks."
+      - "Aux circuit turns this from a pallet-mover into a multi-function tool carrier."
+    confidence: high
+
+  attachment_package:
+    operational_meaning: "Bundle of attachments included with the machine."
+    buyer_value: "Ready to work — no first-month spend on attachment hunting."
+    ideal_for: [turnkey_purchase, fleet_addition, immediate_deployment]
+    avoid_generic_phrase: ["with attachments"]
+    stronger_phrase:
+      - "Includes {attachment_package_list} — ready to work day one without sourcing add-ons."
+      - "Comes with a full attachment package — pallet forks, grapple bucket, and quick coupler."
+    confidence: medium
+
+# =============================================================================
+# 5. FULL-SIZE EXCAVATORS
+# =============================================================================
+excavator:
+
+  horsepower_hp:
+    operational_meaning: "Engine output."
+    buyer_value: "Sustained dig and swing performance — production-rate cycle times."
+    ideal_for: [production_digging, mass_excavation, deep_utility]
+    avoid_generic_phrase: ["powerful"]
+    stronger_phrase:
+      - "{horsepower_hp} HP — sustained cycle times when production is the metric."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total machine weight in operating trim."
+    buyer_value: "Stability for max-reach lifts, dig force in tough material, slope work."
+    ideal_for: [mass_excavation, slope_work, lift_intensive_work]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{operating_weight_lbs}-lb weight class — stays planted on slopes and at full reach."
+    confidence: high
+
+  bucket_breakout_force:
+    operational_meaning: "Force at the bucket cutting edge from curl alone."
+    buyer_value: "Pries loose hardpan, frozen ground, clay, and rooted material that lower-class machines just slide off of."
+    ideal_for: [tough_digging, frozen_ground, clay, rocky_soil, rooted_material]
+    avoid_generic_phrase: ["strong breakout"]
+    stronger_phrase:
+      - "{bucket_breakout_force} lbf bucket breakout — bites into hardpan, frozen ground, and clay without stalling."
+      - "Breakout force at the cutting edge tears through what under-spec'd machines slide off of."
+    confidence: high
+
+  stick_length:
+    operational_meaning: "Distance from boom pivot to bucket pin."
+    buyer_value: "Short stick = more dig force at the bucket; long stick = more reach and depth."
+    ideal_for: [stick_length_match]
+    avoid_generic_phrase: ["good reach"]
+    stronger_phrase:
+      - "Long {stick_length} stick — built for reach and depth on utility runs."
+      - "Short {stick_length} stick — built for force on production digging and demolition."
+    confidence: high
+
+  swing_speed:
+    operational_meaning: "Upper-house rotation speed (RPM)."
+    buyer_value: "Faster swing = faster truck-loading cycles."
+    ideal_for: [truck_loading, production_excavation]
+    avoid_generic_phrase: ["fast swing"]
+    stronger_phrase:
+      - "{swing_speed} rpm swing — measurable cycle-time gain on truck loading."
+    confidence: medium
+
+  auxiliary_flow:
+    operational_meaning: "Hydraulic flow to boom-tip aux circuit."
+    buyer_value: "Runs hammers, compactors, mulching heads, shears."
+    ideal_for: [hammer_work, demolition, scrap_processing, foundation_breakup]
+    avoid_generic_phrase: ["aux flow"]
+    stronger_phrase:
+      - "{auxiliary_flow} GPM aux flow — runs production-class hammers, shears, and compactors."
+      - "Aux circuit is sized for the heavy attachments — hammer, mulcher, processor."
+    confidence: high
+
+  blade:
+    operational_meaning: "Front-mount dozer blade."
+    buyer_value: "Backfill and stabilization without a second machine."
+    ideal_for: [trench_backfill, stabilization, light_grading]
+    avoid_generic_phrase: ["with blade"]
+    stronger_phrase:
+      - "Front blade — backfills trenches and stabilizes the machine for boom-down lifts."
+    confidence: high
+
+  coupler:
+    operational_meaning: "Hydraulic or mechanical bucket coupler."
+    buyer_value: "Bucket and attachment swaps without leaving the cab (hydraulic) — true production tool."
+    ideal_for: [multi_attachment_workflows, demo, utility]
+    avoid_generic_phrase: ["coupler"]
+    stronger_phrase:
+      - "Hydraulic quick coupler — swap buckets and attachments without leaving the seat."
+      - "Coupler-equipped: plug into shears, hammers, and grading buckets without ground crew."
+    confidence: high
+
+  thumb:
+    operational_meaning: "Hydraulic or manual thumb."
+    buyer_value: "Picks logs, debris, oversize rock — turns the digger into a sorting tool."
+    ideal_for: [demolition, land_clearing, scrap_sorting, debris_handling]
+    avoid_generic_phrase: ["thumb"]
+    stronger_phrase:
+      - "Hydraulic thumb — pinches logs, rebar, and demo debris cleanly."
+      - "Thumb makes this machine pull double duty as a sorting and loading tool."
+    confidence: high
+
+# =============================================================================
+# 6. WHEEL LOADERS
+# =============================================================================
+wheel_loader:
+
+  horsepower_hp:
+    operational_meaning: "Engine output."
+    buyer_value: "Push power into the pile and sustained cycle rate."
+    ideal_for: [pile_loading, production_loading, agg_yards]
+    avoid_generic_phrase: ["powerful"]
+    stronger_phrase:
+      - "{horsepower_hp} HP — sustained push into stockpiles without cycle drop-off."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total machine weight."
+    buyer_value: "Pile-pen authority, breakout against compacted material."
+    ideal_for: [pile_loading, agg_handling]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{operating_weight_lbs} lbs operating — plants firmly when crowding into a stockpile."
+    confidence: high
+
+  bucket_capacity:
+    operational_meaning: "Bucket volumetric capacity (yd³ or m³)."
+    buyer_value: "Yards moved per cycle — direct production rate driver."
+    ideal_for: [stockpile_loading, agg_loading, snow_loading, materials_yards]
+    avoid_generic_phrase: ["good capacity"]
+    stronger_phrase:
+      - "{bucket_capacity}-yd³ bucket — measurable production rate on truck-loading cycles."
+      - "Bucket yardage is the cycle-time multiplier on stockpile work."
+    confidence: high
+
+  breakout_force:
+    operational_meaning: "Force at the bucket cutting edge."
+    buyer_value: "Cuts into compacted, frozen, or banded material the way a smaller loader can't."
+    ideal_for: [agg_loading, frozen_pile_work, compacted_material]
+    avoid_generic_phrase: ["high breakout"]
+    stronger_phrase:
+      - "{breakout_force} lbf breakout — cuts into compacted and frozen piles without skating."
+    confidence: high
+
+  hinge_pin_height:
+    operational_meaning: "Maximum bucket pin height."
+    buyer_value: "Determines what truck and trailer beds you can dump into."
+    ideal_for: [over_the_side_truck_loading, trailer_loading, stockpile_dumping]
+    avoid_generic_phrase: ["good dump height"]
+    stronger_phrase:
+      - "{hinge_pin_height} hinge pin — dumps cleanly into highway tractor-trailer beds."
+      - "Loads over the side of standard end-dumps without bucket interference."
+    confidence: high
+
+  ride_control:
+    operational_meaning: "Loader arm dampening accumulator system."
+    buyer_value: "Material stays in the bucket on rough yard ground at speed; faster cycles."
+    ideal_for: [agg_yard_loading, snow_yard, stockpile_runs]
+    avoid_generic_phrase: ["smooth ride"]
+    stronger_phrase:
+      - "Ride control — keeps the bucket loaded across rough yard ground at speed."
+      - "Lets you run loaded cycles faster without losing material."
+    confidence: high
+
+  quick_coupler:
+    operational_meaning: "Bucket and fork coupler system."
+    buyer_value: "Swap forks, snow buckets, grapples without ground crew or hand tools."
+    ideal_for: [yards, multi_function_loaders, snow_operations, lumber_yards]
+    avoid_generic_phrase: ["quick coupler"]
+    stronger_phrase:
+      - "Quick coupler — swap forks, snow pushers, and buckets without leaving the cab."
+      - "Coupler turns this from a single-purpose loader into a year-round tool."
+    confidence: high
+
+# =============================================================================
+# 7. DOZERS
+# =============================================================================
+dozer:
+
+  horsepower_hp:
+    operational_meaning: "Engine output."
+    buyer_value: "Push power for full-blade-load passes."
+    ideal_for: [rough_grade, mass_push, land_clearing]
+    avoid_generic_phrase: ["powerful"]
+    stronger_phrase:
+      - "{horsepower_hp} HP — pushes full-blade loads through rough material without bogging."
+    confidence: high
+
+  operating_weight_lbs:
+    operational_meaning: "Total weight."
+    buyer_value: "Traction, push force, and ripper effectiveness."
+    ideal_for: [mass_push, ripping, slope_work]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{operating_weight_lbs} lbs — traction and push force for full-blade work."
+    confidence: high
+
+  blade_width:
+    operational_meaning: "Cutting width of the dozer blade."
+    buyer_value: "Coverage per pass — fewer passes per acre."
+    ideal_for: [land_clearing, mass_grade, rough_cut]
+    avoid_generic_phrase: ["wide blade"]
+    stronger_phrase:
+      - "{blade_width}-ft blade — covers more ground per pass on rough cut."
+      - "Blade width directly drives passes-per-acre on big sites."
+    confidence: high
+
+  blade_capacity:
+    operational_meaning: "Blade volumetric carry (yd³)."
+    buyer_value: "Yards moved per pass."
+    ideal_for: [mass_push, stockpile_consolidation]
+    avoid_generic_phrase: []
+    stronger_phrase:
+      - "{blade_capacity}-yd³ blade carry — moves more material per push."
+    confidence: medium
+
+  undercarriage_percent:
+    operational_meaning: "Estimated track, sprocket, idler, and roller life remaining."
+    buyer_value: "Largest single near-term cost on a dozer; UC at 70%+ is buy-and-work."
+    ideal_for: [resale_decision, near_term_cost_planning]
+    avoid_generic_phrase: ["good undercarriage"]
+    stronger_phrase:
+      - "Undercarriage at {undercarriage_percent}% — buy-and-work; UC replacement is a major dozer expense."
+      - "UC at {undercarriage_percent}% — factor that against the next major service interval."
+    confidence: high
+
+  PAT_blade:
+    operational_meaning: "Power-Angle-Tilt blade — six-way hydraulic blade control."
+    buyer_value: "Precision finish grading without manual blade adjustments."
+    ideal_for: [finish_grading, driveway_work, landscaping_grade, pad_prep]
+    avoid_generic_phrase: ["PAT blade", "six way blade"]
+    stronger_phrase:
+      - "PAT (six-way) blade — finish-grade precision with full hydraulic blade control from the cab."
+      - "Six-way blade pulls finish grade to plan without manual angle adjustments."
+    confidence: high
+
+  ripper:
+    operational_meaning: "Rear-mounted ripping shanks."
+    buyer_value: "Breaks up frost line, hardpan, roots, and soft rock without a second machine."
+    ideal_for: [frozen_ground, hardpan, root_removal, rock_breaking]
+    avoid_generic_phrase: ["with ripper"]
+    stronger_phrase:
+      - "Multi-shank ripper — breaks frost, hardpan, and root mats without bringing in a second machine."
+      - "Ripper means you can prep ground that single-blade dozers can't touch."
+    confidence: high
+
+# =============================================================================
+# RESEARCH SUMMARY
+# =============================================================================
+research_summary:
+
+  # 1. Highest-value spec translations by category
+  highest_value_translations:
+    compact_track_loader:
+      - field: "high_flow"
+        why: "Direct buyer pain → attachment-driven workflows are the entire premium-CTL purchase rationale."
+      - field: "rated_operating_capacity_lbs"
+        why: "Pallet-class match is the single highest-buyer-decision spec."
+      - field: "lift_path"
+        why: "Vertical vs radial = direct fit for forklift/pallet vs grading/dirt work."
+      - field: "track_percent_remaining"
+        why: "Track replacement is $2k–4k+. Single biggest near-term cost exposure."
+    skid_steer_loader:
+      - field: "high_flow"
+        why: "Same logic as CTL — attachment-driven work pays."
+      - field: "rated_operating_capacity_lbs"
+        why: "Pallet/yard class."
+      - field: "two_speed"
+        why: "Cycle-time multiplier on snow and yard work."
+    mini_excavator:
+      - field: "dig_depth_ft"
+        why: "Direct trench/footing match — yes/no purchase driver."
+      - field: "zero_tail_swing"
+        why: "Defines what residential/urban work is even possible."
+      - field: "hydraulic_thumb"
+        why: "Doubles machine utility — pickup work in addition to digging."
+    telehandler:
+      - field: "max_lift_height_ft"
+        why: "Defines what story-height the machine reaches."
+      - field: "max_forward_reach_ft"
+        why: "Over-foundation placement — different machine without it."
+      - field: "stabilizers"
+        why: "Unlocks the full chart at extension."
+    excavator:
+      - field: "bucket_breakout_force"
+        why: "Tough-digging tier separator. Underpowered breakout = stalled cycles."
+      - field: "auxiliary_flow"
+        why: "Defines what hammers, shears, and processors will run."
+      - field: "thumb"
+        why: "Demolition and clearing utility."
+    wheel_loader:
+      - field: "bucket_capacity"
+        why: "Direct production multiplier (yd³ × cycles/hr = output)."
+      - field: "hinge_pin_height"
+        why: "Yes/no for tractor-trailer dumping."
+      - field: "breakout_force"
+        why: "Frozen/compacted pile capability."
+    dozer:
+      - field: "PAT_blade"
+        why: "Finish-grade vs rough-cut distinction."
+      - field: "undercarriage_percent"
+        why: "Largest near-term cost. Single biggest used-dozer concern."
+      - field: "ripper"
+        why: "Ground prep capability extension."
+
+  # 2. Strongest buyer-outcome phrase patterns
+  strongest_buyer_outcome_phrase_patterns:
+    - pattern: "Runs {attachments} at full rated speed."
+      rationale: "Concrete, falsifiable, attachment-named. Top dealer language."
+    - pattern: "Handles standard {pallet/material} without compromise."
+      rationale: "Names the actual job artifact."
+    - pattern: "Clears most {gate/access type} on tight {site type}."
+      rationale: "Direct site-fit answer."
+    - pattern: "Buy-and-work — UC/tracks at {pct}% before any major spend."
+      rationale: "Used-buyer financial framing — appeals to contractor cost discipline."
+    - pattern: "Saves you {time/labor unit} per cycle."
+      rationale: "Quantifies the productivity gain."
+    - pattern: "Reaches {distance} ft — covers {job artifact} from one setup."
+      rationale: "Reposition-time framing — fewer machine moves per shift."
+    - pattern: "Year-round machine, not a fair-weather {type}."
+      rationale: "Reframes enclosed cab + heat/AC into seasonal economics."
+    - pattern: "Rotates flush against walls without contact."
+      rationale: "Concrete physical-clearance benefit."
+    - pattern: "Doesn't lose capacity when you need full reach."
+      rationale: "Positions stabilizers/counterweight against competitor weakness."
+    - pattern: "Production-class {attachments}."
+      rationale: "Tier-separates light-duty from production work."
+
+  # 3. Weakest generic spec phrases — block or downrank
+  weakest_generic_phrases_to_avoid:
+    - "great power"
+    - "powerful engine"
+    - "strong performance"
+    - "heavy duty"
+    - "well built"
+    - "solid build"
+    - "clean machine"
+    - "well kept"
+    - "good lifting capacity"
+    - "good hydraulic flow"
+    - "high flow capable"
+    - "good fuel capacity"
+    - "comfortable cab"
+    - "climate controlled"
+    - "smooth ride"
+    - "safety features"
+    - "compact size"
+    - "good tracks"
+    - "good undercarriage"
+    - "fast"
+    - "quick"
+    - "good reach"
+    - "deep digging"
+    - "good lift"
+    - "high lift"
+    - "high capacity"
+    - "good capacity"
+    - "good dump height"
+    - "wide blade"
+    - "with attachments"
+
+  # 4. Top 20 highest-converting op-value patterns
+  top_20_op_value_patterns:
+
+    - id: 1
+      pattern: "High flow → mulchers / planers / cold planers / brush cutters at full rated speed"
+      categories: [compact_track_loader, skid_steer_loader]
+      example: "High-flow circuit — runs production mulchers and cold planers at full rated speed without bogging."
+
+    - id: 2
+      pattern: "ROC → real-world pallet/material match"
+      categories: [compact_track_loader, skid_steer_loader]
+      example: "Rated for {ROC} lbs — handles standard pallets of block, sod, and aggregate without compromise."
+
+    - id: 3
+      pattern: "Lift path → vertical (forklift/pallet) vs radial (grading/dirt) buyer fit"
+      categories: [compact_track_loader, skid_steer_loader]
+      example: "Vertical lift path — pallet handling and truck loading are exactly what this geometry was built for."
+
+    - id: 4
+      pattern: "Track/UC % → cost-clean buy-and-work framing"
+      categories: [compact_track_loader, dozer, excavator, mini_excavator]
+      example: "Tracks at {pct}% — buy-and-work; track replacement is $2–4k a pair when the time comes."
+
+    - id: 5
+      pattern: "Zero tail swing → flush-to-wall residential/urban capability"
+      categories: [mini_excavator, excavator]
+      example: "Zero tail swing — rotates 360° flush against walls and fences without contact."
+
+    - id: 6
+      pattern: "Dig depth → standard footing / utility lateral one-pass coverage"
+      categories: [mini_excavator, excavator]
+      example: "{depth}-ft dig depth — clears standard residential footings in a single pass."
+
+    - id: 7
+      pattern: "Hydraulic thumb → grappler/sorter capability beyond digging"
+      categories: [mini_excavator, excavator]
+      example: "Hydraulic thumb — pulls logs, rocks, and demo debris cleanly. Pays for itself on every clearing job."
+
+    - id: 8
+      pattern: "Aux hydraulics → multi-tool platform, not single-purpose"
+      categories: [mini_excavator, excavator, telehandler]
+      example: "Aux circuit means this machine isn't just a digger — it's a multi-tool platform."
+
+    - id: 9
+      pattern: "Max lift height → roofline/story-height placement match"
+      categories: [telehandler]
+      example: "{height}-ft max lift — places pallets onto third-story rooflines and higher."
+
+    - id: 10
+      pattern: "Forward reach → over-foundation/over-trench placement without parking on it"
+      categories: [telehandler]
+      example: "{reach}-ft forward reach — sets pallets onto the second-story setback from outside the work zone."
+
+    - id: 11
+      pattern: "Stabilizers → full chart unlocked at full reach/height"
+      categories: [telehandler]
+      example: "Stabilizers — you don't lose capacity when you need full extension."
+
+    - id: 12
+      pattern: "Frame leveling → plumb lifts on side slopes without machine reset"
+      categories: [telehandler]
+      example: "Frame leveling — plumb pallet placement on the worst side slopes without resetting the machine."
+
+    - id: 13
+      pattern: "Bucket breakout force → hardpan/frozen/clay capability"
+      categories: [excavator, wheel_loader]
+      example: "{force} lbf breakout — bites into hardpan, frozen ground, and compacted clay without stalling."
+
+    - id: 14
+      pattern: "Auxiliary flow → hammer/shear/mulching head supported"
+      categories: [excavator]
+      example: "{flow} GPM aux — runs production-class hammers, shears, and processors."
+
+    - id: 15
+      pattern: "Bucket capacity → yards-per-cycle production rate"
+      categories: [wheel_loader]
+      example: "{cap}-yd³ bucket — direct production-rate driver on truck-loading cycles."
+
+    - id: 16
+      pattern: "Hinge pin height → tractor-trailer dump compatibility"
+      categories: [wheel_loader]
+      example: "{height} hinge-pin — dumps cleanly into highway tractor-trailer beds."
+
+    - id: 17
+      pattern: "PAT blade → finish-grade precision from the cab"
+      categories: [dozer]
+      example: "PAT (six-way) blade — finish-grade precision with full hydraulic blade control from the cab."
+
+    - id: 18
+      pattern: "Ripper → ground-prep capability without a second machine"
+      categories: [dozer]
+      example: "Multi-shank ripper — breaks frost, hardpan, and root mats without bringing in a second machine."
+
+    - id: 19
+      pattern: "Two-speed travel → cycle-time multiplier on big sites"
+      categories: [compact_track_loader, skid_steer_loader]
+      example: "2-speed travel up to {mph} mph — measurable cycle-time gain on big lots and snow routes."
+
+    - id: 20
+      pattern: "Enclosed cab + heat/AC → year-round machine framing"
+      categories: [compact_track_loader, skid_steer_loader, mini_excavator, telehandler, wheel_loader]
+      example: "Enclosed cab with heat and A/C — year-round machine, not a fair-weather loader."
+
+  # Category-specific pain points (the things contractors actually argue about)
+  category_pain_points:
+    compact_track_loader:
+      - "Attachment performance under load — does it bog or hold rpm?"
+      - "Grading speed — controllability and feathering at low rpm."
+      - "Track wear and replacement cost timing."
+      - "Frame size match — can it fit the work AND lift the load?"
+    skid_steer_loader:
+      - "Tire wear and replacement on hardsurface work."
+      - "Lift height for loading over standard truck beds."
+      - "Hard-floor ride quality without ride control."
+    mini_excavator:
+      - "Trench cleanup — does the dozer blade do the cleanup pass or do you need a second machine?"
+      - "Tight access — gate width, side-yard clearance, alley work."
+      - "Thumb productivity — can it actually grapple, or just pin?"
+      - "Working close to walls — tail swing clearance."
+    telehandler:
+      - "Rooftop placement — does it actually reach the third-story setback?"
+      - "Pallet placement at extension — does the chart hold up at reach?"
+      - "Farm and ag use — bale handling, feed mover, low-clearance buildings."
+      - "Frame leveling on graded sites."
+    excavator:
+      - "Deep utility — does the boom geometry get to the bottom of the trench in one pass?"
+      - "Production digging — sustained cycle time without hydraulic fade."
+      - "Truck loading — swing speed and bucket-pin height clearance."
+    wheel_loader:
+      - "Cycle time stockpile-to-truck — bucket size + breakout + travel."
+      - "Stockpile loading on rough yard surfaces."
+      - "Loading efficiency — yards moved per gallon of fuel."
+    dozer:
+      - "Grading efficiency on rough cut — passes per acre."
+      - "Rough cut on virgin ground vs finish grade on compacted base."
+      - "Finish grading — does the PAT blade actually pull plan tolerances?"
+      - "Undercarriage cost timing — biggest single dozer cost line."
+
+# =============================================================================
+# OPEN ITEMS / V2 ROADMAP
+# =============================================================================
+v2_roadmap:
+  - "Add backhoe loader category (CLAUDE.md scope expansion)."
+  - "Add scissor lift / boom lift op-value translations."
+  - "Tone-aware variants — match the four MTM listing-copy tones (default / facebook / dealer_site / [tone-4])."
+  - "Cross-link top_20 patterns to mtm_*_use_case_scorer.py use case labels for direct copy-engine wiring."
+  - "Add 'when to suppress' rules — fields that hurt the listing if highlighted (e.g. high hours, low UC %)."
+  - "Capture frame-size-conditional phrasing (small frame ≠ large frame messaging on the same field)."
+  - "Add competitive-comparison phrasing layer (e.g. 'unlike radial-lift competitors at this size...')."

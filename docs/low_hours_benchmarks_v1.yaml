@@ -1,0 +1,207 @@
+# MTM Low Hours Benchmark Matrix v1
+#
+# Purpose:
+#   Gate the phrase "low hours" by equipment type and age so MTM does not
+#   repeat a common listing overclaim.
+#
+# Interpretation:
+#   conservative_threshold_hours:
+#     Maximum hours where MTM can safely render "low hours" without extra
+#     wording, assuming the meter reading is present and credible.
+#   normal_threshold_hours:
+#     Upper bound for normal/defensible working hours by age class. Above this,
+#     avoid any low-hour language and state factual hours only.
+#   high_hour_threshold_hours:
+#     Hours at or above this point should trigger caution wording, inspection
+#     prompts, or proof requests. This is not a rejection threshold.
+#
+# Global guardrails:
+#   - Never render "low hours" if hours are missing.
+#   - Never render "low hours" if hours_qualifier indicates unknown, estimated,
+#     replaced meter, broken meter, or unverified meter.
+#   - If age is unknown, do not render "low hours"; state factual hours only.
+#   - If known_use is demolition, quarry, forestry, land clearing, rental fleet,
+#     snow/salt, rock, waste, or scrap, require one bucket stricter threshold.
+#   - If service records or inspection proof are absent, "low hours" may pass
+#     only from the conservative threshold, not the normal threshold.
+#
+# Source basis:
+#   - Skid steer/CTL: buyer guides and financing guidance commonly flag
+#     0-1,500 as low, 1,500-3,000 moderate, 3,000-5,000 working, and 5,000+
+#     high-wear/high-finance-friction.
+#   - Mini excavator: used-market guidance commonly treats 0-2,000 as
+#     low/like-new, 2,000-5,000 as manageable wear, and 7,000-10,000 as
+#     late-life depending on maintenance.
+#   - Full-size excavator: guidance commonly treats under 3,000 as low,
+#     3,000-7,000 as mid-hour, and 7,000+ as higher-hour; 10,000-12,000 is
+#     a major finance/repair caution zone.
+#   - Telehandler: published guidance commonly treats up to 3,000 as low to
+#     moderate, 3,000-7,000 as medium/high, and 7,000+ as high; harsh use can
+#     bring major repairs at 5,000-7,000.
+#   - Wheel loader: lifecycle guidance commonly treats 0-5,000 as low/moderate,
+#     5,000-10,000 as working life, and 10,000+ as higher-hour but viable with
+#     records/rebuilds.
+#   - Dozer: mid-size dozer guidance commonly treats 0-2,000 as low,
+#     2,000-5,000 as moderate, 5,000-8,000 as working, and 8,000-12,000 as high;
+#     undercarriage condition can matter more than hours.
+
+compact_track_loader:
+  annual_use_assumption_hours: 450-650
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 750
+    normal_threshold_hours: 1300
+    high_hour_threshold_hours: 1800
+  age_3_5_years:
+    conservative_threshold_hours: 1500
+    normal_threshold_hours: 3000
+    high_hour_threshold_hours: 4000
+  age_6_10_years:
+    conservative_threshold_hours: 2200
+    normal_threshold_hours: 4500
+    high_hour_threshold_hours: 5500
+  age_10_plus:
+    conservative_threshold_hours: 3000
+    normal_threshold_hours: 5500
+    high_hour_threshold_hours: 7000
+  caution_notes:
+    - "Track condition can override hour appeal; high track wear suppresses low-hour emphasis."
+    - "Forestry/mulching/land-clearing use should apply one stricter age bucket."
+
+skid_steer:
+  annual_use_assumption_hours: 400-600
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 700
+    normal_threshold_hours: 1200
+    high_hour_threshold_hours: 1700
+  age_3_5_years:
+    conservative_threshold_hours: 1500
+    normal_threshold_hours: 3000
+    high_hour_threshold_hours: 4000
+  age_6_10_years:
+    conservative_threshold_hours: 2200
+    normal_threshold_hours: 4500
+    high_hour_threshold_hours: 5500
+  age_10_plus:
+    conservative_threshold_hours: 3000
+    normal_threshold_hours: 5500
+    high_hour_threshold_hours: 7000
+  caution_notes:
+    - "Skid steers work hard per hour because turning and loading stress drivetrain, tires, chains, motors, and loader arms."
+    - "Small-frame machines should use one stricter threshold if size class is known."
+
+mini_excavator:
+  annual_use_assumption_hours: 350-650
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 800
+    normal_threshold_hours: 1400
+    high_hour_threshold_hours: 2000
+  age_3_5_years:
+    conservative_threshold_hours: 1800
+    normal_threshold_hours: 3500
+    high_hour_threshold_hours: 5000
+  age_6_10_years:
+    conservative_threshold_hours: 2800
+    normal_threshold_hours: 5500
+    high_hour_threshold_hours: 7500
+  age_10_plus:
+    conservative_threshold_hours: 3500
+    normal_threshold_hours: 7000
+    high_hour_threshold_hours: 9000
+  caution_notes:
+    - "Rubber tracks, pins, bushings, thumb, and bucket/coupler wear can matter more than meter hours."
+    - "Rental, demolition, breaker, and rock work should apply one stricter age bucket."
+
+telehandler:
+  annual_use_assumption_hours: 500-1000
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 900
+    normal_threshold_hours: 1800
+    high_hour_threshold_hours: 2500
+  age_3_5_years:
+    conservative_threshold_hours: 2200
+    normal_threshold_hours: 4500
+    high_hour_threshold_hours: 6000
+  age_6_10_years:
+    conservative_threshold_hours: 3500
+    normal_threshold_hours: 7000
+    high_hour_threshold_hours: 8500
+  age_10_plus:
+    conservative_threshold_hours: 4500
+    normal_threshold_hours: 8500
+    high_hour_threshold_hours: 10500
+  caution_notes:
+    - "Boom, carriage, pins, hydraulics, axles, and tires should be considered before emphasizing low hours."
+    - "Rental fleet and masonry/commercial framing use should apply one stricter age bucket."
+
+excavator:
+  annual_use_assumption_hours: 800-1500
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 1200
+    normal_threshold_hours: 2500
+    high_hour_threshold_hours: 3500
+  age_3_5_years:
+    conservative_threshold_hours: 3000
+    normal_threshold_hours: 6000
+    high_hour_threshold_hours: 8000
+  age_6_10_years:
+    conservative_threshold_hours: 4500
+    normal_threshold_hours: 8500
+    high_hour_threshold_hours: 11000
+  age_10_plus:
+    conservative_threshold_hours: 6000
+    normal_threshold_hours: 11000
+    high_hour_threshold_hours: 14000
+  caution_notes:
+    - "Demolition, rock, hammer, scrap, quarry, and severe-duty use should apply one stricter age bucket."
+    - "Undercarriage percent, hydraulic condition, and oil analysis can outweigh hours."
+
+wheel_loader:
+  annual_use_assumption_hours: 700-1500
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 1200
+    normal_threshold_hours: 2500
+    high_hour_threshold_hours: 3500
+  age_3_5_years:
+    conservative_threshold_hours: 3000
+    normal_threshold_hours: 6000
+    high_hour_threshold_hours: 8000
+  age_6_10_years:
+    conservative_threshold_hours: 4500
+    normal_threshold_hours: 9000
+    high_hour_threshold_hours: 11000
+  age_10_plus:
+    conservative_threshold_hours: 6000
+    normal_threshold_hours: 11000
+    high_hour_threshold_hours: 14000
+  caution_notes:
+    - "Tire percent, articulation joint, brakes, transmission, axle, bucket, and coupler condition should temper low-hour claims."
+    - "Quarry, waste, salt, aggregate production, and long load-and-carry use should apply one stricter age bucket."
+
+dozer:
+  annual_use_assumption_hours: 500-1200
+  low_hours_phrase_policy: "allowed only at or below conservative_threshold_hours"
+  age_0_2_years:
+    conservative_threshold_hours: 1000
+    normal_threshold_hours: 2000
+    high_hour_threshold_hours: 3000
+  age_3_5_years:
+    conservative_threshold_hours: 2200
+    normal_threshold_hours: 5000
+    high_hour_threshold_hours: 6500
+  age_6_10_years:
+    conservative_threshold_hours: 3500
+    normal_threshold_hours: 7500
+    high_hour_threshold_hours: 9500
+  age_10_plus:
+    conservative_threshold_hours: 4500
+    normal_threshold_hours: 10000
+    high_hour_threshold_hours: 12000
+  caution_notes:
+    - "Undercarriage percent, ground conditions, blade/ripper use, and final drive condition should carry more weight than hours."
+    - "Small dozers should shift thresholds down 20-30%; large production dozers may tolerate higher hours with records."

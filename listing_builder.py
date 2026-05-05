@@ -16,6 +16,11 @@ Public API
 
 The output of build_listing_text() is the generated_listing_text consumed by
 listing_pack_builder.build_listing_pack() / build_listing_pack_v1().
+
+v3 Engine:
+    build_listing_text() now routes through listing_copy_v3.build_listing_text_v3()
+    by default.  Falls back to the original v2 implementation on any exception.
+    Set dealer_input.copy_mode to trigger platform-specific formatting.
 """
 
 from __future__ import annotations
@@ -24,6 +29,7 @@ import re
 from typing import List
 
 from dealer_input import DealerInput
+from listing_copy_v2 import build_contact_cta, build_opening_paragraph
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -335,7 +341,11 @@ def _build_mini_ex_headline(dealer_input: DealerInput) -> str:
     return base
 
 
-def _build_mini_ex_opening(dealer_input: DealerInput) -> str:
+def _build_mini_ex_opening(
+    dealer_input: DealerInput,
+    resolved_specs: dict | None = None,
+    tone_profile: str = "dealer_clean",
+) -> str:
     """
     1–2 sentence dealer-quality opening paragraph for mini ex listings.
 
@@ -343,46 +353,7 @@ def _build_mini_ex_opening(dealer_input: DealerInput) -> str:
     Sentence 2: key work features (thumb, aux hydraulics) — omitted if nothing notable.
     No invented condition claims; condition word is derived from hours only.
     """
-    make_model = f"{dealer_input.make} {dealer_input.model}"
-    hours_str  = f"{dealer_input.hours:,}"
-
-    if dealer_input.hours < 1000:
-        condition = "Low-hour"
-    elif dealer_input.hours < 2500:
-        condition = "Clean"
-    elif dealer_input.hours < 4500:
-        condition = "Well-used"
-    else:
-        condition = "High-hour working"
-
-    # Sentence 1: identity + cab
-    is_enclosed = (
-        dealer_input.cab_type
-        and dealer_input.cab_type.lower().strip() in _ENCLOSED_CAB_VALUES
-    )
-    if is_enclosed:
-        extras: list[str] = []
-        if dealer_input.heater:
-            extras.append("heat")
-        if dealer_input.ac:
-            extras.append("A/C")
-        cab_desc = "enclosed cab"
-        if extras:
-            cab_desc += f" with {' & '.join(extras)}"
-        s1 = f"{condition} {make_model} with {hours_str} hours, {cab_desc}."
-    else:
-        s1 = f"{condition} {make_model} with {hours_str} hours."
-
-    # Sentence 2: confirmed work features
-    work_parts: list[str] = []
-    if dealer_input.thumb_type and dealer_input.thumb_type.lower() not in ("none", ""):
-        work_parts.append("hydraulic thumb")
-    if dealer_input.aux_hydraulics:
-        work_parts.append("auxiliary hydraulics")
-
-    s2 = f"Equipped with {' and '.join(work_parts)}." if work_parts else ""
-
-    return f"{s1} {s2}".strip() if s2 else s1
+    return build_opening_paragraph(dealer_input, resolved_specs or {}, "mini_excavator", tone_profile)
 
 
 def _build_mini_ex_key_features(dealer_input: DealerInput) -> list[str]:
@@ -608,6 +579,7 @@ def _build_mini_ex_listing(
     dealer_input: DealerInput,
     resolved_specs: dict,
     use_case_payload: "dict | None" = None,
+    tone_profile: str = "dealer_clean",
 ) -> str:
     """
     Build a dealer-quality mini excavator listing with enforced section structure:
@@ -630,7 +602,7 @@ def _build_mini_ex_listing(
         sections.append(f"${dealer_input.asking_price:,}")
 
     # 2.5. Opening paragraph — hours-based condition + confirmed cab/work features.
-    opening = _build_mini_ex_opening(dealer_input)
+    opening = _build_mini_ex_opening(dealer_input, resolved_specs, tone_profile)
     if opening:
         sections.append(opening)
 
@@ -664,7 +636,7 @@ def _build_mini_ex_listing(
             sections.append(details_block)
 
     # 8. Contact Details (always last)
-    sections.append("Contact Details:\nCall or text to schedule a look.")
+    sections.append(f"Contact Details:\n{build_contact_cta(bool(dealer_input.asking_price), tone_profile)}")
 
     return _compact_listing("\n\n".join(sections))
 
@@ -676,54 +648,18 @@ def _build_mini_ex_listing(
 _ENCLOSED_CAB_VALUES = frozenset({"enclosed", "erops", "closed", "cab"})
 
 
-def _build_p1_identity(dealer_input: DealerInput) -> str:
+def _build_p1_identity(
+    dealer_input: DealerInput,
+    resolved_specs: dict | None = None,
+    equipment_type: str = "",
+    tone_profile: str = "dealer_clean",
+) -> str:
     """
     Para 1 — machine identity, hours, and top config fact.
 
     Pattern: "[Condition] [Year] [Make] [Model] with [hours] hours. [Config clause]."
     """
-    make_model = f"{dealer_input.make} {dealer_input.model}"
-    hours_str  = f"{dealer_input.hours:,}"
-
-    # Condition phrase keyed on hours
-    if dealer_input.hours < 1000:
-        condition = "Low-hour"
-    elif dealer_input.hours < 2500:
-        condition = "Clean"
-    elif dealer_input.hours < 4500:
-        condition = "Well-used"
-    else:
-        condition = "High-hour working"
-
-    # Top config clause — one concise statement
-    config: str = ""
-    is_enclosed = (
-        dealer_input.cab_type
-        and dealer_input.cab_type.lower().strip() in _ENCLOSED_CAB_VALUES
-    )
-
-    if dealer_input.high_flow == "yes" and is_enclosed:
-        comforts = []
-        if dealer_input.heater:
-            comforts.append("heat")
-        if dealer_input.ac:
-            comforts.append("A/C")
-        comforts.append("high-flow hydraulics")
-        config = f"Enclosed cab with {', '.join(comforts[:-1])}, and {comforts[-1]}." \
-            if len(comforts) > 1 else f"Enclosed cab with {comforts[0]}."
-    elif dealer_input.high_flow == "yes":
-        config = "High-flow hydraulics ready for demanding attachments."
-    elif is_enclosed:
-        comforts = []
-        if dealer_input.heater:
-            comforts.append("heat")
-        if dealer_input.ac:
-            comforts.append("A/C")
-        comfort_str = f" with {' and '.join(comforts)}" if comforts else ""
-        config = f"Enclosed cab{comfort_str}."
-
-    base = f"{condition} {dealer_input.year} {make_model} with {hours_str} hours."
-    return f"{base} {config}".strip() if config else base
+    return build_opening_paragraph(dealer_input, resolved_specs or {}, equipment_type, tone_profile)
 
 
 def _build_p2_capability(
@@ -1079,16 +1015,21 @@ def build_listing_text(
     resolved_specs: dict,
     use_case_payload: "dict | None" = None,
     equipment_type: str = "",
+    tone_profile: str = "dealer_clean",
 ) -> str:
     """
     Produce a complete dealer-ready listing description string.
+
+    v3 ENGINE (default): routes through listing_copy_v3.build_listing_text_v3().
+    Falls back to the original v2 implementation on any exception so existing
+    exports are never broken.
 
     LOCKED STRUCTURE (all equipment types):
 
       TITLE
       $Price               (if set)
 
-      Core Specs:          (hours + OEM specs)
+      OEM Specs            (hours + OEM specs)
       • ...
 
       Features:            (confirmed config bullets)
@@ -1106,12 +1047,25 @@ def build_listing_text(
       Contact Details:
       Call or text to schedule a look.
 
-    No prose paragraphs. No --- dividers. One blank line between sections.
-    Empty sections are suppressed cleanly.
+    No --- dividers. One blank line between sections. Empty sections suppressed.
     """
+    # ── v3 engine (default) ───────────────────────────────────────────────────
+    try:
+        from listing_copy_v3 import build_listing_text_v3
+        return build_listing_text_v3(
+            dealer_input,
+            resolved_specs,
+            use_case_payload=use_case_payload,
+            equipment_type=equipment_type,
+            tone_profile=tone_profile,
+        )
+    except Exception:
+        pass  # fall through to v2 implementation
+
+    # ── v2 fallback ───────────────────────────────────────────────────────────
     # Mini excavator: enforced dealer-quality structure (separate builder)
     if equipment_type == "mini_excavator":
-        return _build_mini_ex_listing(dealer_input, resolved_specs, use_case_payload)
+        return _build_mini_ex_listing(dealer_input, resolved_specs, use_case_payload, tone_profile)
 
     sections: list[str] = []
 
@@ -1124,7 +1078,7 @@ def build_listing_text(
 
     # 2.5. Opening paragraph — 1–2 sentences of machine identity prose.
     # Grounded in hours and confirmed config only; no invented condition claims.
-    opening = _build_p1_identity(dealer_input)
+    opening = _build_p1_identity(dealer_input, resolved_specs, equipment_type, tone_profile)
     if opening:
         sections.append(opening)
 
@@ -1158,7 +1112,7 @@ def build_listing_text(
             sections.append(details_block)
 
     # 8. Contact Details (always last)
-    sections.append("Contact Details:\nCall or text to schedule a look.")
+    sections.append(f"Contact Details:\n{build_contact_cta(bool(dealer_input.asking_price), tone_profile)}")
 
     return _compact_listing("\n\n".join(sections))
 

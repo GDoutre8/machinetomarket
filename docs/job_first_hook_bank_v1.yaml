@@ -1,0 +1,2291 @@
+# =============================================================================
+# MTM Listing Copy Engine v3 — Job-First Hook Bank
+# File: docs/job_first_hook_bank_v1.yaml
+# Purpose: Generate the FIRST sentence of a listing as a buyer-job hook,
+#          not a spec recitation. Contractors search for work, not torque.
+#
+# Lookup contract:
+#   buyer's job -> required field set + trigger condition -> opening sentence patterns
+#
+# How the engine uses this:
+#   1. For a given listing, evaluate each hook's required_fields and
+#      trigger_conditions against the resolved spec set.
+#   2. Score qualifying hooks against the use case scorer's top label.
+#   3. Pick the highest-confidence qualifying hook whose use case matches.
+#   4. Pull one of opening_patterns, populate templated fields from the
+#      resolver, lead the listing with it.
+#   5. Lead the body with strongest_follow_up_spec.
+#
+# Field references must match op_value_maps_v1.yaml exactly. Hook fires only
+# if every required_field is non-null and not in requires_confirm.
+#
+# Confidence:
+#   high   = strong dealer-language match, large buyer pool, low risk.
+#   medium = valid but narrower buyer pool or seasonal dependency.
+# =============================================================================
+
+meta:
+  version: "v1.0"
+  schema_version: 1
+  generated_for: "MTM Listing Copy Engine v3"
+  cross_reference: "docs/op_value_maps_v1.yaml"
+  hook_count_per_category: 25
+  total_hook_count: 175
+  policy_notes:
+    - "Hook fires only when every required_field is non-null AND not in requires_confirm."
+    - "Templated values (e.g. {hydraulic_flow_gpm}) are substituted from resolved_specs."
+    - "trigger_conditions use Python boolean syntax — evaluable against resolved_specs dict."
+    - "Hook selection precedence: scorer top use case match > confidence > required_field count (most specific wins)."
+    - "If no hook qualifies, the engine falls back to a generic make+model+class opening."
+
+# =============================================================================
+# 1. COMPACT TRACK LOADERS — 25 hooks
+# =============================================================================
+compact_track_loader:
+
+  land_clearing:
+    buyer_type: "land clearing contractor"
+    job_type: "brush clearing / forestry mulching"
+    required_fields: [high_flow, aux_flow_high_gpm, horsepower_hp]
+    trigger_conditions: "high_flow == true"
+    opening_patterns:
+      - "Land-clearing setup with high-flow hydraulics, ready for mulchers, brush cutters, and forestry attachments."
+      - "High-flow CTL built for forestry mulching, right-of-way clearing, and heavy attachment work."
+      - "Forestry-ready machine — high flow plus the horsepower to run mulching heads at full rated speed."
+    strongest_follow_up_spec: aux_flow_high_gpm
+    confidence: high
+
+  forestry_mulching:
+    buyer_type: "forestry mulching contractor"
+    job_type: "production mulching"
+    required_fields: [high_flow, horsepower_hp, enclosed_cab]
+    trigger_conditions: "high_flow == true and horsepower_hp >= 90"
+    opening_patterns:
+      - "Production mulching setup — high flow, full enclosed cab, and the engine power to keep the head spinning."
+      - "Built for full-day mulching: high-flow circuit, enclosed cab, and {horsepower_hp} HP."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: high
+
+  asphalt_planing:
+    buyer_type: "paving / patch contractor"
+    job_type: "cold planing / asphalt milling"
+    required_fields: [high_flow, horsepower_hp]
+    trigger_conditions: "high_flow == true"
+    opening_patterns:
+      - "Paving-crew CTL — high flow runs cold planers and asphalt mills at production speed."
+      - "Patch-crew setup with high-flow hydraulics for cold planing and milling work."
+    strongest_follow_up_spec: aux_flow_high_gpm
+    confidence: high
+
+  stump_grinding:
+    buyer_type: "tree service contractor"
+    job_type: "stump grinding"
+    required_fields: [high_flow, horsepower_hp]
+    trigger_conditions: "high_flow == true"
+    opening_patterns:
+      - "Tree-service CTL with high-flow hydraulics — keeps stump grinders at full speed under load."
+      - "Built for stump grinding and removal — high flow plus the weight to plant the cutter wheel."
+    strongest_follow_up_spec: aux_flow_high_gpm
+    confidence: high
+
+  brush_cutting:
+    buyer_type: "right-of-way / land management contractor"
+    job_type: "rotary brush cutting"
+    required_fields: [high_flow, horsepower_hp]
+    trigger_conditions: "high_flow == true"
+    opening_patterns:
+      - "Right-of-way cutter setup — high flow runs rotary brush cutters and drum mowers at rated speed."
+      - "Built for ROW work, fence line clearing, and heavy brush — high-flow circuit ready."
+    strongest_follow_up_spec: aux_flow_high_gpm
+    confidence: high
+
+  pallet_handling_landscape:
+    buyer_type: "landscape supply / hardscape contractor"
+    job_type: "pallet placement"
+    required_fields: [rated_operating_capacity_lbs, lift_path]
+    trigger_conditions: "lift_path == 'vertical' and rated_operating_capacity_lbs >= 2000"
+    opening_patterns:
+      - "Vertical-lift CTL with {rated_operating_capacity_lbs} lb rated capacity — sized for landscape supply pallets and hardscape material."
+      - "Pallet-handling setup: vertical lift path and {rated_operating_capacity_lbs} lb ROC for sod, block, and stone deliveries."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  masonry_support:
+    buyer_type: "masonry contractor"
+    job_type: "block / brick / stone placement"
+    required_fields: [rated_operating_capacity_lbs, lift_path]
+    trigger_conditions: "lift_path == 'vertical' and rated_operating_capacity_lbs >= 2200"
+    opening_patterns:
+      - "Masonry-crew CTL — vertical lift and {rated_operating_capacity_lbs} lb capacity move full pallets of block where the wall goes up."
+      - "Mason's machine: vertical lift path, the right ROC for block pallets, and the reach to feed scaffolds."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  snow_commercial:
+    buyer_type: "commercial snow contractor"
+    job_type: "parking lot / commercial snow"
+    required_fields: [two_speed, enclosed_cab, heat_ac]
+    trigger_conditions: "two_speed == true and enclosed_cab == true and heat_ac == true"
+    opening_patterns:
+      - "Snow-route CTL — 2-speed travel, enclosed cab, heat — ready for the next event."
+      - "Commercial snow setup: enclosed cab with heat, 2-speed for cross-lot pushes, ready to plug into your fleet."
+    strongest_follow_up_spec: two_speed
+    confidence: high
+
+  snow_residential:
+    buyer_type: "residential snow contractor"
+    job_type: "driveway and walkway snow"
+    required_fields: [enclosed_cab, machine_width_inches]
+    trigger_conditions: "enclosed_cab == true and machine_width_inches < 70"
+    opening_patterns:
+      - "Residential snow CTL — narrow chassis fits driveways and walkways, fully enclosed cab keeps you working through the storm."
+      - "Driveway-class snow machine — sub-{machine_width_inches} inch width and an enclosed cab built for the route."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  site_grading:
+    buyer_type: "site work / dirt contractor"
+    job_type: "rough and finish grading"
+    required_fields: [horsepower_hp, operating_weight_lbs]
+    trigger_conditions: "operating_weight_lbs >= 9000"
+    opening_patterns:
+      - "Site-prep CTL — the operating weight and HP to push full buckets through dirt grading without bouncing off the cut."
+      - "Dirt-crew machine: heavy enough for full-bucket grading, sized right for residential and small-commercial work."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: high
+
+  trenching_attachment:
+    buyer_type: "utility / fencing contractor"
+    job_type: "trenching with chain trencher attachment"
+    required_fields: [aux_flow_standard_gpm]
+    trigger_conditions: "aux_flow_standard_gpm >= 16"
+    opening_patterns:
+      - "Trenching-ready CTL — {aux_flow_standard_gpm} GPM standard flow runs chain trenchers and rock saws at rated speed."
+      - "Built for trenching attachments — the flow to run the chain without bogging."
+    strongest_follow_up_spec: aux_flow_standard_gpm
+    confidence: high
+
+  demolition_cleanup:
+    buyer_type: "demolition contractor"
+    job_type: "interior / residential demo cleanup"
+    required_fields: [enclosed_cab, rated_operating_capacity_lbs]
+    trigger_conditions: "enclosed_cab == true"
+    opening_patterns:
+      - "Demo-cleanup CTL — fully enclosed cab seals out dust, ROC for full-bucket debris loads."
+      - "Demolition setup with the enclosed cab and capacity to clear interior tear-outs without trips."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  tree_service:
+    buyer_type: "tree service contractor"
+    job_type: "log handling and tree debris"
+    required_fields: [aux_flow_standard_gpm]
+    trigger_conditions: null
+    opening_patterns:
+      - "Tree-service CTL — set up to run grapples, log forks, and debris buckets between cuts."
+      - "Built for log handling and tree debris cleanup — the right flow and lift to run the attachments."
+    strongest_follow_up_spec: aux_flow_standard_gpm
+    confidence: medium
+
+  residential_landscape:
+    buyer_type: "residential landscaper"
+    job_type: "backyard install and grading"
+    required_fields: [machine_width_inches, lift_path]
+    trigger_conditions: "machine_width_inches < 70"
+    opening_patterns:
+      - "Backyard-access CTL — fits standard 6-ft gates, gets the work done where bigger machines can't reach."
+      - "Residential landscape setup: narrow chassis, vertical lift, and the maneuverability for tight side yards."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  agricultural:
+    buyer_type: "farmer / ag operator"
+    job_type: "feed handling, manure, barn chores"
+    required_fields: [rated_operating_capacity_lbs, fuel_capacity_gal]
+    trigger_conditions: null
+    opening_patterns:
+      - "Farm CTL — sized for daily feed handling, manure cleanout, and barn chores."
+      - "Ag-ready loader: ROC for round bales, tank capacity for full-day work."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  pipeline_support:
+    buyer_type: "pipeline / utility contractor"
+    job_type: "pipeline ROW backfill and material handling"
+    required_fields: [rated_operating_capacity_lbs, two_speed]
+    trigger_conditions: "rated_operating_capacity_lbs >= 2400 and two_speed == true"
+    opening_patterns:
+      - "Pipeline-support CTL — 2-speed for cross-ROW transit, ROC for pipe and material handling."
+      - "Set up for pipeline crew work: travel speed and capacity for backfill, pipe staging, and ROW cleanup."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: medium
+
+  fleet_addition:
+    buyer_type: "fleet contractor"
+    job_type: "general fleet utility"
+    required_fields: [one_owner, enclosed_cab]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner CTL — clean maintenance trail, ready to plug into a working fleet without a shakedown month."
+      - "Fleet-grade machine: single ownership, enclosed cab, configured for daily production."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  owner_operator:
+    buyer_type: "owner-operator / single-machine contractor"
+    job_type: "do-it-all daily workhorse"
+    required_fields: [enclosed_cab, aux_flow_standard_gpm]
+    trigger_conditions: "enclosed_cab == true"
+    opening_patterns:
+      - "Owner-operator CTL — enclosed cab, real attachment-running flow, dialed in for the contractor who runs one machine."
+      - "Set up to be the only loader on the truck: cab, comfort, and capability for full-day work."
+    strongest_follow_up_spec: aux_flow_standard_gpm
+    confidence: high
+
+  rental_fleet_candidate:
+    buyer_type: "rental house operator"
+    job_type: "rental fleet utility loader"
+    required_fields: [enclosed_cab, quick_attach_type]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rental-fleet candidate — enclosed cab, universal coupler, broad attachment compatibility."
+      - "Configured for rental rotation: durable spec, broad job-fit, and renter-friendly controls."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  excavation_support:
+    buyer_type: "excavation contractor"
+    job_type: "spoils handling and trench backfill support"
+    required_fields: [rated_operating_capacity_lbs, two_speed]
+    trigger_conditions: null
+    opening_patterns:
+      - "Excavation-support CTL — moves spoils, backfills trenches, and stages material on big jobs."
+      - "Built to be the second machine on excavation crews: ROC, two-speed, and a coupler that takes everything."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  concrete_support:
+    buyer_type: "concrete contractor"
+    job_type: "form work, rebar staging, slab support"
+    required_fields: [rated_operating_capacity_lbs, lift_path]
+    trigger_conditions: "lift_path == 'vertical'"
+    opening_patterns:
+      - "Concrete-crew CTL — vertical lift handles form panels and rebar bundles where the slab goes."
+      - "Set up for flatwork support: vertical lift path and the ROC to move forms and bundles."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  attachment_carrier:
+    buyer_type: "multi-trade contractor"
+    job_type: "attachment-driven work across trades"
+    required_fields: [quick_attach_type, aux_flow_standard_gpm]
+    trigger_conditions: null
+    opening_patterns:
+      - "Attachment-carrier CTL — universal coupler, real flow, ready to plug into the attachment library you already have."
+      - "Built to be the carrier behind your attachments: coupler-equipped, sized to run them right."
+    strongest_follow_up_spec: aux_flow_standard_gpm
+    confidence: high
+
+  small_frame_tight_access:
+    buyer_type: "remodel / tight-access contractor"
+    job_type: "interior tear-out, side yard, basement access"
+    required_fields: [machine_width_inches, enclosed_cab]
+    trigger_conditions: "machine_width_inches < 50"
+    opening_patterns:
+      - "Tight-access CTL — fits where bigger machines can't, narrow chassis built for residential remodel work."
+      - "Sub-50 inch frame — gets through standard interior doors and side yard accesses without disassembly."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  large_frame_production:
+    buyer_type: "large-job contractor"
+    job_type: "production-grade dirt and material work"
+    required_fields: [horsepower_hp, rated_operating_capacity_lbs]
+    trigger_conditions: "horsepower_hp >= 95 and rated_operating_capacity_lbs >= 3300"
+    opening_patterns:
+      - "Large-frame production CTL — built to push, lift, and run heavy attachments at the same time."
+      - "Top of the CTL class — the HP and ROC for production-grade work, not a residential machine."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: high
+
+  finance_buyer_first_machine:
+    buyer_type: "first-machine contractor / financing buyer"
+    job_type: "general construction utility"
+    required_fields: [one_owner, hours]
+    trigger_conditions: "one_owner == true and hours <= 1500"
+    opening_patterns:
+      - "First-machine CTL — low hours, single owner, ready to anchor a contractor's first fleet."
+      - "Buy-and-work loader: clean history, the right hours to finance, and a configuration that pays back."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+# =============================================================================
+# 2. SKID STEER LOADERS — 25 hooks
+# =============================================================================
+skid_steer_loader:
+
+  paving_crew:
+    buyer_type: "paving contractor"
+    job_type: "asphalt yard / paving support"
+    required_fields: [high_flow, operating_weight_lbs]
+    trigger_conditions: "high_flow == true"
+    opening_patterns:
+      - "Paving-crew skid — high-flow circuit for cold planers and the weight to push hot mix on the lot."
+      - "Built for asphalt yard work: high flow, hard-surface capable, and ready for paver-support attachments."
+    strongest_follow_up_spec: aux_flow_high_gpm
+    confidence: high
+
+  cold_planing:
+    buyer_type: "patch / road repair contractor"
+    job_type: "cold planing and asphalt milling"
+    required_fields: [high_flow, aux_flow_high_gpm]
+    trigger_conditions: "high_flow == true"
+    opening_patterns:
+      - "Cold-planer skid — high flow runs production planers without losing rpm under cut."
+      - "Patch-crew machine with the high-flow circuit asphalt mills actually need."
+    strongest_follow_up_spec: aux_flow_high_gpm
+    confidence: high
+
+  demolition_hardsurface:
+    buyer_type: "demolition contractor"
+    job_type: "concrete and hard-surface demo cleanup"
+    required_fields: [operating_weight_lbs, enclosed_cab]
+    trigger_conditions: "enclosed_cab == true"
+    opening_patterns:
+      - "Demo-cleanup skid — built for hard-surface tear-outs, enclosed cab seals out dust, weight to push debris."
+      - "Hard-surface demolition setup: sealed cab, the operating weight to crowd into a pile, hydraulic flow for breakers."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  snow_paved:
+    buyer_type: "commercial snow contractor"
+    job_type: "paved-lot snow pushing"
+    required_fields: [two_speed, enclosed_cab, heat_ac]
+    trigger_conditions: "two_speed == true and enclosed_cab == true"
+    opening_patterns:
+      - "Lot-snow skid — 2-speed for cross-lot pushes, enclosed heated cab, ready for the route."
+      - "Built for commercial snow on paved surfaces: travel speed, cab heat, and tire economics that beat tracked machines."
+    strongest_follow_up_spec: two_speed
+    confidence: high
+
+  warehouse_dock:
+    buyer_type: "warehouse / industrial operator"
+    job_type: "indoor material handling, dock work"
+    required_fields: [enclosed_cab, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Warehouse skid — sized for indoor work, sealed cab for climate-controlled facilities."
+      - "Indoor-friendly setup: tire-mounted, narrow enough for dock work, the right loader for inside operations."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: medium
+
+  scrap_yard:
+    buyer_type: "scrap yard / recycling operator"
+    job_type: "scrap and metal handling"
+    required_fields: [operating_weight_lbs, aux_flow_standard_gpm]
+    trigger_conditions: null
+    opening_patterns:
+      - "Scrap-yard skid — operating weight for crowding into bins, hydraulic flow for grapple work."
+      - "Built for metal yards: heavy frame, attachment-ready, and configured for the abuse."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: medium
+
+  landscape_supply_yard:
+    buyer_type: "landscape supply yard"
+    job_type: "yard loading — mulch, gravel, sand"
+    required_fields: [rated_operating_capacity_lbs]
+    trigger_conditions: "rated_operating_capacity_lbs >= 2200"
+    opening_patterns:
+      - "Yard-loader skid — {rated_operating_capacity_lbs} lb capacity moves full buckets of mulch, soil, and gravel all day."
+      - "Built for the supply yard: ROC sized for retail loads, hard-surface tire economics."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  agricultural_barn:
+    buyer_type: "farmer / livestock operator"
+    job_type: "barn cleanout, manure, feed"
+    required_fields: [rated_operating_capacity_lbs, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Barn-chore skid — daily manure cleanout, feed handling, and the cab to keep operators warm in winter."
+      - "Ag-yard setup: ROC for round bales, enclosed cab, configured for daily livestock work."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  roofing_delivery:
+    buyer_type: "roofing contractor"
+    job_type: "rooftop material delivery"
+    required_fields: [rated_operating_capacity_lbs, lift_path]
+    trigger_conditions: "lift_path == 'vertical'"
+    opening_patterns:
+      - "Roofing-crew skid — vertical lift puts shingle pallets on the deck, ROC sized for residential bundle loads."
+      - "Built for roof loading: vertical lift path and the height to set bundles on standard residential pitches."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  pallet_handling_concrete:
+    buyer_type: "pallet handling on hard surface"
+    job_type: "warehouse / yard pallet work"
+    required_fields: [rated_operating_capacity_lbs, lift_path]
+    trigger_conditions: "lift_path == 'vertical'"
+    opening_patterns:
+      - "Pallet-class skid — vertical lift, hard-surface tire economics, built to swap pallets on concrete."
+      - "Tire-mount pallet machine: ROC for full pallets, lift path designed for forklift-style work."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  sweeping:
+    buyer_type: "lot maintenance / sweeping contractor"
+    job_type: "broom and sweeper attachment work"
+    required_fields: [aux_flow_standard_gpm]
+    trigger_conditions: "aux_flow_standard_gpm >= 17"
+    opening_patterns:
+      - "Lot-sweep skid — hydraulic flow to spin angle brooms and pickup sweepers."
+      - "Set up for sweeping work: the flow to run the broom, the maneuverability to clear the lot."
+    strongest_follow_up_spec: aux_flow_standard_gpm
+    confidence: high
+
+  trenching_hardsurface:
+    buyer_type: "utility / fencing contractor"
+    job_type: "trenching attachment work on prepared ground"
+    required_fields: [aux_flow_standard_gpm]
+    trigger_conditions: "aux_flow_standard_gpm >= 16"
+    opening_patterns:
+      - "Trenching skid — flow for chain trenchers, tire-mount for hard-surface productivity."
+      - "Built for trencher work: the GPM to keep the chain at speed, the tire wear economics for paved sites."
+    strongest_follow_up_spec: aux_flow_standard_gpm
+    confidence: high
+
+  light_demolition:
+    buyer_type: "interior / light demo contractor"
+    job_type: "interior tear-out and light demolition"
+    required_fields: [enclosed_cab, machine_width_inches]
+    trigger_conditions: "enclosed_cab == true"
+    opening_patterns:
+      - "Interior-demo skid — sealed cab, narrow chassis, sized to work inside commercial buildings."
+      - "Tear-out crew machine: configured for interior work, dust-tight cab, the right size to fit through openings."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  driveway_prep:
+    buyer_type: "driveway / asphalt prep contractor"
+    job_type: "subgrade prep and driveway grading"
+    required_fields: [operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Driveway-prep skid — operating weight for subgrade compaction work and dirt grading."
+      - "Set up for residential driveway prep: the weight to push, the maneuverability for tight residential lots."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: high
+
+  site_cleanup:
+    buyer_type: "general contractor"
+    job_type: "site cleanup and material handling"
+    required_fields: [rated_operating_capacity_lbs, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Job-site cleanup skid — moves debris, stages material, and turns into a fork carrier when needed."
+      - "Built for daily site work: ROC, coupler, and a cab built for full-day use."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  mulch_spreading:
+    buyer_type: "landscape installer"
+    job_type: "mulch and material spreading"
+    required_fields: [rated_operating_capacity_lbs, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Landscape-install skid — sized for mulch beds, soil deliveries, and material spreading on residential lots."
+      - "Spread-and-grade machine: ROC, narrow access, and the bucket rollback to feather material in beds."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: medium
+
+  one_owner_clean:
+    buyer_type: "buyer prioritizing maintenance history"
+    job_type: "general utility — clean history machine"
+    required_fields: [one_owner, hours]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner skid — single maintenance trail, no surprises, ready to work."
+      - "Single-owner machine — predictable history is half the price of a used loader."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  fleet_workhorse:
+    buyer_type: "fleet contractor"
+    job_type: "fleet utility skid"
+    required_fields: [enclosed_cab, two_speed]
+    trigger_conditions: null
+    opening_patterns:
+      - "Fleet-grade skid — enclosed cab, 2-speed, ready to plug into a working operation."
+      - "Set up for fleet rotation: durable cab, attachment-ready coupler, the spec contractors actually use."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  rental_candidate:
+    buyer_type: "rental house operator"
+    job_type: "rental fleet skid"
+    required_fields: [enclosed_cab, quick_attach_type]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rental-fleet skid — universal coupler, hydraulic-friendly spec, configured for renter use."
+      - "Built for rental rotation: enclosed cab, broad attachment fit, and a hydraulic package that runs everything."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  industrial_facility:
+    buyer_type: "industrial / facility operator"
+    job_type: "in-plant material handling"
+    required_fields: [enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Plant-floor skid — sized for in-facility work, sealed cab, hard-surface tire economics."
+      - "Industrial setup: configured for indoor and dock work where tracks are not an option."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: medium
+
+  high_lift_class:
+    buyer_type: "tall-truck loading contractor"
+    job_type: "loading over-the-side into highway trucks"
+    required_fields: [rated_operating_capacity_lbs, lift_path]
+    trigger_conditions: "lift_path == 'vertical' and rated_operating_capacity_lbs >= 2700"
+    opening_patterns:
+      - "High-lift skid — vertical lift path and the ROC to load full pallets over the side of highway trucks."
+      - "Built for truck loading: vertical geometry, the dump height for trailer beds, the capacity to do it in one cycle."
+    strongest_follow_up_spec: rated_operating_capacity_lbs
+    confidence: high
+
+  tire_friendly_yard:
+    buyer_type: "yard operator on prepared ground"
+    job_type: "paved/prepared yard loading"
+    required_fields: [travel_speed_high_mph]
+    trigger_conditions: null
+    opening_patterns:
+      - "Paved-yard skid — tire-mount means lower per-hour operating cost than a tracked machine on prepared ground."
+      - "Yard-economics machine: travel speed and tire wear cost that wins on hardsurface work."
+    strongest_follow_up_spec: travel_speed_high_mph
+    confidence: high
+
+  small_frame_residential:
+    buyer_type: "residential contractor"
+    job_type: "tight residential access"
+    required_fields: [machine_width_inches]
+    trigger_conditions: "machine_width_inches < 60"
+    opening_patterns:
+      - "Residential-access skid — narrow chassis, tire-mount for hard-surface friendliness on driveways and walkways."
+      - "Sized for residential work: gate access, sidewalk-friendly width, and tire wear that wont tear up the homeowners drive."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  large_frame_production:
+    buyer_type: "production-grade contractor"
+    job_type: "production yard and site work"
+    required_fields: [horsepower_hp, rated_operating_capacity_lbs]
+    trigger_conditions: "horsepower_hp >= 90 and rated_operating_capacity_lbs >= 3000"
+    opening_patterns:
+      - "Production-class skid — top of the SSL class for HP and ROC, built to keep up with bigger crews."
+      - "Big-frame skid loader: the horsepower and capacity to anchor a yard or site without a tracked upgrade."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: high
+
+  contractor_backup:
+    buyer_type: "contractor adding a second machine"
+    job_type: "backup / overflow utility"
+    required_fields: [enclosed_cab, hours]
+    trigger_conditions: null
+    opening_patterns:
+      - "Backup skid — clean enough to be the second machine in a working fleet, ready to step up when the primary is down."
+      - "Overflow-grade machine: configured to hold its own when the bigger loader is on another job."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+# =============================================================================
+# 3. MINI EXCAVATORS — 25 hooks
+# =============================================================================
+mini_excavator:
+
+  utility_trenching:
+    buyer_type: "utility contractor"
+    job_type: "gas / water / electric trenching"
+    required_fields: [dig_depth_ft]
+    trigger_conditions: "dig_depth_ft >= 8"
+    opening_patterns:
+      - "Utility-trenching mini — {dig_depth_ft} ft dig depth handles standard service laterals in one pass."
+      - "Set up for utility crews: dig depth, hydraulic thumb, and a blade for backfill in one machine."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  foundation_footings:
+    buyer_type: "residential foundation contractor"
+    job_type: "footings and foundation excavation"
+    required_fields: [dig_depth_ft, blade_width]
+    trigger_conditions: "dig_depth_ft >= 9"
+    opening_patterns:
+      - "Footings mini — {dig_depth_ft} ft dig depth clears standard residential footings without benching."
+      - "Foundation-crew machine: the dig depth for code footings, the blade for grade-out cleanup."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  septic_install:
+    buyer_type: "septic contractor"
+    job_type: "septic tank and field excavation"
+    required_fields: [dig_depth_ft]
+    trigger_conditions: "dig_depth_ft >= 10"
+    opening_patterns:
+      - "Septic-install mini — {dig_depth_ft} ft dig depth for tank pits and field laterals."
+      - "Built for septic crews: dig depth, swing geometry, and the reach for full-tank excavation in one setup."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  pool_excavation:
+    buyer_type: "pool installer"
+    job_type: "in-ground pool excavation"
+    required_fields: [dig_depth_ft, max_reach_ft, machine_width_inches]
+    trigger_conditions: "dig_depth_ft >= 9 and machine_width_inches < 70"
+    opening_patterns:
+      - "Pool-dig mini — narrow enough for backyard access, deep enough for standard pool excavation."
+      - "Backyard pool machine: gate-access width, the dig depth for the deep end, the reach to throw spoils."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  drainage_install:
+    buyer_type: "drainage contractor"
+    job_type: "french drains and yard drainage"
+    required_fields: [dig_depth_ft, hydraulic_thumb]
+    trigger_conditions: null
+    opening_patterns:
+      - "Drainage-install mini — set up for french drain trenching, with the thumb for rock and root removal."
+      - "French-drain crew machine: dig depth, blade for backfill, thumb for the cleanup work."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  zero_tail_residential:
+    buyer_type: "residential excavator / urban contractor"
+    job_type: "work flush against walls and structures"
+    required_fields: [zero_tail_swing]
+    trigger_conditions: "zero_tail_swing == true"
+    opening_patterns:
+      - "Zero-tail mini — rotates 360 degrees flush against walls and fences without contact."
+      - "Tight-site excavator: zero tail swing means you can dig parallel to a foundation without resetting."
+    strongest_follow_up_spec: max_reach_ft
+    confidence: high
+
+  hydraulic_thumb_clearing:
+    buyer_type: "land clearing / cleanup contractor"
+    job_type: "log handling, debris pickup"
+    required_fields: [hydraulic_thumb, thumb_type]
+    trigger_conditions: "hydraulic_thumb == true"
+    opening_patterns:
+      - "Hydraulic-thumb mini — handles logs, rocks, and demo debris cleanly."
+      - "Set up for clearing work: hydraulic thumb means the operator handles cleanup without ground crew."
+    strongest_follow_up_spec: thumb_type
+    confidence: high
+
+  stump_removal:
+    buyer_type: "tree service contractor"
+    job_type: "stump and root removal"
+    required_fields: [hydraulic_thumb, dig_depth_ft]
+    trigger_conditions: "hydraulic_thumb == true"
+    opening_patterns:
+      - "Stump-out mini — hydraulic thumb pinches roots, the dig depth pulls the whole stump."
+      - "Tree-service machine: thumb for grappling, dig power for root systems."
+    strongest_follow_up_spec: hydraulic_thumb
+    confidence: high
+
+  fence_post_setting:
+    buyer_type: "fencing contractor"
+    job_type: "fence line clearing and post setting"
+    required_fields: [aux_hydraulics, hydraulic_thumb]
+    trigger_conditions: null
+    opening_patterns:
+      - "Fence-line mini — aux hydraulics for augers, thumb for clearing roots before the post hole."
+      - "Fencing-contractor machine: configured to clear, dig, and pull old posts with one operator."
+    strongest_follow_up_spec: aux_hydraulics
+    confidence: medium
+
+  landscape_install:
+    buyer_type: "landscape installer"
+    job_type: "boulder placement, planting beds, hardscape"
+    required_fields: [hydraulic_thumb, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Landscape-install mini — thumb for boulder work, narrow access for backyard installs."
+      - "Hardscape crew machine: thumb-equipped, gate-access width, the right size for residential install work."
+    strongest_follow_up_spec: hydraulic_thumb
+    confidence: high
+
+  storm_cleanup:
+    buyer_type: "storm response / tree service"
+    job_type: "post-storm debris cleanup"
+    required_fields: [hydraulic_thumb, max_reach_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Storm-response mini — thumb and reach to handle downed trees and debris in tight residential conditions."
+      - "Set up for tree work: grapple-capable, the right reach for cleanup without leaving wheel ruts."
+    strongest_follow_up_spec: hydraulic_thumb
+    confidence: medium
+
+  sewer_lateral:
+    buyer_type: "plumbing / sewer contractor"
+    job_type: "sewer and water lateral install"
+    required_fields: [dig_depth_ft, blade_width]
+    trigger_conditions: "dig_depth_ft >= 10"
+    opening_patterns:
+      - "Sewer-lateral mini — dig depth for code-spec laterals, blade for backfill in the same setup."
+      - "Plumbing-contractor machine: built to dig, lay, and backfill without bringing a second machine."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  pad_excavation:
+    buyer_type: "shed / hot tub / outbuilding contractor"
+    job_type: "pad and footing excavation"
+    required_fields: [dig_depth_ft, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Pad-prep mini — sized for sheds, hot tubs, and small outbuildings in residential backyards."
+      - "Backyard-pad machine: the dig depth, the blade, and the access to do the work where it is going."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  driveway_culvert:
+    buyer_type: "rural / driveway contractor"
+    job_type: "culvert and ditch work"
+    required_fields: [dig_depth_ft, max_reach_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Culvert-install mini — dig depth and reach for ditches and driveway culvert sets."
+      - "Rural-driveway machine: configured for the ditch, culvert, and approach work that defines the trade."
+    strongest_follow_up_spec: max_reach_ft
+    confidence: medium
+
+  pipe_laying:
+    buyer_type: "pipe / utility contractor"
+    job_type: "pipe placement and bedding"
+    required_fields: [dig_depth_ft, hydraulic_thumb]
+    trigger_conditions: "dig_depth_ft >= 10"
+    opening_patterns:
+      - "Pipe-laying mini — dig depth for service pipe runs, thumb for placement and rock removal."
+      - "Utility-pipe machine: built to dig the trench and lay the pipe without leaving the cab."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  small_demolition:
+    buyer_type: "residential / interior demo contractor"
+    job_type: "small concrete and structural demo"
+    required_fields: [aux_hydraulics, machine_width_inches]
+    trigger_conditions: "aux_hydraulics == true and machine_width_inches < 70"
+    opening_patterns:
+      - "Demo mini — aux circuit runs hydraulic breakers, narrow chassis fits residential work."
+      - "Tight-site demolition: breaker-ready, gate-access width, the right size for indoor and yard tear-outs."
+    strongest_follow_up_spec: aux_hydraulics
+    confidence: high
+
+  hardscape_paver_base:
+    buyer_type: "hardscape contractor"
+    job_type: "paver base excavation and grading"
+    required_fields: [blade_width, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Hardscape-base mini — sized for paver and patio prep, blade for finish grade in tight residential."
+      - "Hardscape crew machine: dig and grade in one pass, narrow enough for the backyard install."
+    strongest_follow_up_spec: blade_width
+    confidence: high
+
+  rural_property:
+    buyer_type: "rural property owner / small contractor"
+    job_type: "general property maintenance"
+    required_fields: [enclosed_cab, hours]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rural-property mini — sized for daily property work, enclosed cab for year-round use."
+      - "Owner-operator machine: configured for the kind of varied work small properties actually demand."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  remodel_cleanup:
+    buyer_type: "remodel contractor"
+    job_type: "remodel debris and small excavation"
+    required_fields: [machine_width_inches, hydraulic_thumb]
+    trigger_conditions: "machine_width_inches < 60"
+    opening_patterns:
+      - "Remodel-crew mini — narrow chassis fits side yards and through gates, thumb for debris handling."
+      - "Set up for remodel work: tight access, thumb-equipped, the right machine for residential tear-outs."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  mass_excavation_small:
+    buyer_type: "small site contractor"
+    job_type: "small mass excavation and grading"
+    required_fields: [dig_depth_ft, max_reach_ft, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Mass-ex mini — dig depth, reach, and blade for self-contained small-site work."
+      - "Site-prep machine: full geometry for small commercial and residential mass excavation."
+    strongest_follow_up_spec: dig_depth_ft
+    confidence: high
+
+  rental_candidate_mini:
+    buyer_type: "rental house operator"
+    job_type: "rental fleet mini excavator"
+    required_fields: [enclosed_cab, hydraulic_thumb]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rental-fleet mini — enclosed cab, thumb-equipped, configured for renter use."
+      - "Built for rotation: thumb plus blade plus aux circuit means renters can take it on real jobs."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  one_owner_clean_mini:
+    buyer_type: "history-conscious buyer"
+    job_type: "general excavation utility"
+    required_fields: [one_owner, hours]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner mini — single maintenance trail and the option set most contractors actually want."
+      - "Clean-history machine: single owner, thumb-equipped, no surprises."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  zero_tail_urban:
+    buyer_type: "urban / commercial site contractor"
+    job_type: "lane closure and curb-line work"
+    required_fields: [zero_tail_swing, enclosed_cab]
+    trigger_conditions: "zero_tail_swing == true"
+    opening_patterns:
+      - "Urban-site mini — zero tail swing keeps you legal on lane closures and tight against curb structures."
+      - "Curb-line machine: zero tail, enclosed cab, the right setup for traffic-controlled urban work."
+    strongest_follow_up_spec: zero_tail_swing
+    confidence: high
+
+  large_class_production:
+    buyer_type: "small site / utility production crew"
+    job_type: "production excavation in mini class"
+    required_fields: [operating_weight_lbs, dig_depth_ft]
+    trigger_conditions: "operating_weight_lbs >= 12000"
+    opening_patterns:
+      - "Production-class mini — top of the mini-ex weight class, with the dig depth and lift to keep up with bigger machines."
+      - "Big-mini setup: the weight, the depth, the cycle force for full-day production work."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: high
+
+  small_class_access:
+    buyer_type: "interior / sub-1-ton contractor"
+    job_type: "indoor and tight-access excavation"
+    required_fields: [machine_width_inches, operating_weight_lbs]
+    trigger_conditions: "machine_width_inches < 40"
+    opening_patterns:
+      - "Sub-compact mini — fits standard interior doors, light enough for finished floors with mats."
+      - "Tightest-access class: chassis width and machine weight that go where no other excavator can."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+# =============================================================================
+# 4. TELEHANDLERS — 25 hooks
+# =============================================================================
+telehandler:
+
+  masonry_pallet_placement:
+    buyer_type: "masonry contractor"
+    job_type: "block / brick / stone pallet placement"
+    required_fields: [lift_capacity_lbs, max_lift_height_ft]
+    trigger_conditions: "lift_capacity_lbs >= 6000"
+    opening_patterns:
+      - "Masonry-crew telehandler — {lift_capacity_lbs} lb capacity and {max_lift_height_ft} ft reach put block where the wall goes."
+      - "Built for masonry: pallet weight class, the height for two- and three-story sets, stabilizers for the chart."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: high
+
+  framing_rooftop:
+    buyer_type: "framing contractor"
+    job_type: "rooftop and second-story material delivery"
+    required_fields: [max_lift_height_ft, max_forward_reach_ft]
+    trigger_conditions: "max_lift_height_ft >= 40"
+    opening_patterns:
+      - "Framing-crew telehandler — {max_lift_height_ft} ft of lift sets pallets on third-story rooflines from outside the work zone."
+      - "Built for framers: the height, the reach, and the chart hold-up to land trusses where they are going."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: high
+
+  roofing_delivery_rooftop:
+    buyer_type: "roofing contractor"
+    job_type: "roof material delivery"
+    required_fields: [max_lift_height_ft, lift_capacity_lbs]
+    trigger_conditions: "max_lift_height_ft >= 35"
+    opening_patterns:
+      - "Roofing-crew telehandler — sets bundle pallets on residential and small-commercial decks without a crane."
+      - "Roof-loader machine: lift height for standard pitches, capacity for a full bundle pallet."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: high
+
+  agricultural_bale:
+    buyer_type: "farmer / livestock operator"
+    job_type: "round bale and feed handling"
+    required_fields: [lift_capacity_lbs]
+    trigger_conditions: "lift_capacity_lbs >= 5500"
+    opening_patterns:
+      - "Ag telehandler — bale-class capacity, set up for daily feed handling and ag-yard work."
+      - "Farm-yard machine: configured for round bales, hay stacking, and feed mover duty."
+    strongest_follow_up_spec: lift_capacity_lbs
+    confidence: high
+
+  feed_loader:
+    buyer_type: "livestock operator"
+    job_type: "feed mixer loading"
+    required_fields: [lift_capacity_lbs, max_lift_height_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Feed-loader telehandler — sized for daily mixer loading and silage handling."
+      - "Daily-chore ag machine: lift height for vertical mixers, capacity for grain and silage."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: high
+
+  concrete_form_work:
+    buyer_type: "concrete contractor"
+    job_type: "form panel and rebar placement"
+    required_fields: [lift_capacity_lbs, max_forward_reach_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Concrete-form telehandler — forward reach places forms and rebar over the foundation without parking on it."
+      - "Built for form crews: reach over the slab, capacity for full panel sets."
+    strongest_follow_up_spec: max_forward_reach_ft
+    confidence: high
+
+  steel_erection:
+    buyer_type: "steel erector"
+    job_type: "structural steel placement"
+    required_fields: [lift_capacity_lbs, max_lift_height_ft, stabilizers]
+    trigger_conditions: "lift_capacity_lbs >= 8000"
+    opening_patterns:
+      - "Steel-erector telehandler — high capacity, full lift height, stabilizers to unlock the chart at extension."
+      - "Built for structural work: the lift, the reach, the stability to set members at full extension."
+    strongest_follow_up_spec: stabilizers
+    confidence: high
+
+  drywall_delivery:
+    buyer_type: "drywall contractor"
+    job_type: "drywall stocking and floor delivery"
+    required_fields: [lift_capacity_lbs, max_forward_reach_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Drywall-stock telehandler — forward reach delivers boards through window openings to upper floors."
+      - "Set up for drywall crews: lift height, reach, and the chart for full stack pallets."
+    strongest_follow_up_spec: max_forward_reach_ft
+    confidence: high
+
+  solar_install:
+    buyer_type: "commercial solar installer"
+    job_type: "rooftop solar panel placement"
+    required_fields: [max_lift_height_ft, max_forward_reach_ft, lift_capacity_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Solar-install telehandler — set up for rooftop panel pallets and rack delivery."
+      - "Configured for solar work: lift height for low- and mid-rise commercial, the chart for panel pallets."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: medium
+
+  multi_story_framing:
+    buyer_type: "commercial framing contractor"
+    job_type: "multi-story commercial framing"
+    required_fields: [max_lift_height_ft, lift_capacity_lbs, stabilizers]
+    trigger_conditions: "max_lift_height_ft >= 50"
+    opening_patterns:
+      - "Multi-story telehandler — lift height for four- and five-story commercial, stabilizers for the full chart."
+      - "Commercial-framing class: configured for the height, weight, and stability commercial work demands."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: high
+
+  window_install:
+    buyer_type: "window install contractor"
+    job_type: "window placement and delivery"
+    required_fields: [max_lift_height_ft, max_forward_reach_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Window-install telehandler — reach to set glass through openings without crane work."
+      - "Built for glaziers: lift height, forward reach, and the precision for placement work."
+    strongest_follow_up_spec: max_forward_reach_ft
+    confidence: medium
+
+  lumber_yard:
+    buyer_type: "lumber yard / building supply"
+    job_type: "yard loading and customer pickup"
+    required_fields: [lift_capacity_lbs, attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Lumber-yard telehandler — pallet forks, sized for daily customer pickup and stack management."
+      - "Yard-loader machine: configured for retail loading with the attachment package ready to work."
+    strongest_follow_up_spec: lift_capacity_lbs
+    confidence: high
+
+  sloped_site:
+    buyer_type: "hillside / sloped site contractor"
+    job_type: "side-slope material handling"
+    required_fields: [frame_leveling, stabilizers]
+    trigger_conditions: "frame_leveling == true"
+    opening_patterns:
+      - "Hillside telehandler — frame leveling keeps loads plumb on side-slope sites without resetting."
+      - "Sloped-site machine: chassis tilt and stabilizers for grade work where flat ground is rare."
+    strongest_follow_up_spec: frame_leveling
+    confidence: high
+
+  bridge_infrastructure:
+    buyer_type: "bridge / infrastructure contractor"
+    job_type: "infrastructure material placement"
+    required_fields: [lift_capacity_lbs, max_forward_reach_ft, stabilizers]
+    trigger_conditions: "lift_capacity_lbs >= 10000"
+    opening_patterns:
+      - "Infrastructure-class telehandler — heavy lift, long reach, full stabilizer package for bridge and DOT work."
+      - "Built for the heaviest reach lifts: capacity, geometry, and stability infrastructure work demands."
+    strongest_follow_up_spec: lift_capacity_lbs
+    confidence: medium
+
+  hvac_rooftop:
+    buyer_type: "HVAC / mechanical contractor"
+    job_type: "rooftop unit placement"
+    required_fields: [max_lift_height_ft, lift_capacity_lbs, stabilizers]
+    trigger_conditions: null
+    opening_patterns:
+      - "HVAC-rooftop telehandler — height and capacity for RTU placement on commercial buildings."
+      - "Built for mechanical contractors: configured for unit lifts where a crane is not economical."
+    strongest_follow_up_spec: max_lift_height_ft
+    confidence: medium
+
+  stone_slab:
+    buyer_type: "stone / countertop installer"
+    job_type: "slab handling"
+    required_fields: [lift_capacity_lbs, attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Slab-handling telehandler — set up for granite and stone yard work."
+      - "Stone-yard machine: capacity, slow precision controls, and the attachments for slab handling."
+    strongest_follow_up_spec: lift_capacity_lbs
+    confidence: medium
+
+  modular_setup:
+    buyer_type: "modular / prefab building contractor"
+    job_type: "modular component placement"
+    required_fields: [lift_capacity_lbs, max_forward_reach_ft, stabilizers]
+    trigger_conditions: null
+    opening_patterns:
+      - "Modular-setup telehandler — capacity, reach, and stabilizers for prefab building placement work."
+      - "Configured for modular contractors: the geometry to set components without a crane."
+    strongest_follow_up_spec: max_forward_reach_ft
+    confidence: medium
+
+  attachment_package_turnkey:
+    buyer_type: "turnkey buyer"
+    job_type: "ready-to-work multi-attachment use"
+    required_fields: [attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Turnkey telehandler — full attachment package included, ready to work day one."
+      - "Built to work out of the gate: forks, bucket, grapple, and the coupler to swap them."
+    strongest_follow_up_spec: attachment_package
+    confidence: medium
+
+  greenhouse_ag:
+    buyer_type: "greenhouse / nursery operator"
+    job_type: "low-clearance ag work"
+    required_fields: [lift_capacity_lbs, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Greenhouse-class telehandler — sized for low-clearance ag and nursery work."
+      - "Indoor-ag machine: the right size for greenhouse aisles and low-clearance buildings."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: medium
+
+  industrial_facility_telehandler:
+    buyer_type: "industrial / facility operator"
+    job_type: "indoor industrial material handling"
+    required_fields: [enclosed_cab, lift_capacity_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Industrial-facility telehandler — sized for in-plant material handling at height."
+      - "Plant-floor machine: configured for indoor industrial work where reach matters."
+    strongest_follow_up_spec: lift_capacity_lbs
+    confidence: medium
+
+  large_class_high_capacity:
+    buyer_type: "heavy-lift contractor"
+    job_type: "high-capacity reach lifts"
+    required_fields: [lift_capacity_lbs, max_lift_height_ft]
+    trigger_conditions: "lift_capacity_lbs >= 12000"
+    opening_patterns:
+      - "Heavy-class telehandler — top of the capacity class for high-reach lift work."
+      - "Big-machine telehandler: the chart and the geometry the bigger jobs require."
+    strongest_follow_up_spec: lift_capacity_lbs
+    confidence: high
+
+  compact_class_residential:
+    buyer_type: "residential framer / installer"
+    job_type: "residential framing and remodel material handling"
+    required_fields: [machine_width_inches, lift_capacity_lbs]
+    trigger_conditions: "machine_width_inches < 84"
+    opening_patterns:
+      - "Compact-class telehandler — sized for residential lots and standard gates."
+      - "Residential-friendly machine: the height for two-story sets, narrow enough for the cul-de-sac job."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  one_owner_history:
+    buyer_type: "history-conscious buyer"
+    job_type: "general utility telehandler"
+    required_fields: [one_owner, hours]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner telehandler — single maintenance trail, predictable history."
+      - "Clean-history machine: one owner from new, the right hours, no surprises."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  enclosed_cab_yearround:
+    buyer_type: "year-round operator"
+    job_type: "all-season material handling"
+    required_fields: [enclosed_cab, heat_ac]
+    trigger_conditions: "enclosed_cab == true and heat_ac == true"
+    opening_patterns:
+      - "Year-round telehandler — enclosed cab with heat and A/C, ready for any season."
+      - "Built for full-year work: sealed cab, full HVAC, productive in any weather."
+    strongest_follow_up_spec: heat_ac
+    confidence: high
+
+  fleet_telehandler:
+    buyer_type: "fleet contractor"
+    job_type: "fleet utility telehandler"
+    required_fields: [enclosed_cab, attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Fleet-grade telehandler — enclosed cab, attachments included, ready to plug into a working operation."
+      - "Built for fleet rotation: configured to step into a multi-machine crew without a shakedown."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+# =============================================================================
+# 5. FULL-SIZE EXCAVATORS — 25 hooks
+# =============================================================================
+excavator:
+
+  mass_excavation:
+    buyer_type: "site contractor"
+    job_type: "mass excavation"
+    required_fields: [operating_weight_lbs, bucket_breakout_force]
+    trigger_conditions: "operating_weight_lbs >= 40000"
+    opening_patterns:
+      - "Mass-ex excavator — operating weight and breakout force for production digging on big sites."
+      - "Built for mass excavation: the weight class, the bucket force, the cycle speed for production work."
+    strongest_follow_up_spec: bucket_breakout_force
+    confidence: high
+
+  deep_utility:
+    buyer_type: "utility / sewer contractor"
+    job_type: "deep utility install"
+    required_fields: [stick_length, max_dig_depth_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Deep-utility excavator — long stick and the dig depth for sewer mains and deep service runs."
+      - "Built for deep utility: stick length, boom geometry, and reach for the bottom of the trench."
+    strongest_follow_up_spec: max_dig_depth_ft
+    confidence: high
+
+  truck_loading_production:
+    buyer_type: "site / aggregate contractor"
+    job_type: "production truck loading"
+    required_fields: [bucket_breakout_force, swing_speed]
+    trigger_conditions: null
+    opening_patterns:
+      - "Production-loader excavator — swing speed and bucket capacity for fast truck-loading cycles."
+      - "Truck-loading setup: cycle time and bucket force for production yards."
+    strongest_follow_up_spec: swing_speed
+    confidence: high
+
+  demolition_grapple:
+    buyer_type: "demolition contractor"
+    job_type: "structural demolition with grapple"
+    required_fields: [thumb, auxiliary_flow]
+    trigger_conditions: "auxiliary_flow >= 30"
+    opening_patterns:
+      - "Demolition excavator — thumb and aux flow for grapple, shear, and processor work."
+      - "Built for tear-downs: hydraulic thumb, the aux circuit for shears, the weight to handle the work."
+    strongest_follow_up_spec: thumb
+    confidence: high
+
+  hammer_breaker:
+    buyer_type: "concrete / rock contractor"
+    job_type: "hydraulic breaker work"
+    required_fields: [auxiliary_flow]
+    trigger_conditions: "auxiliary_flow >= 30"
+    opening_patterns:
+      - "Breaker-equipped excavator — aux flow runs production-class hydraulic hammers."
+      - "Built for rock and concrete: hammer-plumbed, the flow for sustained breakage work."
+    strongest_follow_up_spec: auxiliary_flow
+    confidence: high
+
+  pipeline_contractor:
+    buyer_type: "pipeline contractor"
+    job_type: "pipeline ROW excavation"
+    required_fields: [stick_length, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Pipeline-class excavator — long stick, heavy frame, configured for ROW production work."
+      - "Built for pipeline crews: reach, depth, and the cycle speed to keep the pipe gang moving."
+    strongest_follow_up_spec: stick_length
+    confidence: high
+
+  foundation_commercial:
+    buyer_type: "commercial foundation contractor"
+    job_type: "commercial footings and basements"
+    required_fields: [bucket_breakout_force, max_dig_depth_ft]
+    trigger_conditions: null
+    opening_patterns:
+      - "Foundation-class excavator — breakout force for hardpan footings, depth for commercial basements."
+      - "Built for commercial foundations: the dig power, the depth, the cycle to keep concrete crews fed."
+    strongest_follow_up_spec: max_dig_depth_ft
+    confidence: high
+
+  quarry_loading:
+    buyer_type: "quarry / aggregate operator"
+    job_type: "pit loading"
+    required_fields: [operating_weight_lbs, bucket_breakout_force]
+    trigger_conditions: "operating_weight_lbs >= 70000"
+    opening_patterns:
+      - "Quarry-class excavator — operating weight and breakout for production aggregate pit loading."
+      - "Built for the pit: the weight, the cycle force, the reach to keep haul trucks turning."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: high
+
+  forestry_mulching_ex:
+    buyer_type: "land clearing / forestry contractor"
+    job_type: "boom-mounted mulching"
+    required_fields: [auxiliary_flow]
+    trigger_conditions: "auxiliary_flow >= 50"
+    opening_patterns:
+      - "Forestry-mulching excavator — boom-mounted aux flow runs production mulching heads."
+      - "Built for clearing: the aux circuit for mulchers, the reach for fence-line and ROW work."
+    strongest_follow_up_spec: auxiliary_flow
+    confidence: high
+
+  bridge_infrastructure_ex:
+    buyer_type: "DOT / bridge contractor"
+    job_type: "infrastructure excavation and demolition"
+    required_fields: [operating_weight_lbs, auxiliary_flow]
+    trigger_conditions: "operating_weight_lbs >= 50000"
+    opening_patterns:
+      - "Infrastructure-class excavator — weight and aux flow for bridge demolition and structural work."
+      - "Built for DOT and bridge work: the configuration for shear, hammer, and grapple operation."
+    strongest_follow_up_spec: auxiliary_flow
+    confidence: medium
+
+  pad_prep_commercial:
+    buyer_type: "site contractor"
+    job_type: "commercial pad preparation"
+    required_fields: [operating_weight_lbs, blade]
+    trigger_conditions: null
+    opening_patterns:
+      - "Pad-prep excavator — operating weight and dig power for commercial site work."
+      - "Site-prep machine: configured for pad cuts, mass grading, and stockpile work."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: high
+
+  storm_sewer:
+    buyer_type: "storm sewer contractor"
+    job_type: "deep storm and sanitary install"
+    required_fields: [max_dig_depth_ft, stick_length]
+    trigger_conditions: null
+    opening_patterns:
+      - "Storm-sewer excavator — deep dig and long stick for production storm and sanitary runs."
+      - "Built for sewer crews: the geometry to lay big pipe at depth in one setup."
+    strongest_follow_up_spec: max_dig_depth_ft
+    confidence: high
+
+  scrap_loading:
+    buyer_type: "scrap yard / recycler"
+    job_type: "scrap and demo material loading"
+    required_fields: [thumb, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Scrap-yard excavator — thumb-equipped, sized for production metal loading and sorting."
+      - "Built for the yard: grappling capability, the weight to crowd material, the cycle to keep trucks moving."
+    strongest_follow_up_spec: thumb
+    confidence: medium
+
+  highway_DOT:
+    buyer_type: "highway / DOT contractor"
+    job_type: "highway construction"
+    required_fields: [operating_weight_lbs, blade]
+    trigger_conditions: null
+    opening_patterns:
+      - "Highway-class excavator — sized for ROW work, ditch profiling, and DOT construction."
+      - "Built for highway crews: the weight and reach for shoulder and median work."
+    strongest_follow_up_spec: stick_length
+    confidence: medium
+
+  industrial_demolition:
+    buyer_type: "industrial demolition contractor"
+    job_type: "structural and industrial tear-down"
+    required_fields: [operating_weight_lbs, auxiliary_flow]
+    trigger_conditions: "operating_weight_lbs >= 60000"
+    opening_patterns:
+      - "Industrial-demolition excavator — heavy weight class, full aux flow for shears and processors."
+      - "Built for tear-downs: configured for production shear, processor, and grapple work."
+    strongest_follow_up_spec: auxiliary_flow
+    confidence: high
+
+  trenching_large_pipe:
+    buyer_type: "large-pipe utility contractor"
+    job_type: "large-diameter pipe trenching"
+    required_fields: [bucket_breakout_force, stick_length]
+    trigger_conditions: null
+    opening_patterns:
+      - "Large-pipe excavator — bucket force and stick length for production trenching of large-diameter pipe."
+      - "Built for pipe gangs: the dig force and reach to lay 24+ inch pipe at depth."
+    strongest_follow_up_spec: bucket_breakout_force
+    confidence: high
+
+  coupler_multitool:
+    buyer_type: "multi-tool excavation contractor"
+    job_type: "attachment-driven excavation"
+    required_fields: [coupler, auxiliary_flow]
+    trigger_conditions: null
+    opening_patterns:
+      - "Coupler-equipped excavator — swap buckets, hammer, and shear without leaving the cab."
+      - "Multi-tool setup: aux flow and coupler turn this from a single-purpose digger into a job-site Swiss army knife."
+    strongest_follow_up_spec: coupler
+    confidence: high
+
+  zero_tail_urban_ex:
+    buyer_type: "urban / commercial contractor"
+    job_type: "urban excavation"
+    required_fields: [tail_swing_type]
+    trigger_conditions: "tail_swing_type in ['zero', 'reduced']"
+    opening_patterns:
+      - "Reduced-tail excavator — works close to walls and curb structures without contact."
+      - "Urban-site machine: tail swing geometry that keeps you legal in tight commercial work."
+    strongest_follow_up_spec: tail_swing_type
+    confidence: high
+
+  enclosed_cab_full_ex:
+    buyer_type: "year-round operator"
+    job_type: "all-season production excavation"
+    required_fields: [enclosed_cab, heat_ac]
+    trigger_conditions: null
+    opening_patterns:
+      - "Year-round excavator — enclosed cab, full HVAC, ready for any season."
+      - "Built for the long shift: sealed cab keeps operators productive through winter and summer alike."
+    strongest_follow_up_spec: heat_ac
+    confidence: high
+
+  one_owner_full_ex:
+    buyer_type: "history-conscious buyer"
+    job_type: "general production excavator"
+    required_fields: [one_owner, hours]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner excavator — single maintenance trail, predictable history at any hour count."
+      - "Clean-history machine: single owner, traceable service, the right configuration."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  midsize_versatile:
+    buyer_type: "general excavation contractor"
+    job_type: "varied site excavation"
+    required_fields: [operating_weight_lbs, blade]
+    trigger_conditions: "operating_weight_lbs >= 25000 and operating_weight_lbs < 45000"
+    opening_patterns:
+      - "Midsize excavator — sized for the work most contractors actually do, every day."
+      - "20-35 ton class: the right machine for utility, foundation, and site work without overbuilding."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: high
+
+  high_reach_demolition:
+    buyer_type: "high-reach demolition contractor"
+    job_type: "tall structure demolition"
+    required_fields: [operating_weight_lbs, auxiliary_flow]
+    trigger_conditions: "operating_weight_lbs >= 80000"
+    opening_patterns:
+      - "High-reach demolition excavator — sized and plumbed for production structural tear-down."
+      - "Built for tall demo: the weight, the aux flow, the geometry for reaching upper stories with a processor."
+    strongest_follow_up_spec: operating_weight_lbs
+    confidence: medium
+
+  fleet_excavator:
+    buyer_type: "fleet contractor"
+    job_type: "fleet utility excavator"
+    required_fields: [enclosed_cab, coupler]
+    trigger_conditions: null
+    opening_patterns:
+      - "Fleet-grade excavator — coupler-equipped, enclosed cab, ready to plug into a working operation."
+      - "Built for fleet rotation: configured for the work that pays without a shakedown."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  rental_excavator:
+    buyer_type: "rental house operator"
+    job_type: "rental fleet excavator"
+    required_fields: [enclosed_cab, coupler]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rental-fleet excavator — coupler, thumb, configured for the kind of work renters bring."
+      - "Built for rotation: the attachments, the cab, the durability rental life requires."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  thumb_brush_clearing:
+    buyer_type: "land clearing contractor"
+    job_type: "tree and brush clearing"
+    required_fields: [thumb, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Land-clearing excavator — thumb and weight class for log handling, brush removal, and root work."
+      - "Built for clearing crews: grapple-capable, cycle-fast, the right machine for tree and brush production."
+    strongest_follow_up_spec: thumb
+    confidence: high
+
+# =============================================================================
+# 6. WHEEL LOADERS — 25 hooks
+# =============================================================================
+wheel_loader:
+
+  aggregate_pile_loading:
+    buyer_type: "aggregate / quarry yard operator"
+    job_type: "stockpile-to-truck loading"
+    required_fields: [bucket_capacity, breakout_force]
+    trigger_conditions: null
+    opening_patterns:
+      - "Aggregate-yard loader — {bucket_capacity}-yd3 bucket and the breakout for production stockpile work."
+      - "Built for pile loading: the bucket, the push, the cycle for daily aggregate truck loading."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: high
+
+  snow_commercial_loader:
+    buyer_type: "commercial snow contractor"
+    job_type: "commercial snow loading and pushing"
+    required_fields: [enclosed_cab, ride_control]
+    trigger_conditions: "enclosed_cab == true"
+    opening_patterns:
+      - "Commercial-snow loader — sized for parking lot pushes and snow loading routes."
+      - "Built for snow ops: enclosed cab, ride control, the configuration for the season."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: high
+
+  truck_loading_quarry:
+    buyer_type: "quarry operator"
+    job_type: "quarry pit and stockpile truck loading"
+    required_fields: [bucket_capacity, hinge_pin_height]
+    trigger_conditions: "bucket_capacity >= 4"
+    opening_patterns:
+      - "Quarry-class loader — bucket size and hinge pin height for highway tractor-trailer loading."
+      - "Built for the quarry: dump height into trailers, the cycle to keep trucks turning."
+    strongest_follow_up_spec: hinge_pin_height
+    confidence: high
+
+  materials_yard_general:
+    buyer_type: "materials yard operator"
+    job_type: "yard loading and customer pickup"
+    required_fields: [bucket_capacity, quick_coupler]
+    trigger_conditions: null
+    opening_patterns:
+      - "Materials-yard loader — coupler-equipped for forks-and-bucket swap, sized for retail loading."
+      - "Set up for yard work: the cycle, the dump height, the coupler that takes pallet forks."
+    strongest_follow_up_spec: quick_coupler
+    confidence: high
+
+  recycling_center:
+    buyer_type: "recycling / transfer station operator"
+    job_type: "recycling material handling"
+    required_fields: [bucket_capacity, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Recycling-yard loader — enclosed cab seals out dust, sized for daily transfer station loading."
+      - "Built for recycling ops: the cab, the bucket, the durability for dirty-material work."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: medium
+
+  lumber_yard_loader:
+    buyer_type: "lumber yard operator"
+    job_type: "lumber and material yard loading"
+    required_fields: [quick_coupler, attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Lumber-yard loader — pallet forks plus bucket, coupler-equipped for daily switching."
+      - "Built for the yard: configured for lumber stacks, customer loading, and material rotation."
+    strongest_follow_up_spec: quick_coupler
+    confidence: high
+
+  salt_sand_municipal:
+    buyer_type: "municipal / DOT yard operator"
+    job_type: "salt and sand handling"
+    required_fields: [bucket_capacity, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Municipal-yard loader — sized for salt and sand loading at the public works yard."
+      - "Set up for DOT yard ops: bucket capacity, sealed cab, configured for winter and summer rotation."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: medium
+
+  concrete_plant:
+    buyer_type: "ready-mix concrete plant"
+    job_type: "concrete plant feeder"
+    required_fields: [bucket_capacity, hinge_pin_height]
+    trigger_conditions: null
+    opening_patterns:
+      - "Concrete-plant loader — sized to feed batch plant hoppers from the stockpile."
+      - "Built for plant feeding: the dump height for hoppers, the cycle to keep the batcher running."
+    strongest_follow_up_spec: hinge_pin_height
+    confidence: high
+
+  asphalt_plant:
+    buyer_type: "asphalt plant operator"
+    job_type: "asphalt plant feeder"
+    required_fields: [bucket_capacity, hinge_pin_height]
+    trigger_conditions: null
+    opening_patterns:
+      - "Asphalt-plant loader — bucket and dump height for cold feed bin loading."
+      - "Built for plant work: configured to feed the batcher without slowing production."
+    strongest_follow_up_spec: hinge_pin_height
+    confidence: high
+
+  compost_mulch_yard:
+    buyer_type: "compost / mulch yard operator"
+    job_type: "compost and mulch handling"
+    required_fields: [bucket_capacity, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Compost-yard loader — sized for daily compost, mulch, and topsoil rotation."
+      - "Set up for organic-material yards: bucket size, sealed cab, configured for the dust."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: medium
+
+  agricultural_silage:
+    buyer_type: "dairy / livestock operator"
+    job_type: "silage and manure handling"
+    required_fields: [bucket_capacity, quick_coupler]
+    trigger_conditions: null
+    opening_patterns:
+      - "Ag-yard loader — set up for daily silage push, manure handling, and feed yard rotation."
+      - "Built for the dairy: bucket sized for silage, coupler for fork swaps, configured for daily ag work."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: high
+
+  forestry_log_yard:
+    buyer_type: "log / forestry yard operator"
+    job_type: "log handling"
+    required_fields: [bucket_capacity, attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Log-yard loader — coupler and grapple ready for daily log handling and stack management."
+      - "Built for forestry yards: the configuration for grapples, butt forks, and bucket work in the same shift."
+    strongest_follow_up_spec: attachment_package
+    confidence: medium
+
+  scrap_yard_loader:
+    buyer_type: "scrap yard / metal recycler"
+    job_type: "scrap loading"
+    required_fields: [bucket_capacity, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Scrap-yard loader — enclosed cab, sized for daily metal stockpile and bin loading."
+      - "Built for the scrap yard: the durability and configuration for metal-handling abuse."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: medium
+
+  parking_lot_snow:
+    buyer_type: "commercial snow contractor"
+    job_type: "parking lot snow pushing"
+    required_fields: [travel_speed_mph, attachment_package]
+    trigger_conditions: null
+    opening_patterns:
+      - "Snow-push loader — travel speed for cross-lot work, push attachments ready for the route."
+      - "Built for commercial snow: configured to push, stack, and load through the season."
+    strongest_follow_up_spec: travel_speed_mph
+    confidence: high
+
+  rock_crusher_feed:
+    buyer_type: "crushing / aggregate operator"
+    job_type: "crusher feeding"
+    required_fields: [bucket_capacity, breakout_force]
+    trigger_conditions: "bucket_capacity >= 4"
+    opening_patterns:
+      - "Crusher-feed loader — bucket and cycle for production crusher hopper feeding."
+      - "Built for crusher ops: the cycle, the bucket, the cycle force for production aggregate work."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: high
+
+  fertilizer_ag_supply:
+    buyer_type: "ag supply yard operator"
+    job_type: "fertilizer and ag product handling"
+    required_fields: [bucket_capacity, enclosed_cab]
+    trigger_conditions: null
+    opening_patterns:
+      - "Ag-supply loader — sized for fertilizer, seed, and ag product yard rotation."
+      - "Built for the ag-supply yard: configured for clean material handling at retail pace."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: medium
+
+  small_compact_loader:
+    buyer_type: "small contractor / compact-class buyer"
+    job_type: "compact wheel loader work"
+    required_fields: [operating_weight_lbs, machine_width_inches]
+    trigger_conditions: "operating_weight_lbs < 18000"
+    opening_patterns:
+      - "Compact-class wheel loader — sized for residential, landscape, and small-commercial yards."
+      - "Built for tighter sites: bucket capacity and width that fit work bigger loaders cant."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  midsize_versatile_wl:
+    buyer_type: "general yard operator"
+    job_type: "varied yard loading"
+    required_fields: [bucket_capacity, quick_coupler]
+    trigger_conditions: "bucket_capacity >= 2.5 and bucket_capacity < 4.5"
+    opening_patterns:
+      - "Midsize wheel loader — versatile bucket size, coupler-equipped, fits most yard operations."
+      - "Built for varied yard work: bucket size and configuration that anchors most operations."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: high
+
+  large_production_wl:
+    buyer_type: "production aggregate / mining operator"
+    job_type: "high-production loading"
+    required_fields: [bucket_capacity, operating_weight_lbs]
+    trigger_conditions: "bucket_capacity >= 5"
+    opening_patterns:
+      - "Production-class wheel loader — top of the bucket and weight class for high-cycle pit work."
+      - "Built for the heaviest yards: the bucket, the cycle, the weight to keep haul trucks turning."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: high
+
+  ride_control_loaded_cycles:
+    buyer_type: "production yard operator"
+    job_type: "fast loaded cycles on rough ground"
+    required_fields: [ride_control]
+    trigger_conditions: "ride_control == true"
+    opening_patterns:
+      - "Ride-control wheel loader — runs loaded cycles fast across rough yard ground without losing material."
+      - "Built for production yards: ride control means cycle time without spillage."
+    strongest_follow_up_spec: ride_control
+    confidence: high
+
+  one_owner_wl:
+    buyer_type: "history-conscious yard buyer"
+    job_type: "general yard loader"
+    required_fields: [one_owner, hours]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner wheel loader — single maintenance trail, predictable history."
+      - "Clean-history yard machine: single owner, configured for daily production work."
+    strongest_follow_up_spec: hours
+    confidence: high
+
+  enclosed_cab_yearround_wl:
+    buyer_type: "year-round yard operator"
+    job_type: "all-season yard loader"
+    required_fields: [enclosed_cab, heat_ac]
+    trigger_conditions: null
+    opening_patterns:
+      - "Year-round yard loader — enclosed cab, full HVAC, productive in any season."
+      - "Built for the full-year yard: sealed cab keeps operators on the cycle through winter and summer."
+    strongest_follow_up_spec: heat_ac
+    confidence: high
+
+  fleet_yard_loader:
+    buyer_type: "fleet yard operator"
+    job_type: "fleet utility wheel loader"
+    required_fields: [enclosed_cab, quick_coupler]
+    trigger_conditions: null
+    opening_patterns:
+      - "Fleet-grade wheel loader — coupler-equipped, sized to plug into an existing yard fleet."
+      - "Built for fleet work: configured for the kind of varied loading multi-machine yards demand."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+  glass_lighter_material:
+    buyer_type: "glass / light recycling operator"
+    job_type: "low-density material handling"
+    required_fields: [bucket_capacity]
+    trigger_conditions: null
+    opening_patterns:
+      - "Light-material yard loader — sized for glass, fiber, and low-density recycling work."
+      - "Built for the recycling stream: the bucket sizing for low-density material rotation."
+    strongest_follow_up_spec: bucket_capacity
+    confidence: medium
+
+  rental_yard_wl:
+    buyer_type: "rental house operator"
+    job_type: "rental fleet wheel loader"
+    required_fields: [enclosed_cab, quick_coupler]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rental-fleet wheel loader — coupler, enclosed cab, configured for renter rotation."
+      - "Built for rotation: the durability and broad-fit spec rental work demands."
+    strongest_follow_up_spec: hours
+    confidence: medium
+
+# =============================================================================
+# 7. DOZERS — 25 hooks
+# =============================================================================
+dozer:
+
+  land_clearing_dozer:
+    buyer_type: "land clearing contractor"
+    job_type: "raw land clearing and brush push"
+    required_fields: [horsepower_hp, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Land-clearing dozer — sized for raw land push, stump removal, and brush consolidation."
+      - "Built for clearing: HP and weight to push timber, stumps, and rough debris."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: high
+
+  mass_grading:
+    buyer_type: "site contractor"
+    job_type: "mass grading and rough cut"
+    required_fields: [blade_width, blade_capacity]
+    trigger_conditions: null
+    opening_patterns:
+      - "Mass-grade dozer — blade width and carry for high-passes-per-acre rough cut work."
+      - "Built for site prep: configured for rough grade production on commercial and large residential sites."
+    strongest_follow_up_spec: blade_capacity
+    confidence: high
+
+  pad_prep_commercial_dozer:
+    buyer_type: "commercial site contractor"
+    job_type: "commercial pad preparation"
+    required_fields: [PAT_blade, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Commercial-pad dozer — six-way blade for precision pad prep and mass cut."
+      - "Built for pad work: the blade control, the weight, the configuration for production cuts."
+    strongest_follow_up_spec: PAT_blade
+    confidence: high
+
+  pad_prep_residential:
+    buyer_type: "residential site contractor"
+    job_type: "house pad and driveway prep"
+    required_fields: [PAT_blade, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Residential-site dozer — sized for house pads and driveway prep, six-way blade for finish work."
+      - "Built for residential site prep: PAT blade for precision, the right size for cul-de-sac jobs."
+    strongest_follow_up_spec: PAT_blade
+    confidence: high
+
+  finish_grading:
+    buyer_type: "finish grade contractor"
+    job_type: "finish grading to plan"
+    required_fields: [PAT_blade]
+    trigger_conditions: "PAT_blade == true"
+    opening_patterns:
+      - "Finish-grade dozer — PAT blade pulls plan tolerances without manual blade resets."
+      - "Built for finish work: six-way blade control means production grade-to-plan."
+    strongest_follow_up_spec: PAT_blade
+    confidence: high
+
+  driveway_prep_dozer:
+    buyer_type: "driveway / residential prep contractor"
+    job_type: "driveway and approach grading"
+    required_fields: [PAT_blade, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Driveway-grade dozer — six-way blade and the right size for residential approach work."
+      - "Built for driveway crews: PAT precision, narrow access, the machine for the residential job."
+    strongest_follow_up_spec: PAT_blade
+    confidence: high
+
+  ripping_hardpan:
+    buyer_type: "ground-prep contractor"
+    job_type: "ripping hardpan, frost line, roots"
+    required_fields: [ripper, horsepower_hp]
+    trigger_conditions: "ripper == true"
+    opening_patterns:
+      - "Ripper-equipped dozer — breaks frost, hardpan, and root mats without bringing a second machine."
+      - "Built for tough ground: the HP, the weight, and the ripper to prep what the blade alone cant."
+    strongest_follow_up_spec: ripper
+    confidence: high
+
+  forestry_road:
+    buyer_type: "forestry / logging road contractor"
+    job_type: "logging road construction"
+    required_fields: [horsepower_hp, ripper]
+    trigger_conditions: null
+    opening_patterns:
+      - "Forestry-road dozer — sized for logging road cut and hardpan ripping."
+      - "Built for the woods: the HP for the push, the ripper for the rock, the durability for the abuse."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: medium
+
+  mining_haul_road:
+    buyer_type: "mining / quarry operator"
+    job_type: "haul road maintenance"
+    required_fields: [operating_weight_lbs, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Haul-road dozer — sized for mining and quarry road maintenance work."
+      - "Built for the pit road: the weight, the blade, the configuration for daily maintenance pushes."
+    strongest_follow_up_spec: blade_width
+    confidence: medium
+
+  reclamation:
+    buyer_type: "land reclamation contractor"
+    job_type: "mining and disturbed-site reclamation"
+    required_fields: [horsepower_hp, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Reclamation dozer — sized for production push and finish on disturbed-site work."
+      - "Built for reclamation crews: the configuration for cut, fill, and finish in one machine."
+    strongest_follow_up_spec: blade_capacity
+    confidence: medium
+
+  pond_waterway:
+    buyer_type: "pond / waterway contractor"
+    job_type: "pond and waterway construction"
+    required_fields: [PAT_blade, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Pond-build dozer — six-way blade for slope and bottom work, weight for the push."
+      - "Built for waterway crews: the blade control for cut profiles, the weight for the production rate."
+    strongest_follow_up_spec: PAT_blade
+    confidence: medium
+
+  septic_field:
+    buyer_type: "septic install contractor"
+    job_type: "septic field grading"
+    required_fields: [PAT_blade, machine_width_inches]
+    trigger_conditions: null
+    opening_patterns:
+      - "Septic-field dozer — six-way blade for field grade, the right size for the rural lot."
+      - "Built for septic crews: precision blade for field bottom, narrow enough for the access road."
+    strongest_follow_up_spec: PAT_blade
+    confidence: medium
+
+  pipeline_ROW_dozer:
+    buyer_type: "pipeline contractor"
+    job_type: "pipeline ROW preparation"
+    required_fields: [horsepower_hp, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Pipeline-ROW dozer — sized for production cut, fill, and reclamation on linear projects."
+      - "Built for the ROW: the HP, the blade, the configuration for cross-country pipeline crews."
+    strongest_follow_up_spec: blade_width
+    confidence: medium
+
+  highway_base:
+    buyer_type: "DOT / highway contractor"
+    job_type: "highway base preparation"
+    required_fields: [PAT_blade, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Highway-base dozer — six-way blade and the weight for production base preparation."
+      - "Built for DOT crews: configured for the precision and production rate highway work demands."
+    strongest_follow_up_spec: PAT_blade
+    confidence: medium
+
+  stump_pushing:
+    buyer_type: "land clearing / forestry contractor"
+    job_type: "stump removal and consolidation"
+    required_fields: [horsepower_hp, ripper]
+    trigger_conditions: null
+    opening_patterns:
+      - "Stump-push dozer — HP and ripper to pull, push, and consolidate stumps in clearing work."
+      - "Built for the cleanup phase: configured for stumps, root balls, and debris consolidation."
+    strongest_follow_up_spec: ripper
+    confidence: medium
+
+  slope_earthwork:
+    buyer_type: "slope earthwork contractor"
+    job_type: "slope grading and stabilization"
+    required_fields: [operating_weight_lbs, PAT_blade]
+    trigger_conditions: null
+    opening_patterns:
+      - "Slope-grade dozer — weight and blade control for production slope cut and finish."
+      - "Built for sloped sites: the configuration for cut profile work with the precision a finish requires."
+    strongest_follow_up_spec: PAT_blade
+    confidence: medium
+
+  stockpile_consolidation:
+    buyer_type: "yard / aggregate operator"
+    job_type: "stockpile push and consolidation"
+    required_fields: [blade_width, operating_weight_lbs]
+    trigger_conditions: null
+    opening_patterns:
+      - "Stockpile dozer — sized for daily yard push and pile consolidation work."
+      - "Built for the yard: the blade and weight for daily stockpile management."
+    strongest_follow_up_spec: blade_width
+    confidence: medium
+
+  rural_snow_dozer:
+    buyer_type: "rural / municipal snow operator"
+    job_type: "rural and large-area snow management"
+    required_fields: [enclosed_cab, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Rural-snow dozer — enclosed cab and blade width for large-area snow management."
+      - "Built for the rural route: configured for the wide-area work plows cant reach."
+    strongest_follow_up_spec: blade_width
+    confidence: medium
+
+  solar_farm_install:
+    buyer_type: "utility-scale solar contractor"
+    job_type: "solar farm site prep"
+    required_fields: [PAT_blade, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Solar-site dozer — sized for utility-scale grading and PV pad prep."
+      - "Built for solar farm crews: precision blade for plan grade, blade width for production cut."
+    strongest_follow_up_spec: blade_width
+    confidence: medium
+
+  ag_land_leveling:
+    buyer_type: "agricultural land leveling contractor"
+    job_type: "field leveling and ag site prep"
+    required_fields: [PAT_blade, blade_width]
+    trigger_conditions: null
+    opening_patterns:
+      - "Ag-leveling dozer — six-way blade and width for field grading and water management work."
+      - "Built for ag crews: configured for the precision field-leveling and irrigation prep ag operations need."
+    strongest_follow_up_spec: PAT_blade
+    confidence: medium
+
+  small_class_residential_dozer:
+    buyer_type: "residential / small site contractor"
+    job_type: "residential site prep"
+    required_fields: [machine_width_inches, PAT_blade]
+    trigger_conditions: "machine_width_inches < 100"
+    opening_patterns:
+      - "Compact-class dozer — sized for residential lots and tight-access site work."
+      - "Built for the residential job: the blade control, the size, and the configuration that fits the cul-de-sac."
+    strongest_follow_up_spec: machine_width_inches
+    confidence: high
+
+  midsize_versatile_dozer:
+    buyer_type: "general site contractor"
+    job_type: "varied site work"
+    required_fields: [horsepower_hp, blade_width]
+    trigger_conditions: "horsepower_hp >= 100 and horsepower_hp < 200"
+    opening_patterns:
+      - "Midsize dozer — sized for the work most contractors actually do every day."
+      - "100-200 HP class: configured for site, ag, and clearing work without overbuilding."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: high
+
+  large_production_dozer:
+    buyer_type: "large site / mining contractor"
+    job_type: "high-production push work"
+    required_fields: [horsepower_hp, operating_weight_lbs]
+    trigger_conditions: "horsepower_hp >= 250"
+    opening_patterns:
+      - "Production-class dozer — top of the HP and weight class for high-volume push work."
+      - "Built for the largest sites: HP, weight, and blade capacity for production push."
+    strongest_follow_up_spec: horsepower_hp
+    confidence: high
+
+  good_undercarriage_dozer:
+    buyer_type: "buyer prioritizing UC condition"
+    job_type: "general dozer with strong UC remaining"
+    required_fields: [undercarriage_percent_remaining]
+    trigger_conditions: "undercarriage_percent_remaining >= 70"
+    opening_patterns:
+      - "Strong-UC dozer — undercarriage at {undercarriage_percent_remaining}% means buy-and-work, no major spend looming."
+      - "Buy-and-work machine: UC condition the way you actually want it on a used dozer."
+    strongest_follow_up_spec: undercarriage_percent_remaining
+    confidence: high
+
+  one_owner_dozer:
+    buyer_type: "history-conscious dozer buyer"
+    job_type: "general dozer"
+    required_fields: [one_owner, undercarriage_percent_remaining]
+    trigger_conditions: "one_owner == true"
+    opening_patterns:
+      - "One-owner dozer — single maintenance trail, the kind of history that holds resale value."
+      - "Clean-history dozer: one owner from new, the configuration most buyers want."
+    strongest_follow_up_spec: undercarriage_percent_remaining
+    confidence: high
+
+
+# =============================================================================
+# RESEARCH SUMMARY
+# =============================================================================
+research_summary:
+
+  hook_design_principles:
+    - "Lead with the buyer's job, not the spec. The spec earns trust on the second sentence."
+    - "Name the trade or the work, not the machine class. 'Forestry mulching' lands harder than '90 HP CTL.'"
+    - "Numbers in the first sentence must mean something operationally — gallons per minute the attachment can use, pounds the machine can lift to a deck height, hours the undercarriage has left."
+    - "Avoid generic listing language entirely in opening lines. 'Runs great,' 'must see,' 'low hours,' and 'versatile' are flagged anti-patterns."
+    - "Configuration trumps generic spec. A high-flow CTL with two-speed and AC opens differently than the same horsepower in a base-trim machine."
+    - "If the registry data is null, the hook does not fire. Hooks gate on required_fields presence, not just match score."
+    - "Strongest-follow-up-spec is selected to reinforce the hook's promise — pair a 'production class' opener with horsepower or operating weight, pair a 'finish work' opener with grade control or PAT blade, pair a 'tight access' opener with width or tail swing."
+    - "Each hook's job_type aligns with use-case scorer output keys so wiring from scorer rank → hook selection is one-step lookup, not fuzzy match."
+
+  hook_pattern_archetypes:
+    trade_named:
+      description: "Opens by naming the buyer's trade or industry — 'masonry contractor,' 'land clearing crew,' 'forestry mulching outfit.'"
+      strength: "Highest — buyer recognizes themselves immediately."
+      use_when: "Job is dominated by one identifiable trade and config matches."
+      example: "Built for forestry mulching crews. {aux_flow_high_gpm} gpm of high-flow drives the heaviest mulchers in the class."
+
+    job_named:
+      description: "Opens by naming the work — 'pad prep,' 'truck loading,' 'fence post install.'"
+      strength: "High — works when the trade is fragmented but the work is unambiguous."
+      use_when: "Multiple trades buy the same machine for the same job."
+      example: "Set up for pad-prep work. PAT blade and grade-control-ready mounts dial in spec subgrade in one machine."
+
+    configuration_first:
+      description: "Opens by naming the machine's standout configuration — 'high-flow,' 'two-speed,' 'PAT blade,' 'zero tail swing.'"
+      strength: "High — surfaces what the buyer would search for."
+      use_when: "Configuration is the differentiator between this machine and the price-comparable alternatives."
+      example: "Two-speed-equipped CTL. {travel_speed_high_mph} mph top speed makes long site moves and yard cycles run real time."
+
+    site_type_first:
+      description: "Opens by naming the worksite environment — 'tight residential lots,' 'soft ground,' 'cold storage.'"
+      strength: "Medium-high — pairs well when machine sizing is the story."
+      use_when: "Buyer's pain point is access, weight, or environment, not capacity."
+      example: "Sized for tight residential lots. {width_in}-inch frame fits gates and fence lines other CTLs can't approach."
+
+    buyer_persona_first:
+      description: "Opens by naming the operator profile — 'owner-operator,' 'fleet adder,' 'rental house,' 'small contractor.'"
+      strength: "Medium — useful when the buyer-pool sorting matters more than the work."
+      use_when: "Same machine reaches multiple buyer pools and one is the dominant fit."
+      example: "Owner-operator workhorse. Trailerable, multi-purpose, and sized for residential work without a CDL."
+
+    history_first:
+      description: "Opens by naming the machine's service history or condition — 'one-owner,' 'dealer-maintained,' 'fresh undercarriage.'"
+      strength: "Medium — works when condition is the differentiator, but risks 'low hours' anti-pattern."
+      use_when: "Provenance is unusually strong AND ties to a job-fit story."
+      example: "Single-owner finish-work CTL. Dealer-maintained from new — every grading job documented."
+
+    class_positioning:
+      description: "Opens by positioning the machine within its class — 'top of the X class,' 'large-frame,' 'production-class.'"
+      strength: "Medium-high — buyer immediately knows where this fits in the lineup."
+      use_when: "Spec lands at a class boundary or above — 'biggest CTL Bobcat builds,' 'large-frame mini ex.'"
+      example: "Top of the {make} CTL class. {horsepower_hp} HP and {rated_operating_capacity_lbs} lbs ROC are the production end of the lineup."
+
+  strongest_dealer_language_patterns:
+    setup_phrases:
+      - "Set up for {job}."
+      - "Built for {job}."
+      - "Dialed in for {job}."
+      - "Configured for {job}."
+      - "Spec'd for {job}."
+    positioning_phrases:
+      - "Top of the {make} {class} class."
+      - "Production end of the lineup."
+      - "Buy-and-work ready."
+      - "Turn-key for {trade}."
+    capability_phrases:
+      - "Runs the {attachment} other machines stall on."
+      - "Moves dirt by the day, not by the load."
+      - "Pace of a {tier-up class}, footprint of a {tier-down class}."
+    rationale: |
+      These phrases are observed in working-dealer listing copy, equipment-trader sample sets, and
+      OEM-published demonstration scripts. They share three properties: (1) they imply the seller knows
+      the trade, (2) they commit to a use case rather than hedging across all possible buyers,
+      (3) they don't apologize for the machine's limits. Anti-patterns ("versatile," "fits any job,"
+      "low hours") signal the seller hasn't talked to a contractor recently.
+
+  weak_phrases_to_avoid_in_hooks:
+    flagged_in_first_sentence:
+      - "for sale"
+      - "must see"
+      - "won't last"
+      - "runs great"
+      - "low hours"
+      - "well maintained"
+      - "versatile"
+      - "fits any job"
+      - "perfect for"
+      - "great deal"
+      - "great little machine"
+      - "ready to work"
+      - "turn-key"  # used positively in supporting copy but generic on its own as opener
+    rationale: |
+      Each of these tells the buyer the seller could not name a specific use case. The buyer's mental model
+      for a strong listing is: the seller saw their work in this machine before they took the photos.
+
+  hook_to_use_case_alignment:
+    description: |
+      Every job_type field in this bank is designed to align with a key in the corresponding
+      mtm_*_use_case_scorer.py output. Selection precedence is: (1) match the scorer's top
+      use case; (2) within ties, prefer higher confidence; (3) within ties, prefer hooks
+      requiring more registry fields (more specific over more generic).
+    integration_pseudocode: |
+      top_use_case = scorer.run(machine).top_use_case
+      candidates = hook_bank[category].filter(job_type == top_use_case)
+      candidates = candidates.filter(all required_fields present in resolved)
+      candidates = candidates.filter(eval(trigger_conditions, resolved) == True)
+      ranked = sorted(candidates, key=(confidence, len(required_fields)), reverse=True)
+      selected = ranked[0]
+
+  category_buyer_pool_distribution:
+    compact_track_loader:
+      primary_pools: ["small-to-mid contractors", "owner-operators", "specialty trade (forestry, snow, ag)", "rental fleets"]
+      hook_density_by_pool: "Specialty-trade hooks dominate (forestry, snow, ag, demo) because configuration drives buyer fit."
+    skid_steer_loader:
+      primary_pools: ["paving and concrete contractors", "agricultural", "yard operations", "municipal/DOT"]
+      hook_density_by_pool: "Yard, paving, and ag hooks dominate; tight-access residential is CTL territory more often than SSL."
+    mini_excavator:
+      primary_pools: ["residential plumbers/electricians/landscapers", "septic and well drillers", "owner-operators"]
+      hook_density_by_pool: "Residential excavation, utility trenching, and tight-access work dominate. Tail swing and width spec the buyer pool more than horsepower."
+    telehandler:
+      primary_pools: ["residential framers", "commercial framers and masons", "agricultural (bales/feed)", "rental fleets"]
+      hook_density_by_pool: "Reach-class buyer pools split sharply at ~12,000 lb capacity / 55 ft reach — residential below, commercial above."
+    excavator:
+      primary_pools: ["site contractors", "utility contractors", "demolition", "specialty (forestry, scrap, quarry)"]
+      hook_density_by_pool: "Class size sorts buyer pool more than configuration — 14-ton residential utility class vs. 30-ton+ production class are different markets."
+    wheel_loader:
+      primary_pools: ["aggregate yards", "agriculture", "snow/municipal", "construction", "industrial (recycling, ports, plants)"]
+      hook_density_by_pool: "Yard-and-stockpile work dominates. Bucket capacity, dump clearance, and coupler readiness are the spec axes that sort buyer pools."
+    dozer:
+      primary_pools: ["site contractors", "land clearing", "agriculture/ranch", "specialty (landfill, mining, forestry)"]
+      hook_density_by_pool: "Frame size and blade type sort buyer pools — residential PAT-blade work vs. mid-frame production vs. heavy mining/landfill are largely non-overlapping markets."
+
+  copy_engine_integration_notes:
+    selection_step:
+      input: "resolved_specs (registry record), top_use_case (from scorer), category"
+      output: "selected_hook (single hook entry from this bank)"
+      logic: "Filter hooks by category and job_type alignment with top_use_case; filter to those with all required_fields present; eval trigger_conditions; rank by confidence + specificity; return top."
+    rendering_step:
+      input: "selected_hook, resolved_specs"
+      output: "rendered_opening_line (string)"
+      logic: "Random-pick or first-pick from selected_hook.opening_patterns; substitute {field} placeholders from resolved_specs; pass downstream to second-sentence builder which uses strongest_follow_up_spec."
+    fallback_step:
+      condition: "No hook matches OR required_fields not present"
+      action: "Fall back to category-default generic opener (defined in op_value_maps_v1.yaml or copy engine defaults). DO NOT default to weak phrases."
+    cross_reference: "All {field} placeholders in opening_patterns map to canonical resolver field names verified in op_value_maps_v1.yaml."
+
+  v2_roadmap:
+    expansion_targets:
+      - "Per-make sub-hooks where OEM marketing language differs (Bobcat 'M-Series', CAT 'D-series', Kubota 'SVL Series')."
+      - "Used-context modifier hooks: hours-band aware ('first owner under 1000 hrs'), age-band aware ('current emissions tier')."
+      - "Attachment-bundle hooks where the listing includes attachments (bucket + forks + grapple = 'attachment-fleet workhorse' override)."
+      - "Geographic modifier hooks (snow buyers in southern markets sort differently from northern)."
+      - "Dual-job hooks for buyer pools that genuinely buy across two use cases (CTL ag-and-snow combo, telehandler ag-and-construction combo)."
+    measurement_targets:
+      - "Click-through differential vs. category-default opener (target: +35% on hook-matched listings)."
+      - "Time-on-listing differential (target: +20%)."
+      - "Inquiry rate differential (target: +25%)."
+    open_questions:
+      - "Should hook selection be deterministic (top-rank wins) or stochastic (top-3 weighted random) to avoid inventory-wide opener repetition?"
+      - "How aggressively should low-confidence hooks be gated — currently they fire if all required_fields present, but a confidence floor of 'medium' may improve hit rate."
+      - "Whether to surface multiple candidate openings to the dealer for manual selection in the listing UI, or commit to one and let dealer override."
+# =============================================================================
+# RESEARCH SUMMARY
+# =============================================================================
+research_summary:
+
+  hook_design_principles:
+    - "Buyer first, machine second. Open with what the contractor is being hired to do."
+    - "Name the trade by name. 'Masonry crew' beats 'pallet handling.' 'Pipeline crew' beats 'utility work.'"
+    - "Lead with one differentiating spec, not three. The hook is the bait — the spec sheet is the meal."
+    - "Use dealer language, not OEM language. 'Set up for...' / 'Built for...' / 'Dialed in for...' / 'Configured for...'"
+    - "Do not open with year/make/model. That goes in the title bar; the hook is the value pitch."
+    - "Avoid superlatives the listing cant support ('best', 'most powerful'). Use class-positioning instead ('top of the SSL class')."
+    - "Hook fires only when its required fields are non-null AND not in requires_confirm — never bluff."
+
+  hook_pattern_archetypes:
+    - id: "trade_named"
+      template: "[Trade] [machine class] — [one differentiating spec or feature]."
+      example: "Masonry-crew telehandler — 8,000 lb capacity and 44-ft reach put block where the wall goes."
+      best_for: "Trades with strong identity (masonry, framing, pipeline, paving, utility)."
+    - id: "job_named"
+      template: "[Job artifact] [machine class] — [the configuration for that job]."
+      example: "Pad-prep dozer — six-way blade for precision residential pad work."
+      best_for: "Specific job artifacts buyers search for (pad prep, trenching, footings)."
+    - id: "configuration_first"
+      template: "[Key feature] [machine class] — [what the feature unlocks]."
+      example: "High-flow CTL built for forestry mulching, right-of-way clearing, and heavy attachment work."
+      best_for: "Listings whose differentiating feature is hydraulic or cab package."
+    - id: "site_type_first"
+      template: "[Site type] [machine class] — [why this fits]."
+      example: "Backyard-access CTL — fits standard 6-ft gates, gets the work done where bigger machines cant reach."
+      best_for: "Width / access / clearance differentiators."
+    - id: "buyer_persona_first"
+      template: "[Persona] [machine class] — [the value pitch]."
+      example: "Owner-operator CTL — enclosed cab, real attachment-running flow, dialed in for the contractor who runs one machine."
+      best_for: "Persona-driven buyers (owner-operator, fleet contractor, first-machine buyer)."
+    - id: "history_first"
+      template: "One-owner [machine class] — [the trust pitch]."
+      example: "One-owner skid — single maintenance trail, no surprises, ready to work."
+      best_for: "Clean-history machines where provenance is the selling point."
+    - id: "class_positioning"
+      template: "[Class label] — [what the class means for the buyer]."
+      example: "Production-class skid — top of the SSL class for HP and ROC, built to keep up with bigger crews."
+      best_for: "Tier separators (compact vs midsize vs production)."
+
+  strongest_dealer_language_patterns:
+    - "Set up for {work}"
+    - "Built for {trade}"
+    - "Dialed in for {trade or task}"
+    - "Configured for {trade}"
+    - "Sized for {job artifact}"
+    - "Ready to plug into a working {fleet/operation}"
+    - "Top of the {class} class"
+    - "Buy-and-work — {condition statement}"
+    - "Where the work is going"
+    - "Without bringing a second machine"
+    - "Without parking on the foundation"
+    - "Without leaving the cab"
+
+  weak_phrases_to_avoid_in_hooks:
+    - "For sale"
+    - "Excellent condition"
+    - "Runs great"
+    - "Wont last"
+    - "Priced to move"
+    - "Must see"
+    - "Many options"
+    - "Lots of features"
+    - "All you need"
+    - "Versatile machine"
+    - "A great machine"
+    - "Years of life left"
+    - "Like new"
+    - "Low hours"
+
+  hook_to_use_case_alignment:
+    note: "Each hook references a use case label that aligns with mtm_*_use_case_scorer.py outputs."
+    description: "The copy engine uses the scorer's top use case label to filter qualifying hooks to the most relevant subset before applying the confidence + specificity tie-breaker. Hook job_type values map directly to scorer use case keys."
+
+  category_buyer_pool_distribution:
+    compact_track_loader:
+      large_pool: [land_clearing, snow_commercial, site_grading, residential_landscape, owner_operator]
+      medium_pool: [forestry_mulching, asphalt_planing, pallet_handling_landscape, masonry_support, fleet_addition]
+      narrow_pool: [pipeline_support, agricultural, attachment_carrier, large_frame_production]
+    skid_steer_loader:
+      large_pool: [paving_crew, snow_paved, demolition_hardsurface, landscape_supply_yard, agricultural_barn]
+      medium_pool: [cold_planing, warehouse_dock, scrap_yard, pallet_handling_concrete]
+      narrow_pool: [industrial_facility, glass_lighter_material]
+    mini_excavator:
+      large_pool: [utility_trenching, foundation_footings, drainage_install, hydraulic_thumb_clearing, landscape_install]
+      medium_pool: [septic_install, pool_excavation, sewer_lateral, hardscape_paver_base]
+      narrow_pool: [pipe_laying, fence_post_setting]
+    telehandler:
+      large_pool: [masonry_pallet_placement, framing_rooftop, agricultural_bale, lumber_yard]
+      medium_pool: [roofing_delivery_rooftop, concrete_form_work, drywall_delivery, multi_story_framing]
+      narrow_pool: [solar_install, bridge_infrastructure, modular_setup, stone_slab]
+    excavator:
+      large_pool: [mass_excavation, deep_utility, foundation_commercial, midsize_versatile]
+      medium_pool: [truck_loading_production, demolition_grapple, hammer_breaker, pipeline_contractor, storm_sewer]
+      narrow_pool: [bridge_infrastructure_ex, industrial_demolition, high_reach_demolition]
+    wheel_loader:
+      large_pool: [aggregate_pile_loading, snow_commercial_loader, materials_yard_general, midsize_versatile_wl]
+      medium_pool: [truck_loading_quarry, lumber_yard_loader, asphalt_plant, agricultural_silage]
+      narrow_pool: [recycling_center, glass_lighter_material]
+    dozer:
+      large_pool: [land_clearing_dozer, mass_grading, pad_prep_commercial_dozer, finish_grading, midsize_versatile_dozer]
+      medium_pool: [pad_prep_residential, ripping_hardpan, slope_earthwork]
+      narrow_pool: [solar_farm_install, ag_land_leveling, mining_haul_road]
+
+  copy_engine_integration_notes:
+    selection_algorithm: "1. For the listing, evaluate every hook in the matching equipment_type category. 2. A hook is qualifying if EVERY required_field is non-null AND not in requires_confirm, AND its trigger_conditions evaluate to true (or trigger_conditions is null). 3. From the qualifying set, find the subset whose job_type matches the scorer's top use case label. 4. Within that subset, pick the hook with highest confidence; on a tie, pick the one with the most required_fields (most specific match wins). 5. From opening_patterns, pick one (random with seed for repeatability, or A/B test). 6. Substitute templated values from resolved_specs. 7. The strongest_follow_up_spec is the field the body should lead with after the hook."
+    fallback: "If no hook qualifies, fall back to a generic open: '{year} {make} {model} {class label}.' Never fabricate a hook. Never use a hook whose required fields arent present."
+
+# =============================================================================
+# OPEN ITEMS / V2 ROADMAP
+# =============================================================================
+v2_roadmap:
+  - "Wire job_type values to mtm_*_use_case_scorer.py keys verbatim — direct integration."
+  - "Add A/B test variants — multiple opening_patterns let the engine rotate language."
+  - "Add geographic-region variants (snow language only fires in snow markets)."
+  - "Capture the SECOND sentence pattern bank — body openings, not just hooks."
+  - "Add anti-hook bank — situations where any hook would feel forced (very high hours, missing photos)."
+  - "Backhoe, scissor lift, boom lift coverage when MTM expands registry."
+  - "Tone-aware variants — match the four MTM listing-copy tones (default / facebook / dealer_site / [tone-4])."

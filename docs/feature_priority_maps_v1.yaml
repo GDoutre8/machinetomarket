@@ -1,0 +1,279 @@
+# MTM Feature Priority Maps v1
+#
+# Purpose:
+#   Rank buyer-priority features by equipment type so MTM can control what
+#   enters the lead, capability slot, and feature block.
+#
+# Ranking basis:
+#   1. buyer_attention: how quickly buyers notice/filter by it
+#   2. conversion_value: how strongly it can motivate inquiry
+#   3. resale_relevance: how much it affects retained value or buyer risk
+#
+# Scores:
+#   5 = very high, 1 = low
+#
+# Slot rules:
+#   lead_eligible: suitable for the opening hook if confirmed and not crowded
+#   capability_slot: should be translated into buyer outcome language
+#   features_block: safe as a factual feature list item
+
+compact_track_loader:
+  ranked_features:
+    - rank: 1
+      feature: high_flow_hydraulics_with_gpm
+      buyer_attention: 5
+      conversion_value: 5
+      resale_relevance: 5
+      lead_eligible: true
+      capability_slot: true
+      features_block: true
+      proof_required: "high_flow == yes and hi_flow_gpm or aux_flow_high_gpm present"
+      buyer_reason: "Unlocks higher-demand attachments such as mulchers, trenchers, planers, and brush cutters."
+    - rank: 2
+      feature: track_condition_percent
+      buyer_attention: 5
+      conversion_value: 5
+      resale_relevance: 5
+      lead_eligible: true
+      capability_slot: false
+      features_block: true
+      proof_required: "track_percent_remaining or track_condition plus source/photos"
+      buyer_reason: "Tracks are a major near-term ownership cost."
+    - rank: 3
+      feature: rated_operating_capacity
+      buyer_attention: 5
+      conversion_value: 4
+      resale_relevance: 5
+      lead_eligible: true
+      capability_slot: true
+      features_block: true
+      proof_required: "roc_lb or rated_operating_capacity_lbs"
+      buyer_reason: "Signals loader class and material-handling headroom."
+    - rank: 4
+      feature: enclosed_cab_heat_ac
+      buyer_attention: 5
+      conversion_value: 4
+      resale_relevance: 4
+      lead_eligible: true
+      capability_slot: false
+      features_block: true
+      proof_required: "cab_type enclosed plus heater/ac fields if stated"
+      buyer_reason: "Improves operator comfort, weather protection, and resale appeal."
+    - rank: 5
+      feature: hydraulic_quick_attach_or_coupler
+      buyer_attention: 4
+      conversion_value: 4
+      resale_relevance: 4
+      lead_eligible: true
+      capability_slot: true
+      features_block: true
+      proof_required: "coupler_type"
+      buyer_reason: "Speeds attachment changes and improves daily usability."
+    - rank: 6
+      feature: two_speed_travel
+      buyer_attention: 4
+      conversion_value: 4
+      resale_relevance: 4
+      lead_eligible: true
+      capability_slot: true
+      features_block: true
+      proof_required: "two_speed_travel == yes"
+      buyer_reason: "Reduces repositioning time around jobsites and trailers."
+    - rank: 7
+      feature: attachments_included_bucket_forks
+      buyer_attention: 4
+      conversion_value: 4
+      resale_relevance: 3
+      lead_eligible: true
+      capability_slot: true
+      features_block: true
+      proof_required: "attachments_included confirmed"
+      buyer_reason: "Changes buyer economics and immediate work readiness."
+    - rank: 8
+      feature: hours_verified
+      buyer_attention: 5
+      conversion_value: 4
+      resale_relevance: 5
+      lead_eligible: true
+      capability_slot: false
+      features_block: true
+      proof_required: "hours and verified source preferred"
+      buyer_reason: "Hours are a primary filter and trust signal."
+    - rank: 9
+      feature: ride_control
+      buyer_attention: 3
+      conversion_value: 4
+      resale_relevance: 3
+      lead_eligible: false
+      capability_slot: true
+      features_block: true
+      proof_required: "ride_control == true"
+      buyer_reason: "Carries material smoother with less spill."
+    - rank: 10
+      feature: reversing_fan
+      buyer_attention: 3
+      conversion_value: 3
+      resale_relevance: 4
+      lead_eligible: false
+      capability_slot: false
+      features_block: true
+      proof_required: "reversing_fan == true"
+      buyer_reason: "Useful for dust, debris, land clearing, and cooling-pack maintenance."
+    - rank: 11
+      feature: self_leveling
+      buyer_attention: 3
+      conversion_value: 3
+      resale_relevance: 3
+      lead_eligible: false
+      capability_slot: true
+      features_block: true
+      proof_required: "self_leveling == true"
+      buyer_reason: "Helps keep pallets and bucket loads steadier."
+    - rank: 12
+      feature: backup_camera
+      buyer_attention: 3
+      conversion_value: 3
+      resale_relevance: 3
+      lead_eligible: false
+      capability_slot: false
+      features_block: true
+      proof_required: "backup_camera == true"
+      buyer_reason: "Improves visibility around trucks, crews, and tight sites."
+    - rank: 13
+      feature: air_ride_seat
+      buyer_attention: 2
+      conversion_value: 2
+      resale_relevance: 2
+      lead_eligible: false
+      capability_slot: false
+      features_block: true
+      proof_required: "air_ride_seat == true"
+      buyer_reason: "Comfort upgrade for long operating days."
+    - rank: 14
+      feature: control_type
+      buyer_attention: 3
+      conversion_value: 3
+      resale_relevance: 3
+      lead_eligible: false
+      capability_slot: false
+      features_block: true
+      proof_required: "control_type present"
+      buyer_reason: "Some buyers strongly prefer joystick, ISO, H-pattern, or selectable controls."
+    - rank: 15
+      feature: one_owner
+      buyer_attention: 4
+      conversion_value: 4
+      resale_relevance: 4
+      lead_eligible: false
+      capability_slot: false
+      features_block: true
+      proof_required: "owner_count == 1 or single_owner_verified == true"
+      buyer_reason: "Trust signal when verified, not a capability feature."
+
+skid_steer:
+  ranked_features:
+    - {rank: 1, feature: rated_operating_capacity, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "roc_lb or rated_operating_capacity_lbs", buyer_reason: "Primary class/capacity signal for loader buyers."}
+    - {rank: 2, feature: tire_condition_percent, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "tire_condition or tire_pct with source/photos", buyer_reason: "Tires are immediate ownership cost and traction signal."}
+    - {rank: 3, feature: high_flow_hydraulics_with_gpm, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "high_flow == yes and GPM preferred", buyer_reason: "Key for higher-demand attachments."}
+    - {rank: 4, feature: enclosed_cab_heat_ac, buyer_attention: 5, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "cab_type enclosed plus heater/ac fields if stated", buyer_reason: "Comfort and weather-protection value."}
+    - {rank: 5, feature: hydraulic_quick_attach_or_coupler, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "coupler_type", buyer_reason: "Fast attachment changes."}
+    - {rank: 6, feature: two_speed_travel, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "two_speed_travel == yes", buyer_reason: "Faster site movement and loading cycles."}
+    - {rank: 7, feature: bucket_or_forks_included, buyer_attention: 4, conversion_value: 4, resale_relevance: 3, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "attachments_included confirmed", buyer_reason: "Immediate use and lower accessory spend."}
+    - {rank: 8, feature: verified_hours, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "hours and verified source preferred", buyer_reason: "Primary buyer filter."}
+    - {rank: 9, feature: auxiliary_hydraulics, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "aux hydraulics or hydraulic flow status", buyer_reason: "Supports hydraulic attachments."}
+    - {rank: 10, feature: ride_control, buyer_attention: 3, conversion_value: 4, resale_relevance: 3, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "ride_control == true", buyer_reason: "Smoother material carry."}
+    - {rank: 11, feature: self_leveling, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "self_leveling == true", buyer_reason: "Helps with pallet and bucket control."}
+    - {rank: 12, feature: control_type, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "control_type present", buyer_reason: "Preference filter for experienced operators."}
+    - {rank: 13, feature: backup_camera, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "backup_camera == true", buyer_reason: "Visibility support."}
+    - {rank: 14, feature: one_owner, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "verified ownership", buyer_reason: "Trust signal."}
+    - {rank: 15, feature: service_records, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "service_records_attached == true", buyer_reason: "Reduces maintenance-history uncertainty."}
+
+mini_excavator:
+  ranked_features:
+    - {rank: 1, feature: hydraulic_thumb, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "thumb_type == hydraulic", buyer_reason: "Major value for brush, debris, demo, pipe, and material handling."}
+    - {rank: 2, feature: auxiliary_hydraulics, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "aux_hydraulics confirmed", buyer_reason: "Powers breakers, augers, compactors, and other tools."}
+    - {rank: 3, feature: bucket_package, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "attachments_included list confirmed", buyer_reason: "Covers trenching, cleanup, and digging widths without added purchase."}
+    - {rank: 4, feature: dig_depth, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "max_dig_depth or max_dig_depth_ft", buyer_reason: "Maps directly to utility, drainage, footing, and trenching fit."}
+    - {rank: 5, feature: track_condition_percent, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "track_pct or track_condition with source/photos", buyer_reason: "Major wear-cost signal."}
+    - {rank: 6, feature: coupler_type, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "coupler_type present", buyer_reason: "Faster bucket/attachment changes."}
+    - {rank: 7, feature: zero_tail_swing, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "zero_tail_swing == true or tail_swing_type", buyer_reason: "Useful near walls, traffic, fences, and buildings."}
+    - {rank: 8, feature: blade_type, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "blade_type present", buyer_reason: "Backfill, grading, and cleanup value."}
+    - {rank: 9, feature: verified_hours, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "hours and source", buyer_reason: "Primary filter."}
+    - {rank: 10, feature: enclosed_cab_heat_ac, buyer_attention: 4, conversion_value: 3, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "cab_type plus heater/ac fields", buyer_reason: "Comfort and weather protection."}
+    - {rank: 11, feature: pattern_changer, buyer_attention: 4, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "pattern_changer == true", buyer_reason: "Operator preference and rental/fleet flexibility."}
+    - {rank: 12, feature: long_arm, buyer_attention: 3, conversion_value: 4, resale_relevance: 3, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "arm_length or stick_arm_length_ft", buyer_reason: "Adds reach and dig flexibility."}
+    - {rank: 13, feature: rubber_tracks, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "rubber_tracks confirmed", buyer_reason: "Surface-friendly jobsite fit."}
+    - {rank: 14, feature: inspection_available, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "inspection_report_available == true", buyer_reason: "Strong remote-buyer trust signal."}
+    - {rank: 15, feature: service_records, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "service_records_attached == true", buyer_reason: "Reduces maintenance uncertainty."}
+
+telehandler:
+  ranked_features:
+    - {rank: 1, feature: lift_capacity, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "lift_capacity_lb or max_lift_capacity_lbs", buyer_reason: "Primary telehandler buying filter."}
+    - {rank: 2, feature: lift_height, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "max_lift_height_ft or lift_height_ft", buyer_reason: "Shows upper-floor/roofline placement fit."}
+    - {rank: 3, feature: forward_reach, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "max_forward_reach_ft or forward_reach_ft", buyer_reason: "Shows ability to reach over obstacles/trucks/foundations."}
+    - {rank: 4, feature: forks_or_carriage_included, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "attachments_included confirms forks/carriage", buyer_reason: "Confirms immediate pallet/material handling setup."}
+    - {rank: 5, feature: verified_hours, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "hours and source", buyer_reason: "Primary filter."}
+    - {rank: 6, feature: 4wd_and_steer_modes, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "steer/drive mode confirmed", buyer_reason: "Maneuverability on rough jobsites."}
+    - {rank: 7, feature: tire_condition_or_foam_filled, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "tire condition/type confirmed", buyer_reason: "Downtime and site-readiness signal."}
+    - {rank: 8, feature: enclosed_cab_heat_ac, buyer_attention: 4, conversion_value: 3, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "cab_type plus heater/ac", buyer_reason: "Operator comfort."}
+    - {rank: 9, feature: stabilizers, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "has_stabilizers == true", buyer_reason: "Adds stability for applicable lift setups."}
+    - {rank: 10, feature: auxiliary_hydraulics, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "aux hydraulics confirmed", buyer_reason: "Supports certain attachments."}
+    - {rank: 11, feature: quick_attach_carriage, buyer_attention: 3, conversion_value: 4, resale_relevance: 3, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "coupler/carriage type", buyer_reason: "Attachment flexibility."}
+    - {rank: 12, feature: rear_camera_or_lights, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "camera/lights confirmed", buyer_reason: "Visibility and jobsite support."}
+    - {rank: 13, feature: service_records, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "records available", buyer_reason: "Trust for boom/hydraulic/axle maintenance."}
+    - {rank: 14, feature: inspection_available, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "inspection report", buyer_reason: "Remote buyer trust."}
+    - {rank: 15, feature: warranty_or_protection, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "exact warranty/protection terms", buyer_reason: "Commercial risk reduction."}
+
+excavator:
+  ranked_features:
+    - {rank: 1, feature: undercarriage_condition_percent, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "undercarriage percent/source", buyer_reason: "Major ownership-cost signal."}
+    - {rank: 2, feature: auxiliary_hydraulics_or_hammer_plumbing, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "aux_hydraulics_type or hammer_plumbing", buyer_reason: "Attachment/breaker capability."}
+    - {rank: 3, feature: coupler, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "coupler_type", buyer_reason: "Fast bucket/tool changes."}
+    - {rank: 4, feature: bucket_or_attachment_package, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "attachments_included confirmed", buyer_reason: "Immediate work value."}
+    - {rank: 5, feature: operating_weight_class, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "operating_weight_lb", buyer_reason: "Primary class/transport/use filter."}
+    - {rank: 6, feature: dig_depth_reach, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "dig depth or reach specs", buyer_reason: "Maps to excavation, loading, and trenching fit."}
+    - {rank: 7, feature: grade_control, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "grade_control_type", buyer_reason: "Productivity and accuracy upgrade."}
+    - {rank: 8, feature: verified_hours, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "hours and source", buyer_reason: "Primary filter."}
+    - {rank: 9, feature: no_leaks_inspection_backed, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "inspection-backed leak status", buyer_reason: "High trust for hydraulics-heavy equipment."}
+    - {rank: 10, feature: no_active_codes, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "diagnostic scan", buyer_reason: "Electronics/emissions confidence."}
+    - {rank: 11, feature: rear_or_side_cameras, buyer_attention: 4, conversion_value: 3, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "camera fields", buyer_reason: "Visibility around trucks and crews."}
+    - {rank: 12, feature: boom_stick_configuration, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "boom/stick fields", buyer_reason: "Reach and application fit."}
+    - {rank: 13, feature: oil_analysis_available, buyer_attention: 4, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "oil sample report", buyer_reason: "Premium trust signal."}
+    - {rank: 14, feature: service_records, buyer_attention: 4, conversion_value: 4, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "records", buyer_reason: "Maintenance confidence."}
+    - {rank: 15, feature: enclosed_cab_ac_heat, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "cab/ac/heat", buyer_reason: "Comfort and resale support."}
+
+wheel_loader:
+  ranked_features:
+    - {rank: 1, feature: bucket_capacity, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "bucket_capacity_yd3 or bucket included", buyer_reason: "Primary production/material-moving signal."}
+    - {rank: 2, feature: forks_included, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "attachments_included confirms forks", buyer_reason: "Adds pallet and yard-handling value."}
+    - {rank: 3, feature: hydraulic_coupler, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "coupler_type", buyer_reason: "Switches between bucket/forks/tools."}
+    - {rank: 4, feature: tire_condition_percent, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "tire percent/source", buyer_reason: "Major wear-cost signal."}
+    - {rank: 5, feature: ride_control, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "ride_control == true", buyer_reason: "Smoother material carry."}
+    - {rank: 6, feature: 3rd_valve_aux_hydraulics, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "aux/3rd valve confirmed", buyer_reason: "Supports attachments and coupler functions."}
+    - {rank: 7, feature: operating_weight_or_size_class, buyer_attention: 4, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "operating_weight_lb", buyer_reason: "Class and application fit."}
+    - {rank: 8, feature: verified_hours, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "hours/source", buyer_reason: "Primary filter."}
+    - {rank: 9, feature: rear_camera, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "camera", buyer_reason: "Visibility around trucks/yards."}
+    - {rank: 10, feature: enclosed_cab_heat_ac, buyer_attention: 4, conversion_value: 3, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "cab/ac/heat", buyer_reason: "Operator comfort."}
+    - {rank: 11, feature: differential_lock_or_limited_slip, buyer_attention: 3, conversion_value: 4, resale_relevance: 3, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "traction feature confirmed", buyer_reason: "Traction in loose/muddy yards."}
+    - {rank: 12, feature: service_records, buyer_attention: 4, conversion_value: 4, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "records", buyer_reason: "Engine/transmission/axle maintenance confidence."}
+    - {rank: 13, feature: inspection_available, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "inspection report", buyer_reason: "Remote buyer proof."}
+    - {rank: 14, feature: no_leaks_inspection_backed, buyer_attention: 4, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "inspection leak status", buyer_reason: "Hydraulic trust signal."}
+    - {rank: 15, feature: warranty_or_protection, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "exact terms", buyer_reason: "Risk reduction."}
+
+dozer:
+  ranked_features:
+    - {rank: 1, feature: undercarriage_condition_percent, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "undercarriage percent/source", buyer_reason: "The central dozer value and wear-cost signal."}
+    - {rank: 2, feature: blade_type, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "blade_type", buyer_reason: "Defines grading/backfill/spread capability."}
+    - {rank: 3, feature: grade_control, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "grade_control_type", buyer_reason: "High productivity and resale upgrade."}
+    - {rank: 4, feature: ripper_or_winch, buyer_attention: 5, conversion_value: 5, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "ripper/winch confirmed", buyer_reason: "Expands application fit and value."}
+    - {rank: 5, feature: verified_hours, buyer_attention: 5, conversion_value: 4, resale_relevance: 5, lead_eligible: true, capability_slot: false, features_block: true, proof_required: "hours/source", buyer_reason: "Primary filter but secondary to undercarriage."}
+    - {rank: 6, feature: sweeps_screens_guards, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: true, capability_slot: true, features_block: true, proof_required: "guarding confirmed", buyer_reason: "Clearing/forestry/protection value."}
+    - {rank: 7, feature: pad_width, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: true, features_block: true, proof_required: "track_shoe_width_in", buyer_reason: "Ground pressure/application fit."}
+    - {rank: 8, feature: powertrain_service_records, buyer_attention: 5, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "records", buyer_reason: "Major repair-risk reduction."}
+    - {rank: 9, feature: oil_analysis_available, buyer_attention: 4, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "oil sample report", buyer_reason: "High-value proof for engine/transmission/final drives."}
+    - {rank: 10, feature: final_drive_condition, buyer_attention: 4, conversion_value: 5, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "inspection result", buyer_reason: "Critical high-cost component."}
+    - {rank: 11, feature: enclosed_cab_heat_ac, buyer_attention: 4, conversion_value: 3, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "cab/ac/heat", buyer_reason: "Operator comfort."}
+    - {rank: 12, feature: rear_camera_or_visibility_package, buyer_attention: 3, conversion_value: 3, resale_relevance: 3, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "camera/visibility field", buyer_reason: "Site visibility."}
+    - {rank: 13, feature: service_recent, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "service date/hours/items", buyer_reason: "Reduces near-term service uncertainty."}
+    - {rank: 14, feature: warranty_or_protection, buyer_attention: 4, conversion_value: 4, resale_relevance: 4, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "exact terms", buyer_reason: "Risk reduction."}
+    - {rank: 15, feature: known_issues_disclosed, buyer_attention: 4, conversion_value: 3, resale_relevance: 5, lead_eligible: false, capability_slot: false, features_block: true, proof_required: "known_issues field", buyer_reason: "Honest disclosure can preserve buyer trust on expensive machines."}
