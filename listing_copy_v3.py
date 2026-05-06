@@ -1370,16 +1370,16 @@ def _truncate_to_words(text: str, max_words: int) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 _READINESS_BY_TYPE: Dict[str, str] = {
-    "skid_steer_loader":   "grading, material handling, and general attachment work",
-    "compact_track_loader": "grading, material handling, and general attachment work",
-    "mini_excavator":      "trenching, footing work, and general excavation",
-    "excavator":           "excavation, trenching, and earthwork",
-    "backhoe_loader":      "digging, loading, and utility work",
-    "wheel_loader":        "material handling, loading, and yard work",
-    "telehandler":         "material handling, jobsite staging, and pallet work",
-    "dozer":               "grading, pushing, and earthwork",
-    "scissor_lift":        "elevated access and aerial work",
-    "boom_lift":           "elevated access and aerial work",
+    "skid_steer_loader":    "grading, loading, and general attachment work",
+    "compact_track_loader": "site prep, material movement, and attachment use",
+    "mini_excavator":       "trenching, excavation, and utility work",
+    "excavator":            "excavation, trenching, and earthwork",
+    "backhoe_loader":       "trenching, loading, and utility work",
+    "wheel_loader":         "truck loading, stockpile work, and site support",
+    "telehandler":          "material placement, pallet handling, and jobsite support",
+    "dozer":                "grading, pushing, and site prep",
+    "scissor_lift":         "rough-terrain lift work and elevated access",
+    "boom_lift":            "elevated reach, exterior access, and jobsite lift work",
 }
 
 
