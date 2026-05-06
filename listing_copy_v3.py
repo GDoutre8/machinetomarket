@@ -1369,6 +1369,163 @@ def _truncate_to_words(text: str, max_words: int) -> str:
 # HEADLINE BUILDER (v3)
 # ─────────────────────────────────────────────────────────────────────────────
 
+_READINESS_BY_TYPE: Dict[str, str] = {
+    "skid_steer_loader":   "grading, material handling, and general attachment work",
+    "compact_track_loader": "grading, material handling, and general attachment work",
+    "mini_excavator":      "trenching, footing work, and general excavation",
+    "excavator":           "excavation, trenching, and earthwork",
+    "backhoe_loader":      "digging, loading, and utility work",
+    "wheel_loader":        "material handling, loading, and yard work",
+    "telehandler":         "material handling, jobsite staging, and pallet work",
+    "dozer":               "grading, pushing, and earthwork",
+    "scissor_lift":        "elevated access and aerial work",
+    "boom_lift":           "elevated access and aerial work",
+}
+
+
+def _condition_word(hours: Any, dealer_input: Any = None) -> str:
+    """
+    Hours-aware condition framing. No invented service-history claims.
+
+    Bands:
+      0–750     → Low-hour
+      751–2,500 → Clean
+      2,501+    → Work-ready
+    "Well-kept" reserved for dealer-confirmed condition_grade / notes only.
+    """
+    try:
+        h = int(hours) if hours is not None else None
+    except (TypeError, ValueError):
+        h = None
+
+    if dealer_input is not None:
+        grade = str(getattr(dealer_input, "condition_grade", "") or "").lower()
+        notes = (
+            (getattr(dealer_input, "condition_notes", "") or "")
+            + " "
+            + (getattr(dealer_input, "additional_details", "") or "")
+        ).lower()
+        if "well-kept" in grade or "well kept" in grade \
+           or "well-kept" in notes or "well kept" in notes:
+            return "Well-kept"
+
+    if h is None:
+        return "Work-ready"
+    if h <= 750:
+        return "Low-hour"
+    if h <= 2500:
+        return "Clean"
+    return "Work-ready"
+
+
+def _confirmed_feature_phrases(dealer_input: Any, equipment_type: str) -> List[str]:
+    """
+    Return a list of natural-language feature phrases for confirmed dealer_input
+    fields only. No inferred features. No attachment implications.
+    """
+    norm = _normalize_eq_type(equipment_type)
+    phrases: List[str] = []
+
+    cab = str(getattr(dealer_input, "cab_type", "") or "").lower().strip()
+    is_enclosed = cab in _ENCLOSED_CAB_VALUES
+    heat = bool(getattr(dealer_input, "heater", None))
+    ac = bool(getattr(dealer_input, "ac", None))
+
+    if is_enclosed:
+        if heat and ac:
+            phrases.append("enclosed cab with heat and A/C")
+        elif heat:
+            phrases.append("enclosed cab with heat")
+        elif ac:
+            phrases.append("enclosed cab with A/C")
+        else:
+            phrases.append("enclosed cab")
+
+    if norm in ("skid_steer_loader", "compact_track_loader"):
+        if getattr(dealer_input, "high_flow", None) == "yes":
+            phrases.append("high-flow hydraulics")
+        if getattr(dealer_input, "two_speed_travel", None) == "yes":
+            phrases.append("two-speed travel")
+        if getattr(dealer_input, "ride_control", None):
+            phrases.append("ride control")
+        coupler = getattr(dealer_input, "coupler_type", None)
+        if coupler and coupler not in ("pin-on", ""):
+            phrases.append("quick-attach coupler")
+    elif norm == "mini_excavator":
+        thumb = getattr(dealer_input, "thumb_type", None)
+        if thumb and str(thumb).lower() not in ("none", ""):
+            phrases.append(f"{str(thumb).lower()} thumb")
+        if getattr(dealer_input, "aux_hydraulics", None):
+            phrases.append("auxiliary hydraulics")
+        if getattr(dealer_input, "blade_type", None):
+            phrases.append("dozer blade")
+        if getattr(dealer_input, "two_speed_travel", None) == "yes":
+            phrases.append("two-speed travel")
+    elif norm == "telehandler":
+        if getattr(dealer_input, "has_stabilizers", None):
+            phrases.append("outrigger stabilizers")
+    elif norm == "backhoe_loader":
+        if getattr(dealer_input, "has_stabilizers", None):
+            phrases.append("outrigger stabilizers")
+        if getattr(dealer_input, "coupler_type", None):
+            phrases.append("quick-coupler")
+
+    return phrases
+
+
+def _join_phrases(phrases: List[str]) -> str:
+    if not phrases:
+        return ""
+    if len(phrases) == 1:
+        return phrases[0]
+    if len(phrases) == 2:
+        return f"{phrases[0]} and {phrases[1]}"
+    return ", ".join(phrases[:-1]) + f", and {phrases[-1]}"
+
+
+def _build_machine_first_opening(
+    dealer_input: Any,
+    equipment_type: str,
+) -> str:
+    """
+    Machine-first opening paragraph. No use-case lead, no implied attachments,
+    no marketing framing.
+
+    Pattern:
+      [Condition] [Year Make Model] with [N] hours.
+      Equipped with [confirmed features].
+      Ready for [generic readiness statement].
+    """
+    year = getattr(dealer_input, "year", None)
+    make = getattr(dealer_input, "make", "") or ""
+    model = getattr(dealer_input, "model", "") or ""
+    hours = getattr(dealer_input, "hours", None)
+    norm = _normalize_eq_type(equipment_type)
+
+    condition = _condition_word(hours, dealer_input)
+    identity = f"{year} {make} {model}".strip()
+
+    if hours is not None:
+        try:
+            s1 = f"{condition} {identity} with {int(hours):,} hours."
+        except (TypeError, ValueError):
+            s1 = f"{condition} {identity}."
+    else:
+        s1 = f"{condition} {identity}."
+
+    parts: List[str] = [s1]
+
+    feats = _confirmed_feature_phrases(dealer_input, equipment_type)
+    if feats:
+        parts.append(f"Equipped with {_join_phrases(feats)}.")
+
+    readiness = _READINESS_BY_TYPE.get(norm)
+    if readiness:
+        parts.append(f"Ready for {readiness}.")
+
+    return " ".join(parts)
+
+
 def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
     """
     Build a dealer-grade headline: YEAR MAKE MODEL — Feature1[, Feature2]
@@ -1396,11 +1553,15 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
     norm = _normalize_eq_type(equipment_type)
 
     if norm == "mini_excavator":
+        # Title cap: max 2 modifiers. Drop "A/C" tail when other features pair with cab.
+        thumb_set = bool(thumb and thumb.lower() not in ("none", ""))
+        aux = bool(getattr(dealer_input, "aux_hydraulics", None))
+        cab_alone = is_enclosed and not (thumb_set or aux)
         if is_enclosed:
-            tokens.append("Cab, A/C" if ac else "Enclosed Cab")
-        if thumb and thumb.lower() not in ("none", ""):
+            tokens.append("Cab, A/C" if (ac and cab_alone) else "Enclosed Cab")
+        if thumb_set:
             tokens.append("Thumb")
-        if getattr(dealer_input, "aux_hydraulics", None):
+        if aux and len(tokens) < 2:
             tokens.append("Aux Hyd")
     elif norm == "telehandler":
         lift_ht = None  # resolved in layer 3
@@ -1410,6 +1571,7 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
             tokens.append("Stabilizers")
     else:
         # SSL / CTL / wheel loader / backhoe / excavator
+        # Title cap: max 2 modifiers. Drop "A/C" when paired with another feature.
         if hi == "yes":
             att = (getattr(dealer_input, "attachments_included", "") or "").lower()
             mulcher = any(kw in att for kw in ("mulch", "forestry head", "brush cutter", "masticator"))
@@ -1417,13 +1579,15 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
                 return f"{base} — High Flow, Mulching Head"
             tokens.append("High Flow")
             if is_enclosed:
-                tokens.append("Enclosed Cab, A/C" if ac else "Enclosed Cab")
+                tokens.append("Enclosed Cab")
             elif two == "yes":
                 tokens.append("2-Speed")
         elif is_enclosed:
             tokens.append("Enclosed Cab, A/C" if ac else "Enclosed Cab")
-            if two == "yes":
-                tokens.append("2-Speed")
+            if two == "yes" and len(tokens) < 2:
+                # Only pair 2-Speed when cab token is bare (no A/C tail)
+                if tokens[0] == "Enclosed Cab":
+                    tokens.append("2-Speed")
         elif two == "yes":
             tokens.append("2-Speed")
 
@@ -1579,7 +1743,7 @@ def _build_v3_best_for(use_case_payload: Optional[Dict]) -> str:
     use_cases = (use_case_payload or {}).get("top_use_cases_for_listing") or []
     if not use_cases:
         return ""
-    lines = [f"  • {label}" for label in use_cases[:3]]
+    lines = [f"  • {label}" for label in use_cases[:4]]
     return "Best For:\n" + "\n".join(lines)
 
 
@@ -1641,14 +1805,7 @@ def _build_cta_block(
     dealer_input: Any,
     platform: str,
 ) -> str:
-    has_price = bool(getattr(dealer_input, "asking_price", None))
-    if not cta_text:
-        cta_text = (
-            "Call or text to schedule a look."
-            if has_price
-            else "Call or text for pricing and availability."
-        )
-    return f"Contact Details:\n{cta_text}"
+    return "Call or message for pricing, financing options, and delivery availability."
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1790,24 +1947,9 @@ def build_listing_text_v3(
     op_bank = banks.get("op_value", [])
     cta_bank = banks.get("cta", [])
 
-    # ── Layer 3: Job-first hook (preferred) ───────────────────────────────
-    scorer_top = None
-    if use_case_payload:
-        ucs = use_case_payload.get("top_use_cases_for_listing") or []
-        if ucs:
-            scorer_top = ucs[0]
-
-    hook_lead: Optional[str] = None
-    try:
-        from listing_copy_v3_hooks import select_hook
-        hook_lead = select_hook(eq_norm, dealer_input, resolved_specs, scorer_top)
-    except Exception:
-        hook_lead = None
-
-    # Fall back to pattern-bank lead when no job-first hook qualifies
-    pattern_lead: Optional[str] = None
-    if not hook_lead:
-        pattern_lead = _select_pattern(lead_bank, ctx, tokens)
+    # ── Layer 3: Machine-first opening (deterministic, no use-case lead) ──
+    # Hook bank + lead pattern bank bypassed: opening is grounded only in
+    # confirmed dealer_input fields.  No "Built for...", no implied attachments.
 
     # ── Assemble sections ─────────────────────────────────────────────────
     sections: List[str] = []
@@ -1817,11 +1959,14 @@ def build_listing_text_v3(
     if getattr(dealer_input, "asking_price", None):
         sections.append(f"${dealer_input.asking_price:,}")
 
-    # L3. Lead paragraph (apply RED + low-hour gates; YELLOW gate runs on whole result)
-    lead_text = hook_lead or pattern_lead
+    # L3. Opening paragraph — machine-first, condition-aware.
+    # The deterministic builder cites the actual hours number in the same
+    # sentence as the condition word, so the low-hour gate is not applied
+    # here.  RED gate still runs to catch any forbidden ownership/inspection
+    # claims that might leak through dealer-supplied notes.
+    lead_text = _build_machine_first_opening(dealer_input, equipment_type)
     if lead_text:
         lead_text = apply_red_gate(lead_text, dealer_input)
-        lead_text = strip_unsupported_low_hours(lead_text, low_hr_ok)
         if lead_text.strip():
             sections.append(lead_text.strip())
 
@@ -1830,16 +1975,6 @@ def build_listing_text_v3(
         specs_block = _build_v3_specs_block(resolved_specs, equipment_type)
         if specs_block:
             sections.append(specs_block)
-
-    # L5. Op-value sentences (capability proof) — RED + low-hour + weak strip
-    op_texts = _select_n_patterns(op_bank, ctx, tokens, pspec.op_value_count)
-    if op_texts:
-        joined = "\n".join(op_texts)
-        joined = apply_red_gate(joined, dealer_input)
-        joined = strip_unsupported_low_hours(joined, low_hr_ok)
-        joined = strip_weak_generic_phrases(joined)
-        if joined.strip():
-            sections.append(joined.strip())
 
     # L6. Features block
     if pspec.include_features:
@@ -1853,26 +1988,14 @@ def build_listing_text_v3(
         if att_block:
             sections.append(att_block)
 
-    # L7. Trust builder — proof-gated phrases (Tier A/B only; suppressed for C)
-    trust_lines = build_trust_lines(dealer_input, eq_norm, tier, low_hours_ok=low_hr_ok)
-    if trust_lines and pspec.include_features:
-        sections.append("Trust & Proof:\n" + "\n".join(f"  • {ln}" for ln in trust_lines))
-
     # Best For (scorer-backed)
     if pspec.include_best_for and use_case_payload:
         bf_block = _build_v3_best_for(use_case_payload)
         if bf_block:
             sections.append(bf_block)
 
-    # Additional Details
-    if pspec.include_additional_details:
-        ad_block = _build_additional_details_block(dealer_input)
-        if ad_block:
-            sections.append(ad_block)
-
-    # L8. CTA
-    cta_text = _select_pattern(cta_bank, ctx, tokens)
-    sections.append(_build_cta_block(cta_text or "", dealer_input, platform))
+    # L8. CTA — locked phrasing only; pattern bank bypassed.
+    sections.append(_build_cta_block("", dealer_input, platform))
 
     # ── Final assembly ────────────────────────────────────────────────────
     result = _compact("\n\n".join(sections))

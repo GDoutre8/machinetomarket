@@ -628,15 +628,10 @@ def _build_mini_ex_listing(
         if uc_section:
             sections.append(uc_section)
 
-    # 7. Additional Details (if provided)
-    details_raw = (dealer_input.additional_details or dealer_input.condition_notes or "").strip()
-    if details_raw:
-        details_block = _fmt_details_bullets(details_raw)
-        if details_block:
-            sections.append(details_block)
-
-    # 8. Contact Details (always last)
-    sections.append(f"Contact Details:\n{build_contact_cta(bool(dealer_input.asking_price), tone_profile)}")
+    # 7. CTA (always last, plain line — no header)
+    sections.append(
+        "Call or message for pricing, financing options, and delivery availability."
+    )
 
     return _compact_listing("\n\n".join(sections))
 
@@ -1104,15 +1099,10 @@ def build_listing_text(
         if uc_section:
             sections.append(uc_section)
 
-    # 7. Extras / dealer notes (optional)
-    details_raw = (dealer_input.additional_details or dealer_input.condition_notes or "").strip()
-    if details_raw:
-        details_block = _fmt_details_bullets(details_raw)
-        if details_block:
-            sections.append(details_block)
-
-    # 8. Contact Details (always last)
-    sections.append(f"Contact Details:\n{build_contact_cta(bool(dealer_input.asking_price), tone_profile)}")
+    # 7. CTA (always last, plain line — no header)
+    sections.append(
+        "Call or message for pricing, financing options, and delivery availability."
+    )
 
     return _compact_listing("\n\n".join(sections))
 
