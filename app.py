@@ -535,7 +535,14 @@ async def build_listing_result(request: Request, session_id: str):
 
     # ZIP download URL
     zip_abs = os.path.join(session_dir, "listing_output.zip")
-    zip_url = f"/download-pack/{session_id}" if os.path.isfile(zip_abs) else None
+    if os.path.isfile(zip_abs):
+        try:
+            _zip_v = int(os.path.getmtime(zip_abs))
+        except Exception:
+            _zip_v = 0
+        zip_url = f"/download-pack/{session_id}?v={_zip_v}" if _zip_v else f"/download-pack/{session_id}"
+    else:
+        zip_url = None
 
     # Tiered spec sets for the live spec toggle (Core / Dealer / Full)
     spec_tiers: dict = {}
@@ -2419,6 +2426,53 @@ async def build_listing_verify_photos_upload(
     return JSONResponse({"photos": photos, "featured": featured})
 
 
+@app.delete("/build-listing/verify/{session_id}/photos/{filename}")
+async def build_listing_verify_photos_delete(session_id: str, filename: str):
+    """Remove a single staged photo from a verify session, and reconcile the
+    persisted photo order + featured pointer."""
+    uploads_dir = _verify_uploads_dir(session_id)
+    session_dir = os.path.dirname(uploads_dir)
+    safe_name = os.path.basename((filename or "").strip())
+    if not safe_name or safe_name == "dealer_logo.png":
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    target = os.path.join(uploads_dir, safe_name)
+    # Confine deletion to inside this session's _uploads dir
+    try:
+        real_target = os.path.realpath(target)
+        real_uploads = os.path.realpath(uploads_dir)
+        if os.path.commonpath([real_target, real_uploads]) != real_uploads:
+            raise HTTPException(status_code=400, detail="Invalid path")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not os.path.isfile(target):
+        raise HTTPException(status_code=404, detail="Photo not found")
+    try:
+        os.remove(target)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Could not delete: {exc}")
+
+    order = _read_photo_order(session_dir) or []
+    new_order = [n for n in order if n != safe_name]
+    if new_order != order:
+        try:
+            _write_photo_order(session_dir, new_order)
+        except Exception:
+            pass
+
+    featured = _verify_get_featured(session_id)
+    if featured == safe_name:
+        feat_path = _verify_featured_path(session_id)
+        try:
+            if os.path.isfile(feat_path):
+                os.remove(feat_path)
+        except Exception:
+            pass
+
+    photos = _verify_list_photos(uploads_dir, explicit_order=(new_order or None))
+    new_featured = _verify_get_featured(session_id) or (photos[0] if photos else None)
+    return JSONResponse({"ok": True, "photos": photos, "featured": new_featured})
+
+
 @app.post("/build-listing/verify/{session_id}/featured_previews")
 async def build_listing_verify_featured_previews(
     session_id: str,
@@ -2640,7 +2694,7 @@ async def build_listing_generate(
     year:                 int            = Form(...),
     make:                 str            = Form(...),
     model:                str            = Form(...),
-    hours:                int            = Form(...),
+    hours:                int            = Form(0),
     cab_type:             Optional[str]  = Form(None),
     heater:               str            = Form("false"),
     ac:                   str            = Form("false"),
@@ -2776,6 +2830,12 @@ async def build_listing_generate(
             full = os.path.join(staging_dir, name)
             if os.path.isfile(full):
                 photo_paths.append(full)
+
+    if not photo_paths:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one photo is required. Upload a photo before generating the package.",
+        )
 
     # Re-hydrate dealer_info from the staged dealer_input.json (logo path on disk)
     dealer_info: Optional[dict] = None

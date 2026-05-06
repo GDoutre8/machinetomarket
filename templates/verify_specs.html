@@ -1884,6 +1884,39 @@ window.MTM_VERIFY_PRESEL = {
 
   async function doSubmit(){
     if(submitting) return;
+
+    // ── Pre-submit flush: force hidden inputs to match the live UI so the
+    // server never sees a stale headline / best_for / hours value. ────────
+    try {
+      // Headline → vf-headline (read whichever surface is visible/edited)
+      var hp  = document.getElementById('headline-preview');
+      var mhp = document.getElementById('m-headline-preview');
+      var headlineText = '';
+      if(hp  && (hp.textContent  || '').trim()) headlineText = (hp.textContent  || '').trim();
+      else if(mhp && (mhp.textContent || '').trim()) headlineText = (mhp.textContent || '').trim();
+      var hd = document.getElementById('vf-headline');
+      if(hd) hd.value = headlineText;
+
+      // Best For chips → vf-best-for (rebuild from rendered chip DOM)
+      var bfLabels = [];
+      var seen = {};
+      document.querySelectorAll('#best-for [data-rm], #m-best-for [data-rm]').forEach(function(x){
+        var lbl = (x.dataset.rm || '').trim();
+        if(lbl && !seen[lbl]){ seen[lbl] = 1; bfLabels.push(lbl); }
+      });
+      var bfHidden = document.getElementById('vf-best-for');
+      if(bfHidden) bfHidden.value = JSON.stringify(bfLabels);
+
+      // Hours: server now defaults to 0, but coerce blank to "0" defensively
+      var hoursOut = document.getElementById('vf-hours-out');
+      if(hoursOut && !((hoursOut.value || '').trim())) hoursOut.value = '0';
+
+      // Spec overrides — refresh from current DOM edits
+      if(typeof window.MTM_REBUILD_SPEC_OVERRIDES === 'function'){
+        window.MTM_REBUILD_SPEC_OVERRIDES();
+      }
+    } catch(_){}
+
     submitting = true;
     setBusy(true);
     setStatus('Generating package…', false);
@@ -2071,6 +2104,25 @@ window.MTM_VERIFY_PRESEL = {
           'background:rgba(0,0,0,.5);border-radius:2px;pointer-events:none';
         imgBox.appendChild(handle);
 
+        // Delete (×) button
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.title = 'Remove photo';
+        del.setAttribute('aria-label', 'Remove photo');
+        del.innerHTML = '&times;';
+        del.style.cssText =
+          'position:absolute;top:2px;left:2px;width:18px;height:18px;padding:0;' +
+          'border:0;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;' +
+          'font-size:14px;line-height:18px;text-align:center;cursor:pointer;' +
+          'font-weight:700;z-index:2';
+        del.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+        del.addEventListener('click', function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          deletePhoto(name);
+        });
+        imgBox.appendChild(del);
+
         if(isFeat){
           var tag = document.createElement('span');
           tag.textContent = 'FEATURED';
@@ -2145,6 +2197,34 @@ window.MTM_VERIFY_PRESEL = {
         body: JSON.stringify({order: order})
       });
     } catch(_){}
+  }
+
+  async function deletePhoto(name){
+    if(!name) return;
+    if(typeof window.confirm === 'function'){
+      if(!window.confirm('Remove this photo from the package?')) return;
+    }
+    setStatus('Removing photo…');
+    try {
+      var r = await fetch(
+        '/build-listing/verify/' + SESSION_ID + '/photos/' + encodeURIComponent(name),
+        { method:'DELETE' }
+      );
+      if(!r.ok){
+        var detail = 'Could not remove photo (' + r.status + ')';
+        try { var j = await r.json(); detail = j.detail || detail; } catch(_){}
+        setStatus(detail, true);
+        return;
+      }
+      var data = await r.json();
+      renderThumbs(data.photos || [], data.featured || null);
+      setStatus('Photo removed');
+      if(window.MTM_RENDER_FEATURED_PREVIEWS && data.featured){
+        window.MTM_RENDER_FEATURED_PREVIEWS(data.featured);
+      }
+    } catch(err){
+      setStatus('Network error: ' + err.message, true);
+    }
   }
 
   async function setFeatured(name){
