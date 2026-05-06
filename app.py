@@ -2065,15 +2065,64 @@ async def build_listing_verify_view(request: Request, session_id: str):
     two_speed_on = dealer_input_data.get("two_speed_travel") == "yes"
 
     preselected = {
-        "high_flow":     high_flow_on,
-        "enclosed_cab":  enclosed_cab,
-        "heat_ac":       _b("heater") or _b("ac"),
-        "two_speed":     two_speed_on,
-        "ride_control":  _b("ride_control"),
-        "quick_attach":  bool((dealer_input_data.get("coupler_type") or "").strip()),
-        "self_leveling": _b("self_leveling"),
-        "backup_camera": _b("backup_camera"),
+        "high_flow":      high_flow_on,
+        "enclosed_cab":   enclosed_cab,
+        "heat_ac":        _b("heater") or _b("ac"),
+        "two_speed":      two_speed_on,
+        "ride_control":   _b("ride_control"),
+        "quick_attach":   bool((dealer_input_data.get("coupler_type") or "").strip()),
+        "self_leveling":  _b("self_leveling"),
+        "backup_camera":  _b("backup_camera"),
+        "aux_hydraulics": _b("aux_hydraulics"),
+        "rubber_tracks":  _b("rubber_tracks"),
+        "radio":          _b("radio"),
+        "one_owner":      _b("one_owner"),
+        "thumb":          bool((dealer_input_data.get("thumb_type") or "").strip()),
+        "blade":          bool((dealer_input_data.get("blade_type") or "").strip()),
     }
+
+    # Passthrough fields with no chip UI on Verify — preserve from intake so
+    # /generate doesn't silently reset them on a re-edit round-trip.
+    def _str_field(k: str) -> str:
+        v = dealer_input_data.get(k)
+        return str(v).strip() if v not in (None, "") else ""
+    def _bool_form(k: str) -> str:
+        return "true" if dealer_input_data.get(k) else "false"
+    passthrough = {
+        "zero_tail_swing": _bool_form("zero_tail_swing"),
+        "reversing_fan":   _bool_form("reversing_fan"),
+        "air_ride_seat":   _bool_form("air_ride_seat"),
+        "bucket_included": _bool_form("bucket_included"),
+        "bucket_size":     _str_field("bucket_size"),
+        "condition_notes": _str_field("condition_notes"),
+        "serial_number":   _str_field("serial_number"),
+        "warranty_status": _str_field("warranty_status"),
+        "tire_condition":  _str_field("tire_condition"),
+        "track_condition": _str_field("track_condition"),
+    }
+
+    # Saved spec overrides — hydrate the hidden input so dealer edits survive
+    # a re-edit round-trip. Stored as {key: value}; the client expects
+    # {key: {value, type}} so coerce a type hint from the value's runtime type.
+    saved_spec_overrides: dict = {}
+    _vo_path = os.path.join(session_dir, "verify_overrides.json")
+    if os.path.isfile(_vo_path):
+        try:
+            with open(_vo_path, "r", encoding="utf-8") as _vof:
+                _vo = json.load(_vof) or {}
+            _so = (_vo or {}).get("spec_overrides") or {}
+            for _k, _v in _so.items():
+                if isinstance(_v, bool):
+                    _t = "string"
+                elif isinstance(_v, int):
+                    _t = "int"
+                elif isinstance(_v, float):
+                    _t = "float"
+                else:
+                    _t = "string"
+                saved_spec_overrides[_k] = {"value": _v, "type": _t}
+        except Exception:
+            saved_spec_overrides = {}
 
     # Attachments (text → list)
     att_raw = (dealer_input_data.get("attachments_included") or "").strip()
@@ -2153,6 +2202,8 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "track_w_str":    track_w_str,
         "spec_cards":     spec_cards,
         "preselected":    preselected,
+        "passthrough":    passthrough,
+        "saved_spec_overrides": saved_spec_overrides,
         "att_preselected": att_preselected,
         "best_for":       best_for_labels,
         "headline":       headline,

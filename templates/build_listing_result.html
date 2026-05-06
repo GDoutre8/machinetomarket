@@ -1058,7 +1058,8 @@
     </div>
 
     <div class="action-bar">
-      <a class="btn-back" href="/build-listing">← Build Another Listing</a>
+      <a class="btn-download" href="/build-listing/verify/{{ session_id }}">← Edit This Listing</a>
+      <a class="btn-back" href="/build-listing">+ Build New Listing</a>
     </div>
 
     <!-- ── Best For UI Card ── -->
@@ -1614,7 +1615,8 @@
       <a class="btn-download" href="{{ zip_url }}" download data-dl="full-pack">
         ↓ Download Full Pack
       </a>
-      <a class="btn-back" href="/build-listing">← Build Another Listing</a>
+      <a class="btn-back" href="/build-listing/verify/{{ session_id }}">← Edit This Listing</a>
+      <a class="btn-back" href="/build-listing">+ Build New Listing</a>
     </div>
     {% endif %}
 

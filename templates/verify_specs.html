@@ -150,8 +150,9 @@
   .spec-card.warn .sc-val{color:var(--ink)}
   .spec-card .corner-tag{position:absolute;top:0;right:0;background:var(--accent);color:var(--ink);font-family:'JetBrains Mono';font-size:8px;letter-spacing:.2em;padding:3px 6px;font-weight:700;text-transform:uppercase;display:none}
   .spec-card.warn .corner-tag{display:block}
-  .spec-card .sc-val [contenteditable]{outline:none;border-bottom:1px dashed var(--hair-2);padding:0 2px;cursor:text;transition:border-color .15s, background .15s}
-  .spec-card .sc-val [contenteditable]:hover{border-bottom-color:var(--text-dim)}
+  .spec-card .sc-val [contenteditable]{outline:none;border-bottom:1px dashed var(--hair-2);padding:0 2px;cursor:pointer;transition:border-color .15s, background .15s}
+  .spec-card .sc-val [contenteditable]:hover{border-bottom-color:var(--ink);border-bottom-style:solid;background:#fbf6ec}
+  .spec-card .sc-val [contenteditable]:focus{cursor:text}
   .spec-card .sc-val [contenteditable]:focus{border-bottom-color:var(--ink);background:#fbf6ec}
   .spec-card.override{border-color:var(--ink)}
   .spec-card.override .sc-val{color:var(--ink)}
@@ -572,6 +573,11 @@
                 <span class="ok">OEM VERIFIED</span>
               </div>
             </div>
+            <p class="block-helper" style="margin:6px 0 14px;font-family:'JetBrains Mono';font-size:12px;line-height:1.55;color:var(--text-dim);letter-spacing:.02em">
+              Verified baseline specs from our registry.
+              <strong style="color:var(--ink);font-weight:700">Click any value to edit or override it for this specific machine.</strong>
+              <span style="display:block;font-size:11px;color:var(--text-faint);margin-top:2px">Edited values will be marked as dealer overrides.</span>
+            </p>
 
             {% include "partials/verify_specs_cards.html" %}
           </div>
@@ -993,6 +999,9 @@
         <div class="l"><span class="tag">// A</span><h3>OEM Specs</h3></div>
         <div class="r"><b>OEM VERIFIED</b></div>
       </div>
+      <p style="margin:4px 0 10px;font-family:'JetBrains Mono';font-size:11px;line-height:1.55;color:var(--text-dim);letter-spacing:.02em">
+        Verified baseline specs from our registry. Open on desktop to override values for this specific machine.
+      </p>
       <div class="m-spec-grid">
         {% for c in spec_cards %}
         <div class="m-spec{% if c.warn %} warn{% endif %}">
@@ -1167,11 +1176,34 @@
 <input type="hidden" name="self_leveling"   id="vf-self-leveling" value="false">
 <input type="hidden" name="coupler_type"    id="vf-coupler-type"  value="">
 
+<!-- Chip-controlled (mini_ex / excavator / wheel_loader / SSL secondary).
+     Initialized from dealer_input.json so a re-edit round-trip preserves
+     state for equipment types whose chip set doesn't expose them. -->
+<input type="hidden" name="thumb"          id="vf-thumb"          value="{{ 'true' if preselected.thumb else 'false' }}">
+<input type="hidden" name="aux_hydraulics" id="vf-aux-hydraulics" value="{{ 'true' if preselected.aux_hydraulics else 'false' }}">
+<input type="hidden" name="rubber_tracks"  id="vf-rubber-tracks"  value="{{ 'true' if preselected.rubber_tracks else 'false' }}">
+<input type="hidden" name="blade"          id="vf-blade"          value="{{ 'true' if preselected.blade else 'false' }}">
+<input type="hidden" name="radio"          id="vf-radio"          value="{{ 'true' if preselected.radio else 'false' }}">
+<input type="hidden" name="one_owner"      id="vf-one-owner"      value="{{ 'true' if preselected.one_owner else 'false' }}">
+
+<!-- Passthroughs: no chip UI on Verify; preserve intake values so /generate
+     doesn't silently reset them when the dealer re-edits a listing. -->
+<input type="hidden" name="zero_tail_swing" value="{{ passthrough.zero_tail_swing }}">
+<input type="hidden" name="reversing_fan"   value="{{ passthrough.reversing_fan }}">
+<input type="hidden" name="air_ride_seat"   value="{{ passthrough.air_ride_seat }}">
+<input type="hidden" name="bucket_included" value="{{ passthrough.bucket_included }}">
+<input type="hidden" name="bucket_size"     value="{{ passthrough.bucket_size }}">
+<input type="hidden" name="condition_notes" value="{{ passthrough.condition_notes }}">
+<input type="hidden" name="serial_number"   value="{{ passthrough.serial_number }}">
+<input type="hidden" name="warranty_status" value="{{ passthrough.warranty_status }}">
+<input type="hidden" name="tire_condition"  value="{{ passthrough.tire_condition }}">
+<input type="hidden" name="track_condition" value="{{ passthrough.track_condition }}">
+
 <!-- Featured listing template (carried from homepage selector) -->
 <input type="hidden" name="featured_template" id="vf-featured-template" value="{{ featured_template|default('price_tag', true) }}">
 
 <!-- Verify-page overrides (session-scoped, applied at /generate) -->
-<input type="hidden" name="spec_overrides_json" id="vf-spec-overrides" value="{}">
+<input type="hidden" name="spec_overrides_json" id="vf-spec-overrides" value='{{ saved_spec_overrides|tojson }}'>
 <input type="hidden" name="best_for_override"   id="vf-best-for"       value="">
 <input type="hidden" name="headline_override"   id="vf-headline"       value="{{ headline|default('', true) }}">
 
@@ -1225,7 +1257,13 @@
       if(e.key === 'Enter'){ e.preventDefault(); el.blur(); }
     });
   });
-  rebuildSpecOverrides();
+  // On a re-edit, the server hydrates vf-spec-overrides from
+  // verify_overrides.json. resolved_specs.json was rewritten with the
+  // override values at /generate, so a DOM scan now would find cur===oem
+  // and clobber the saved overrides back to {}. Only auto-rebuild on a
+  // fresh page (no saved overrides yet).
+  var _hiddenInit = (document.getElementById('vf-spec-overrides') || {}).value || '';
+  if(!_hiddenInit || _hiddenInit === '{}') rebuildSpecOverrides();
 })();
 
 // ============================================================
@@ -1281,6 +1319,9 @@ window.MTM_VERIFY_PRESEL = {
     {% if preselected.heat_ac %}pre.push('Heat / AC');{% endif %}
     {% if preselected.two_speed %}pre.push('2-Speed');{% endif %}
     {% if preselected.ride_control %}pre.push('Ride Control');{% endif %}
+    {% if preselected.thumb %}pre.push('Hydraulic Thumb');{% endif %}
+    {% if preselected.aux_hydraulics %}pre.push('Aux Hydraulics');{% endif %}
+    {% if preselected.rubber_tracks %}pre.push('Rubber Tracks');{% endif %}
     return pre;
   })(),
   secondary: (function(){
@@ -1288,6 +1329,9 @@ window.MTM_VERIFY_PRESEL = {
     {% if preselected.quick_attach %}pre.push('Quick Attach');{% endif %}
     {% if preselected.self_leveling %}pre.push('Self-Leveling');{% endif %}
     {% if preselected.backup_camera %}pre.push('Backup Camera');{% endif %}
+    {% if preselected.blade %}pre.push('Blade');{% endif %}
+    {% if preselected.radio %}pre.push('Radio');{% endif %}
+    {% if preselected.one_owner %}pre.push('One Owner');{% endif %}
     return pre;
   })(),
   attachments: {{ att_preselected|tojson }}
@@ -1539,6 +1583,23 @@ window.MTM_VERIFY_PRESEL = {
     document.getElementById('vf-self-leveling').value = has(allSel, 'Self-Leveling') ? 'true' : 'false';
     document.getElementById('vf-coupler-type').value  = has(allSel, 'Quick Attach') ? 'hydraulic' : '';
     document.getElementById('vf-attachments-out').value = atts.join(', ');
+
+    // Sync chip→hidden only when the chip belongs to the active equipment's
+    // chip set. Otherwise leave the server-hydrated value alone so a CTL/SSL
+    // view doesn't reset a thumb/blade/aux value captured at intake.
+    var chipSet = EQ.primary.concat(EQ.secondary);
+    function syncChip(elemId, label, formVal){
+      if(chipSet.indexOf(label) === -1) return;
+      var el = document.getElementById(elemId);
+      if(!el) return;
+      el.value = has(allSel, label) ? formVal : 'false';
+    }
+    syncChip('vf-thumb',          'Hydraulic Thumb', 'true');
+    syncChip('vf-aux-hydraulics', 'Aux Hydraulics',  'true');
+    syncChip('vf-rubber-tracks',  'Rubber Tracks',   'true');
+    syncChip('vf-blade',          'Blade',           'true');
+    syncChip('vf-radio',          'Radio',           'true');
+    syncChip('vf-one-owner',      'One Owner',       'true');
   }
 
   function bindAllChips(){
