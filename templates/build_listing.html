@@ -1729,6 +1729,37 @@
     return String(s).replace(/[^a-zA-Z0-9_-]/g, '');
   }
 
+  // ── Build New Listing reset ──────────────────────────────────────────────
+  // The result page's "+ Build New Listing" link comes here with ?fresh=1.
+  // When present, clear any locally cached draft + Verify-stage keys so the
+  // user starts the next listing from a clean slate. Server sessions are
+  // untouched — only browser-local storage is wiped. URL is then cleaned up
+  // so a refresh doesn't re-trigger the wipe.
+  (function(){
+    try {
+      var sp = new URLSearchParams(window.location.search || '');
+      if(sp.get('fresh') === '1'){
+        try { clearBuildListingDraft(); } catch(_){}
+        try {
+          // Drop any mtm_* keys from localStorage / sessionStorage
+          [window.localStorage, window.sessionStorage].forEach(function(store){
+            if(!store) return;
+            var rm = [];
+            for(var i=0;i<store.length;i++){
+              var k = store.key(i);
+              if(k && k.indexOf('mtm_') === 0) rm.push(k);
+            }
+            rm.forEach(function(k){ try{ store.removeItem(k); }catch(_){} });
+          });
+        } catch(_){}
+        try {
+          sp.delete('fresh');
+          var clean = window.location.pathname + (sp.toString() ? ('?' + sp.toString()) : '');
+          window.history.replaceState({}, '', clean);
+        } catch(_){}
+      }
+    } catch(_){}
+  })();
   applyDraftToForm(loadBuildListingDraft());
   if (typeof window.initDealerProfile === 'function') window.initDealerProfile('dealer-badge-card');
 

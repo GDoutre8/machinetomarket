@@ -610,8 +610,9 @@ async def build_listing_result(request: Request, session_id: str):
         if os.path.isfile(_di_path):
             with open(_di_path, encoding="utf-8") as _f_ft:
                 _ft_saved = (json.load(_f_ft) or {}).get("featured_template")
-                if _ft_saved:
-                    _ft_for_result = str(_ft_saved).strip().lower() or "price_tag"
+            _ft_for_result = _normalize_featured_template(
+                _ft_saved, context=f"result session={session_id}"
+            )
     except Exception:
         pass
 
@@ -1791,6 +1792,63 @@ def _verify_safe_session_id(session_id: str) -> str:
     return session_id
 
 
+# ── Upload limits (machine photos) ───────────────────────────────────────────
+_MAX_PHOTO_BYTES = 15 * 1024 * 1024   # 15 MB per file
+_MAX_SESSION_PHOTOS = 30              # session-total cap
+_PHOTO_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
+_VALID_FEATURED_TEMPLATES = ("price_tag", "wide_shot", "auction_ticket", "badge_only")
+
+
+def _is_acceptable_photo(upload: "UploadFile") -> bool:
+    ctype = (getattr(upload, "content_type", "") or "").lower()
+    if ctype.startswith("image/"):
+        return True
+    ext = os.path.splitext(upload.filename or "")[1].lower()
+    return ext in _PHOTO_EXTS
+
+
+def _count_existing_photos(uploads_dir: str) -> int:
+    try:
+        return len(_verify_list_photos(uploads_dir))
+    except Exception:
+        return 0
+
+
+def _normalize_featured_template(value, *, context: str = "") -> str:
+    """Normalize a featured_template value to a supported key. Falls back to
+    'price_tag' (with a server-side log) if missing/unknown/corrupt. Use this
+    everywhere a saved template value is read so a stray value can't crash
+    downstream renderers."""
+    raw = ""
+    if isinstance(value, str):
+        raw = value.strip().lower()
+    if raw in _VALID_FEATURED_TEMPLATES:
+        return raw
+    if value not in (None, "", "price_tag"):
+        try:
+            print(f"  [featured_template] unknown value {value!r} — falling back to price_tag ({context or 'no context'})")
+        except Exception:
+            pass
+    return "price_tag"
+
+
+def _convert_logo_to_png(src_bytes: bytes, dest_path: str) -> None:
+    """Decode any common image format (JPG/WEBP/PNG/etc.) and save as PNG at
+    dest_path. Raises HTTPException(415) if the bytes can't be decoded."""
+    try:
+        from PIL import Image
+        from io import BytesIO
+        with Image.open(BytesIO(src_bytes)) as im:
+            im.load()
+            if im.mode not in ("RGB", "RGBA"):
+                im = im.convert("RGBA")
+            im.save(dest_path, format="PNG")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=415, detail=f"Logo conversion failed: {exc}")
+
+
 @app.post("/build-listing/verify")
 async def build_listing_verify_create(
     year:                 int            = Form(...),
@@ -1878,18 +1936,38 @@ async def build_listing_verify_create(
     if photos:
         staging_dir = os.path.join(session_dir, "_uploads")
         os.makedirs(staging_dir, exist_ok=True)
+        accepted = 0
         for upload in photos:
             if not upload.filename:
                 continue
+            if not _is_acceptable_photo(upload):
+                raise HTTPException(
+                    status_code=415,
+                    detail=f"Unsupported file type: {upload.filename}. Photos must be image files.",
+                )
+            if accepted >= _MAX_SESSION_PHOTOS:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Maximum {_MAX_SESSION_PHOTOS} photos per session.",
+                )
+            try:
+                content = await upload.read()
+            except Exception:
+                continue
+            if len(content) > _MAX_PHOTO_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Photo {upload.filename} exceeds 15MB limit.",
+                )
             safe_name = "".join(
                 c for c in upload.filename if c.isalnum() or c in "._- "
             ).strip() or f"photo_{uuid.uuid4().hex[:6]}.jpg"
             dest = os.path.join(staging_dir, safe_name)
             try:
-                content = await upload.read()
                 with open(dest, "wb") as f:
                     f.write(content)
                 photo_paths.append(dest)
+                accepted += 1
             except Exception:
                 pass
 
@@ -1905,9 +1983,7 @@ async def build_listing_verify_create(
                     di_dict["dealer_profile"] = _dp
             except Exception:
                 pass
-        _ft = (featured_template or "price_tag").strip().lower()
-        if _ft not in ("price_tag", "wide_shot", "auction_ticket", "badge_only"):
-            _ft = "price_tag"
+        _ft = _normalize_featured_template(featured_template, context="verify create")
         di_dict["featured_template"] = _ft
         with open(os.path.join(session_dir, "dealer_input.json"), "w", encoding="utf-8") as f:
             json.dump(di_dict, f)
@@ -2392,9 +2468,29 @@ async def build_listing_verify_photos_upload(
     pipeline change is needed — these photos flow into the pack on submit.
     """
     uploads_dir = _verify_uploads_dir(session_id)
+    existing_count = _count_existing_photos(uploads_dir)
     for upload in photos or []:
         if not upload.filename:
             continue
+        if not _is_acceptable_photo(upload):
+            raise HTTPException(
+                status_code=415,
+                detail=f"Unsupported file type: {upload.filename}. Photos must be image files.",
+            )
+        if existing_count >= _MAX_SESSION_PHOTOS:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Maximum {_MAX_SESSION_PHOTOS} photos per session.",
+            )
+        try:
+            content = await upload.read()
+        except Exception:
+            continue
+        if len(content) > _MAX_PHOTO_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Photo {upload.filename} exceeds 15MB limit.",
+            )
         safe_name = "".join(
             c for c in upload.filename if c.isalnum() or c in "._- "
         ).strip() or f"photo_{uuid.uuid4().hex[:6]}.jpg"
@@ -2405,9 +2501,9 @@ async def build_listing_verify_photos_upload(
             safe_name = f"{stem}_{uuid.uuid4().hex[:4]}{ext}"
             dest = os.path.join(uploads_dir, safe_name)
         try:
-            content = await upload.read()
             with open(dest, "wb") as f:
                 f.write(content)
+            existing_count += 1
         except Exception:
             continue
     # Append any newly uploaded files to the persisted order
@@ -2636,15 +2732,18 @@ async def build_listing_verify_dealer_save(
     logo_dest = os.path.join(uploads_dir, "dealer_logo.png")
 
     if dealer_logo and dealer_logo.filename:
+        ctype = (getattr(dealer_logo, "content_type", "") or "").lower()
         ext = os.path.splitext(dealer_logo.filename)[1].lower()
-        if ext not in (".png", ".jpg", ".jpeg", ".webp"):
-            raise HTTPException(status_code=415, detail="Logo must be PNG, JPG, or WebP")
+        if not (ctype.startswith("image/") or ext in _PHOTO_EXTS):
+            raise HTTPException(status_code=415, detail="Logo must be an image file")
         try:
             content = await dealer_logo.read()
-            with open(logo_dest, "wb") as f:
-                f.write(content)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=f"Logo save failed: {exc}")
+            raise HTTPException(status_code=500, detail=f"Logo read failed: {exc}")
+        if len(content) > _MAX_PHOTO_BYTES:
+            raise HTTPException(status_code=413, detail="Logo exceeds 15MB limit.")
+        # Always normalize to PNG on disk so renderers can rely on dealer_logo.png.
+        _convert_logo_to_png(content, logo_dest)
 
     di_path = os.path.join(session_dir, "dealer_input.json")
     di_dict: dict = {}
@@ -2861,15 +2960,16 @@ async def build_listing_generate(
     # then default. Validated against the supported template set so a stray value
     # can't escape past the renderer dispatch.
     _ft = (featured_template or "").strip().lower()
-    if _ft not in ("price_tag", "wide_shot", "auction_ticket", "badge_only"):
+    if _ft not in _VALID_FEATURED_TEMPLATES:
+        _ft_saved = None
         try:
             with open(di_path, "r", encoding="utf-8") as _f:
                 _ft_saved = (json.load(_f) or {}).get("featured_template")
-            _ft = (_ft_saved or "").strip().lower() if isinstance(_ft_saved, str) else ""
         except Exception:
-            _ft = ""
-        if _ft not in ("price_tag", "wide_shot", "auction_ticket", "badge_only"):
-            _ft = "price_tag"
+            pass
+        _ft = _normalize_featured_template(
+            _ft_saved, context=f"generate session={session_id}"
+        )
     if dealer_info is None:
         dealer_info = {}
     dealer_info["featured_template"] = _ft

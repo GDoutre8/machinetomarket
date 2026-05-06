@@ -827,7 +827,7 @@
           <div class="cta-band">
             <div class="l">
               <div class="top">
-                <span class="ok">READY TO GENERATE</span>
+                <span class="ok" id="vf-save-state" data-state="ready">READY TO GENERATE</span>
                 <span><b>12 FILES</b> · 4.2 MB</span>
               </div>
               <div class="sub">REVIEW → CONFIRM → BUILD · STEP <b>03 / 05</b></div>
@@ -1962,6 +1962,7 @@ window.MTM_VERIFY_PRESEL = {
           });
         } catch (_) {}
         setStatus('Redirecting…', false);
+        try { window.MTM_MARK_CLEAN && window.MTM_MARK_CLEAN(); } catch(_){}
         // Hard-navigate — keep buttons disabled so the in-flight
         // page stays visually inert until the result page loads.
         window.location.assign(data.result_url);
@@ -2271,10 +2272,21 @@ window.MTM_VERIFY_PRESEL = {
     } catch(_){}
   }
 
+  var MAX_BYTES = 15 * 1024 * 1024;
+  var MAX_PHOTOS = 30;
   async function upload(files){
     if(!files || !files.length) return;
+    var arr = Array.from(files);
+    var bad = arr.find(function(f){ return f && f.type && !/^image\//i.test(f.type); });
+    if(bad){ setStatus('Unsupported file: ' + (bad.name || '') + ' — photos must be image files', true); return; }
+    var tooBig = arr.find(function(f){ return f && f.size > MAX_BYTES; });
+    if(tooBig){ setStatus(tooBig.name + ' exceeds 15MB limit', true); return; }
+    if((photoList.length + arr.length) > MAX_PHOTOS){
+      setStatus('Maximum ' + MAX_PHOTOS + ' photos per session (' + photoList.length + ' already uploaded)', true);
+      return;
+    }
     var fd = new FormData();
-    Array.from(files).forEach(function(f){ fd.append('photos', f); });
+    arr.forEach(function(f){ fd.append('photos', f); });
     setStatus('Uploading ' + files.length + ' photo' + (files.length>1?'s':'') + '…');
     try {
       var r = await fetch('/build-listing/verify/' + SESSION_ID + '/photos', { method:'POST', body: fd });
@@ -2573,6 +2585,7 @@ window.MTM_VERIFY_PRESEL = {
       var r = await fetch(ENDPOINT, { method:'POST', body: fd });
       if(!r.ok){ setStatus('Save failed (' + r.status + ')', true); return; }
       setStatus('Saved · session-scoped');
+      try { window.MTM_MARK_CLEAN && window.MTM_MARK_CLEAN(); } catch(_){}
     } catch(err){ setStatus('Network error: ' + err.message, true); }
   }
 
@@ -2645,6 +2658,76 @@ window.MTM_VERIFY_PRESEL = {
   }
   bindDrop(document.getElementById('vf-logo-drop'),   document.getElementById('vf-logo-input'));
   bindDrop(document.getElementById('vf-m-logo-drop'), document.getElementById('vf-m-logo-input'));
+})();
+
+// ============================================================
+// Saved / unsaved indicator. Lightweight visual state on the
+// CTA band that flips between READY TO GENERATE and UNSAVED
+// CHANGES based on user edits. No autosave — purely a hint.
+// ============================================================
+(function(){
+  var stateEl = document.getElementById('vf-save-state');
+  if(!stateEl) return;
+
+  function paint(state){
+    stateEl.dataset.state = state;
+    if(state === 'unsaved'){
+      stateEl.textContent = 'UNSAVED CHANGES';
+      stateEl.style.color = '';
+    } else {
+      stateEl.textContent = 'READY TO GENERATE';
+      stateEl.style.color = '';
+    }
+  }
+  function markDirty(){ if(stateEl.dataset.state !== 'unsaved') paint('unsaved'); }
+  function markClean(){ paint('ready'); }
+  window.MTM_MARK_DIRTY = markDirty;
+  window.MTM_MARK_CLEAN = markClean;
+
+  // Headline (contenteditable) + Best-For chips + dealer fields + feature
+  // chips + spec overrides — any user edit flips the state to "unsaved".
+  var watchSelectors = [
+    '#headline-preview', '#m-headline-preview',
+    '#best-for', '#m-best-for',
+    '#vf-dealer-company', '#vf-dealer-contact', '#vf-dealer-phone',
+    '#vf-m-dealer-company', '#vf-m-dealer-contact', '#vf-m-dealer-phone',
+  ];
+  watchSelectors.forEach(function(sel){
+    document.querySelectorAll(sel).forEach(function(el){
+      el.addEventListener('input',  markDirty);
+      el.addEventListener('change', markDirty);
+    });
+  });
+
+  // Form-wide listener — covers feature chips, hidden inputs (cab/heater/etc),
+  // and any other field that bubbles input/change events.
+  var form = document.getElementById('verify-form');
+  if(form){
+    form.addEventListener('input',  function(e){
+      if(e.target && e.target.type === 'file') return;
+      markDirty();
+    }, true);
+    form.addEventListener('change', function(e){
+      if(e.target && e.target.type === 'file') return;
+      markDirty();
+    }, true);
+  }
+
+  // Photo + dealer-logo upload, accent picker — observe via DOM mutations on
+  // the photo thumbs container so reordering / delete / upload all dirty.
+  ['vf-photo-thumbs','vf-m-photo-thumbs'].forEach(function(id){
+    var node = document.getElementById(id);
+    if(!node) return;
+    new MutationObserver(markDirty).observe(node, {childList:true, subtree:true});
+  });
+  ['vf-logo-preview','vf-m-logo-preview'].forEach(function(id){
+    var img = document.getElementById(id);
+    if(!img) return;
+    img.addEventListener('load', markDirty);
+  });
+
+  // Initial state: clean.
+  markClean();
 })();
 
 // ── PostHog: verify_viewed ───────────────────────────────────────────
