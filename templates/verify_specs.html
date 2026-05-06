@@ -1840,9 +1840,13 @@ window.MTM_VERIFY_PRESEL = {
         return;
       }
       if(!resp.ok){
-        var detail = 'Server error ' + resp.status;
-        try { var j = await resp.json(); detail = j.detail || detail; } catch(_){}
-        setStatus('Error: ' + detail, true);
+        var fallback = 'Server error ' + resp.status;
+        var rawBody = null;
+        try { rawBody = await resp.json(); } catch(_){
+          try { rawBody = await resp.text(); } catch(__){}
+        }
+        console.error('[generate] HTTP', resp.status, rawBody);
+        setStatus('Error: ' + formatErrorDetail(rawBody, fallback), true);
         setBusy(false);
         submitting = false;
         return;
@@ -1873,10 +1877,39 @@ window.MTM_VERIFY_PRESEL = {
       setBusy(false);
       submitting = false;
     } catch(err){
-      setStatus('Unexpected error: ' + (err && err.message ? err.message : err), true);
+      console.error('[generate] unexpected error', err);
+      setStatus('Unexpected error: ' + formatErrorDetail(err, 'Package generation failed. Please try again.'), true);
       setBusy(false);
       submitting = false;
     }
+  }
+
+  // Normalize anything FastAPI / fetch / JS may throw at us into a
+  // human-readable string. Handles: Error instances, FastAPI {detail}
+  // (string | object | list of {loc,msg,type}), plain objects, and text.
+  function formatErrorDetail(raw, fallback){
+    if(raw == null) return fallback;
+    if(typeof raw === 'string') return raw || fallback;
+    if(raw instanceof Error) return raw.message || fallback;
+    var d = (typeof raw === 'object' && 'detail' in raw) ? raw.detail : raw;
+    if(d == null) return fallback;
+    if(typeof d === 'string') return d || fallback;
+    if(Array.isArray(d)){
+      var msgs = d.map(function(item){
+        if(item && typeof item === 'object'){
+          var loc = Array.isArray(item.loc) ? item.loc.filter(function(x){ return x !== 'body'; }).join('.') : '';
+          var msg = item.msg || item.message || '';
+          return loc ? (loc + ': ' + msg) : msg;
+        }
+        return String(item);
+      }).filter(Boolean);
+      if(msgs.length) return msgs.join('; ');
+    }
+    if(typeof d === 'object'){
+      if(d.message) return d.message;
+      try { return JSON.stringify(d); } catch(_){}
+    }
+    return fallback;
   }
 
   // Native submit (Enter key, browser default form-submit dispatch).
