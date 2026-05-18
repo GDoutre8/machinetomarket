@@ -735,6 +735,13 @@
               <span style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--text-faint);margin-left:auto">HERO · SPEC SHEET · PHOTO BADGE</span>
             </div>
             <div id="vf-dealer-status" style="margin-top:8px;font-size:12px;color:var(--text-faint);min-height:1em"></div>
+            <label for="vf-apply-badge-cb" style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;padding:12px 14px;border:1px solid var(--rule);background:var(--paper-2);cursor:pointer">
+              <input type="checkbox" id="vf-apply-badge-cb" checked style="margin-top:3px;flex-shrink:0">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);font-weight:700">// APPLY DEALER BADGE TO PHOTOS</span>
+                <span style="font-size:12px;color:var(--text-faint)">Adds your logo/contact badge to generated listing images.</span>
+              </span>
+            </label>
           </div>
 
           <!-- C2 · PHOTOS -->
@@ -775,7 +782,7 @@
             <div id="vf-tpl-empty" style="font-size:12.5px;color:var(--text-faint);padding:14px 0">
               Upload at least one photo above to render live previews.
             </div>
-            <div id="vf-tpl-grid" data-surface="desktop" style="display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:4px"></div>
+            <div id="vf-tpl-grid" data-surface="desktop" style="display:none;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px"></div>
             <div id="vf-tpl-status" style="margin-top:10px;font-size:12px;color:var(--text-faint);min-height:1em"></div>
           </div>
 
@@ -1200,7 +1207,10 @@
 <input type="hidden" name="track_condition" value="{{ passthrough.track_condition }}">
 
 <!-- Featured listing template (carried from homepage selector) -->
-<input type="hidden" name="featured_template" id="vf-featured-template" value="{{ featured_template|default('price_tag', true) }}">
+<input type="hidden" name="featured_template" id="vf-featured-template" value="{{ featured_template|default('inventory_clean', true) }}">
+
+<!-- Apply dealer badge to photos (default: true) -->
+<input type="hidden" name="apply_dealer_badge" id="vf-apply-badge" value="{{ apply_dealer_badge|default('true', true) }}">
 
 <!-- Verify-page overrides (session-scoped, applied at /generate) -->
 <input type="hidden" name="spec_overrides_json" id="vf-spec-overrides" value='{{ saved_spec_overrides|tojson }}'>
@@ -2335,7 +2345,7 @@ window.MTM_VERIFY_PRESEL = {
 })();
 
 // ============================================================
-// Featured-card chooser — renders 4 live previews from the
+// Featured-card chooser — renders 5 live previews from the
 // user's uploaded photo #1 + staged dealer_input.json. Click
 // sets the hidden featured_template input; selection is carried
 // to /generate via the existing form field.
@@ -2343,10 +2353,11 @@ window.MTM_VERIFY_PRESEL = {
 (function(){
   var SESSION_ID = "{{ session_id }}";
   var TEMPLATES = [
-    { key:'price_tag',      label:'Price Tag',      desc:'Price-forward card' },
-    { key:'wide_shot',      label:'Wide Shot',      desc:'Cinematic full hero' },
-    { key:'auction_ticket', label:'Auction Ticket', desc:'Lot-stamp ticket' },
-    { key:'badge_only',     label:'Badge Only',     desc:'Minimal dealer badge' },
+    { key:'inventory_clean', label:'Inventory Clean', desc:'Clean photo card' },
+    { key:'price_tag',       label:'Price Tag',       desc:'Price-forward card' },
+    { key:'wide_shot',       label:'Wide Shot',       desc:'Cinematic full hero' },
+    { key:'auction_ticket',  label:'Auction Ticket',  desc:'Lot-stamp ticket' },
+    { key:'badge_only',      label:'Badge Only',      desc:'Minimal dealer badge' },
   ];
   var hidden = document.getElementById('vf-featured-template');
   var surfaces = [
@@ -2471,10 +2482,12 @@ window.MTM_VERIFY_PRESEL = {
     inflight = true;
     buildSkeleton();
     applySelectionStyles();
-    setStatus('Rendering 4 previews from your photo…');
+    setStatus('Rendering 5 previews from your photo…');
     try {
       var fd = new FormData();
       if(photoFilename) fd.append('photo_filename', photoFilename);
+      var _abEl = document.getElementById('vf-apply-badge');
+      if(_abEl){ fd.append('apply_dealer_badge', _abEl.value || 'true'); }
       var r = await fetch(
         '/build-listing/verify/' + SESSION_ID + '/featured_previews',
         { method:'POST', body: fd }
@@ -2489,7 +2502,7 @@ window.MTM_VERIFY_PRESEL = {
       var data = await r.json();
       applyPreviews(data.previews || {}, data.failed || []);
       var ok = Object.keys(data.previews || {}).length;
-      setStatus(ok + ' of 4 previews ready · click to select');
+      setStatus(ok + ' of 5 previews ready · click to select');
     } catch(err){
       applyPreviews({}, TEMPLATES.map(function(t){ return t.key; }));
       setStatus('Network error: ' + err.message, true);
@@ -2739,6 +2752,24 @@ window.MTM_VERIFY_PRESEL = {
       category: {{ equipment_type|tojson }},
       featured_template: (_ftEl && _ftEl.value) ? _ftEl.value.trim() : 'price_tag',
     });
+  } catch (_) {}
+
+  // Apply-dealer-badge toggle: keep hidden form field in sync with checkbox.
+  // Hydrate checkbox from the persisted hidden value (server-rendered).
+  // On change, re-render the featured-card previews so what the user sees
+  // matches what the pack will produce.
+  try {
+    var _abHidden = document.getElementById('vf-apply-badge');
+    var _abCb     = document.getElementById('vf-apply-badge-cb');
+    if (_abHidden && _abCb) {
+      _abCb.checked = (String(_abHidden.value || 'true').toLowerCase() !== 'false');
+      _abCb.addEventListener('change', function(){
+        _abHidden.value = _abCb.checked ? 'true' : 'false';
+        if (typeof window.MTM_RENDER_FEATURED_PREVIEWS === 'function') {
+          try { window.MTM_RENDER_FEATURED_PREVIEWS(); } catch (_) {}
+        }
+      });
+    }
   } catch (_) {}
 })();
 </script>

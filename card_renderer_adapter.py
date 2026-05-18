@@ -303,6 +303,7 @@ def adapt_dealer_input(
         "dealer_location":info.get("location") or info.get("city"),
         "dealer_logo":    info.get("logo_path") or info.get("logo"),
         "show_branding":  info.get("show_branding", True),
+        "apply_dealer_badge": bool(info.get("apply_dealer_badge", True)),
         "featured_template": chosen_template,
     }
 
@@ -364,6 +365,7 @@ def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
             "location":      dealer_dict.get("dealer_location"),
             "logo_path":     dealer_dict.get("dealer_logo"),
             "show_branding": dealer_dict.get("show_branding", True),
+            "apply_dealer_badge": bool(dealer_dict.get("apply_dealer_badge", True)),
         },
         "listing": {
             "price_usd": dealer_dict.get("listing_price") or dealer_dict.get("price"),
@@ -422,8 +424,16 @@ def export_listing_card(
             html_payload["dealer"] = {**dealer_full, "show_branding": False}
             html_str = render_card(html_payload)
             _screenshot_card(html_str, output_path)
-            if chosen in {"price_tag", "auction_ticket", "wide_shot"}:
-                _apply_standard_badge_to_card(output_path, dealer_full)
+            # Badge logic:
+            #   - inventory_clean: NEVER receives the composited badge (design rule).
+            #   - price_tag / auction_ticket / wide_shot: gated by the
+            #     apply_dealer_badge toggle (default True).
+            apply_badge = bool(dealer_full.get("apply_dealer_badge", True))
+            if chosen == "inventory_clean":
+                pass  # never apply badge
+            elif chosen in {"price_tag", "auction_ticket", "wide_shot"}:
+                if apply_badge:
+                    _apply_standard_badge_to_card(output_path, dealer_full)
         log.info("[card] exported %s (template=%s)", output_path, chosen or "default")
         return output_path
     except Exception as exc:
