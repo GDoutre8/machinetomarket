@@ -1796,7 +1796,7 @@ def _verify_safe_session_id(session_id: str) -> str:
 _MAX_PHOTO_BYTES = 15 * 1024 * 1024   # 15 MB per file
 _MAX_SESSION_PHOTOS = 30              # session-total cap
 _PHOTO_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
-_VALID_FEATURED_TEMPLATES = ("price_tag", "wide_shot", "auction_ticket", "badge_only")
+_VALID_FEATURED_TEMPLATES = ("price_tag", "wide_shot", "auction_ticket", "badge_only", "inventory_clean")
 
 
 def _is_acceptable_photo(upload: "UploadFile") -> bool:
@@ -1889,6 +1889,7 @@ async def build_listing_verify_create(
     bucket_size:          Optional[str]  = Form(None),
     warranty_status:      Optional[str]  = Form(None),
     featured_template:    str            = Form("price_tag"),
+    apply_dealer_badge:   str            = Form("true"),
     dealer_profile_json:  Optional[str]  = Form(None),
     photos: List[UploadFile] = File(default=[]),
 ):
@@ -1985,6 +1986,9 @@ async def build_listing_verify_create(
                 pass
         _ft = _normalize_featured_template(featured_template, context="verify create")
         di_dict["featured_template"] = _ft
+        di_dict["apply_dealer_badge"] = (
+            "false" if str(apply_dealer_badge).strip().lower() == "false" else "true"
+        )
         with open(os.path.join(session_dir, "dealer_input.json"), "w", encoding="utf-8") as f:
             json.dump(di_dict, f)
         with open(os.path.join(session_dir, "resolved_specs.json"), "w", encoding="utf-8") as f:
@@ -2299,6 +2303,11 @@ async def build_listing_verify_view(request: Request, session_id: str):
             (dealer_input_data.get("featured_template") or "price_tag").strip().lower()
             if isinstance(dealer_input_data, dict) else "price_tag"
         ),
+        "apply_dealer_badge": (
+            "false" if (isinstance(dealer_input_data, dict)
+                        and str(dealer_input_data.get("apply_dealer_badge", "true")).lower() == "false")
+            else "true"
+        ),
     }
     return templates.TemplateResponse("verify_specs.html", ctx)
 
@@ -2573,9 +2582,10 @@ async def build_listing_verify_photos_delete(session_id: str, filename: str):
 async def build_listing_verify_featured_previews(
     session_id: str,
     photo_filename: Optional[str] = Form(None),
+    apply_dealer_badge: Optional[str] = Form(None),
 ):
-    """Render 4 featured-card previews (price_tag, wide_shot, auction_ticket,
-    badge_only) using the user's first uploaded photo + the staged
+    """Render 5 featured-card previews (price_tag, wide_shot, auction_ticket,
+    badge_only, inventory_clean) using the user's first uploaded photo + the staged
     dealer_input.json. Used by the Verify page chooser. Writes PNGs to
     `outputs/{session_id}/_previews/{template}.png` and returns their URLs.
 
@@ -2629,12 +2639,21 @@ async def build_listing_verify_featured_previews(
         raise HTTPException(status_code=409, detail="Registry record unavailable for this machine")
 
     logo_disk_path = os.path.join(uploads_dir, "dealer_logo.png")
+    # apply_dealer_badge: request form value wins (live toggle), else staged
+    # dealer_input.json, else True.
+    _adb_req = (apply_dealer_badge or "").strip().lower()
+    if _adb_req in ("true", "false"):
+        _adb_resolved = (_adb_req != "false")
+    else:
+        _adb_saved = str(di_dict.get("apply_dealer_badge", "true")).strip().lower()
+        _adb_resolved = (_adb_saved != "false")
     dealer_info = {
         "dealer_name":  (profile.get("companyName")  or "").strip() or None,
         "contact_name": (profile.get("contactName")  or "").strip() or None,
         "phone":        (profile.get("phone")        or "").strip() or None,
         "logo_path":    logo_disk_path if os.path.isfile(logo_disk_path) else None,
         "accent_color": (profile.get("accentColor") or "yellow"),
+        "apply_dealer_badge": _adb_resolved,
     }
 
     previews_dir = os.path.join(session_dir, "_previews")
@@ -2643,7 +2662,7 @@ async def build_listing_verify_featured_previews(
     from card_renderer_adapter import adapt_dealer_input, export_listing_card
     from pathlib import Path as _Path
 
-    templates = ("price_tag", "wide_shot", "auction_ticket", "badge_only")
+    templates = ("price_tag", "wide_shot", "auction_ticket", "badge_only", "inventory_clean")
     out_urls: dict[str, str] = {}
     failed: list[str] = []
 
@@ -2828,6 +2847,7 @@ async def build_listing_generate(
     bucket_size:          Optional[str]  = Form(None),
     warranty_status:      Optional[str]  = Form(None),
     featured_template:    str            = Form("price_tag"),
+    apply_dealer_badge:   str            = Form("true"),
     # Verify-page overrides (session-scoped; never write back to registry)
     spec_overrides_json:  Optional[str]  = Form(None),
     best_for_override:    Optional[str]  = Form(None),
@@ -2974,6 +2994,20 @@ async def build_listing_generate(
         dealer_info = {}
     dealer_info["featured_template"] = _ft
 
+    # Apply-dealer-badge toggle. Prefer this request's value; fall back to the
+    # staged dealer_input.json; default True. Missing/malformed → True.
+    _adb_raw = (apply_dealer_badge or "").strip().lower()
+    if _adb_raw not in ("true", "false"):
+        _adb_saved = None
+        try:
+            with open(di_path, "r", encoding="utf-8") as _f:
+                _adb_saved = (json.load(_f) or {}).get("apply_dealer_badge")
+        except Exception:
+            pass
+        _adb_raw = "false" if str(_adb_saved).strip().lower() == "false" else "true"
+    _apply_badge_bool = (_adb_raw != "false")
+    dealer_info["apply_dealer_badge"] = _apply_badge_bool
+
     try:
         pack = build_listing_pack_v1(
             dealer_input=dealer_input,
@@ -3032,6 +3066,7 @@ async def build_listing_generate(
             except Exception:
                 pass
         di_dict["featured_template"] = _ft
+        di_dict["apply_dealer_badge"] = "true" if _apply_badge_bool else "false"
         with open(di_path, "w", encoding="utf-8") as f:
             json.dump(di_dict, f)
 

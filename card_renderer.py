@@ -236,7 +236,7 @@ def _build_specs(machine: dict, eq_type: str, *, high_flow_confirmed: bool) -> l
 # Main entry point
 # ─────────────────────────────────────────────────────────────────────────────
 
-DEFAULT_FEATURED_TEMPLATE = "price_tag"
+DEFAULT_FEATURED_TEMPLATE = "inventory_clean"
 
 
 def render_card(data: dict) -> str:
@@ -1636,6 +1636,126 @@ _PAGE_TEMPLATE_WIDE = """<!DOCTYPE html>
 """
 
 _TEMPLATES["wide_shot"] = _render_wide_shot
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template — "inventory_clean"
+#
+# Photo-dominant minimal layout. Full-bleed machine photo with a hand-lettered
+# make/model title and price. No spec rails, no icons. Dealer badge is applied
+# downstream by the adapter (badge_renderer composite path).
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_inventory_clean(data: dict) -> str:
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    make      = (machine.get("make")  or "").upper()
+    model     = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+    price_str = _fmt_price(listing.get("price_usd"))
+    d_name    = html.escape(dealer.get("name")  or "")
+    d_phone   = html.escape(dealer.get("phone") or "")
+
+    if photo_uri:
+        photo_style = f'background-image:url("{photo_uri}");background-size:cover;background-position:center 55%;'
+    else:
+        photo_style = (
+            "background:repeating-linear-gradient(135deg,#2a2926 0 22px,#232220 22px 44px);"
+            "background-size:cover;"
+        )
+
+    price_html = (
+        f'<div class="ic-price">{html.escape(price_str)}</div>'
+    ) if price_str else ""
+
+    return _INVENTORY_CLEAN_TEMPLATE.format(
+        photo_style=photo_style,
+        make_line=html.escape(make),
+        model_line=html.escape(model),
+        price_html=price_html,
+        d_name=d_name,
+        d_phone=d_phone,
+    )
+
+
+_INVENTORY_CLEAN_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Inventory Clean</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #1a1916; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden; background: #0d0d0c;
+  }}
+  .ic-photo {{
+    position: absolute; inset: 0;
+  }}
+  .ic-scrim {{
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      rgba(0,0,0,.18) 0%,
+      rgba(0,0,0,0)   30%,
+      rgba(0,0,0,0)   55%,
+      rgba(0,0,0,.30) 100%);
+    pointer-events: none; z-index: 1;
+  }}
+  .ic-top-meta {{
+    position: absolute; top: 44px; left: 60px; right: 60px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    z-index: 4;
+    font-family: 'Permanent Marker', sans-serif;
+    font-size: 28px; color: rgba(255,255,255,0.88);
+    text-shadow: 0 1px 6px rgba(0,0,0,0.45);
+  }}
+  .ic-title {{
+    position: absolute; left: 135px; top: 40%;
+    z-index: 4;
+    font-family: 'Permanent Marker', sans-serif;
+    color: rgba(255,255,255,0.90);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    transform: rotate(-1.4deg);
+    line-height: 0.82;
+  }}
+  .ic-line1, .ic-line2 {{ display: block; font-size: 146px; }}
+  .ic-line2 {{ margin-left: 18px; }}
+  .ic-price {{
+    position: absolute; right: 110px; bottom: 150px;
+    z-index: 4;
+    font-family: 'Permanent Marker', sans-serif;
+    font-size: 82px; color: rgba(255,255,255,0.92);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transform: rotate(-1.8deg);
+    text-align: right;
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="ic-photo" style="{photo_style}"></div>
+  <div class="ic-scrim"></div>
+  <div class="ic-top-meta">
+    <span>{d_name}</span>
+    <span>{d_phone}</span>
+  </div>
+  <div class="ic-title">
+    <span class="ic-line1">{make_line}</span>
+    <span class="ic-line2">{model_line}</span>
+  </div>
+  {price_html}
+</div>
+</body>
+</html>
+"""
+
+_TEMPLATES["inventory_clean"] = _render_inventory_clean
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -436,7 +436,11 @@ def build_listing_pack(
     _badge_name    = (dealer or {}).get("contact_name") or (dealer or {}).get("dealer_name") or (dealer or {}).get("company_name") or None
     _badge_phone   = (dealer or {}).get("phone") or None
     _has_branding  = bool(_logo_path) or bool(_badge_name) or bool(_badge_phone)
-    if _has_branding and valid_images:
+    # Dealer-controlled toggle: when False, skip badge stamping on listing
+    # photos (#2-#6). Default True for backwards compatibility (older sessions
+    # without the field still get badged photos).
+    _apply_badge = bool((dealer or {}).get("apply_dealer_badge", True))
+    if _has_branding and valid_images and _apply_badge:
         try:
             from renderers.badge_renderer import apply_badge_to_photo
             _lp_badge      = Path(os.path.join(pack_dir, "Listing_Photos"))
