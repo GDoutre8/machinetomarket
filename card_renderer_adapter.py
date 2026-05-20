@@ -246,9 +246,10 @@ def _contain_on_blur_data_uri(
 
 
 _FEATURED_PHOTO_ZONES = {
-    "price_tag":      (1080, 1350),
-    "auction_ticket": (1008, 540),
-    "wide_shot":      (1080, 746),
+    "price_tag":       (1080, 1350),
+    "auction_ticket":  (1008, 540),
+    "wide_shot":       (1080, 746),
+    "inventory_clean": (1080, 1350),
 }
 
 
@@ -424,16 +425,9 @@ def export_listing_card(
             html_payload["dealer"] = {**dealer_full, "show_branding": False}
             html_str = render_card(html_payload)
             _screenshot_card(html_str, output_path)
-            # Badge logic:
-            #   - inventory_clean: NEVER receives the composited badge (design rule).
-            #   - price_tag / auction_ticket / wide_shot: gated by the
-            #     apply_dealer_badge toggle (default True).
-            apply_badge = bool(dealer_full.get("apply_dealer_badge", True))
-            if chosen == "inventory_clean":
-                pass  # never apply badge
-            elif chosen in {"price_tag", "auction_ticket", "wide_shot"}:
-                if apply_badge:
-                    _apply_standard_badge_to_card(output_path, dealer_full)
+            if chosen in {"price_tag", "auction_ticket", "wide_shot"}:
+                _apply_standard_badge_to_card(output_path, dealer_full)
+            # inventory_clean embeds dealer text in the HTML overlay; no composite badge.
         log.info("[card] exported %s (template=%s)", output_path, chosen or "default")
         return output_path
     except Exception as exc:

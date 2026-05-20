@@ -1640,10 +1640,9 @@ _TEMPLATES["wide_shot"] = _render_wide_shot
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Featured Listing Template — "inventory_clean"
-#
-# Photo-dominant minimal layout. Full-bleed machine photo with a hand-lettered
-# make/model title and price. No spec rails, no icons. Dealer badge is applied
-# downstream by the adapter (badge_renderer composite path).
+# Marker-style marketplace card: full-bleed photo, Permanent Marker font,
+# dealer name/phone top corners, make+model centered, price bottom-right.
+# No spec rail. No composited badge (design rule: text overlay carries identity).
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _render_inventory_clean(data: dict) -> str:
@@ -1655,23 +1654,20 @@ def _render_inventory_clean(data: dict) -> str:
     model     = (machine.get("model") or "").upper()
     photo_uri = _photo_data_uri(machine.get("photo_path"))
     price_str = _fmt_price(listing.get("price_usd"))
-    d_name    = html.escape(dealer.get("name")  or "")
-    d_phone   = html.escape(dealer.get("phone") or "")
+    d_name  = html.escape(dealer.get("name")  or "")
+    d_phone = html.escape(dealer.get("phone") or "")
 
     if photo_uri:
-        photo_style = f'background-image:url("{photo_uri}");background-size:cover;background-position:center 55%;'
+        photo_html = f'<img class="ic-photo" src="{photo_uri}" alt=""/>'
     else:
-        photo_style = (
-            "background:repeating-linear-gradient(135deg,#2a2926 0 22px,#232220 22px 44px);"
-            "background-size:cover;"
-        )
+        photo_html = '<div class="ic-photo ic-photo-fallback"></div>'
 
     price_html = (
         f'<div class="ic-price">{html.escape(price_str)}</div>'
     ) if price_str else ""
 
     return _INVENTORY_CLEAN_TEMPLATE.format(
-        photo_style=photo_style,
+        photo_html=photo_html,
         make_line=html.escape(make),
         model_line=html.escape(model),
         price_html=price_html,
@@ -1697,6 +1693,12 @@ _INVENTORY_CLEAN_TEMPLATE = """<!DOCTYPE html>
   }}
   .ic-photo {{
     position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 55%;
+    display: block;
+  }}
+  .ic-photo-fallback {{
+    background: repeating-linear-gradient(135deg,#2a2926 0 22px,#232220 22px 44px);
   }}
   .ic-scrim {{
     position: absolute; inset: 0;
@@ -1711,16 +1713,16 @@ _INVENTORY_CLEAN_TEMPLATE = """<!DOCTYPE html>
     position: absolute; top: 44px; left: 60px; right: 60px;
     display: flex; justify-content: space-between; align-items: flex-start;
     z-index: 4;
-    font-family: 'Permanent Marker', sans-serif;
-    font-size: 28px; color: rgba(255,255,255,0.88);
-    text-shadow: 0 1px 6px rgba(0,0,0,0.45);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 28px; color: rgba(255,255,255,.88);
+    text-shadow: 0 1px 6px rgba(0,0,0,.45);
   }}
   .ic-title {{
     position: absolute; left: 135px; top: 40%;
     z-index: 4;
-    font-family: 'Permanent Marker', sans-serif;
-    color: rgba(255,255,255,0.90);
-    text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    font-family: 'Permanent Marker', cursive;
+    color: rgba(255,255,255,.90);
+    text-shadow: 0 2px 8px rgba(0,0,0,.35);
     transform: rotate(-1.4deg);
     line-height: 0.82;
   }}
@@ -1729,9 +1731,9 @@ _INVENTORY_CLEAN_TEMPLATE = """<!DOCTYPE html>
   .ic-price {{
     position: absolute; right: 110px; bottom: 150px;
     z-index: 4;
-    font-family: 'Permanent Marker', sans-serif;
-    font-size: 82px; color: rgba(255,255,255,0.92);
-    text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 82px; color: rgba(255,255,255,.92);
+    text-shadow: 0 2px 8px rgba(0,0,0,.25);
     transform: rotate(-1.8deg);
     text-align: right;
   }}
@@ -1739,7 +1741,7 @@ _INVENTORY_CLEAN_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="card">
-  <div class="ic-photo" style="{photo_style}"></div>
+  {photo_html}
   <div class="ic-scrim"></div>
   <div class="ic-top-meta">
     <span>{d_name}</span>
