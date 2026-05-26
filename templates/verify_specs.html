@@ -446,6 +446,16 @@
   .verify-status{margin-top:14px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);font-weight:600}
   .verify-status.error{color:#9a2a16}
 
+  /* ============ TEMPLATE PREVIEW MODAL ============ */
+  #vf-tpl-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px}
+  #vf-tpl-modal.open{display:flex}
+  #vf-tpl-modal-inner{position:relative;max-width:90vw;max-height:90vh;display:flex;align-items:center;justify-content:center}
+  #vf-tpl-modal-img{display:block;max-width:90vw;max-height:90vh;width:auto;height:auto;object-fit:contain}
+  #vf-tpl-modal-close{position:absolute;top:-14px;right:-14px;width:32px;height:32px;background:var(--accent);color:var(--ink);border:none;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  #vf-tpl-modal-close:hover{background:var(--paper)}
+  @keyframes vf-modal-fade{from{opacity:0}to{opacity:1}}
+  #vf-tpl-modal.open{animation:vf-modal-fade .15s ease}
+
   /* Responsive switch: ≤880px → mobile shell, >880px → desktop */
   @media (max-width:880px){
     .v8-desktop{display:none}
@@ -2425,7 +2435,15 @@ window.MTM_VERIFY_PRESEL = {
         meta.appendChild(sel);
         card.appendChild(stage);
         card.appendChild(meta);
-        card.addEventListener('click', function(){ select(t.key); });
+        card.addEventListener('click', (function(tplKey, tplLabel){
+          return function(){
+            select(tplKey);
+            var img = this.querySelector('img');
+            if(img && img.src && img.style.display !== 'none' && window.MTM_OPEN_TPL_MODAL){
+              window.MTM_OPEN_TPL_MODAL(img.src, tplLabel + ' preview');
+            }
+          };
+        })(t.key, t.label));
         s.grid.appendChild(card);
       });
     });
@@ -2771,6 +2789,47 @@ window.MTM_VERIFY_PRESEL = {
       });
     }
   } catch (_) {}
+})();
+</script>
+
+<!-- ============ TEMPLATE PREVIEW MODAL ============ -->
+<div id="vf-tpl-modal" role="dialog" aria-modal="true" aria-label="Template preview">
+  <div id="vf-tpl-modal-inner">
+    <button id="vf-tpl-modal-close" type="button" aria-label="Close preview">✕</button>
+    <img id="vf-tpl-modal-img" src="" alt="Template preview">
+  </div>
+</div>
+<script>
+(function(){
+  var modal    = document.getElementById('vf-tpl-modal');
+  var modalImg = document.getElementById('vf-tpl-modal-img');
+  var closeBtn = document.getElementById('vf-tpl-modal-close');
+  if(!modal || !modalImg || !closeBtn) return;
+
+  function openModal(src, alt){
+    modalImg.src = src;
+    modalImg.alt = alt || 'Template preview';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    modalImg.src = '';
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', function(e){
+    if(e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+  window.MTM_OPEN_TPL_MODAL = openModal;
 })();
 </script>
 </body>
