@@ -81,7 +81,7 @@ body { display: flex; justify-content: center; align-items: flex-start;
 /* ── HEADER ── (61px = 122/2) */
 .hdr {
   position: absolute; top: 0; left: 0; right: 0; height: 61px;
-  background: __ACCENT__;
+  background: __HDR_BG__;
   box-shadow: inset 0 -4px 6px -4px rgba(0,0,0,.18);
   display: flex; justify-content: space-between; align-items: stretch;
   padding: 8px 22px 8px;
@@ -425,9 +425,12 @@ def render_spec_sheet(data: dict) -> str:
     if theme not in _VALID_THEMES:
         theme = "yellow"
     accent = _THEME_ACCENTS[theme]
+    # Black header background would be an unreadable solid slab; use paper instead.
+    hdr_bg = _PAPER if theme == "black" else accent
 
     css = (
         _CSS_TEMPLATE
+        .replace("__HDR_BG__", hdr_bg)
         .replace("__ACCENT__", accent)
         .replace("__INK__", _INK)
         .replace("__PAPER__", _PAPER)
