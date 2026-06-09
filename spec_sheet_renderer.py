@@ -226,6 +226,13 @@ body { display: flex; justify-content: center; align-items: flex-start;
   margin-left: 3px;
 }
 
+/* ── MTM INTELLIGENCE ── (top set inline, compact 2-col grid) */
+.intel-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
+  margin-top: 4px;
+}
+
 /* ── FEATURES ── (top 427) */
 .features { top: 427px; }
 .feat-grid {
@@ -503,6 +510,29 @@ def render_spec_sheet(data: dict) -> str:
         '</div>'
     ) if core_html else ""
 
+    # ── MTM Intelligence panel ──
+    intelligence  = data.get("intelligence") or {}
+    _mc = intelligence.get("machine_class")
+    _ht = intelligence.get("hydraulic_tier")
+    intel_rows_data = [
+        (lbl, val) for lbl, val in [("Machine Class", _mc), ("Hydraulic Tier", _ht)]
+        if val
+    ]
+    intel_html = "".join(_spec_row(lbl, val) for lbl, val in intel_rows_data)
+    intel_section = ""
+    intel_block_h = 0
+    if intel_html:
+        intel_pairs  = max(1, (len(intel_rows_data) + 1) // 2)
+        intel_block_h = 14 + intel_pairs * 22
+        _core_bottom  = (313 + core_block_h) if core_html else 313
+        intel_top     = _core_bottom + 8
+        intel_section = (
+            f'<div class="sec" style="top:{intel_top}px">'
+            '<div class="sec-title"><span class="sec-title-text">MTM Intelligence</span></div>'
+            f'<div class="intel-grid">{intel_html}</div>'
+            '</div>'
+        )
+
     # ── Features (up to 8) + attachment chips ──
     regular_feats, chips = _split_attachments(features)
     feat_used = regular_feats[:8]
@@ -528,14 +558,24 @@ def render_spec_sheet(data: dict) -> str:
 
     # Move features section up only when core is genuinely sparse (<6 rows).
     # Dense layouts keep the original 427 top so verified-good designs are unchanged.
+    # Intelligence panel (if present) adds to the vertical budget before features.
     DEFAULT_FEAT_TOP = 427
     if not core_html:
-        feat_top = 313
+        _feat_base = 313
     elif len(core_used) < 6:
-        feat_top = min(DEFAULT_FEAT_TOP, 313 + core_block_h + 24)
+        _feat_base = min(DEFAULT_FEAT_TOP, 313 + core_block_h + 24)
     else:
-        feat_top = DEFAULT_FEAT_TOP
-    feat_top_style = f' style="top:{feat_top}px"' if feat_top < DEFAULT_FEAT_TOP else ""
+        _feat_base = DEFAULT_FEAT_TOP
+    if intel_section:
+        # Compute feat_top from intel bottom directly — the DEFAULT_FEAT_TOP cap
+        # is wrong here because _feat_base is already AT 427 for dense core layouts,
+        # adding intel_block_h then capping at 427 does nothing.
+        _core_bottom = (313 + core_block_h) if core_html else 313
+        _intel_bottom = _core_bottom + 8 + intel_block_h
+        feat_top = _intel_bottom + 8
+    else:
+        feat_top = _feat_base
+    feat_top_style = f' style="top:{feat_top}px"' if feat_top != DEFAULT_FEAT_TOP else ""
 
     feat_pairs = max(1, (len(feat_used) + 1) // 2)
     feat_block_h = 21 + feat_pairs * 13  # title + margin-top + rows w/ row-gap
@@ -551,10 +591,8 @@ def render_spec_sheet(data: dict) -> str:
     ) if feat_items else ""
 
     # ── Condition rows ──
+    # Hours is shown in the header rail and in Core Specs; omit here to avoid duplication.
     cond_rows: list[tuple[str, Any]] = []
-    if hours_str:
-        hq = listing.get("hours_qualifier")
-        cond_rows.append(("Hours", f"{hours_str} ({hq})" if hq else hours_str))
     track_pct = listing.get("track_pct")
     if track_pct:
         cond_rows.append((listing.get("track_label") or "Track %", track_pct))
@@ -678,6 +716,7 @@ def render_spec_sheet(data: dict) -> str:
   </div>
 
   {core_section}
+  {intel_section}
   {feat_section}
   {bottom_grid}
 

@@ -110,6 +110,81 @@ def _ctl_is_spec_ready(specs: dict, full_record: dict | None) -> bool:
     return all(specs.get(f) is not None for f in _CTL_REQUIRED_FIELDS)
 
 
+def _machine_class(frame_size: str | None, eq_type: str) -> str | None:
+    """
+    Map frame_size + eq_type to a buyer-facing class label.
+    Returns None when not derivable — caller suppresses the row.
+    Never returns "Unknown" or "N/A".
+    """
+    eq = (eq_type or "").lower()
+    fs = (frame_size or "").lower().strip()
+
+    if eq in ("compact_track_loader", "skid_steer"):
+        eq_label = "CTL" if eq == "compact_track_loader" else "Skid Steer"
+        if fs in ("small", "xs", "extra_small", "extra small", "compact"):
+            return f"Small Frame {eq_label}"
+        if fs in ("mid", "medium", "m", "midsize", "mid_size", "mid-size"):
+            return f"Mid Frame {eq_label}"
+        if fs in ("large", "l", "lg", "full", "full_size", "full-size"):
+            return f"Large Frame {eq_label}"
+        return None
+
+    if eq in ("large_excavator", "excavator"):
+        if fs in ("compact", "small", "mini"):
+            return "Compact Excavator"
+        if fs in ("mid", "medium", "midsize", "mid_size", "mid-size"):
+            return "Mid-Size Excavator"
+        if fs in ("large", "full", "full_size", "full-size", "fullsize"):
+            return "Full-Size Excavator"
+        return None
+
+    if eq == "mini_excavator":
+        return "Mini Excavator"
+
+    return None
+
+
+def _hydraulic_tier(
+    aux_flow_high_gpm: Any,
+    high_flow_available: Any,
+    eq_type: str,
+) -> str | None:
+    """
+    Derive hydraulic tier label for CTL/SSL only.
+    Returns None for non-applicable equipment types and when data is insufficient.
+    Never returns "Unknown" or "N/A".
+
+    Tier thresholds (aux_flow_high_gpm):
+      high_flow_available == False → Standard Flow
+      < 30 GPM                    → Enhanced Flow
+      30–39 GPM                   → High Flow
+      40+ GPM                     → Super High Flow
+    """
+    eq = (eq_type or "").lower()
+    if eq not in ("compact_track_loader", "skid_steer"):
+        return None
+
+    # Explicit false → no high flow installed
+    hfa = high_flow_available
+    if hfa is False or str(hfa).lower() in ("false", "0", "no"):
+        return "Standard Flow"
+
+    # No flow data → hide
+    if aux_flow_high_gpm is None:
+        return None
+
+    try:
+        gpm = float(aux_flow_high_gpm)
+    except (TypeError, ValueError):
+        return None
+
+    if gpm < 30:
+        return "Enhanced Flow"
+    if gpm < 40:
+        return "High Flow"
+    return "Super High Flow"
+
+
 def _logo_data_uri(logo_path: str | None) -> str | None:
     if not logo_path:
         return None
@@ -1451,6 +1526,32 @@ def build_spec_sheet_data(
         ctl_spec_sheet_confidence = "full" if ready else "limited"
         oem_verified = ready
 
+    # ── MTM Intelligence derivations ──────────────────────────────────────────
+    # frame_size: try registry first, then derive from ROC (CTL/SSL) or weight (excavator)
+    frame_size = specs.get("frame_size") or fr.get("frame_size")
+    if not frame_size:
+        if eq in ("compact_track_loader", "skid_steer"):
+            _roc = specs.get("rated_operating_capacity_lbs") or specs.get("roc_lb")
+            if _roc is not None:
+                try:
+                    _rv = float(_roc)
+                    frame_size = "small" if _rv < 1750 else ("mid" if _rv < 2800 else "large")
+                except (TypeError, ValueError):
+                    pass
+        elif eq in ("large_excavator", "excavator"):
+            _wt = specs.get("operating_weight_lbs") or specs.get("operating_weight_lb")
+            if _wt is not None:
+                try:
+                    _wv = float(_wt)
+                    frame_size = "compact" if _wv < 30000 else ("mid" if _wv < 75000 else "large")
+                except (TypeError, ValueError):
+                    pass
+
+    _ff = fr.get("feature_flags") if isinstance(fr.get("feature_flags"), dict) else {}
+    _hfa = _ff.get("high_flow_available")
+    intelligence_mc = _machine_class(frame_size, eq)
+    intelligence_ht = _hydraulic_tier(specs.get("aux_flow_high_gpm"), _hfa, eq)
+
     # Condition section: undercarriage % for excavators, track % for others
     if eq in ("large_excavator", "excavator"):
         uc_pct = di.get("undercarriage_percent_remaining")
@@ -1500,6 +1601,10 @@ def build_spec_sheet_data(
         },
         "oem_verified":              oem_verified,
         "ctl_spec_sheet_confidence": ctl_spec_sheet_confidence,
+        "intelligence": {
+            "machine_class":  intelligence_mc,
+            "hydraulic_tier": intelligence_ht,
+        },
     }
 
 
