@@ -526,10 +526,16 @@ def render_spec_sheet(data: dict) -> str:
         intel_block_h = 14 + intel_pairs * 22
         _core_bottom  = (313 + core_block_h) if core_html else 313
         intel_top     = _core_bottom + 8
+        # Single item → full-width flow; two items → 2-col grid.
+        # The intel-grid is 2-col; a lone item in it occupies only the left half.
+        if len(intel_rows_data) == 1:
+            intel_body = f'<div style="margin-top:4px;">{intel_html}</div>'
+        else:
+            intel_body = f'<div class="intel-grid">{intel_html}</div>'
         intel_section = (
             f'<div class="sec" style="top:{intel_top}px">'
             '<div class="sec-title"><span class="sec-title-text">MTM Intelligence</span></div>'
-            f'<div class="intel-grid">{intel_html}</div>'
+            f'{intel_body}'
             '</div>'
         )
 
@@ -636,6 +642,9 @@ def render_spec_sheet(data: dict) -> str:
             bot_top = min(DEFAULT_BOT_TOP, feat_top + feat_block_h + 18)
         else:
             bot_top = DEFAULT_BOT_TOP
+    elif intel_section:
+        # No features but intelligence panel present — anchor from feat_top (= intel bottom + 8)
+        bot_top = min(DEFAULT_BOT_TOP, feat_top + 24)
     elif core_html:
         bot_top = min(DEFAULT_BOT_TOP, 313 + core_block_h + 24)
     else:

@@ -139,7 +139,38 @@ def _machine_class(frame_size: str | None, eq_type: str) -> str | None:
         return None
 
     if eq == "mini_excavator":
-        return "Mini Excavator"
+        return None  # category is self-describing — label adds no buyer value
+
+    if eq == "wheel_loader":
+        if fs == "compact":
+            return "Compact Wheel Loader"
+        if fs in ("medium", "mid"):
+            return "Medium Wheel Loader"
+        if fs == "large":
+            return "Large Wheel Loader"
+        if fs == "mining":
+            return "Mining Class Wheel Loader"
+        return None
+
+    if eq in ("dozer", "crawler_dozer"):
+        if fs == "small":
+            return "Small Dozer"
+        if fs in ("medium", "mid"):
+            return "Medium Dozer"
+        if fs == "large":
+            return "Large Dozer"
+        if fs == "mining":
+            return "Mining Class Dozer"
+        return None
+
+    if eq == "telehandler":
+        if fs == "standard":
+            return "Standard Reach Telehandler"
+        if fs == "high":
+            return "High Reach Telehandler"
+        if fs == "super":
+            return "Super Boom Telehandler"
+        return None
 
     return None
 
@@ -155,19 +186,26 @@ def _hydraulic_tier(
     Never returns "Unknown" or "N/A".
 
     Tier thresholds (aux_flow_high_gpm):
-      high_flow_available == False → Standard Flow
-      < 30 GPM                    → Enhanced Flow
-      30–39 GPM                   → High Flow
-      40+ GPM                     → Super High Flow
+      high_flow_available == False               → Standard Flow
+      high_flow_available == "optional"/"unknown" → None (suppress — installed state unknown)
+      < 30 GPM                                   → Enhanced Flow
+      30–39 GPM                                  → High Flow
+      40+ GPM                                    → Super High Flow
     """
     eq = (eq_type or "").lower()
     if eq not in ("compact_track_loader", "skid_steer"):
         return None
 
-    # Explicit false → no high flow installed
     hfa = high_flow_available
-    if hfa is False or str(hfa).lower() in ("false", "0", "no"):
+    hfa_str = str(hfa).lower() if hfa is not None else ""
+
+    # Explicit false → no high flow installed on this unit
+    if hfa is False or hfa_str in ("false", "0", "no"):
         return "Standard Flow"
+
+    # Optional/unknown → cannot confirm installed state; suppress to avoid false label
+    if hfa_str in ("optional", "unknown"):
+        return None
 
     # No flow data → hide
     if aux_flow_high_gpm is None:
@@ -1527,7 +1565,8 @@ def build_spec_sheet_data(
         oem_verified = ready
 
     # ── MTM Intelligence derivations ──────────────────────────────────────────
-    # frame_size: try registry first, then derive from ROC (CTL/SSL) or weight (excavator)
+    # frame_size: try registry first, then derive from category-appropriate numeric field.
+    # The string is an internal token passed to _machine_class(); it is never displayed raw.
     frame_size = specs.get("frame_size") or fr.get("frame_size")
     if not frame_size:
         if eq in ("compact_track_loader", "skid_steer"):
@@ -1544,6 +1583,49 @@ def build_spec_sheet_data(
                 try:
                     _wv = float(_wt)
                     frame_size = "compact" if _wv < 30000 else ("mid" if _wv < 75000 else "large")
+                except (TypeError, ValueError):
+                    pass
+        elif eq == "wheel_loader":
+            _wt = specs.get("operating_weight_lbs") or specs.get("operating_weight_lb")
+            if _wt is not None:
+                try:
+                    _wv = float(_wt)
+                    if _wv < 20000:
+                        frame_size = "compact"
+                    elif _wv < 45000:
+                        frame_size = "medium"
+                    elif _wv < 80000:
+                        frame_size = "large"
+                    else:
+                        frame_size = "mining"
+                except (TypeError, ValueError):
+                    pass
+        elif eq in ("dozer", "crawler_dozer"):
+            _wt = specs.get("operating_weight_lbs") or specs.get("operating_weight_lb")
+            if _wt is not None:
+                try:
+                    _wv = float(_wt)
+                    if _wv < 20000:
+                        frame_size = "small"
+                    elif _wv < 50000:
+                        frame_size = "medium"
+                    elif _wv < 100000:
+                        frame_size = "large"
+                    else:
+                        frame_size = "mining"
+                except (TypeError, ValueError):
+                    pass
+        elif eq == "telehandler":
+            _lh = specs.get("max_lift_height_ft")
+            if _lh is not None:
+                try:
+                    _lhv = float(_lh)
+                    if _lhv < 42:
+                        frame_size = "standard"
+                    elif _lhv <= 56:
+                        frame_size = "high"
+                    else:
+                        frame_size = "super"
                 except (TypeError, ValueError):
                     pass
 
