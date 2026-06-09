@@ -1369,17 +1369,57 @@ def _truncate_to_words(text: str, max_words: int) -> str:
 # HEADLINE BUILDER (v3)
 # ─────────────────────────────────────────────────────────────────────────────
 
-_READINESS_BY_TYPE: Dict[str, str] = {
-    "skid_steer_loader":    "grading, loading, and general attachment work",
-    "compact_track_loader": "site prep, material movement, and attachment use",
-    "mini_excavator":       "trenching, excavation, and utility work",
-    "excavator":            "excavation, trenching, and earthwork",
-    "backhoe_loader":       "trenching, loading, and utility work",
-    "wheel_loader":         "truck loading, stockpile work, and site support",
-    "telehandler":          "material placement, pallet handling, and jobsite support",
-    "dozer":                "grading, pushing, and site prep",
-    "scissor_lift":         "rough-terrain lift work and elevated access",
-    "boom_lift":            "elevated reach, exterior access, and jobsite lift work",
+_READINESS_POOLS: Dict[str, List[str]] = {
+    "skid_steer_loader": [
+        "grading, loading, and general attachment work",
+        "loading, site cleanup, and attachment-driven production",
+        "material handling, grading, and general site work",
+    ],
+    "compact_track_loader": [
+        "site prep, material movement, and attachment use",
+        "grading, material handling, and full attachment capability",
+        "production site work, earthmoving, and bucket work",
+    ],
+    "mini_excavator": [
+        "trenching, excavation, and utility work",
+        "utility trenching, foundation drains, and site excavation",
+        "trench digging, utility work, and tight-access excavation",
+    ],
+    "excavator": [
+        "excavation, trenching, and earthwork",
+        "production digging, utility work, and site excavation",
+        "foundation work, utility trenching, and earthmoving",
+    ],
+    "backhoe_loader": [
+        "trenching, loading, and utility work",
+        "utility trenching, site grading, and loader work",
+        "digging, backfilling, and mixed-use site work",
+    ],
+    "wheel_loader": [
+        "truck loading, stockpile work, and site support",
+        "aggregate loading, material handling, and yard work",
+        "production loading, stockpile management, and transfer work",
+    ],
+    "telehandler": [
+        "material placement, pallet handling, and jobsite support",
+        "rooftop staging, pallet work, and elevated material placement",
+        "material staging, lifting, and jobsite supply work",
+    ],
+    "dozer": [
+        "grading, pushing, and site prep",
+        "land clearing, rough grading, and earthwork",
+        "site prep, clearing, and production earthmoving",
+    ],
+    "scissor_lift": [
+        "rough-terrain lift work and elevated access",
+        "elevated maintenance, construction access, and positioning work",
+        "platform access, overhead work, and elevated positioning",
+    ],
+    "boom_lift": [
+        "elevated reach, exterior access, and jobsite lift work",
+        "elevated access, exterior structure work, and overhead positioning",
+        "overhead work, exterior access, and elevated maintenance",
+    ],
 }
 
 
@@ -1399,13 +1439,22 @@ def _condition_word(hours: Any, dealer_input: Any = None) -> str:
         h = None
 
     if dealer_input is not None:
-        grade = str(getattr(dealer_input, "condition_grade", "") or "").lower()
+        grade = str(getattr(dealer_input, "condition_grade", "") or "").strip()
+        # Direct condition_grade mapping — dealer-confirmed grade overrides hours bands
+        if grade == "Like New":
+            return "Like-new"
+        if grade == "Well Maintained":
+            return "Well-maintained"
+        if grade == "Needs Work":
+            return "As-is"
+        # Legacy well-kept text search (notes or grade field contains phrase)
+        grade_lower = grade.lower()
         notes = (
             (getattr(dealer_input, "condition_notes", "") or "")
             + " "
             + (getattr(dealer_input, "additional_details", "") or "")
         ).lower()
-        if "well-kept" in grade or "well kept" in grade \
+        if "well-kept" in grade_lower or "well kept" in grade_lower \
            or "well-kept" in notes or "well kept" in notes:
             return "Well-kept"
 
@@ -1486,28 +1535,39 @@ def _join_phrases(phrases: List[str]) -> str:
 def _build_machine_first_opening(
     dealer_input: Any,
     equipment_type: str,
+    resolved_specs: Optional[Dict] = None,
+    use_case_payload: Optional[Dict] = None,
 ) -> str:
     """
-    Machine-first opening paragraph. No use-case lead, no implied attachments,
-    no marketing framing.
+    Highlight-reel opening paragraph.
 
     Pattern:
-      [Condition] [Year Make Model] with [N] hours.
-      Equipped with [confirmed features].
-      Ready for [generic readiness statement].
+      S1: [Condition] [Year Make Model] with [N] hours.
+      S2: Equipped with [confirmed features].
+      S3: [Class-appeal sentence — buyer-framed, no spec numbers.]
+      S4: Ready for [applications — use_case_payload labels or readiness pool fallback.]
+
+    OEM Specs carry the numbers. This paragraph sells the configuration and use case.
     """
     year = getattr(dealer_input, "year", None)
     make = getattr(dealer_input, "make", "") or ""
     model = getattr(dealer_input, "model", "") or ""
     hours = getattr(dealer_input, "hours", None)
     norm = _normalize_eq_type(equipment_type)
+    specs = resolved_specs or {}
 
     condition = _condition_word(hours, dealer_input)
     identity = f"{year} {make} {model}".strip()
 
+    hours_qual = str(getattr(dealer_input, "hours_qualifier", "") or "").strip()
+
     if hours is not None:
         try:
-            s1 = f"{condition} {identity} with {int(hours):,} hours."
+            h_int = int(hours)
+            if hours_qual:
+                s1 = f"{condition} {identity} with {h_int:,} hours ({hours_qual.lower()})."
+            else:
+                s1 = f"{condition} {identity} with {h_int:,} hours."
         except (TypeError, ValueError):
             s1 = f"{condition} {identity}."
     else:
@@ -1515,29 +1575,50 @@ def _build_machine_first_opening(
 
     parts: List[str] = [s1]
 
+    # S2: confirmed features only — no inferred claims
     feats = _confirmed_feature_phrases(dealer_input, equipment_type)
     if feats:
         parts.append(f"Equipped with {_join_phrases(feats)}.")
 
-    readiness = _READINESS_BY_TYPE.get(norm)
-    if readiness:
-        parts.append(f"Ready for {readiness}.")
+    # S3: class appeal — buyer-framed, no spec numbers
+    if specs:
+        appeal = _build_class_appeal_sentence(norm, specs)
+        if appeal:
+            parts.append(appeal)
+
+    # S4: applications — use_case_payload preferred, readiness pool fallback
+    use_cases = (use_case_payload or {}).get("top_use_cases_for_listing") or []
+    if use_cases:
+        uc_labels = [str(uc).lower() for uc in use_cases[:3]]
+        parts.append(f"Ready for {_join_phrases(uc_labels)}.")
+    else:
+        readiness_pool = _READINESS_POOLS.get(norm)
+        if readiness_pool:
+            idx = _stable_index(dealer_input, norm, len(readiness_pool))
+            parts.append(f"Ready for {readiness_pool[idx]}.")
 
     return " ".join(parts)
 
 
-def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
+def _build_v3_headline(
+    dealer_input: Any,
+    equipment_type: str,
+    resolved_specs: Optional[Dict] = None,
+) -> str:
     """
     Build a dealer-grade headline: YEAR MAKE MODEL — Feature1[, Feature2]
 
     Feature priority (from phrasebank feature_priority):
-      1. ROC / lift cap (implied by the machine — appears in body, not title)
-      2. High flow        → "High Flow"
-      3. Hours (if ≤ 500) → "{N} Hours"
-      4. Two-speed        → "2-Speed"
-      5. Enclosed cab + AC→ "Enclosed Cab, A/C"
-      6. Enclosed cab     → "Enclosed Cab"
+      SSL/CTL:      High Flow → 2-Speed → Enclosed Cab → Hours
+      Mini Ex:      Enclosed Cab → Thumb → Aux Hyd
+      Telehandler:  Enclosed Cab → Stabilizers
+      Excavator:    Thumb → Hammer Circuit → Enclosed Cab
+      Wheel Loader: {N}-HP → Enclosed Cab
+      Boom Lift:    {N}-ft {BoomType} Boom → Power Source
+      Scissor Lift: {N}-ft Platform → Power Source
+      Dozer:        Enclosed Cab → Hours (fallback)
     """
+    specs = resolved_specs or {}
     base = f"{dealer_input.year} {dealer_input.make.upper()} {dealer_input.model}"
     tokens: List[str] = []
 
@@ -1549,11 +1630,9 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
     hours = getattr(dealer_input, "hours", None)
     thumb = getattr(dealer_input, "thumb_type", None)
 
-    # Equipment-type specific feature priority
     norm = _normalize_eq_type(equipment_type)
 
     if norm == "mini_excavator":
-        # Title cap: max 2 modifiers. Drop "A/C" tail when other features pair with cab.
         thumb_set = bool(thumb and thumb.lower() not in ("none", ""))
         aux = bool(getattr(dealer_input, "aux_hydraulics", None))
         cab_alone = is_enclosed and not (thumb_set or aux)
@@ -1563,15 +1642,51 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
             tokens.append("Thumb")
         if aux and len(tokens) < 2:
             tokens.append("Aux Hyd")
+
     elif norm == "telehandler":
-        lift_ht = None  # resolved in layer 3
         if is_enclosed:
             tokens.append("Enclosed Cab")
         if getattr(dealer_input, "has_stabilizers", None):
             tokens.append("Stabilizers")
+
+    elif norm == "excavator":
+        thumb_set = bool(thumb and thumb.lower() not in ("none", ""))
+        if thumb_set:
+            tokens.append("Thumb")
+        if getattr(dealer_input, "hammer_plumbing", None) and len(tokens) < 2:
+            tokens.append("Hammer Circuit")
+        if not tokens and is_enclosed:
+            tokens.append("Enclosed Cab, A/C" if ac else "Enclosed Cab")
+
+    elif norm == "wheel_loader":
+        hp = specs.get("net_hp") or specs.get("horsepower_hp")
+        if hp:
+            tokens.append(f"{int(hp)}-HP")
+        if is_enclosed and len(tokens) < 2:
+            tokens.append("Enclosed Cab")
+        elif is_enclosed and not tokens:
+            tokens.append("Enclosed Cab, A/C" if ac else "Enclosed Cab")
+
+    elif norm == "boom_lift":
+        ht = specs.get("platform_height_ft")
+        if ht:
+            bt = str(specs.get("boom_type") or "").lower()
+            boom_label = "Articulating" if "artic" in bt else ("Telescopic" if bt else "")
+            tokens.append(f"{int(ht)}-ft {boom_label} Boom".strip())
+        ps = str(specs.get("power_source") or "").strip()
+        if ps and len(tokens) < 2:
+            tokens.append(ps.title())
+
+    elif norm == "scissor_lift":
+        ht = specs.get("platform_height_ft")
+        if ht:
+            tokens.append(f"{int(ht)}-ft Platform")
+        ps = str(specs.get("power_source") or "").strip()
+        if ps and len(tokens) < 2:
+            tokens.append(ps.title())
+
     else:
-        # SSL / CTL / wheel loader / backhoe / excavator
-        # Title cap: max 2 modifiers. Drop "A/C" when paired with another feature.
+        # SSL / CTL / backhoe / dozer — high flow and two-speed first
         if hi == "yes":
             att = (getattr(dealer_input, "attachments_included", "") or "").lower()
             mulcher = any(kw in att for kw in ("mulch", "forestry head", "brush cutter", "masticator"))
@@ -1585,7 +1700,6 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
         elif is_enclosed:
             tokens.append("Enclosed Cab, A/C" if ac else "Enclosed Cab")
             if two == "yes" and len(tokens) < 2:
-                # Only pair 2-Speed when cab token is bare (no A/C tail)
                 if tokens[0] == "Enclosed Cab":
                     tokens.append("2-Speed")
         elif two == "yes":
@@ -1599,21 +1713,252 @@ def _build_v3_headline(dealer_input: Any, equipment_type: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# CAPABILITY ANCHOR (v3.5 — deterministic class-position sentence)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Each entry: (threshold_value, sentence). First entry whose threshold ≤ actual value wins.
+# All thresholds are inclusive-upper (>=). Entries must be in descending threshold order.
+_ANCHOR_TABLES: Dict[str, List[tuple]] = {
+    "compact_track_loader": [
+        # keyed on rated_operating_capacity_lbs
+        (3000, "Large-frame CTL capacity. Rated for sustained production work and heavy attachment demand."),
+        (2400, "Production-class CTL capacity. Handles aggregate and heavy material loads across the full work cycle."),
+        (1800, "Mid-frame CTL capacity. Right for landscape, utility, and mixed attachment work."),
+        (0,    "Compact CTL class. Residential and light commercial production scope."),
+    ],
+    "skid_steer_loader": [
+        (2800, "Large-frame wheeled skid steer. High-side ROC for the class — handles aggregate and full material loads."),
+        (1800, "Mid-frame wheeled skid steer. Standard residential and commercial utility scope."),
+        (0,    ""),
+    ],
+    "mini_excavator": [
+        # keyed on operating_weight_lbs
+        (12000, "Upper compact class. Meaningful dig depth and breakout force without the trailer weight penalty of a larger machine."),
+        (7000,  "Mid-compact class. Standard residential and light commercial excavation range."),
+        (4000,  "Compact class. Site-access advantage — fits through most gates without special access prep."),
+        (0,     "Micro class. Fits through standard gates, hauls on a standard trailer, and works in spaces larger machines cannot access."),
+    ],
+    "excavator": [
+        # keyed on operating_weight_lbs
+        (55000, "Large production class. Built for sustained earthmoving, major infrastructure, and foundation-scale work."),
+        (35000, "Mid-production class. Full utility and commercial excavation capability across most site conditions."),
+        (18000, "Standard production class. The common general contractor and utility contractor range."),
+        (0,     "Compact excavation class. Fits sites where larger machines are access-limited."),
+    ],
+    "telehandler": [
+        # keyed on lift_height_ft
+        (55, "High-reach commercial class. Capable of staged material placement on most multi-story commercial construction."),
+        (45, "Jobsite crossover class. Rooftop staging and truss work on residential and light commercial construction."),
+        (0,  "Residential reach class. Standard pallet and material placement for framing and masonry work."),
+    ],
+    "wheel_loader": [
+        # keyed on horsepower_hp
+        (200, "Production aggregate and stockpile loading class. Built for sustained truck-loading cycles in heavy material."),
+        (130, "Mid-size loader class. Yard handling, material transfer, and aggregate loading across general contractor sites."),
+        (0,   ""),
+    ],
+    "dozer": [
+        # keyed on horsepower_hp
+        (250, "Large production dozer class. Built for large-scale earthmoving and sustained pushing in hard material."),
+        (130, "Mid-size dozer class. Handles rough site prep, land clearing, and production grading."),
+        (0,   ""),
+    ],
+    "scissor_lift": [
+        # keyed on platform_height_ft
+        (40, "High-platform scissor class. Ceiling clearance for most industrial and warehouse applications."),
+        (25, "Standard platform height. General maintenance, signage, and interior construction access."),
+        (0,  ""),
+    ],
+    "boom_lift": [
+        # keyed on platform_height_ft
+        (60, "High-reach boom class. Exterior facade, bridge, and industrial structure access."),
+        (40, "Mid-reach boom class. Rooftop access, commercial exterior, and multi-story work."),
+        (0,  ""),
+    ],
+}
+
+# Which resolved_specs field drives each category's anchor lookup
+_ANCHOR_FIELD: Dict[str, tuple] = {
+    "compact_track_loader": ("roc_lb", "rated_operating_capacity_lbs"),
+    "skid_steer_loader":    ("roc_lb", "rated_operating_capacity_lbs"),
+    "mini_excavator":       ("operating_weight_lb", "operating_weight_lbs"),
+    "excavator":            ("operating_weight_lb", "operating_weight_lbs"),
+    "telehandler":          ("max_lift_height_ft", "lift_height_ft"),
+    "wheel_loader":         ("net_hp", "horsepower_hp"),
+    "dozer":                ("net_hp", "horsepower_hp"),
+    "scissor_lift":         ("platform_height_ft",),
+    "boom_lift":            ("platform_height_ft",),
+}
+
+
+# Buyer-framed class-context sentences for the opening paragraph.
+# Same threshold keys as _ANCHOR_TABLES. No spec numbers — those live in OEM Specs.
+_CLASS_APPEAL_SENTENCES: Dict[str, List[tuple]] = {
+    "compact_track_loader": [
+        (3000, "Strong large-frame CTL configuration with the hydraulic output and lift capacity most contractors need for demanding attachment work."),
+        (2400, "Production-class CTL setup for contractors running demanding attachments or managing high-volume site conditions."),
+        (1800, "Mid-frame CTL configuration well-suited for landscape, utility, and mixed attachment work."),
+        (0,    "Compact CTL class for residential and light commercial site work."),
+    ],
+    "skid_steer_loader": [
+        (2800, "Large-frame wheeled skid steer with strong lift capacity for aggregate loading and site production work."),
+        (1800, "Standard wheeled skid steer well-suited for daily residential and commercial site work."),
+        (0,    ""),
+    ],
+    "mini_excavator": [
+        (12000, "Well-equipped upper compact excavator with the configuration most utility and site contractors look for in this size class."),
+        (7000,  "Mid-compact excavator well-suited for residential and light commercial excavation work."),
+        (4000,  "Compact excavator for tight-access sites and residential applications."),
+        (0,     "Micro class — fits through standard gates and hauls on a standard trailer."),
+    ],
+    "excavator": [
+        (55000, "Large production excavator suited for sustained earthmoving, infrastructure, and foundation-scale work."),
+        (35000, "Mid-size production excavator built for commercial contractors and production site work."),
+        (18000, "Standard production excavator suited for general contractors and utility work."),
+        (0,     "Compact excavation class for access-limited sites."),
+    ],
+    "telehandler": [
+        (55, "High-reach commercial telehandler for multi-story material placement and commercial construction staging."),
+        (45, "Construction telehandler for rooftop staging, truss work, and residential to light commercial jobsites."),
+        (0,  "Construction telehandler well-suited for contractors working at height or staging material across active jobsites."),
+    ],
+    "wheel_loader": [
+        (200, "Production-class wheel loader built for sustained truck-loading cycles and high-volume material movement."),
+        (130, "Mid-size wheel loader well-suited for material transfer, aggregate loading, and general contractor site work."),
+        (0,   ""),
+    ],
+    "dozer": [
+        (250, "Large production dozer for sustained earthmoving and pushing in large-scale site work."),
+        (130, "Mid-size dozer class well-suited for site development contractors and clearing crews."),
+        (0,   ""),
+    ],
+    "scissor_lift": [
+        (40, "High-platform rough terrain scissor class for contractors needing reliable overhead access on uneven terrain."),
+        (25, "Standard-reach scissor lift for general maintenance, interior construction, and overhead access."),
+        (0,  ""),
+    ],
+    "boom_lift": [
+        (60, "High-reach boom lift for exterior facade, bridge, and industrial structure access."),
+        (40, "Mid-reach boom lift for rooftop access, commercial exterior, and multi-story work."),
+        (0,  ""),
+    ],
+}
+
+
+def _build_class_appeal_sentence(eq_norm: str, resolved_specs: Dict) -> str:
+    """
+    Return a buyer-framed class-context sentence with no spec numbers.
+    Used as S3 of the opening paragraph.
+    """
+    table = _CLASS_APPEAL_SENTENCES.get(eq_norm)
+    field_keys = _ANCHOR_FIELD.get(eq_norm)
+    if not table or not field_keys:
+        return ""
+    val = None
+    for k in field_keys:
+        val = resolved_specs.get(k)
+        if val is not None:
+            break
+    if val is None:
+        return ""
+    try:
+        num = float(val)
+    except (TypeError, ValueError):
+        return ""
+    for threshold, sentence in table:
+        if num >= threshold:
+            return sentence
+    return ""
+
+
+def _build_capability_anchor(eq_norm: str, resolved_specs: Dict) -> str:
+    """
+    Return a one-sentence class-position statement derived from resolved_specs.
+    Returns empty string when the relevant spec is unavailable.
+    """
+    table = _ANCHOR_TABLES.get(eq_norm)
+    field_keys = _ANCHOR_FIELD.get(eq_norm)
+    if not table or not field_keys:
+        return ""
+
+    val = None
+    for k in field_keys:
+        val = resolved_specs.get(k)
+        if val is not None:
+            break
+
+    if val is None:
+        return ""
+
+    try:
+        num = float(val)
+    except (TypeError, ValueError):
+        return ""
+
+    for threshold, sentence in table:
+        if num >= threshold:
+            return sentence
+    return ""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # FEATURES BLOCK (v3 — enforces feature priority per type)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _build_v3_features(dealer_input: Any, equipment_type: str) -> str:
+def _build_v3_features(
+    dealer_input: Any,
+    equipment_type: str,
+    resolved_specs: Optional[Dict] = None,
+) -> str:
     """
     Build the Features bullet block using the feature priority map from
-    phrasebank v3.  No invented claims — only confirmed dealer_input fields.
+    phrasebank v3.  No invented claims — only confirmed dealer_input fields
+    and resolved OEM specs.
     """
     norm = _normalize_eq_type(equipment_type)
+    specs = resolved_specs or {}
     bullets: List[str] = []
 
     def add(label: str) -> None:
         bullets.append(label)
 
-    # Universal identity first
+    def _track_framing(pct_raw: Any, cond_text: Any) -> None:
+        """Render track condition as buyer-facing language when % is available."""
+        if pct_raw is not None:
+            try:
+                pct = int(pct_raw)
+                if pct >= 80:
+                    framing = "excellent condition"
+                elif pct >= 50:
+                    framing = "solid working life remaining"
+                else:
+                    framing = "price reflects wear"
+                add(f"Tracks at {pct}% — {framing}")
+                return
+            except (TypeError, ValueError):
+                pass
+        if cond_text:
+            add(f"Track condition: {cond_text}")
+
+    def _tire_framing(pct_raw: Any, cond_text: Any) -> None:
+        """Render tire condition as buyer-facing language when % is available."""
+        if pct_raw is not None:
+            try:
+                pct = int(pct_raw)
+                if pct >= 80:
+                    framing = "excellent condition"
+                elif pct >= 50:
+                    framing = "solid working life remaining"
+                else:
+                    framing = "price reflects wear"
+                add(f"Tires at {pct}% — {framing}")
+                return
+            except (TypeError, ValueError):
+                pass
+        if cond_text:
+            add(f"Tire condition: {cond_text}")
+
+    # ── Universal: cab ────────────────────────────────────────────────────
     cab = str(getattr(dealer_input, "cab_type", "") or "").lower().strip()
     is_enclosed = cab in _ENCLOSED_CAB_VALUES
     ac = getattr(dealer_input, "ac", None)
@@ -1631,7 +1976,7 @@ def _build_v3_features(dealer_input: Any, equipment_type: str) -> str:
     elif cab:
         add("Open cab")
 
-    # Priority-ordered per equipment type (CTL / SSL)
+    # ── Per-type priority fields ──────────────────────────────────────────
     if norm in ("compact_track_loader", "skid_steer_loader"):
         if getattr(dealer_input, "high_flow", None) == "yes":
             add("High-flow hydraulics")
@@ -1653,12 +1998,11 @@ def _build_v3_features(dealer_input: Any, equipment_type: str) -> str:
             add("Air-ride seat")
         if getattr(dealer_input, "one_owner", False):
             add("One owner")
-        tc = getattr(dealer_input, "track_condition", None)
-        if tc:
-            add(f"Track condition: {tc}")
-        tire = getattr(dealer_input, "tire_condition", None)
-        if tire:
-            add(f"Tire condition: {tire}")
+        _track_framing(
+            getattr(dealer_input, "track_percent_remaining", None),
+            getattr(dealer_input, "track_condition", None),
+        )
+        _tire_framing(None, getattr(dealer_input, "tire_condition", None))
 
     elif norm == "mini_excavator":
         thumb = getattr(dealer_input, "thumb_type", None)
@@ -1677,13 +2021,19 @@ def _build_v3_features(dealer_input: Any, equipment_type: str) -> str:
             add("Rubber tracks")
         if getattr(dealer_input, "zero_tail_swing", False):
             add("Zero tail swing")
+        if getattr(dealer_input, "pattern_changer", False):
+            add("Pattern changer (ISO/SAE)")
+        al = getattr(dealer_input, "arm_length", None)
+        if al and str(al).lower() not in ("standard", ""):
+            add(f"{str(al).title()} arm")
         if getattr(dealer_input, "backup_camera", False):
             add("Backup camera")
         if getattr(dealer_input, "one_owner", False):
             add("One owner")
-        tc = getattr(dealer_input, "track_condition", None)
-        if tc:
-            add(f"Track condition: {tc}")
+        _track_framing(
+            getattr(dealer_input, "track_percent_remaining", None),
+            getattr(dealer_input, "track_condition", None),
+        )
 
     elif norm == "telehandler":
         if getattr(dealer_input, "has_stabilizers", None):
@@ -1692,9 +2042,9 @@ def _build_v3_features(dealer_input: Any, equipment_type: str) -> str:
             add("Ride control")
         if getattr(dealer_input, "backup_camera", False):
             add("Backup camera")
-        tire = getattr(dealer_input, "tire_condition", None)
-        if tire:
-            add(f"Tire condition: {tire}")
+        if getattr(dealer_input, "one_owner", False):
+            add("One owner")
+        _tire_framing(None, getattr(dealer_input, "tire_condition", None))
 
     elif norm == "excavator":
         thumb = getattr(dealer_input, "thumb_type", None)
@@ -1711,20 +2061,94 @@ def _build_v3_features(dealer_input: Any, equipment_type: str) -> str:
             add("Rear camera")
         if getattr(dealer_input, "hammer_plumbing", None):
             add("Hammer circuit plumbed")
-        uc = getattr(dealer_input, "undercarriage_condition_pct", None)
-        if uc:
-            add(f"Undercarriage: {uc}")
+        if getattr(dealer_input, "heated_seat", None):
+            add("Heated seat")
+        if getattr(dealer_input, "one_owner", False):
+            add("One owner")
+        uc_pct = getattr(dealer_input, "undercarriage_percent_remaining", None)
+        uc_txt = getattr(dealer_input, "undercarriage_condition_pct", None)
+        if uc_pct is not None:
+            try:
+                pct = int(uc_pct)
+                add(f"Undercarriage: {pct}%")
+            except (TypeError, ValueError):
+                if uc_txt:
+                    add(f"Undercarriage: {uc_txt}")
+        elif uc_txt:
+            add(f"Undercarriage: {uc_txt}")
+
+    elif norm == "dozer":
+        blade = getattr(dealer_input, "blade_type", None)
+        if blade and str(blade).lower() not in ("", "none"):
+            add(f"{str(blade).title()} blade")
+        bl_w = specs.get("blade_width_ft")
+        if bl_w:
+            add(f"Blade width: {bl_w} ft")
+        gp = specs.get("ground_pressure_psi")
+        if gp:
+            try:
+                add(f"Ground pressure: {float(gp):.1f} PSI")
+            except (TypeError, ValueError):
+                pass
+        if getattr(dealer_input, "backup_camera", False):
+            add("Backup camera")
+        if getattr(dealer_input, "one_owner", False):
+            add("One owner")
+        _track_framing(
+            getattr(dealer_input, "track_percent_remaining", None),
+            getattr(dealer_input, "track_condition", None),
+        )
+
+    elif norm in ("boom_lift", "scissor_lift"):
+        ht = specs.get("platform_height_ft")
+        if ht:
+            add(f"Platform height: {ht} ft")
+        cap = specs.get("platform_capacity_lbs")
+        if cap:
+            try:
+                add(f"Platform capacity: {int(cap):,} lbs")
+            except (TypeError, ValueError):
+                pass
+        ps = str(specs.get("power_source") or "").strip()
+        if ps:
+            add(f"Power source: {ps}")
+        if norm == "boom_lift":
+            hr = specs.get("horizontal_reach_ft")
+            if hr:
+                add(f"Horizontal reach: {hr} ft")
+            bt = str(specs.get("boom_type") or "").strip()
+            if bt:
+                add(bt.title())
+        if norm == "scissor_lift":
+            stow = specs.get("stowed_height_in")
+            if stow:
+                try:
+                    add(f"Stowed height: {int(stow)}\"")
+                except (TypeError, ValueError):
+                    pass
+        if getattr(dealer_input, "backup_camera", False):
+            add("Backup camera")
 
     else:
-        # Generic for wheel_loader, backhoe, dozer, lifts
+        # wheel_loader, backhoe, and any unrecognised type
         if getattr(dealer_input, "ride_control", False):
             add("Ride control")
         if getattr(dealer_input, "backup_camera", False):
             add("Backup camera")
         if getattr(dealer_input, "one_owner", False):
             add("One owner")
+        _tire_framing(None, getattr(dealer_input, "tire_condition", None))
+        _track_framing(
+            getattr(dealer_input, "track_percent_remaining", None),
+            getattr(dealer_input, "track_condition", None),
+        )
 
-    # Additional free-text features (always last)
+    # ── Universal: warranty status ────────────────────────────────────────
+    ws = str(getattr(dealer_input, "warranty_status", "") or "").strip()
+    if ws:
+        add(f"Warranty: {ws}")
+
+    # ── Additional free-text features (always last) ───────────────────────
     extra_raw = getattr(dealer_input, "additional_features", None) or ""
     for line in extra_raw.split("\n"):
         if line.strip():
@@ -1743,7 +2167,18 @@ def _build_v3_best_for(use_case_payload: Optional[Dict]) -> str:
     use_cases = (use_case_payload or {}).get("top_use_cases_for_listing") or []
     if not use_cases:
         return ""
-    lines = [f"  • {label}" for label in use_cases[:4]]
+    # Pull descriptors from listing_builder (lazy import avoids circular dependency)
+    try:
+        from listing_builder import _UC_DESCRIPTOR as _uc_desc  # type: ignore
+    except Exception:
+        _uc_desc = {}
+    lines = []
+    for label in use_cases[:3]:
+        desc = (_uc_desc or {}).get(label, "")
+        if desc:
+            lines.append(f"  • {label} — {desc}")
+        else:
+            lines.append(f"  • {label}")
     return "Best For:\n" + "\n".join(lines)
 
 
@@ -1805,7 +2240,19 @@ def _build_cta_block(
     dealer_input: Any,
     platform: str,
 ) -> str:
-    return "Call or message for pricing, financing options, and delivery availability."
+    price = getattr(dealer_input, "asking_price", None) or 0
+    try:
+        price = int(price)
+    except (TypeError, ValueError):
+        price = 0
+
+    if price >= 150_000:
+        return "Serious inquiries welcome. Call for full specs, inspection details, and delivery terms."
+    if price >= 50_000:
+        return "Financing available. Call or message for a quote and availability."
+    if price > 0:
+        return "Call or text to schedule a walkthrough."
+    return "Call or text for pricing, availability, and inspection details."
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1955,16 +2402,12 @@ def build_listing_text_v3(
     sections: List[str] = []
 
     # L4. Machine identity — headline + price
-    sections.append(_build_v3_headline(dealer_input, equipment_type))
+    sections.append(_build_v3_headline(dealer_input, equipment_type, resolved_specs))
     if getattr(dealer_input, "asking_price", None):
         sections.append(f"${dealer_input.asking_price:,}")
 
-    # L3. Opening paragraph — machine-first, condition-aware.
-    # The deterministic builder cites the actual hours number in the same
-    # sentence as the condition word, so the low-hour gate is not applied
-    # here.  RED gate still runs to catch any forbidden ownership/inspection
-    # claims that might leak through dealer-supplied notes.
-    lead_text = _build_machine_first_opening(dealer_input, equipment_type)
+    # L3. Opening paragraph — highlight reel: identity, configuration, class appeal, applications.
+    lead_text = _build_machine_first_opening(dealer_input, equipment_type, resolved_specs, use_case_payload)
     if lead_text:
         lead_text = apply_red_gate(lead_text, dealer_input)
         if lead_text.strip():
@@ -1978,7 +2421,7 @@ def build_listing_text_v3(
 
     # L6. Features block
     if pspec.include_features:
-        feat_block = _build_v3_features(dealer_input, equipment_type)
+        feat_block = _build_v3_features(dealer_input, equipment_type, resolved_specs)
         if feat_block:
             sections.append(feat_block)
 
@@ -1988,13 +2431,19 @@ def build_listing_text_v3(
         if att_block:
             sections.append(att_block)
 
-    # Best For (scorer-backed)
+    # Additional Details (dealer-supplied notes — surfaced after attachments)
+    if pspec.include_additional_details:
+        ad_block = _build_additional_details_block(dealer_input)
+        if ad_block:
+            sections.append(ad_block)
+
+    # Best For (scorer-backed, with descriptors)
     if pspec.include_best_for and use_case_payload:
         bf_block = _build_v3_best_for(use_case_payload)
         if bf_block:
             sections.append(bf_block)
 
-    # L8. CTA — locked phrasing only; pattern bank bypassed.
+    # L8. CTA — price-tiered.
     sections.append(_build_cta_block("", dealer_input, platform))
 
     # ── Final assembly ────────────────────────────────────────────────────
