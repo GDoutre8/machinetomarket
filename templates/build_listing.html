@@ -641,6 +641,66 @@
       .mkt-diff-cta-note{text-align:left;max-width:none}
     }
 
+    /* ── Unified Demo Block ──────────────────────────────────── */
+    .bd-demo-section{background:linear-gradient(180deg,#11151b 0%,#141821 100%);padding:56px 0 52px;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
+    .bd-demo-wrap{display:grid;grid-template-columns:minmax(0,35fr) 88px minmax(0,60fr);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+    /* ── Left panel ───────────────────────────────────────────── */
+    .bd-demo-input{background:#1c2030;padding:28px 24px;display:flex;flex-direction:column;gap:10px}
+    .bd-demo-zone-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px}
+    .bd-demo-field{display:flex;flex-direction:column;gap:3px}
+    .bd-demo-field-lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.56)}
+    .bd-demo-field-val{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:8px 12px;font-family:'Barlow',sans-serif;font-size:14px;color:rgba(255,255,255,.92);line-height:1.35}
+    .bd-demo-field-val strong{font-weight:700}
+    /* ── Arrow — transformation moment ────────────────────────── */
+    .bd-demo-arrow{background:#0e1219;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 12px;border-left:1px solid rgba(255,255,255,.10);border-right:1px solid rgba(255,255,255,.10);box-shadow:0 0 32px rgba(234,179,8,.07) inset}
+    .bd-demo-arrow-circle{width:58px;height:58px;border-radius:50%;background:var(--m-accent,#eab308);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:#0f1115;flex-shrink:0;box-shadow:0 0 0 6px rgba(234,179,8,.12),0 10px 30px rgba(234,179,8,.50);line-height:1}
+    .bd-demo-arrow-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.60);text-align:center;line-height:1.5}
+    /* ── Right panel — the payoff ──────────────────────────────── */
+    .bd-demo-output{background:#181c25;padding:28px;display:flex;flex-direction:column;border-top:2px solid var(--m-accent,#eab308)}
+    /* OEM badge — slightly more presence */
+    .bd-demo-verified{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:999px;border:1px solid rgba(61,184,122,.55);background:rgba(61,184,122,.13);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.07em;color:#7aeaa0;margin-bottom:14px;align-self:flex-start}
+    /* Title — pure white, clear hierarchy leader */
+    .bd-demo-title{font-family:'Barlow',sans-serif;font-size:clamp(17px,1.9vw,22px);font-weight:700;color:#fff;line-height:1.2;margin:0 0 8px;letter-spacing:.01em}
+    /* Price — slight size lift */
+    .bd-demo-price{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;color:var(--m-accent,#eab308);letter-spacing:.01em;margin-bottom:12px;line-height:1}
+    /* Description */
+    .bd-demo-desc{font-family:'Barlow',sans-serif;font-size:13px;line-height:1.7;color:rgba(255,255,255,.72);margin-bottom:18px}
+    /* Section headers */
+    .bd-demo-slabel{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.44);display:block;margin-bottom:8px}
+    /* Key Specs */
+    .bd-demo-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 20px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .bd-demo-spec-pair{display:flex;align-items:center;justify-content:space-between;gap:6px}
+    .bd-sk{font-family:'Barlow',sans-serif;font-size:12px;color:rgba(255,255,255,.55)}
+    .bd-sv{font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,.92);white-space:nowrap}
+    /* Works Best For */
+    .bd-demo-use-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .bd-demo-use-pill{padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.24);font-family:'Barlow',sans-serif;font-size:12px;color:rgba(255,255,255,.82)}
+    /* Package Includes */
+    .bd-demo-pkg-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+    .bd-demo-pkg-tag{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-family:'Barlow',sans-serif;font-size:12px;color:rgba(255,255,255,.82)}
+    .bd-demo-pkg-dot{width:7px;height:7px;border-radius:50%;background:var(--m-accent,#eab308);flex-shrink:0;display:inline-block}
+    /* CTA row */
+    .bd-demo-cta-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);margin-top:auto}
+    .bd-demo-time{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .bd-demo-time-item{display:flex;flex-direction:column;gap:1px}
+    .bd-demo-time-lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.44)}
+    .bd-demo-time-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:rgba(255,255,255,.60)}
+    .bd-demo-time-val.fast{color:var(--m-accent,#eab308);font-weight:700}
+    .bd-demo-time-sep{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.24);text-transform:uppercase;letter-spacing:.1em}
+    /* CTA button */
+    .bd-demo-cta{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:8px;background:var(--m-accent,#eab308);color:#0a0a0a;font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;text-decoration:none;letter-spacing:.04em;transition:background .14s,box-shadow .14s;flex-shrink:0;white-space:nowrap;box-shadow:0 6px 20px rgba(234,179,8,.32)}
+    .bd-demo-cta:hover{background:var(--mtm-yellow-deep,#ca9a07);box-shadow:0 8px 24px rgba(234,179,8,.44)}
+    @media (max-width:860px){
+      .bd-demo-wrap{grid-template-columns:1fr}
+      .bd-demo-arrow{flex-direction:row;justify-content:center;padding:14px 20px;gap:14px;border-left:none;border-right:none;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);box-shadow:none}
+    }
+    @media (max-width:560px){
+      .bd-demo-input,.bd-demo-output{padding:20px 18px}
+      .bd-demo-spec-grid{grid-template-columns:1fr}
+      .bd-demo-cta-row{flex-direction:column;align-items:flex-start}
+      .bd-demo-cta{width:100%;justify-content:center}
+    }
+
     /* Footer */
     .mkt-footer{padding:40px 0 32px;border-top:1px solid #1e1e1b;background:var(--m-ink);font-family:'Barlow',sans-serif}
     .mkt-footer .mkt-brand{padding:0}
@@ -827,120 +887,99 @@
       </div>
     </section>
 
-    <section class="mkt-transform" id="what-you-get" style="scroll-margin-top:72px">
+    <!-- ── UNIFIED DEMO BLOCK ──────────────────────────────────── -->
+    <section class="bd-demo-section" id="see-the-diff" style="scroll-margin-top:72px">
       <div class="mkt-container">
-        <div class="mkt-transform-head">
-          <span class="mkt-transform-kicker">What You Get</span>
-          <h2>From Machine Info to Sales Package</h2>
-          <p>Upload a machine once. MTM builds the assets needed to market it.</p>
-        </div>
-        <div class="mkt-transform-grid">
-          <div class="mkt-transform-col provide">
-            <span class="mkt-transform-col-label">You Provide</span>
-            <ul class="mkt-transform-list">
-              <li><span class="mkt-transform-check">✓</span> Year</li>
-              <li><span class="mkt-transform-check">✓</span> Make</li>
-              <li><span class="mkt-transform-check">✓</span> Model</li>
-              <li><span class="mkt-transform-check">✓</span> Hours</li>
-              <li><span class="mkt-transform-check">✓</span> Features &amp; Attachments</li>
-              <li><span class="mkt-transform-check">✓</span> Photos</li>
-            </ul>
-          </div>
-          <div class="mkt-transform-arrow">
-            <span class="mkt-transform-arrow-label from">Machine<br>Info</span>
-            <span class="mkt-transform-arrow-icon">→</span>
-            <span class="mkt-transform-arrow-label to">Machine<br>to<br>Market</span>
-          </div>
-          <div class="mkt-transform-col builds">
-            <span class="mkt-transform-col-label">MTM Builds</span>
-            <ul class="mkt-transform-list">
-              <li><span class="mkt-transform-check">✓</span> Marketplace Listing Copy</li>
-              <li><span class="mkt-transform-check">✓</span> OEM Spec Sheet</li>
-              <li><span class="mkt-transform-check">✓</span> Listing Photo Set</li>
-              <li><span class="mkt-transform-check">✓</span> Sales Graphics</li>
-              <li><span class="mkt-transform-check">✓</span> Downloadable Package</li>
-              <li><span class="mkt-transform-check">✓</span> Marketplace-Ready Assets</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
+        <div class="bd-demo-wrap">
 
-    <section class="mkt-diff" id="see-the-diff" style="scroll-margin-top:72px">
-      <div class="mkt-container">
-        <div class="mkt-diff-card">
-          <div class="mkt-diff-head">
-            <div>
-              <span class="mkt-diff-kicker">Before / After</span>
-              <h2>See the Difference</h2>
+          <!-- Left: You Enter (35%) -->
+          <div class="bd-demo-input">
+            <div class="bd-demo-zone-lbl">You Enter</div>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Year</label>
+              <div class="bd-demo-field-val">2021</div>
             </div>
-            <p>Turn basic machine information into a marketplace-ready listing package in under a minute.</p>
-          </div>
-          <div class="mkt-diff-grid">
-            <article class="mkt-diff-col">
-              <div class="mkt-diff-col-label">Average Dealer Listing</div>
-              <div class="mkt-diff-before">2021 Kubota KX080-5
-
-2,100 Hours
-
-Cab
-Thumb
-Aux Hydraulics
-
-Good Condition
-
-$68,500</div>
-            </article>
-            <article class="mkt-diff-col">
-              <div class="mkt-diff-col-label">Machine to Market Listing</div>
-              <div class="mkt-diff-after">
-                <span class="mkt-diff-after-title">2021 Kubota KX080-5 — Enclosed Cab, Thumb</span>
-                <span class="mkt-diff-after-price">$68,500</span>
-                <p class="mkt-diff-after-desc">Clean 2021 Kubota KX080-5 with 2,100 hours. Configured with enclosed cab, hydraulic thumb, auxiliary hydraulics, and rubber tracks. Ready for trenching, drainage work, foundation excavation, and site development.</p>
-                <span class="mkt-diff-spec-label">OEM Specs</span>
-                <ul class="mkt-diff-spec-list">
-                  <li>63.3 HP</li>
-                  <li>14 ft 1 in Dig Depth</li>
-                  <li>17,196 lb Operating Weight</li>
-                  <li>26.4 GPM Aux Flow</li>
-                </ul>
-                <span class="mkt-diff-spec-label">Features</span>
-                <ul class="mkt-diff-spec-list">
-                  <li>Hydraulic Thumb</li>
-                  <li>Aux Hydraulics</li>
-                  <li>Enclosed Cab</li>
-                </ul>
-                <span class="mkt-diff-spec-label">Best For</span>
-                <ul class="mkt-diff-spec-list">
-                  <li>Utility Trenching</li>
-                  <li>Foundation Work</li>
-                  <li>Drainage Projects</li>
-                </ul>
-              </div>
-            </article>
-          </div>
-          <div class="mkt-diff-benefits">
-            <div class="mkt-diff-benefit"><span class="mkt-diff-check">✓</span> Verified OEM Specifications</div>
-            <div class="mkt-diff-benefit"><span class="mkt-diff-check">✓</span> Marketplace-Ready Listing Copy</div>
-            <div class="mkt-diff-benefit"><span class="mkt-diff-check">✓</span> Professional Listing Photos &amp; Sales Assets</div>
-          </div>
-          <div class="mkt-diff-foot">
-            <div class="mkt-diff-time">
-              <div class="mkt-diff-time-item">
-                <span class="mkt-diff-time-lbl">Average Dealer Process</span>
-                <span class="mkt-diff-time-val">15–30 Minutes</span>
-              </div>
-              <span class="mkt-diff-time-sep">vs</span>
-              <div class="mkt-diff-time-item">
-                <span class="mkt-diff-time-lbl">Machine to Market</span>
-                <span class="mkt-diff-time-val mkt-diff-time-fast">Under 60 Seconds</span>
-              </div>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Make</label>
+              <div class="bd-demo-field-val"><strong>Kubota</strong></div>
             </div>
-            <div class="mkt-diff-cta-wrap">
-              <a href="#step1-card" class="mkt-diff-cta">Build a Listing Package</a>
-              <p class="mkt-diff-cta-note">Start with basic machine info. MTM handles the listing copy, specs, and sales assets.</p>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Model</label>
+              <div class="bd-demo-field-val"><strong>KX080-5</strong></div>
+            </div>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Hours</label>
+              <div class="bd-demo-field-val">3,100</div>
+            </div>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Features &amp; Attachments</label>
+              <div class="bd-demo-field-val">Cab, Thumb, Aux hydraulics</div>
+            </div>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Asking Price</label>
+              <div class="bd-demo-field-val">$68,500</div>
+            </div>
+            <div class="bd-demo-field">
+              <label class="bd-demo-field-lbl">Photos</label>
+              <div class="bd-demo-field-val" style="color:rgba(255,255,255,.50);font-size:13px;">6 photos uploaded</div>
             </div>
           </div>
+
+          <!-- Center: Arrow connector -->
+          <div class="bd-demo-arrow" aria-hidden="true">
+            <div class="bd-demo-arrow-circle">→</div>
+            <span class="bd-demo-arrow-label">MTM<br>BUILDS</span>
+          </div>
+
+          <!-- Right: Output card (60%) -->
+          <div class="bd-demo-output">
+            <div class="bd-demo-verified">✓ OEM-verified specs</div>
+            <h2 class="bd-demo-title">2021 Kubota KX080-5 — Enclosed cab, thumb</h2>
+            <div class="bd-demo-price">$68,500</div>
+            <p class="bd-demo-desc">Clean 2021 Kubota KX080-5 with 3,100 hours. Configured with enclosed cab, hydraulic thumb, auxiliary hydraulics, and rubber tracks. Ready for trenching, drainage work, foundation excavation, and site development.</p>
+
+            <span class="bd-demo-slabel">Key Specs</span>
+            <div class="bd-demo-spec-grid">
+              <div class="bd-demo-spec-pair"><span class="bd-sk">HP</span><span class="bd-sv">65.9 HP</span></div>
+              <div class="bd-demo-spec-pair"><span class="bd-sk">Tail swing</span><span class="bd-sv">Zero</span></div>
+              <div class="bd-demo-spec-pair"><span class="bd-sk">Weight</span><span class="bd-sv">17,950 lb</span></div>
+              <div class="bd-demo-spec-pair"><span class="bd-sk">Dig depth</span><span class="bd-sv">14'3"</span></div>
+              <div class="bd-demo-spec-pair"><span class="bd-sk">Aux flow</span><span class="bd-sv">26.4 GPM</span></div>
+              <div class="bd-demo-spec-pair"><span class="bd-sk">Bucket force</span><span class="bd-sv">14,060 lb</span></div>
+            </div>
+
+            <span class="bd-demo-slabel">Works Best For</span>
+            <div class="bd-demo-use-pills">
+              <span class="bd-demo-use-pill">Utility trenching</span>
+              <span class="bd-demo-use-pill">Foundation work</span>
+              <span class="bd-demo-use-pill">Drainage projects</span>
+            </div>
+
+            <span class="bd-demo-slabel">Package Includes</span>
+            <div class="bd-demo-pkg-grid">
+              <span class="bd-demo-pkg-tag"><span class="bd-demo-pkg-dot"></span>Listing copy</span>
+              <span class="bd-demo-pkg-tag"><span class="bd-demo-pkg-dot"></span>OEM spec sheet</span>
+              <span class="bd-demo-pkg-tag"><span class="bd-demo-pkg-dot"></span>Hero card</span>
+              <span class="bd-demo-pkg-tag"><span class="bd-demo-pkg-dot"></span>Photo pack</span>
+              <span class="bd-demo-pkg-tag"><span class="bd-demo-pkg-dot"></span>ZIP download</span>
+            </div>
+
+            <div class="bd-demo-cta-row">
+              <div class="bd-demo-time">
+                <div class="bd-demo-time-item">
+                  <span class="bd-demo-time-lbl">Avg. Dealer Process</span>
+                  <span class="bd-demo-time-val">15–30 Minutes</span>
+                </div>
+                <span class="bd-demo-time-sep">vs</span>
+                <div class="bd-demo-time-item">
+                  <span class="bd-demo-time-lbl">Machine to Market</span>
+                  <span class="bd-demo-time-val fast">Under 60 Seconds</span>
+                </div>
+              </div>
+              <a href="#step1-card" class="bd-demo-cta">Build a Listing Package</a>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
