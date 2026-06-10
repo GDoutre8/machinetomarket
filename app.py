@@ -1796,7 +1796,7 @@ def _verify_safe_session_id(session_id: str) -> str:
 _MAX_PHOTO_BYTES = 15 * 1024 * 1024   # 15 MB per file
 _MAX_SESSION_PHOTOS = 30              # session-total cap
 _PHOTO_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
-_VALID_FEATURED_TEMPLATES = ("price_tag", "wide_shot", "auction_ticket", "badge_only", "inventory_clean")
+_VALID_FEATURED_TEMPLATES = ("price_tag", "wide_shot", "auction_ticket", "badge_only", "inventory_clean", "tight_ad", "clean_marketplace", "corner_tag")
 
 
 def _is_acceptable_photo(upload: "UploadFile") -> bool:

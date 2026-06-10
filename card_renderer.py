@@ -693,8 +693,9 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 # ─────────────────────────────────────────────────────────────────────────────
 
 _TEMPLATES: dict[str, Any] = {
-    "price_tag":      _render_price_tag,
-    "auction_ticket": None,  # bound below once function is defined
+    "price_tag":          _render_price_tag,
+    "auction_ticket":     None,  # bound below once function is defined
+    "simple_price_hero":  None,  # bound below once function is defined
     # "template_3": _render_template_3,   # planned
 }
 
@@ -1783,6 +1784,1071 @@ def _render_badge_only(data: dict) -> str:  # noqa: ARG001
     )
 
 _TEMPLATES["badge_only"] = _render_badge_only
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template — "simple_price_hero"
+#
+# Marketplace-style hero: full-bleed photo, dominant price, minimal text.
+# Spec-free by design — no OEM fields, no rail, no table.
+# Intended as Photo #1 in the listing package.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_simple_price_hero(data: dict) -> str:
+    """
+    Dealer advertisement style — full-bleed photo, giant price, italic dealer
+    wordmark. No footer bars, no content boxes, no spec sections.
+
+    layout_variant in data: "A" (top-left price), "B" (bottom-left price),
+    "C" (centered price). Defaults to "A".
+    """
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key = (dealer.get("theme") or "orange").lower().strip()
+    accent    = _THEMES.get(theme_key, _THEMES["orange"])["accent"]
+
+    year      = machine.get("year")
+    make      = (machine.get("make")  or "").upper()
+    model     = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    show_branding = bool(dealer.get("show_branding", True))
+    d_name        = (dealer.get("name") or "").upper()
+
+    variant = (data.get("layout_variant") or "A").upper().strip()
+    if variant not in ("A", "B", "C"):
+        variant = "A"
+
+    # ── Shared elements ────────────────────────────────────────────────────────
+
+    # Title: "2026 BOBCAT E35" — small supporting line
+    title_parts = [p for p in (str(year) if year else "", make, model) if p]
+    title_text  = " ".join(title_parts)
+    t_len = len(title_text)
+    t_size = 52 if t_len <= 20 else (44 if t_len <= 26 else 38)
+    title_el = (
+        f'<div class="sph-title" style="font-size:{t_size}px">'
+        f'{html.escape(title_text)}</div>'
+        if title_text else ""
+    )
+
+    # Price: dominant element
+    if price is not None:
+        pstr  = _fmt_price(price)
+        plen  = len(pstr)
+        psize = 200 if plen <= 7 else (178 if plen <= 8 else 152)
+        price_el = (
+            f'<div class="sph-price" style="font-size:{psize}px">'
+            f'{html.escape(pstr)}</div>'
+        )
+    else:
+        price_el = '<div class="sph-price" style="font-size:86px">CALL FOR PRICE</div>'
+
+    # Hours: small line below price when present
+    if hours is not None:
+        try:
+            hrs_str = f"{int(hours):,} HRS"
+        except (TypeError, ValueError):
+            hrs_str = f"{hours} HRS"
+        hours_el = f'<div class="sph-hours">{html.escape(hrs_str)}</div>'
+    else:
+        hours_el = ""
+
+    # Dealer wordmark: italic, accent-colored, corner brand
+    dealer_el = (
+        f'<div class="sph-dealer">{html.escape(d_name)}</div>'
+        if show_branding and d_name else ""
+    )
+
+    # Photo
+    if photo_uri:
+        photo_html = f'<img class="sph-bg-img" src="{photo_uri}" alt=""/>'
+    else:
+        photo_html = '<div class="sph-bg-fallback"></div>'
+
+    tmpl = {"A": _SPH_A, "B": _SPH_B, "C": _SPH_C}[variant]
+    return tmpl.format(
+        accent=accent,
+        photo_html=photo_html,
+        title_el=title_el,
+        price_el=price_el,
+        hours_el=hours_el,
+        dealer_el=dealer_el,
+    )
+
+
+# ── Shared font import (inlined once per template to keep them self-contained) ──
+_SPH_FONTS = (
+    '<link rel="preconnect" href="https://fonts.googleapis.com">'
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed'
+    ':ital,wght@0,800;0,900;1,900&family=Inter+Tight:wght@500;600'
+    '&display=swap" rel="stylesheet">'
+)
+
+# ── Shared base CSS (included in all three variants) ──────────────────────────
+_SPH_BASE_CSS = """\
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #111; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden; background: #111;
+    --accent: {accent};
+  }}
+  /* Full-bleed photo */
+  .sph-bg {{ position: absolute; inset: 0; z-index: 0; overflow: hidden; }}
+  .sph-bg-img {{
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 48%; display: block;
+  }}
+  .sph-bg-fallback {{
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg,#1f1e1c 0 20px,#171614 20px 40px);
+  }}
+  /* Gradient layers */
+  .sph-g {{ position: absolute; inset: 0; z-index: 1; pointer-events: none; }}
+  /* Accent corner triangle — top right */
+  .sph-corner {{
+    position: absolute; top: 0; right: 0; z-index: 10;
+    width: 80px; height: 80px; background: var(--accent);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+  }}
+  /* Title: small supporting line, white */
+  .sph-title {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+    color: #fff; text-transform: uppercase; letter-spacing: .01em;
+    line-height: 1; white-space: nowrap;
+    text-shadow: 0 2px 10px rgba(0,0,0,.62);
+  }}
+  /* Price: dominant element, accent color */
+  .sph-price {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    color: var(--accent); letter-spacing: -.02em; line-height: .88;
+    white-space: nowrap;
+    text-shadow: 0 4px 30px rgba(0,0,0,.48);
+    margin-top: 6px;
+  }}
+  /* Hours: small subordinate line */
+  .sph-hours {{
+    font-family: 'Inter Tight', sans-serif; font-weight: 600;
+    font-size: 28px; color: rgba(255,255,255,.75);
+    letter-spacing: .10em; text-transform: uppercase;
+    margin-top: 16px;
+    text-shadow: 0 1px 6px rgba(0,0,0,.55);
+  }}
+  /* Dealer wordmark: italic, accent-colored, positioned per variant */
+  .sph-dealer {{
+    position: absolute; z-index: 5;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    font-style: italic; font-size: 96px;
+    color: var(--accent); text-transform: uppercase; line-height: 1;
+    white-space: nowrap;
+    text-shadow: 0 3px 16px rgba(0,0,0,.45);
+  }}"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Variant A — top-left price (matches reference Bobcat E35 ad)
+#
+# Hierarchy:  photo → price (top-left) → title (above price) → dealer (bottom)
+# Gradient:   diagonal from top-left corner, covers text zone
+# ─────────────────────────────────────────────────────────────────────────────
+
+_SPH_A = (
+    "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>"
+    "<title>MTM — Price Hero A</title>" + _SPH_FONTS +
+    "<style>" + _SPH_BASE_CSS + """
+  /* Diagonal gradient from top-left: darkens text zone, clears machine */
+  .sph-g1 {{
+    background: linear-gradient(148deg,
+      rgba(0,0,0,.75) 0%,
+      rgba(0,0,0,.48) 25%,
+      rgba(0,0,0,.12) 46%,
+      rgba(0,0,0,0)   62%);
+  }}
+  /* Bottom fade: legibility for dealer wordmark */
+  .sph-g2 {{
+    background: linear-gradient(to top,
+      rgba(0,0,0,.52) 0%,
+      rgba(0,0,0,0)   22%);
+  }}
+  /* Text stack: title then price, anchored top-left */
+  .sph-stack {{
+    position: absolute; top: 54px; left: 52px; z-index: 5;
+  }}
+  /* Dealer: bottom-left corner */
+  .sph-dealer {{ bottom: 50px; left: 52px; }}
+</style></head><body>
+<div class="card">
+  <div class="sph-bg">{photo_html}</div>
+  <div class="sph-g sph-g1"></div>
+  <div class="sph-g sph-g2"></div>
+  <div class="sph-corner"></div>
+  <div class="sph-stack">
+    {title_el}
+    {price_el}
+    {hours_el}
+  </div>
+  {dealer_el}
+</div></body></html>"""
+)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Variant B — bottom-left price
+#
+# Machine fills the top ~70%; price + title stack near the bottom-left.
+# Gradient:  strong bottom-up, barely touches the top
+# ─────────────────────────────────────────────────────────────────────────────
+
+_SPH_B = (
+    "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>"
+    "<title>MTM — Price Hero B</title>" + _SPH_FONTS +
+    "<style>" + _SPH_BASE_CSS + """
+  /* Strong bottom-up gradient; machine visible in top 65% */
+  .sph-g1 {{
+    background: linear-gradient(to top,
+      rgba(0,0,0,.90) 0%,
+      rgba(0,0,0,.65) 18%,
+      rgba(0,0,0,.25) 40%,
+      rgba(0,0,0,0)   58%);
+  }}
+  /* Subtle top atmosphere */
+  .sph-g2 {{
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,.20) 0%,
+      rgba(0,0,0,0)   18%);
+  }}
+  /* Text stack: title then price, lower-left */
+  .sph-stack {{
+    position: absolute; bottom: 158px; left: 52px; z-index: 5;
+  }}
+  /* Dealer: bottom-left, directly below the price stack */
+  .sph-dealer {{ bottom: 46px; left: 52px; }}
+</style></head><body>
+<div class="card">
+  <div class="sph-bg">{photo_html}</div>
+  <div class="sph-g sph-g1"></div>
+  <div class="sph-g sph-g2"></div>
+  <div class="sph-corner"></div>
+  <div class="sph-stack">
+    {title_el}
+    {price_el}
+    {hours_el}
+  </div>
+  {dealer_el}
+</div></body></html>"""
+)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Variant C — centered price overlay
+#
+# Title sits top-left (small); price is horizontally centered in the lower
+# third; dealer wordmark anchors bottom-right.
+# Gradient:   bottom-up behind the centered price zone
+# ─────────────────────────────────────────────────────────────────────────────
+
+_SPH_C = (
+    "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>"
+    "<title>MTM — Price Hero C</title>" + _SPH_FONTS +
+    "<style>" + _SPH_BASE_CSS + """
+  /* Bottom-center gradient for centered price legibility */
+  .sph-g1 {{
+    background: linear-gradient(to top,
+      rgba(0,0,0,.80) 0%,
+      rgba(0,0,0,.52) 22%,
+      rgba(0,0,0,.16) 42%,
+      rgba(0,0,0,0)   58%);
+  }}
+  /* Top subtle vignette */
+  .sph-g2 {{
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,.28) 0%,
+      rgba(0,0,0,0)   18%);
+  }}
+  /* Title: top-left, small */
+  .sph-title-wrap {{
+    position: absolute; top: 58px; left: 52px; z-index: 5;
+  }}
+  /* Price + hours centered, lower third */
+  .sph-price-wrap {{
+    position: absolute; left: 0; right: 0; bottom: 185px;
+    z-index: 5;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }}
+  .sph-price {{ margin-top: 0; }}
+  /* Dealer: bottom-right corner */
+  .sph-dealer {{ bottom: 50px; right: 52px; text-align: right; }}
+</style></head><body>
+<div class="card">
+  <div class="sph-bg">{photo_html}</div>
+  <div class="sph-g sph-g1"></div>
+  <div class="sph-g sph-g2"></div>
+  <div class="sph-corner"></div>
+  <div class="sph-title-wrap">{title_el}</div>
+  <div class="sph-price-wrap">
+    {price_el}
+    {hours_el}
+  </div>
+  {dealer_el}
+</div></body></html>"""
+)
+
+
+_TEMPLATES["simple_price_hero"] = _render_simple_price_hero
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template — "tight_ad"
+#
+# High-impact marketplace thumbnail: full-bleed photo, top-left price stack,
+# left accent rule, italic dealer wordmark bottom-left. Spec-free.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_tight_ad(data: dict) -> str:
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key = (dealer.get("theme") or "yellow").lower().strip()
+    accent    = _THEMES.get(theme_key, _THEMES["yellow"])["accent"]
+
+    year      = machine.get("year")
+    make      = (machine.get("make")  or "").upper()
+    model     = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    show_branding = bool(dealer.get("show_branding", True))
+    d_name        = (dealer.get("name") or "").upper()
+
+    # Machine identity line
+    title_parts = [p for p in (str(year) if year else "", make, model) if p]
+    title_text  = " ".join(title_parts)
+    t_len  = len(title_text)
+    t_size = 44 if t_len <= 22 else (38 if t_len <= 28 else 32)
+    title_el = (
+        f'<div class="ta-title" style="font-size:{t_size}px">'
+        f'{html.escape(title_text)}</div>'
+    ) if title_text else ""
+
+    # Price — reduced ~17% from SPH variant
+    if price is not None:
+        pstr  = _fmt_price(price)
+        plen  = len(pstr)
+        psize = 164 if plen <= 7 else (146 if plen <= 8 else 124)
+        price_el = (
+            f'<div class="ta-price" style="font-size:{psize}px">'
+            f'{html.escape(pstr)}</div>'
+        )
+    else:
+        price_el = '<div class="ta-price" style="font-size:76px">CALL FOR PRICE</div>'
+
+    # Hours
+    if hours is not None:
+        try:
+            hrs_str = f"{int(hours):,} HRS"
+        except (TypeError, ValueError):
+            hrs_str = f"{hours} HRS"
+        hours_el = f'<div class="ta-hours">{html.escape(hrs_str)}</div>'
+    else:
+        hours_el = ""
+
+    # Dealer wordmark
+    dealer_el = (
+        f'<div class="ta-dealer">{html.escape(d_name)}</div>'
+    ) if show_branding and d_name else ""
+
+    if photo_uri:
+        photo_html = f'<img class="ta-bg-img" src="{photo_uri}" alt=""/>'
+    else:
+        photo_html = '<div class="ta-bg-fallback"></div>'
+
+    return _PAGE_TEMPLATE_TIGHT_AD.format(
+        accent=accent,
+        photo_html=photo_html,
+        title_el=title_el,
+        price_el=price_el,
+        hours_el=hours_el,
+        dealer_el=dealer_el,
+    )
+
+
+_PAGE_TEMPLATE_TIGHT_AD = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Tight Ad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,900&family=Inter+Tight:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #0d0d0c; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden; background: #0d0d0c;
+    --accent: {accent};
+  }}
+  .ta-bg {{ position: absolute; inset: 0; z-index: 0; overflow: hidden; }}
+  .ta-bg-img {{
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 45%;
+    display: block;
+    filter: brightness(1.06) contrast(1.04) saturate(1.05);
+  }}
+  .ta-bg-fallback {{
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg, #1f1e1c 0 20px, #171614 20px 40px);
+  }}
+  .ta-g1 {{
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(152deg,
+      rgba(0,0,0,.80) 0%,
+      rgba(0,0,0,.55) 22%,
+      rgba(0,0,0,.16) 40%,
+      rgba(0,0,0,0)   54%);
+  }}
+  .ta-g2 {{
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(to top,
+      rgba(0,0,0,.44) 0%,
+      rgba(0,0,0,0)   16%);
+  }}
+  .ta-rule {{
+    position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+    background: var(--accent); z-index: 6;
+  }}
+  .ta-stack {{
+    position: absolute; top: 52px; left: 58px; z-index: 5;
+  }}
+  .ta-title {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+    color: rgba(255,255,255,.88); text-transform: uppercase;
+    letter-spacing: .02em; line-height: 1;
+    text-shadow: 0 2px 10px rgba(0,0,0,.62);
+  }}
+  .ta-price {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    color: var(--accent); letter-spacing: -.02em; line-height: .88;
+    white-space: nowrap;
+    text-shadow: 0 3px 24px rgba(0,0,0,.44);
+    margin-top: 6px;
+  }}
+  .ta-hours {{
+    font-family: 'Inter Tight', sans-serif; font-weight: 600;
+    font-size: 24px; color: rgba(255,255,255,.62);
+    letter-spacing: .10em; text-transform: uppercase;
+    margin-top: 12px;
+    text-shadow: 0 1px 6px rgba(0,0,0,.55);
+  }}
+  .ta-dealer {{
+    position: absolute; bottom: 44px; left: 58px; z-index: 5;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    font-style: italic; font-size: 46px;
+    color: var(--accent); text-transform: uppercase; line-height: 1;
+    white-space: nowrap;
+    text-shadow: 0 2px 12px rgba(0,0,0,.48);
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="ta-bg">{photo_html}</div>
+  <div class="ta-g1"></div>
+  <div class="ta-g2"></div>
+  <div class="ta-rule"></div>
+  <div class="ta-stack">
+    {title_el}
+    {price_el}
+    {hours_el}
+  </div>
+  {dealer_el}
+</div>
+</body>
+</html>
+"""
+
+_TEMPLATES["tight_ad"] = _render_tight_ad
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template — "clean_marketplace"
+#
+# Restrained inventory card: photo-dominant, minimal overlay, large model
+# name, modest price, quiet dealer ID. Safe across bulk inventory feeds.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_clean_marketplace(data: dict) -> str:
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key = (dealer.get("theme") or "yellow").lower().strip()
+    accent    = _THEMES.get(theme_key, _THEMES["yellow"])["accent"]
+
+    year      = machine.get("year")
+    make      = (machine.get("make")  or "").upper()
+    model     = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    show_branding = bool(dealer.get("show_branding", True))
+    d_name        = (dealer.get("name") or "").upper()
+
+    # Eyebrow: year · make
+    eyebrow_parts = [p for p in (str(year) if year else "", make) if p]
+    eyebrow_text  = " · ".join(eyebrow_parts)
+    eyebrow_el = (
+        f'<div class="cm-eyebrow">{html.escape(eyebrow_text)}</div>'
+    ) if eyebrow_text else ""
+
+    # Model — auto-shrink for long names
+    mlen = len(model)
+    if mlen <= 3:   model_px = 210
+    elif mlen <= 4: model_px = 195
+    elif mlen <= 5: model_px = 172
+    elif mlen <= 7: model_px = 138
+    elif mlen <= 9: model_px = 110
+    else:           model_px = 88
+    model_el = (
+        f'<div class="cm-model" style="font-size:{model_px}px">'
+        f'{html.escape(model)}</div>'
+    ) if model else ""
+
+    # Price
+    price_el = ""
+    if price is not None:
+        pstr = _fmt_price(price)
+        if pstr:
+            price_el = f'<span class="cm-price">{html.escape(pstr)}</span>'
+
+    # Hours
+    hours_el = ""
+    if hours is not None:
+        try:
+            hrs_str = f"{int(hours):,} HRS"
+        except (TypeError, ValueError):
+            hrs_str = f"{hours} HRS"
+        hours_el = f'<span class="cm-hours">{html.escape(hrs_str)}</span>'
+
+    price_row_el = (
+        f'<div class="cm-price-row">{price_el}{hours_el}</div>'
+    ) if (price_el or hours_el) else ""
+
+    if photo_uri:
+        photo_html = f'<img class="cm-photo" src="{photo_uri}" alt=""/>'
+    else:
+        photo_html = '<div class="cm-photo cm-photo-fallback"></div>'
+
+    dealer_el = (
+        f'<div class="cm-dealer">{html.escape(d_name)}</div>'
+    ) if show_branding and d_name else ""
+
+    return _PAGE_TEMPLATE_CLEAN_MARKETPLACE.format(
+        accent=accent,
+        photo_html=photo_html,
+        eyebrow_el=eyebrow_el,
+        model_el=model_el,
+        price_row_el=price_row_el,
+        dealer_el=dealer_el,
+    )
+
+
+_PAGE_TEMPLATE_CLEAN_MARKETPLACE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Clean Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #0d0d0c; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden; background: #0d0d0c;
+    --accent: {accent};
+  }}
+  .cm-photo {{
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 44%;
+    display: block;
+    filter: brightness(1.05) contrast(1.03) saturate(1.04);
+  }}
+  .cm-photo-fallback {{
+    background: repeating-linear-gradient(135deg, #1f1e1c 0 20px, #171614 20px 40px);
+  }}
+  /* Gentle bottom gradient — enough to read text, no more */
+  .cm-scrim {{
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(to top,
+      rgba(0,0,0,.90) 0%,
+      rgba(0,0,0,.68) 14%,
+      rgba(0,0,0,.28) 30%,
+      rgba(0,0,0,.04) 46%,
+      rgba(0,0,0,0)   58%);
+  }}
+  /* Text stack: bottom-left */
+  .cm-stack {{
+    position: absolute; left: 54px; bottom: 72px; z-index: 5;
+  }}
+  .cm-eyebrow {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    font-size: 22px; color: rgba(255,255,255,.58);
+    text-transform: uppercase; letter-spacing: .18em;
+    margin-bottom: 2px;
+  }}
+  .cm-model {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    line-height: .84; letter-spacing: -.02em;
+    text-transform: uppercase; color: #fff;
+    margin-left: -3px;
+    text-shadow: 0 2px 18px rgba(0,0,0,.36);
+    white-space: nowrap; overflow: hidden;
+  }}
+  .cm-price-row {{
+    display: flex; align-items: baseline; gap: 20px;
+    margin-top: 8px;
+  }}
+  .cm-price {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    font-size: 68px; line-height: .88; letter-spacing: -.02em;
+    color: var(--accent);
+  }}
+  .cm-hours {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    font-size: 26px; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.48);
+  }}
+  /* Dealer: bottom-right, quiet */
+  .cm-dealer {{
+    position: absolute; bottom: 44px; right: 54px; z-index: 5;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 20px; letter-spacing: .14em;
+    text-transform: uppercase; color: rgba(255,255,255,.40);
+    text-align: right; white-space: nowrap;
+    text-shadow: 0 1px 6px rgba(0,0,0,.55);
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  {photo_html}
+  <div class="cm-scrim"></div>
+  <div class="cm-stack">
+    {eyebrow_el}
+    {model_el}
+    {price_row_el}
+  </div>
+  {dealer_el}
+</div>
+</body>
+</html>
+"""
+
+_TEMPLATES["clean_marketplace"] = _render_clean_marketplace
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template — "split_horizon"
+#
+# Structured two-zone card: photo fills top 71%, solid dark panel anchors
+# bottom 29%. Machine is the hero. Price is clear, not obnoxious.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_split_horizon(data: dict) -> str:
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key = (dealer.get("theme") or "yellow").lower().strip()
+    accent    = _THEMES.get(theme_key, _THEMES["yellow"])["accent"]
+
+    year      = machine.get("year")
+    make      = (machine.get("make")  or "").upper()
+    model     = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    show_branding = bool(dealer.get("show_branding", True))
+    d_name        = (dealer.get("name") or "").upper()
+
+    # Eyebrow: year · make · model
+    eyebrow_parts = [p for p in (str(year) if year else "", make, model) if p]
+    eyebrow_text  = " · ".join(eyebrow_parts)
+    eyebrow_el = (
+        f'<div class="sh-eyebrow">{html.escape(eyebrow_text)}</div>'
+    ) if eyebrow_text else ""
+
+    # Price — restrained, not dominant
+    if price is not None:
+        pstr  = _fmt_price(price)
+        plen  = len(pstr)
+        psize = 118 if plen <= 7 else (104 if plen <= 8 else 88)
+        price_el = (
+            f'<div class="sh-price" style="font-size:{psize}px">'
+            f'{html.escape(pstr)}</div>'
+        )
+    else:
+        price_el = '<div class="sh-price" style="font-size:64px">CALL FOR PRICE</div>'
+
+    # Hours
+    hours_el = ""
+    if hours is not None:
+        try:
+            hrs_str = f"{int(hours):,} HRS"
+        except (TypeError, ValueError):
+            hrs_str = f"{hours} HRS"
+        hours_el = f'<span class="sh-hours">{html.escape(hrs_str)}</span>'
+
+    # Dealer in panel
+    dealer_el = (
+        f'<span class="sh-dealer">{html.escape(d_name)}</span>'
+    ) if show_branding and d_name else ""
+
+    meta_el = (
+        f'<div class="sh-meta">{hours_el}{dealer_el}</div>'
+    ) if (hours_el or dealer_el) else ""
+
+    # Photo-zone dealer: small top-left on the photo
+    photo_dealer_el = (
+        f'<div class="sh-photo-dealer">{html.escape(d_name)}</div>'
+    ) if show_branding and d_name else ""
+
+    if photo_uri:
+        photo_html = f'<img class="sh-photo-img" src="{photo_uri}" alt=""/>'
+    else:
+        photo_html = '<div class="sh-photo-fallback"></div>'
+
+    return _PAGE_TEMPLATE_SPLIT_HORIZON.format(
+        accent=accent,
+        photo_html=photo_html,
+        photo_dealer_el=photo_dealer_el,
+        eyebrow_el=eyebrow_el,
+        price_el=price_el,
+        meta_el=meta_el,
+    )
+
+
+_PAGE_TEMPLATE_SPLIT_HORIZON = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Split Horizon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Inter+Tight:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #0d0d0c; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden; background: #0d0d0c;
+    --accent: {accent};
+  }}
+  /* Photo zone: top 71% = 960px */
+  .sh-photo-zone {{
+    position: absolute; top: 0; left: 0; right: 0; height: 960px;
+    overflow: hidden;
+  }}
+  .sh-photo-img {{
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 40%;
+    display: block;
+    filter: brightness(1.06) contrast(1.04) saturate(1.05);
+  }}
+  .sh-photo-fallback {{
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg, #1f1e1c 0 20px, #171614 20px 40px);
+  }}
+  /* Subtle top vignette — dealer label legibility */
+  .sh-top-fade {{
+    position: absolute; top: 0; left: 0; right: 0; height: 140px;
+    background: linear-gradient(to bottom, rgba(0,0,0,.30) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+  }}
+  /* Dealer label: photo top-left */
+  .sh-photo-dealer {{
+    position: absolute; top: 32px; left: 52px; z-index: 5;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 20px; color: rgba(255,255,255,.72);
+    text-transform: uppercase; letter-spacing: .14em;
+    text-shadow: 0 1px 8px rgba(0,0,0,.60);
+  }}
+  /* Info panel: bottom 29% = 390px */
+  .sh-panel {{
+    position: absolute; left: 0; right: 0; bottom: 0; height: 390px;
+    background: #0d0d0c;
+    border-top: 3px solid var(--accent);
+    padding: 28px 54px 36px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }}
+  .sh-eyebrow {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 22px; color: var(--accent);
+    text-transform: uppercase; letter-spacing: .20em;
+    margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }}
+  .sh-price {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    color: #fff; letter-spacing: -.02em; line-height: .88;
+    white-space: nowrap; margin-left: -3px;
+  }}
+  .sh-meta {{
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-top: 16px;
+  }}
+  .sh-hours {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    font-size: 28px; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.46);
+  }}
+  .sh-dealer {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-style: italic; font-size: 28px;
+    color: rgba(255,255,255,.34); text-transform: uppercase;
+    letter-spacing: .04em; white-space: nowrap;
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="sh-photo-zone">
+    {photo_html}
+    <div class="sh-top-fade"></div>
+  </div>
+  {photo_dealer_el}
+  <div class="sh-panel">
+    {eyebrow_el}
+    {price_el}
+    {meta_el}
+  </div>
+</div>
+</body>
+</html>
+"""
+
+_TEMPLATES["split_horizon"] = _render_split_horizon
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Featured Listing Template — "corner_tag"
+#
+# Full-bleed hero photo, machine identity top-left, accent price tag anchored
+# bottom-right corner. No panel, no rail, no compressed photo zone.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _render_corner_tag(data: dict) -> str:
+    machine = data.get("machine") or {}
+    dealer  = data.get("dealer")  or {}
+    listing = data.get("listing") or {}
+
+    theme_key  = (dealer.get("theme") or "yellow").lower().strip()
+    theme      = _THEMES.get(theme_key, _THEMES["yellow"])
+    accent     = theme["accent"]
+    accent_ink = theme["accent_ink"]
+
+    year      = machine.get("year")
+    make      = (machine.get("make")  or "").upper()
+    model     = (machine.get("model") or "").upper()
+    photo_uri = _photo_data_uri(machine.get("photo_path"))
+
+    price = listing.get("price_usd")
+    hours = listing.get("hours")
+
+    show_branding = bool(dealer.get("show_branding", True))
+    d_name        = (dealer.get("name") or "").upper()
+
+    # Eyebrow: year · make
+    eyebrow_parts = [p for p in (str(year) if year else "", make) if p]
+    eyebrow_text  = " · ".join(eyebrow_parts)
+    eyebrow_el = (
+        f'<div class="ct-eyebrow">{html.escape(eyebrow_text)}</div>'
+    ) if eyebrow_text else ""
+
+    # Model — auto-shrink; smaller than clean_marketplace since tag competes
+    mlen = len(model)
+    if mlen <= 3:   model_px = 154
+    elif mlen <= 4: model_px = 140
+    elif mlen <= 5: model_px = 122
+    elif mlen <= 7: model_px = 100
+    elif mlen <= 9: model_px = 82
+    else:           model_px = 66
+    model_el = (
+        f'<div class="ct-model" style="font-size:{model_px}px">'
+        f'{html.escape(model)}</div>'
+    ) if model else ""
+
+    id_el = (
+        f'<div class="ct-id">{eyebrow_el}{model_el}</div>'
+    ) if (eyebrow_el or model_el) else ""
+
+    # Price — Barlow Condensed, restrained size
+    if price is not None:
+        pstr  = _fmt_price(price)
+        plen  = len(pstr)
+        psize = 88 if plen <= 7 else (78 if plen <= 8 else 66)
+        price_el = (
+            f'<span class="ct-price" style="font-size:{psize}px">'
+            f'{html.escape(pstr)}</span>'
+        )
+    else:
+        price_el = '<span class="ct-price" style="font-size:52px">CALL FOR PRICE</span>'
+
+    # Hours inside tag
+    if hours is not None:
+        try:
+            hrs_str = f"{int(hours):,} HRS"
+        except (TypeError, ValueError):
+            hrs_str = f"{hours} HRS"
+        hours_el = f'<span class="ct-hours">{html.escape(hrs_str)}</span>'
+    else:
+        hours_el = ""
+
+    tag_el = f'<div class="ct-tag">{price_el}{hours_el}</div>'
+
+    # Dealer: subtle bottom-left
+    dealer_el = (
+        f'<div class="ct-dealer">{html.escape(d_name)}</div>'
+    ) if show_branding and d_name else ""
+
+    if photo_uri:
+        photo_html = f'<img class="ct-photo" src="{photo_uri}" alt=""/>'
+    else:
+        photo_html = '<div class="ct-photo ct-photo-fallback"></div>'
+
+    return _PAGE_TEMPLATE_CORNER_TAG.format(
+        accent=accent,
+        accent_ink=accent_ink,
+        photo_html=photo_html,
+        id_el=id_el,
+        tag_el=tag_el,
+        dealer_el=dealer_el,
+    )
+
+
+_PAGE_TEMPLATE_CORNER_TAG = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MTM Featured Listing — Corner Tag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #0d0d0c; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; height: 1350px;
+    position: relative; overflow: hidden; background: #0d0d0c;
+    --accent: {accent};
+    --accent-ink: {accent_ink};
+  }}
+  .ct-photo {{
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 42%;
+    display: block;
+    filter: brightness(1.06) contrast(1.04) saturate(1.05);
+  }}
+  .ct-photo-fallback {{
+    background: repeating-linear-gradient(135deg, #1f1e1c 0 20px, #171614 20px 40px);
+  }}
+  /* Top-left diagonal scrim — machine ID legibility only */
+  .ct-scrim-tl {{
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(135deg,
+      rgba(0,0,0,.50) 0%,
+      rgba(0,0,0,.24) 22%,
+      rgba(0,0,0,0)   40%);
+  }}
+  /* Bottom edge — dealer label legibility */
+  .ct-scrim-bot {{
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(to top,
+      rgba(0,0,0,.28) 0%,
+      rgba(0,0,0,0)   14%);
+  }}
+  /* Machine identity: top-left */
+  .ct-id {{
+    position: absolute; top: 46px; left: 54px; z-index: 5;
+  }}
+  .ct-eyebrow {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    font-size: 20px; color: rgba(255,255,255,.65);
+    text-transform: uppercase; letter-spacing: .16em;
+    margin-bottom: 4px;
+    text-shadow: 0 1px 8px rgba(0,0,0,.60);
+  }}
+  .ct-model {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    line-height: .86; letter-spacing: -.02em;
+    color: rgba(255,255,255,.92); text-transform: uppercase;
+    margin-left: -3px;
+    text-shadow: 0 2px 14px rgba(0,0,0,.58);
+    white-space: nowrap;
+  }}
+  /* Price corner tag: bottom-right */
+  .ct-tag {{
+    position: absolute; right: 0; bottom: 0; z-index: 6;
+    background: var(--accent);
+    padding: 26px 52px 34px 68px;
+    clip-path: polygon(22% 0%, 100% 0%, 100% 100%, 0% 100%);
+    text-align: right;
+  }}
+  .ct-price {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    color: var(--accent-ink); line-height: .88; letter-spacing: -.02em;
+    display: block; white-space: nowrap;
+  }}
+  .ct-hours {{
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 22px; color: rgba(13,13,12,.55);
+    letter-spacing: .12em; text-transform: uppercase;
+    margin-top: 6px; display: block;
+  }}
+  /* Dealer: subtle bottom-left */
+  .ct-dealer {{
+    position: absolute; bottom: 44px; left: 54px; z-index: 5;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 19px; letter-spacing: .14em;
+    text-transform: uppercase; color: rgba(255,255,255,.44);
+    text-shadow: 0 1px 6px rgba(0,0,0,.55);
+    white-space: nowrap;
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  {photo_html}
+  <div class="ct-scrim-tl"></div>
+  <div class="ct-scrim-bot"></div>
+  {id_el}
+  {tag_el}
+  {dealer_el}
+</div>
+</body>
+</html>
+"""
+
+_TEMPLATES["corner_tag"] = _render_corner_tag
 
 
 # ─────────────────────────────────────────────────────────────────────────────

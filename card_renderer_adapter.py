@@ -246,10 +246,15 @@ def _contain_on_blur_data_uri(
 
 
 _FEATURED_PHOTO_ZONES = {
-    "price_tag":       (1080, 1350),
-    "auction_ticket":  (1008, 540),
-    "wide_shot":       (1080, 746),
-    "inventory_clean": (1080, 1350),
+    "price_tag":          (1080, 1350),
+    "auction_ticket":     (1008, 540),
+    "wide_shot":          (1080, 746),
+    "inventory_clean":    (1080, 1350),
+    "simple_price_hero":  (1080, 1350),
+    "tight_ad":           (1080, 1350),
+    "clean_marketplace":  (1080, 1350),
+    "split_horizon":      (1080, 1350),
+    "corner_tag":         (1080, 1350),
 }
 
 
@@ -289,6 +294,31 @@ def adapt_dealer_input(
         or info.get("featured_template")
         or "price_tag"
     )
+
+    # Feature pills for simple_price_hero — dealer-confirmed flags only, max 3,
+    # priority-ordered. Never inferred from specs or model names.
+    _FEATURE_PILL_MAP = [
+        # (attr,           match,       display_label)
+        ("high_flow",        "yes",      "High Flow"),
+        ("two_speed_travel", "yes",      "2-Speed"),
+        ("cab_type",         "enclosed", "Enclosed Cab"),
+        ("heater",           True,       "Heater"),
+        ("ac",               True,       "A/C"),
+        ("ride_control",     True,       "Ride Control"),
+        ("air_ride_seat",    True,       "Air Ride Seat"),
+        ("backup_camera",    True,       "Backup Camera"),
+        ("self_leveling",    True,       "Self-Leveling"),
+    ]
+    feature_bullets: list[str] = []
+    for attr, match, label in _FEATURE_PILL_MAP:
+        val = getattr(dealer_input, attr, None)
+        if val is None:
+            continue
+        if val == match or (match is True and bool(val)):
+            feature_bullets.append(label)
+        if len(feature_bullets) >= 3:
+            break
+
     return {
         "photo_path":     image_input_paths[0] if image_input_paths else None,
         "listing_price":  getattr(dealer_input, "asking_price", None),
@@ -306,6 +336,8 @@ def adapt_dealer_input(
         "show_branding":  info.get("show_branding", True),
         "apply_dealer_badge": bool(info.get("apply_dealer_badge", True)),
         "featured_template": chosen_template,
+        # Confirmed dealer feature labels for simple_price_hero Zone C
+        "feature_bullets": feature_bullets,
     }
 
 
@@ -369,8 +401,10 @@ def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
             "apply_dealer_badge": bool(dealer_dict.get("apply_dealer_badge", True)),
         },
         "listing": {
-            "price_usd": dealer_dict.get("listing_price") or dealer_dict.get("price"),
-            "hours":     dealer_dict.get("listing_hours") or dealer_dict.get("hours"),
+            "price_usd":       dealer_dict.get("listing_price") or dealer_dict.get("price"),
+            "hours":           dealer_dict.get("listing_hours") or dealer_dict.get("hours"),
+            # feature_bullets: dealer-confirmed labels for simple_price_hero Zone C
+            "feature_bullets": dealer_dict.get("feature_bullets") or [],
         },
         "featured_template": dealer_dict.get("featured_template") or "price_tag",
     }
@@ -416,18 +450,22 @@ def export_listing_card(
                 fit_uri = _contain_on_blur_data_uri(src_photo, zone[0], zone[1])
                 if fit_uri is not None:
                     payload["machine"]["photo_path"] = fit_uri
-            # Suppress the HTML-rendered dealer badge/footer for templates that
-            # now receive the standard composited badge. The dealer payload is
-            # preserved on a copy so the post-composite step still has logo,
-            # name, phone, accent.
+            # Templates that receive a composited badge after HTML render.
+            # Their HTML-rendered dealer markup is suppressed here; the badge
+            # renderer reapplies identity at the pixel layer afterward.
+            # simple_price_hero and inventory_clean render dealer identity
+            # directly in HTML (footer bar / text overlay); no composite badge.
+            _COMPOSITE_BADGE_TEMPLATES = {"price_tag", "auction_ticket", "wide_shot"}
             dealer_full = dict(payload.get("dealer") or {})
             html_payload = dict(payload)
-            html_payload["dealer"] = {**dealer_full, "show_branding": False}
+            if chosen in _COMPOSITE_BADGE_TEMPLATES:
+                html_payload["dealer"] = {**dealer_full, "show_branding": False}
+            else:
+                html_payload["dealer"] = dealer_full
             html_str = render_card(html_payload)
             _screenshot_card(html_str, output_path)
-            if chosen in {"price_tag", "auction_ticket", "wide_shot"}:
+            if chosen in _COMPOSITE_BADGE_TEMPLATES:
                 _apply_standard_badge_to_card(output_path, dealer_full)
-            # inventory_clean embeds dealer text in the HTML overlay; no composite badge.
         log.info("[card] exported %s (template=%s)", output_path, chosen or "default")
         return output_path
     except Exception as exc:
