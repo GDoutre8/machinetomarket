@@ -157,6 +157,14 @@ REGISTRY_FILENAMES = {
     "telehandler":   "mtm_telehandler_registry_v3.json",
 }
 
+# Registry tiers that must never appear in lookup candidates.
+# Records at these tiers remain in the JSON for audit purposes but are
+# invisible to the lookup layer.
+_DEPRECATED_REGISTRY_TIERS: frozenset = frozenset({
+    "DEPRECATED",
+    "deprecated_ambiguous_parent",
+})
+
 # ---------------------------------------------------------------------------
 # MANUFACTURER ALIAS MAP
 # ---------------------------------------------------------------------------
@@ -1885,7 +1893,7 @@ def _lookup_machine_core(
 
     # ── 3. Resolve and apply equipment_type filter ────────────────────────
     canonical_eq = _resolve_eq_type(equipment_type) if equipment_type else None
-    candidates   = registry
+    candidates   = [r for r in registry if r.get("registry_tier") not in _DEPRECATED_REGISTRY_TIERS]
 
     if canonical_eq:
         candidates = [r for r in candidates if r.get("equipment_type") == canonical_eq]
@@ -2093,6 +2101,7 @@ def search_by_model(model: str, equipment_type: str = "") -> list[dict]:
     Returns up to 5 matches sorted by descending confidence.
     """
     registry     = _get_registry()
+    registry     = [r for r in registry if r.get("registry_tier") not in _DEPRECATED_REGISTRY_TIERS]
     canonical_eq = _resolve_eq_type(equipment_type) if equipment_type else None
     if canonical_eq:
         registry = [r for r in registry if r.get("equipment_type") == canonical_eq]
