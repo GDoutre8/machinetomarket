@@ -247,12 +247,11 @@ _KUBOTA_MEX_BASE_MODELS: frozenset = frozenset({
 _KUBOTA_MEX_SUFFIX_RE = re.compile(r"R[1-3]T?$", re.IGNORECASE)
 
 MODEL_BRIDGE_ALIASES: dict[str, str] = {
-    # Caterpillar CTL — shorthand without generation suffix
-    # Note: 289d/259d/279d already resolve via slug_match (conf=0.95).
-    # Bridge entries are included here as explicit overrides for clarity.
-    "289d":  "289D3",
-    "259d":  "259D3",
-    "279d":  "279D3",
+    # Caterpillar CTL: do NOT bridge 259d/279d/289d to the D3 generation.
+    # The registry contains genuine 259D/279D/289D records; bridging shadowed
+    # them and silently returned next-generation (D3) specs at confidence 1.0.
+    # Exact records score 1.0 vs the D3 slug containment 0.95, so the
+    # ambiguity band keeps both generations independently reachable.
     # Kubota CTL — SVL75/SVL65 do NOT slug-match their -2 successors; bridge required.
     # Keys are pre-normalized (lowercase, spaces and hyphens stripped) because the
     # bridge lookup normalizes the input key before lookup — see step 1b in lookup_machine().
@@ -1711,7 +1710,111 @@ def _get_registry() -> list[dict]:
     return _REGISTRY_CACHE
 
 
+# ── Free-form query normalization (F1/F2: year-prefixed + marketplace input) ──
+# Deterministic, dependency-free cleanup applied ONLY when the raw query fails.
+# No NLP: a year-prefix regex, an hours-token regex, a tail cut at the first
+# comma or "$", a fixed noise-phrase/word list, then token-prefix shrinking.
+
+_QUERY_YEAR_PREFIX_RE = re.compile(r"^\s*(?:19[7-9]\d|20[0-3]\d)\b[\s\-,:]*")
+_QUERY_HOURS_RE       = re.compile(r"\b(?:\d{1,3}(?:,\d{3})+|\d{1,6})\s*(?:hrs?|hours?)\b", re.IGNORECASE)
+_QUERY_TAIL_RE        = re.compile(r"[,$].*$")   # marketplace tail: ", 1800 hrs ... $48,500 OBO"
+
+_QUERY_NOISE_PHRASES: tuple[str, ...] = (
+    "high flow", "low hours", "one owner", "clean machine", "ready to work",
+    "hydraulic thumb", "open station", "enclosed cab", "heat and air", "cab and air",
+)
+_QUERY_NOISE_WORDS: frozenset[str] = frozenset({
+    "hr", "hrs", "hour", "hours", "obo", "owner", "owners", "clean", "nice",
+    "cab", "canopy", "thumb", "bucket", "forks", "grapple", "aux",
+    "hydraulic", "hydraulics", "heat", "ac", "a/c", "radio", "machine", "unit",
+})
+
+_MAX_QUERY_ATTEMPTS = 5
+
+
+def _normalize_marketplace_query(query: str) -> str:
+    """Strip year prefix, hours tokens, price tail, and listing noise words."""
+    q = query.strip()
+    q = _QUERY_TAIL_RE.sub("", q)
+    q = _QUERY_YEAR_PREFIX_RE.sub("", q)
+    q = _QUERY_HOURS_RE.sub(" ", q)
+    for phrase in _QUERY_NOISE_PHRASES:
+        q = re.sub(re.escape(phrase), " ", q, flags=re.IGNORECASE)
+    tokens = [t for t in q.split() if t.lower().strip(".,;") not in _QUERY_NOISE_WORDS]
+    return " ".join(tokens)
+
+
+def _query_attempts(query: str) -> list[str]:
+    """
+    Build the deterministic retry ladder for a free-form query:
+      1. the raw query (existing behavior — tried first, unchanged)
+      2. the marketplace-normalized form
+      3. progressively shorter token prefixes of the normalized form
+    Candidates whose model part parses empty (make-only strings) are skipped so
+    the ladder can never produce a manufacturer-only match for a failed query.
+    """
+    attempts = [query]
+
+    def _add(candidate: str) -> None:
+        candidate = candidate.strip()
+        if not candidate or len(attempts) >= _MAX_QUERY_ATTEMPTS:
+            return
+        if any(candidate.lower() == a.strip().lower() for a in attempts):
+            return
+        _, parsed_model = _parse_query(candidate, [])
+        if not parsed_model.strip():
+            return   # make-only — would degrade to manufacturer-level match
+        attempts.append(candidate)
+
+    normalized = _normalize_marketplace_query(query)
+    _add(normalized)
+    tokens = normalized.split()
+    for end in range(len(tokens) - 1, 1, -1):   # keep at least 2 tokens
+        _add(" ".join(tokens[:end]))
+    return attempts
+
+
 def lookup_machine(
+    manufacturer: str = "",
+    model: str = "",
+    query: str = "",
+    equipment_type: str = "",
+) -> dict:
+    """
+    Public lookup entry point.
+
+    Direct manufacturer/model calls pass straight through to the core matcher
+    (_lookup_machine_core — see its docstring for matching semantics).
+
+    Free-form `query` calls get a deterministic normalization ladder
+    (_query_attempts): the raw query is tried first, preserving existing
+    behavior exactly; only if it fails are the marketplace-normalized form and
+    shorter token prefixes tried. An `ambiguous_model` result is returned
+    immediately (never rewritten past). A match obtained from a rewritten query
+    carries the rewrite in result["normalized_query"] for explainability.
+    On total failure the raw-query failure result is returned unchanged.
+    """
+    if not (query and not manufacturer and not model):
+        return _lookup_machine_core(
+            manufacturer=manufacturer, model=model,
+            query=query, equipment_type=equipment_type,
+        )
+
+    raw_failure: dict | None = None
+    for attempt in _query_attempts(query):
+        result = _lookup_machine_core(query=attempt, equipment_type=equipment_type)
+        if result.get("match"):
+            if attempt != query.strip():
+                result["normalized_query"] = attempt
+            return result
+        if result.get("reason") == "ambiguous_model":
+            return result
+        if raw_failure is None:
+            raw_failure = result
+    return raw_failure
+
+
+def _lookup_machine_core(
     manufacturer: str = "",
     model: str = "",
     query: str = "",
