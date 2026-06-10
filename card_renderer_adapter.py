@@ -292,7 +292,7 @@ def adapt_dealer_input(
     chosen_template = (
         featured_template
         or info.get("featured_template")
-        or "price_tag"
+        or "clean_marketplace"
     )
 
     # Feature pills for simple_price_hero — dealer-confirmed flags only, max 3,
@@ -406,7 +406,7 @@ def _build_render_payload(full_record: dict, dealer_dict: dict) -> dict:
             # feature_bullets: dealer-confirmed labels for simple_price_hero Zone C
             "feature_bullets": dealer_dict.get("feature_bullets") or [],
         },
-        "featured_template": dealer_dict.get("featured_template") or "price_tag",
+        "featured_template": dealer_dict.get("featured_template") or "clean_marketplace",
     }
 
 

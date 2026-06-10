@@ -1888,7 +1888,7 @@ async def build_listing_verify_create(
     bucket_included:      str            = Form("false"),
     bucket_size:          Optional[str]  = Form(None),
     warranty_status:      Optional[str]  = Form(None),
-    featured_template:    str            = Form("price_tag"),
+    featured_template:    str            = Form("clean_marketplace"),
     apply_dealer_badge:   str            = Form("true"),
     dealer_profile_json:  Optional[str]  = Form(None),
     photos: List[UploadFile] = File(default=[]),
@@ -2300,7 +2300,7 @@ async def build_listing_verify_view(request: Request, session_id: str):
         "dealer_logo_url": dealer_logo_url,
         "dealer_accent_color": dealer_accent_color,
         "featured_template": (
-            (dealer_input_data.get("featured_template") or "price_tag").strip().lower()
+            (dealer_input_data.get("featured_template") or "clean_marketplace").strip().lower()
             if isinstance(dealer_input_data, dict) else "price_tag"
         ),
         "apply_dealer_badge": (
@@ -2846,7 +2846,7 @@ async def build_listing_generate(
     bucket_included:      str            = Form("false"),
     bucket_size:          Optional[str]  = Form(None),
     warranty_status:      Optional[str]  = Form(None),
-    featured_template:    str            = Form("price_tag"),
+    featured_template:    str            = Form("clean_marketplace"),
     apply_dealer_badge:   str            = Form("true"),
     # Verify-page overrides (session-scoped; never write back to registry)
     spec_overrides_json:  Optional[str]  = Form(None),
