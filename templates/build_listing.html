@@ -810,7 +810,7 @@
                   </div>
                 </div>
 
-                <input type="hidden" id="featured_template" name="featured_template" value="inventory_clean">
+                <input type="hidden" id="featured_template" name="featured_template" value="clean_marketplace">
 
                 <button type="button" id="identify-btn" class="mkt-build-btn btn-generate">BUILD MY LISTING <span class="arrow">&rsaquo;</span></button>
 
@@ -937,7 +937,7 @@
                     class="mkt-pr-row output-selector__row is-active"
                     role="tab" aria-selected="true"
                     data-asset="/static/demo_outputs/demo_price_tag_card.png"
-                    data-asset-alt="Marketplace Hero Card — 2021 Kubota SVL 97-2 price tag listing render"
+                    data-asset-alt="Marketplace Hero Card — 2024 Caterpillar 299D3 XE clean marketplace listing render"
                     data-caption="PNG · 1080×1350 · Marketplace-formatted">
               <span class="mkt-pr-num">A.</span>
               <span class="mkt-pr-text">
@@ -1508,7 +1508,7 @@ $119,500</div>
         make: make,
         model: model,
         year: year,
-        featured_template: (_ftEl && _ftEl.value) ? _ftEl.value.trim() : 'price_tag',
+        featured_template: (_ftEl && _ftEl.value) ? _ftEl.value.trim() : 'clean_marketplace',
       });
     } catch (_) {}
 
@@ -1525,7 +1525,7 @@ $119,500</div>
     // Featured template selection (from the Page 1 style selector). Server validates
     // against the supported set and falls back to "price_tag" if missing/invalid.
     var _ftElForFd = document.getElementById('featured_template');
-    var _ftValForFd = (_ftElForFd && _ftElForFd.value) ? _ftElForFd.value.trim() : 'price_tag';
+    var _ftValForFd = (_ftElForFd && _ftElForFd.value) ? _ftElForFd.value.trim() : 'clean_marketplace';
     fd.append('featured_template', _ftValForFd);
 
     // Carry dealer profile snapshot if available (matches Step-2 submit behavior).
@@ -1987,7 +1987,7 @@ $119,500</div>
     const askingPrice = document.getElementById('h-asking-price').value.trim();
     if (askingPrice) fd.append('asking_price', askingPrice);
 
-    const featuredTemplate = (document.getElementById('featured_template').value || 'price_tag').trim();
+    const featuredTemplate = (document.getElementById('featured_template').value || 'clean_marketplace').trim();
     fd.append('featured_template', featuredTemplate);
 
     // Send every possible boolean feature — default false if not rendered.

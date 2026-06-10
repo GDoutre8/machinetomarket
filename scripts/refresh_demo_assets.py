@@ -8,12 +8,14 @@ Run from the project root:
     python scripts/refresh_demo_assets.py
 
 Outputs written to:  static/demo_outputs/
-  demo_price_tag_card.png  — Kubota SVL 97-2     (Marketplace Hero Card)
-  demo_01_card.png         — Kubota SVL 97-2     (legacy alias)
-  demo_spec_sheet.png      — 2024 Cat 299D3      (Dealer Spec Sheet)
-  demo_02_spec_sheet.png   — 2024 Cat 299D3      (legacy alias)
-  demo_image_pack.png      — 2023 SkyTrak 8042   (Branded Image Pack first photo)
-  2020_Bobcat_E35_*.mp4    — 2020 Bobcat E35     (Walkaround Video, no UI slot)
+  demo_price_tag_card.png  — 2024 Cat 299D3 XE  (Clean Marketplace Hero Card)
+  demo_spec_sheet.png      — 2024 Cat 299D3 XE  (OEM-Backed Spec Sheet)
+  demo_image_pack.png      — 2023 SkyTrak 8042  (Branded Image Pack first photo)
+  demo_listing_copy.png    — 2024 Cat 299D3 XE  (Buyer-Oriented Listing Copy)
+  sample_mtm_package.zip   — 2024 Cat 299D3 XE  (Full listing package)
+
+Legacy aliases removed (no longer referenced in templates):
+  demo_01_card.png, demo_02_spec_sheet.png
 """
 
 from __future__ import annotations
@@ -39,24 +41,39 @@ os.makedirs(DEMO_OUTPUTS, exist_ok=True)
 # ── Demo dealer identity ──────────────────────────────────────────────────────
 _LOGO_PNG = os.path.join(_ROOT, "static", "assets", "brand", "icon-square-dark-transparent.png")
 _DEMO_DEALER_BASE = {
-    "dealer_name":  "Iron Valley Equipment",
-    "phone":        "(800) 555-0174",
-    "location":     "Columbus, OH",
-    "logo_path":    _LOGO_PNG if os.path.isfile(_LOGO_PNG) else None,
-    "accent_color": "yellow",
+    "dealer_name":       "Iron Valley Equipment",
+    "phone":             "(800) 555-0174",
+    "location":          "Columbus, OH",
+    "logo_path":         _LOGO_PNG if os.path.isfile(_LOGO_PNG) else None,
+    "accent_color":      "yellow",
+    "featured_template": "clean_marketplace",
 }
+
+# ── Photo folder constants ────────────────────────────────────────────────────
+_CAT_PHOTOS_DIR      = r"C:\Users\Greg\OneDrive\Pictures\2024 Caterpillar 299D3"
+_SKYTRAK_PHOTOS_DIR  = r"C:\Users\Greg\OneDrive\Pictures\2023 SKYTRAK 8042"
+_STATIC_CAT_FALLBACK = os.path.join(_ROOT, "static", "assets", "source_photos", "homepage", "cat_262d3_front_3q.jpg")
 
 
 def _sorted_photos(folder: str) -> list[str]:
     exts = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
     files = []
     if not os.path.isdir(folder):
-        print(f"  ERROR: folder not found: {folder}")
+        print(f"  WARN: folder not found: {folder}")
         return files
     for f in sorted(os.listdir(folder)):
         if os.path.isfile(os.path.join(folder, f)) and os.path.splitext(f)[1].lower() in exts:
             files.append(os.path.join(folder, f))
     return files
+
+
+def _photo_list(folder: str, fallback: str | None = None, limit: int = 10) -> list[str]:
+    """Return up to `limit` photos from folder, falling back to a single static photo."""
+    photos = _sorted_photos(folder)[:limit]
+    if not photos and fallback and os.path.isfile(fallback):
+        print(f"  WARN: no photos in {folder!r} — using static fallback")
+        photos = [fallback]
+    return photos
 
 
 def _find_output(listing_dir: str, pattern: str) -> str | None:
@@ -81,12 +98,13 @@ def run_pack(
     model: str,
     hours: int,
     price: int,
-    photo_folder: str,
+    photos: list[str],
     accent_color: str = "yellow",
+    featured_template: str = "clean_marketplace",
     extra_input: dict | None = None,
 ) -> dict:
     """Run one machine through the full production pipeline. Returns the pack result dict."""
-    extra = extra_input or {}
+    extra = dict(extra_input or {})
 
     dealer_input = DealerInput(
         year=year,
@@ -134,8 +152,8 @@ def run_pack(
     session_dir, session_web = _make_session_dir(parsed)
     dealer_info = dict(_DEMO_DEALER_BASE)
     dealer_info["accent_color"] = accent_color
+    dealer_info["featured_template"] = featured_template
 
-    photos = _sorted_photos(photo_folder)[:10]
     print(f"  Photos: {[os.path.basename(p) for p in photos]}")
 
     pack = build_listing_pack_v1(
@@ -150,122 +168,190 @@ def run_pack(
     )
 
     pack["_session_dir"] = session_dir
+    pack["_listing_text"] = pack.get("listing_text") or ""
     return pack
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 1. Marketplace Hero Card — Kubota SVL 97-2
-# ─────────────────────────────────────────────────────────────────────────────
-print("\n[1/4] Marketplace Hero Card — Kubota SVL 97-2")
-kubota_pack = run_pack(
-    year=2021, make="Kubota", model="SVL97-2", hours=1240, price=54900,
-    photo_folder="C:/Users/Greg/OneDrive/Pictures/Kubota SVL 97-2",
-    accent_color="yellow",
-    extra_input={
-        "high_flow": "yes",
-        "two_speed_travel": "yes",
-        "serial_number": "SVL97DEMO01",
-        "track_condition": "85% remaining",
-        "one_owner": True,
-        "backup_camera": True,
-    },
-)
-_listing_photos = os.path.join(kubota_pack["_session_dir"], "listing_output", "Listing_Photos")
-_card = _find_output(_listing_photos, "*_01_card.png")
-_copy_to_demo(_card, "demo_price_tag_card.png")
-_copy_to_demo(_card, "demo_01_card.png")
+def render_listing_copy_png(listing_text: str, output_path: str) -> bool:
+    """Render listing copy as a styled 1080x1350 PNG using Playwright."""
+    import html as _html
+
+    lines = listing_text.strip().splitlines()
+    headline = lines[0] if lines else ""
+    body_lines = lines[1:] if len(lines) > 1 else []
+    body_html = "<br>".join(_html.escape(ln) for ln in body_lines)
+
+    page_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{ background: #f6f4ef; -webkit-font-smoothing: antialiased; }}
+  .card {{
+    width: 1080px; min-height: 1350px;
+    background: #f6f4ef;
+    display: flex; flex-direction: column;
+    padding: 72px 80px 64px;
+  }}
+  .kicker {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+    color: #999990; margin-bottom: 28px;
+  }}
+  .headline {{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 52px; line-height: 1.0;
+    color: #0d0d0c; margin-bottom: 32px;
+    text-transform: uppercase; letter-spacing: .01em;
+  }}
+  .accent-rule {{
+    width: 48px; height: 4px; background: #FFC600;
+    margin-bottom: 32px;
+  }}
+  .body {{
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 22px; line-height: 1.65;
+    color: #3a3a35; flex: 1;
+    white-space: pre-wrap;
+  }}
+  .footer {{
+    margin-top: 48px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: #bbb8af;
+    border-top: 1px solid #e0ddd4; padding-top: 20px;
+  }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="kicker">Buyer-Oriented Listing Copy &middot; MTM v3 Engine</div>
+  <div class="headline">{_html.escape(headline)}</div>
+  <div class="accent-rule"></div>
+  <div class="body">{body_html}</div>
+  <div class="footer">Generated by Machine-to-Market &middot; OEM-Registry-Verified &middot; Posting-Ready</div>
+</div>
+</body>
+</html>"""
+
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch()
+            page = browser.new_page(viewport={"width": 1080, "height": 1350})
+            page.set_content(page_html, wait_until="networkidle")
+            page.screenshot(path=output_path, full_page=True)
+            browser.close()
+        size_kb = os.path.getsize(output_path) // 1024
+        print(f"  OK    demo_listing_copy.png  ({size_kb} KB)")
+        return True
+    except Exception as exc:
+        print(f"  ERROR listing copy PNG: {exc}")
+        return False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2. Dealer Spec Sheet — 2024 Caterpillar 299D3
+# 1. Hero Card + Spec Sheet + Listing Copy — 2024 Cat 299D3 XE
 # ─────────────────────────────────────────────────────────────────────────────
-print("\n[2/4] Dealer Spec Sheet — 2024 Caterpillar 299D3")
+print("\n[1/3] Hero Card + Spec Sheet — 2024 Caterpillar 299D3 XE  (clean_marketplace)")
+cat_photos = _photo_list(_CAT_PHOTOS_DIR, fallback=_STATIC_CAT_FALLBACK)
 cat_pack = run_pack(
-    year=2024, make="Caterpillar", model="299D3", hours=320, price=119500,
-    photo_folder="C:/Users/Greg/OneDrive/Pictures/2024 Caterpillar 299D3",
+    year=2024, make="Caterpillar", model="299D3 XE",
+    hours=320, price=119500,
+    photos=cat_photos,
     accent_color="yellow",
+    featured_template="clean_marketplace",
     extra_input={
-        "high_flow": "yes",
+        "high_flow":        "yes",
         "two_speed_travel": "yes",
-        "serial_number": "299D3DEMO02",
-        "track_condition": "95% remaining",
-        "air_ride_seat": True,
-        "backup_camera": True,
+        "ride_control":     True,
+        "backup_camera":    True,
+        "air_ride_seat":    True,
+        "track_condition":  "95% remaining",
     },
 )
-_listing_photos = os.path.join(cat_pack["_session_dir"], "listing_output", "Listing_Photos")
-_spec_sheet = _find_output(_listing_photos, "*_02_spec_sheet.png")
+
+_cat_listing_photos = os.path.join(cat_pack["_session_dir"], "listing_output", "Listing_Photos")
+
+# Hero card
+_card = _find_output(_cat_listing_photos, "*_01_card.png")
+_copy_to_demo(_card, "demo_price_tag_card.png")
+
+# Spec sheet
+_spec_sheet = _find_output(_cat_listing_photos, "*_02_spec_sheet.png")
 _copy_to_demo(_spec_sheet, "demo_spec_sheet.png")
-_copy_to_demo(_spec_sheet, "demo_02_spec_sheet.png")
+
+# Listing copy PNG (generated from real listing text)
+print("\n[2/3] Listing Copy PNG — 2024 Caterpillar 299D3 XE")
+_listing_txt_path = os.path.join(cat_pack["_session_dir"], "listing_output", "listing_description.txt")
+_listing_text = ""
+if os.path.isfile(_listing_txt_path):
+    with open(_listing_txt_path, encoding="utf-8") as _f:
+        _listing_text = _f.read()
+elif cat_pack.get("outputs", {}).get("listing_txt"):
+    _lt = cat_pack["outputs"]["listing_txt"]
+    if os.path.isfile(_lt):
+        with open(_lt, encoding="utf-8") as _f:
+            _listing_text = _f.read()
+
+_copy_out = os.path.join(DEMO_OUTPUTS, "demo_listing_copy.png")
+if _listing_text:
+    render_listing_copy_png(_listing_text, _copy_out)
+else:
+    print("  SKIP  demo_listing_copy.png  (no listing text found)")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. Branded Image Pack — 2023 SkyTrak 8042
 # ─────────────────────────────────────────────────────────────────────────────
-print("\n[3/4] Branded Image Pack — 2023 SkyTrak 8042")
-skytrak_pack = run_pack(
-    year=2023, make="SkyTrak", model="8042", hours=780, price=89000,
-    photo_folder="C:/Users/Greg/OneDrive/Pictures/2023 SKYTRAK 8042",
-    accent_color="yellow",
-    extra_input={
-        "serial_number": "8042DEMO03",
-        "has_stabilizers": True,
-    },
-)
-_listing_photos = os.path.join(skytrak_pack["_session_dir"], "listing_output", "Listing_Photos")
-# First badged listing photo (03+)
-_img_pack_photo = (
-    _find_output(_listing_photos, "*_03_listing.jpg")
-    or _find_output(_listing_photos, "*_03_listing.jpeg")
-    or _find_output(_listing_photos, "*_listing.jpg")
-    or _find_output(_listing_photos, "*_listing.jpeg")
-)
-# Fall back to the hero card if no listing photo was generated (photo count < 1)
-if not _img_pack_photo:
-    _img_pack_photo = _find_output(_listing_photos, "*_01_card.png")
-_copy_to_demo(_img_pack_photo, "demo_image_pack.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 4. Walkaround Video — 2020 Bobcat E35
-# ─────────────────────────────────────────────────────────────────────────────
-print("\n[4/4] Walkaround Video — 2020 Bobcat E35")
-_e35_photos = _sorted_photos("C:/Users/Greg/OneDrive/Pictures/2020 Bobcat E35")[:10]
-print(f"  Photos: {[os.path.basename(p) for p in _e35_photos]}")
-
-try:
-    from walkaround_generator import (
-        check_ffmpeg_available,
-        generate_walkaround_video,
-        walkaround_filename,
-    )
-    check_ffmpeg_available()
-    _wk_name = walkaround_filename(2020, "Bobcat", "E35")
-    _wk_out = os.path.join(DEMO_OUTPUTS, _wk_name)
-    generate_walkaround_video(
-        photos=_e35_photos,
-        output_path=_wk_out,
-        year=2020,
-        make="Bobcat",
-        model="E35",
-        dealer_name="Iron Valley Equipment",
-        dealer_phone="(800) 555-0174",
+print("\n[3/3] Branded Image Pack — 2023 SkyTrak 8042")
+skytrak_photos = _photo_list(_SKYTRAK_PHOTOS_DIR)
+if skytrak_photos:
+    skytrak_pack = run_pack(
+        year=2023, make="SkyTrak", model="8042",
+        hours=780, price=89000,
+        photos=skytrak_photos,
         accent_color="yellow",
-        dealer_logo_path=_LOGO_PNG if os.path.isfile(_LOGO_PNG) else None,
+        featured_template="clean_marketplace",
+        extra_input={"has_stabilizers": True},
     )
-    _wk_size_mb = os.path.getsize(_wk_out) / 1_000_000
-    print(f"  OK    {_wk_name}  ({_wk_size_mb:.1f} MB)")
-    print("  NOTE: Homepage has no walkaround tab — video saved to demo_outputs/ but not wired.")
-except RuntimeError as exc:
-    print(f"  SKIP  Walkaround: {exc}")
-except Exception as exc:
-    print(f"  ERROR Walkaround: {exc}")
+    _st_listing_photos = os.path.join(skytrak_pack["_session_dir"], "listing_output", "Listing_Photos")
+    _img_pack_photo = (
+        _find_output(_st_listing_photos, "*_03_listing.jpg")
+        or _find_output(_st_listing_photos, "*_03_listing.jpeg")
+        or _find_output(_st_listing_photos, "*_listing.jpg")
+        or _find_output(_st_listing_photos, "*_listing.jpeg")
+    )
+    if not _img_pack_photo:
+        _img_pack_photo = _find_output(_st_listing_photos, "*_01_card.png")
+    _copy_to_demo(_img_pack_photo, "demo_image_pack.png")
+else:
+    # Fall back to the Cat card as the image pack preview
+    print("  WARN: no SkyTrak photos — using Cat card as image pack preview")
+    if _card and os.path.isfile(_card):
+        _copy_to_demo(_card, "demo_image_pack.png")
+    else:
+        print("  SKIP  demo_image_pack.png")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Cleanup — remove legacy aliases no longer referenced in any template
+# ─────────────────────────────────────────────────────────────────────────────
+for _alias in ("demo_01_card.png", "demo_02_spec_sheet.png"):
+    _alias_path = os.path.join(DEMO_OUTPUTS, _alias)
+    if os.path.isfile(_alias_path):
+        os.remove(_alias_path)
+        print(f"  DEL   {_alias}  (unreferenced legacy alias)")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
-print("\n─── static/demo_outputs/ ───────────────────────────────────────────────────")
+print("\n--- static/demo_outputs/ ---------------------------------------------------")
 for f in sorted(os.listdir(DEMO_OUTPUTS)):
     fp = os.path.join(DEMO_OUTPUTS, f)
     if os.path.isfile(fp):
