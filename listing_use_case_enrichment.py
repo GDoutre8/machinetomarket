@@ -139,7 +139,10 @@ _TH   = "telehandler"
 _DZ   = "dozer"
 _WL   = "wheel_loader"
 
-_SUPPORTED_TYPES = {_SSL, _CTL, _MEX, _BH, _TH, _DZ, _WL}
+# V1 excavator types — both registry value ("excavator") and DealerInput/showcase value
+_EX_TYPES: frozenset = frozenset({"excavator", "large_excavator"})
+
+_SUPPORTED_TYPES = {_SSL, _CTL, _MEX, _BH, _TH, _DZ, _WL} | _EX_TYPES
 
 # Labels that only appear when a matching attachment is explicitly listed.
 # Prevents speculative seasonal/specialty claims on standard machines.
@@ -1088,6 +1091,28 @@ def _limitation_from_mex(result) -> str | None:
 
 
 # ---------------------------------------------------------------------------
+# Capability engine bridge (V1: CTL / SSL / Mini Ex / Excavator)
+# ---------------------------------------------------------------------------
+
+def _ce_tags_safe(equipment_type: str, resolved_specs: dict, dealer_input) -> "list[str]":
+    """
+    Call capability_engine.get_capability_tags() and return the tag list.
+    Returns [] on any exception so listing generation is never blocked.
+    Only called for V1 types — the engine raises ValueError for others.
+    """
+    try:
+        from capability_engine import get_capability_tags
+        flags = {
+            "high_flow_available": getattr(dealer_input, "high_flow", None) == "yes",
+            "two_speed_available": getattr(dealer_input, "two_speed_travel", None) == "yes",
+        }
+        tags = get_capability_tags(equipment_type, resolved_specs, flags)
+        return tags if tags else []
+    except Exception:
+        return []
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -1121,6 +1146,7 @@ def build_use_case_payload(
 
     try:
         if equipment_type == _SSL:
+            ce_tags = _ce_tags_safe(equipment_type, resolved_specs, dealer_input)
             from scorers.skid_steer_use_case_scorer_v1_0 import score_skid_steer
             record = _build_ssl_record(dealer_input, resolved_specs)
             result = score_skid_steer(record)
@@ -1129,15 +1155,23 @@ def build_use_case_payload(
             if getattr(result, "confidence_level", None) == "Low":
                 return _empty_payload()
 
-            return _payload_from_ssl_ctl_result(result, dealer_input, _SSL)
+            payload = _payload_from_ssl_ctl_result(result, dealer_input, _SSL)
+            if ce_tags:
+                payload["top_use_cases_for_listing"] = ce_tags
+            return payload
 
         elif equipment_type == _CTL:
+            ce_tags = _ce_tags_safe(equipment_type, resolved_specs, dealer_input)
             from scorers.ctl_use_case_scorer_v1_0 import score_ctl
             record = _build_ctl_record(dealer_input, resolved_specs)
             result = score_ctl(record)
-            return _payload_from_ssl_ctl_result(result, dealer_input, _CTL)
+            payload = _payload_from_ssl_ctl_result(result, dealer_input, _CTL)
+            if ce_tags:
+                payload["top_use_cases_for_listing"] = ce_tags
+            return payload
 
         elif equipment_type == _MEX:
+            ce_tags = _ce_tags_safe(equipment_type, resolved_specs, dealer_input)
             from scorers.mini_ex_use_case_scorer_v1_0 import score_mini_ex
             record = _build_mex_record(dealer_input, resolved_specs)
             result = score_mini_ex(record)
@@ -1145,7 +1179,23 @@ def build_use_case_payload(
             if getattr(result, "confidence_level", None) == "Low":
                 return _empty_payload()
 
-            return _payload_from_mex_result(result, dealer_input)
+            payload = _payload_from_mex_result(result, dealer_input)
+            if ce_tags:
+                payload["top_use_cases_for_listing"] = ce_tags
+            return payload
+
+        elif equipment_type in _EX_TYPES:
+            # No dedicated scorer for full-size excavators — capability engine only.
+            # attachment_sentence and limitation_sentence are not available without
+            # a scored result object; both remain None for this type.
+            ce_tags = _ce_tags_safe(equipment_type, resolved_specs, dealer_input)
+            if not ce_tags:
+                return None
+            return {
+                "top_use_cases_for_listing": ce_tags,
+                "attachment_sentence":       None,
+                "limitation_sentence":       None,
+            }
 
         elif equipment_type == _BH:
             from scorers.backhoe.backhoe_use_case_scorer_v1_0 import score_machine

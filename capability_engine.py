@@ -389,10 +389,9 @@ def _ex_candidates(specs: Specs, flags: Flags) -> List[_Candidate]:
         out.append(("Demolition Work", "demo", 72))
 
     # concept: pipe/utility  (Pipe & Utility Installation > Utility Trenching)
-    # scoped to mid-class machines (< 20-ton class)
-    if weight < 45000 and dig_in >= 200:
+    if dig_in >= 200 and weight < 45000:
         out.append(("Pipe & Utility Installation", "pipe_utility", 62))
-    if weight < 45000 and dig_in >= 180:
+    if dig_in >= 180 and weight < 45000:
         out.append(("Utility Trenching", "pipe_utility", 50))
 
     # slope & embankment grading — long-reach machines
@@ -402,6 +401,13 @@ def _ex_candidates(specs: Specs, flags: Flags) -> List[_Candidate]:
     # lift & place operations
     if dump_ht >= 250 and weight >= 30000:
         out.append(("Lift & Place Operations", "lift_place", 48))
+
+    # weight-based fallbacks for sparse-spec machines — fire only when
+    # dig-depth-based rules in the same concept group haven't already fired
+    if weight >= 25000 and dig_in == 0:
+        out.append(("Foundation Excavation", "foundation", 55))
+    if weight >= 20000 and dig_in == 0:
+        out.append(("Pipe & Utility Installation", "pipe_utility", 55))
 
     return out
 
