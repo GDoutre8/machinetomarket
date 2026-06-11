@@ -34,6 +34,11 @@ import os
 from difflib import SequenceMatcher
 from typing import Optional
 
+try:
+    from telemetry.lookup_telemetry import log_lookup as _log_lookup
+except ImportError:
+    _log_lookup = None
+
 # ---------------------------------------------------------------------------
 # CANONICAL EQUIPMENT TYPES
 # These are the ONLY valid equipment_type values returned by the system.
@@ -1782,6 +1787,46 @@ def _query_attempts(query: str) -> list[str]:
     return attempts
 
 
+def _emit_lookup_telemetry(
+    manufacturer: str,
+    model: str,
+    query: str,
+    equipment_type: str,
+    result: dict,
+) -> None:
+    """Derive and emit one telemetry event. No-ops silently if unavailable."""
+    if _log_lookup is None:
+        return
+    try:
+        if result.get("match"):
+            make     = result.get("manufacturer") or manufacturer
+            mdl      = result.get("model") or model
+            cat      = result.get("equipment_type") or equipment_type
+            reg      = (result.get("full_record") or {}).get("_registry")
+            alias    = result.get("normalized_query") or None
+            method   = result.get("match_method", "")
+            outcome  = "exact_match" if method == "exact" else "family_match"
+        else:
+            make  = manufacturer
+            mdl   = model
+            cat   = equipment_type
+            reg   = None
+            alias = None
+            if not make and query:
+                parsed_make, parsed_model = _parse_query(query, [])
+                make = parsed_make
+                if not mdl:
+                    mdl = parsed_model
+            outcome = "no_match"
+        _log_lookup(
+            make=make, model=mdl, year=None,
+            category=cat, outcome=outcome,
+            registry=reg, alias_used=alias,
+        )
+    except Exception:
+        pass
+
+
 def lookup_machine(
     manufacturer: str = "",
     model: str = "",
@@ -1802,6 +1847,17 @@ def lookup_machine(
     carries the rewrite in result["normalized_query"] for explainability.
     On total failure the raw-query failure result is returned unchanged.
     """
+    result = _lookup_machine_dispatch(manufacturer, model, query, equipment_type)
+    _emit_lookup_telemetry(manufacturer, model, query, equipment_type, result)
+    return result
+
+
+def _lookup_machine_dispatch(
+    manufacturer: str = "",
+    model: str = "",
+    query: str = "",
+    equipment_type: str = "",
+) -> dict:
     if not (query and not manufacturer and not model):
         return _lookup_machine_core(
             manufacturer=manufacturer, model=model,
