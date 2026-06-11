@@ -36,6 +36,11 @@ priority tiers:
 Counts are recomputed from ``lookup_event`` rows on every upsert, so
 ``registry_gap`` can never drift from the event log.
 
+Gap identity is ``(normalized_make, normalized_model, normalized_category)``
+— the same make/model missed in two different equipment categories produces
+two separate gaps. Anonymous misses (blank dealer_id) contribute 0 to
+``unique_dealer_count``; the +5 score term requires a real dealer_id.
+
 Fail-open guarantee
 -------------------
 Every public function catches all exceptions, logs a warning, and returns
@@ -99,13 +104,14 @@ CREATE TABLE IF NOT EXISTS lookup_event (
     category            TEXT,
     normalized_make     TEXT,
     normalized_model    TEXT,
+    normalized_category TEXT,
     matched_record_id   TEXT,
     match_tier          TEXT,
     resolution_path     TEXT,
     session_id          TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_lookup_event_norm_key
-    ON lookup_event (normalized_make, normalized_model, match_tier);
+    ON lookup_event (normalized_make, normalized_model, normalized_category, match_tier);
 CREATE INDEX IF NOT EXISTS idx_lookup_event_timestamp
     ON lookup_event (timestamp);
 
@@ -113,24 +119,28 @@ CREATE TABLE IF NOT EXISTS registry_gap (
     gap_id              TEXT PRIMARY KEY,
     normalized_make     TEXT,
     normalized_model    TEXT,
-    category            TEXT,
+    normalized_category TEXT,
     first_seen          TEXT,
     last_seen           TEXT,
     miss_count_all_time INTEGER DEFAULT 1,
     miss_count_30d      INTEGER DEFAULT 1,
-    unique_dealer_count INTEGER DEFAULT 1,
+    unique_dealer_count INTEGER DEFAULT 0,
     raw_variants        TEXT,
     status              TEXT DEFAULT 'open',
     demand_score        REAL,
     priority_tier       TEXT,
     research_packet_id  TEXT,
-    UNIQUE (normalized_make, normalized_model)
+    UNIQUE (normalized_make, normalized_model, normalized_category)
 );
 CREATE INDEX IF NOT EXISTS idx_registry_gap_priority
     ON registry_gap (priority_tier, demand_score);
 CREATE INDEX IF NOT EXISTS idx_registry_gap_status
     ON registry_gap (status);
 """
+
+# Paths whose schema has already been applied this process — avoids rerunning
+# DDL on every lookup (Codex audit #4).
+_initialized_paths: set[str] = set()
 
 
 def configure(db_path: str) -> None:
@@ -140,8 +150,14 @@ def configure(db_path: str) -> None:
 
 
 def _connect() -> sqlite3.Connection:
+    # TODO(production hardening): synchronous SQLite writes on the lookup
+    # path should move to an async/queued telemetry writer. Deliberately not
+    # redesigned in Session 2 — fail-open + sub-10ms writes are acceptable
+    # for now.
     conn = sqlite3.connect(_db_path, timeout=2.0)
-    conn.executescript(_SCHEMA)
+    if _db_path not in _initialized_paths:
+        conn.executescript(_SCHEMA)
+        _initialized_paths.add(_db_path)
     return conn
 
 
@@ -231,75 +247,79 @@ def assign_priority_tier(miss_count_30d: int, unique_dealer_count: int) -> str:
 # ---------------------------------------------------------------------------
 
 def _insert_lookup_event(conn, *, now, dealer_id, make, model, year, category,
-                         norm_make, norm_model, matched_record_id, match_tier,
-                         resolution_path, session_id) -> str:
+                         norm_make, norm_model, norm_category,
+                         matched_record_id, match_tier, resolution_path,
+                         session_id) -> str:
     event_id = str(uuid.uuid4())
     conn.execute(
         "INSERT INTO lookup_event (lookup_event_id, timestamp, dealer_id, make,"
         " model, year, category, normalized_make, normalized_model,"
-        " matched_record_id, match_tier, resolution_path, session_id)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " normalized_category, matched_record_id, match_tier, resolution_path,"
+        " session_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (event_id, _iso(now), dealer_id or "", make or "", model or "",
          int(year) if year else None, category or "", norm_make, norm_model,
-         matched_record_id, match_tier, resolution_path, session_id or ""),
+         norm_category, matched_record_id, match_tier, resolution_path,
+         session_id or ""),
     )
     return event_id
 
 
-def _upsert_gap(conn, *, now, norm_make, norm_model, category,
+def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
                 raw_variant: str) -> None:
+    """Atomic upsert keyed on (normalized_make, normalized_model,
+    normalized_category). Counts are recomputed from lookup_event."""
     cutoff = _iso(now - timedelta(days=30))
+    key = (norm_make, norm_model, norm_category)
     miss_all = conn.execute(
         "SELECT COUNT(*) FROM lookup_event WHERE normalized_make=? AND"
-        " normalized_model=? AND match_tier='miss'",
-        (norm_make, norm_model)).fetchone()[0]
+        " normalized_model=? AND normalized_category=? AND match_tier='miss'",
+        key).fetchone()[0]
     miss_30d = conn.execute(
         "SELECT COUNT(*) FROM lookup_event WHERE normalized_make=? AND"
-        " normalized_model=? AND match_tier='miss' AND timestamp>=?",
-        (norm_make, norm_model, cutoff)).fetchone()[0]
-    dealers = conn.execute(
+        " normalized_model=? AND normalized_category=? AND match_tier='miss'"
+        " AND timestamp>=?",
+        key + (cutoff,)).fetchone()[0]
+    # Anonymous/blank dealer_id contributes 0 unique dealers (Codex audit #3).
+    unique_dealers = conn.execute(
         "SELECT COUNT(DISTINCT dealer_id) FROM lookup_event WHERE"
-        " normalized_make=? AND normalized_model=? AND match_tier='miss'"
-        " AND dealer_id != ''",
-        (norm_make, norm_model)).fetchone()[0]
-    unique_dealers = max(1, dealers)
+        " normalized_make=? AND normalized_model=? AND normalized_category=?"
+        " AND match_tier='miss' AND dealer_id != ''",
+        key).fetchone()[0]
 
     score = compute_demand_score(miss_30d, miss_all, unique_dealers)
     tier = assign_priority_tier(miss_30d, unique_dealers)
 
     row = conn.execute(
-        "SELECT gap_id, raw_variants, category FROM registry_gap WHERE"
-        " normalized_make=? AND normalized_model=?",
-        (norm_make, norm_model)).fetchone()
+        "SELECT raw_variants FROM registry_gap WHERE normalized_make=? AND"
+        " normalized_model=? AND normalized_category=?",
+        key).fetchone()
+    try:
+        variants = json.loads(row[0]) if row and row[0] else []
+    except (TypeError, ValueError):
+        variants = []
+    if raw_variant and raw_variant not in variants and len(variants) < MAX_RAW_VARIANTS:
+        variants.append(raw_variant)
 
-    if row is None:
-        variants = [raw_variant] if raw_variant else []
-        conn.execute(
-            "INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,"
-            " category, first_seen, last_seen, miss_count_all_time, miss_count_30d,"
-            " unique_dealer_count, raw_variants, status, demand_score,"
-            " priority_tier, research_packet_id)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,'open',?,?,NULL)",
-            (str(uuid.uuid4()), norm_make, norm_model, category, _iso(now),
-             _iso(now), miss_all, miss_30d, unique_dealers,
-             json.dumps(variants), score, tier),
-        )
-    else:
-        gap_id, variants_json, existing_category = row
-        try:
-            variants = json.loads(variants_json) if variants_json else []
-        except (TypeError, ValueError):
-            variants = []
-        if raw_variant and raw_variant not in variants and len(variants) < MAX_RAW_VARIANTS:
-            variants.append(raw_variant)
-        conn.execute(
-            "UPDATE registry_gap SET last_seen=?, miss_count_all_time=?,"
-            " miss_count_30d=?, unique_dealer_count=?, raw_variants=?,"
-            " category=?, demand_score=?, priority_tier=? WHERE gap_id=?",
-            (_iso(now), miss_all, miss_30d, unique_dealers,
-             json.dumps(variants), category or existing_category, score, tier,
-             gap_id),
-        )
+    # Atomic upsert: concurrent writers cannot produce duplicate gap rows.
+    # gap_id, first_seen, status, research_packet_id are preserved on conflict.
+    conn.execute(
+        "INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,"
+        " normalized_category, first_seen, last_seen, miss_count_all_time,"
+        " miss_count_30d, unique_dealer_count, raw_variants, status,"
+        " demand_score, priority_tier, research_packet_id)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,'open',?,?,NULL)"
+        " ON CONFLICT (normalized_make, normalized_model, normalized_category)"
+        " DO UPDATE SET last_seen=excluded.last_seen,"
+        " miss_count_all_time=excluded.miss_count_all_time,"
+        " miss_count_30d=excluded.miss_count_30d,"
+        " unique_dealer_count=excluded.unique_dealer_count,"
+        " raw_variants=excluded.raw_variants,"
+        " demand_score=excluded.demand_score,"
+        " priority_tier=excluded.priority_tier",
+        (str(uuid.uuid4()), norm_make, norm_model, norm_category, _iso(now),
+         _iso(now), miss_all, miss_30d, unique_dealers, json.dumps(variants),
+         score, tier),
+    )
 
 
 def _classify_result(make: str, model: str, result: Optional[dict]) -> tuple[str, Optional[str], Optional[str]]:
@@ -347,18 +367,28 @@ def record_lookup(
         now = _utcnow()
         conn = _connect()
         try:
+            # Event insert commits on its own so the lookup_event row is
+            # never lost if the gap upsert fails (Codex audit #2).
             event_id = _insert_lookup_event(
                 conn, now=now, dealer_id=dealer_id, make=make, model=model,
                 year=year, category=category, norm_make=norm_make,
-                norm_model=norm_model, matched_record_id=matched_record_id,
-                match_tier=match_tier, resolution_path=resolution_path,
-                session_id=session_id)
-            if match_tier == "miss" and norm_model:
-                raw_variant = " ".join(p for p in ((make or "").strip(), (model or "").strip()) if p)
-                _upsert_gap(conn, now=now, norm_make=norm_make,
-                            norm_model=norm_model, category=norm_category,
-                            raw_variant=raw_variant)
+                norm_model=norm_model, norm_category=norm_category,
+                matched_record_id=matched_record_id, match_tier=match_tier,
+                resolution_path=resolution_path, session_id=session_id)
             conn.commit()
+
+            if match_tier == "miss" and norm_model:
+                try:
+                    raw_variant = " ".join(
+                        p for p in ((make or "").strip(), (model or "").strip()) if p)
+                    _upsert_gap(conn, now=now, norm_make=norm_make,
+                                norm_model=norm_model,
+                                norm_category=norm_category,
+                                raw_variant=raw_variant)
+                    conn.commit()
+                except Exception:
+                    logger.warning("registry_gap upsert failed; lookup_event"
+                                   " preserved (fail-open)", exc_info=True)
             return event_id
         finally:
             conn.close()

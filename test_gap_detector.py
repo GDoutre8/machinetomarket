@@ -160,6 +160,146 @@ class TestGapDetector(unittest.TestCase):
         self.assertEqual(len(gaps), 2)
 
 
+    # ── Codex audit patch tests ──────────────────────────────────────────
+
+    def test_8_same_model_different_categories_separate_gaps(self):
+        db = _fresh_db(self)
+        record_miss(make="Acme", model="332G", category="skid_steer", dealer_id="d1")
+        record_miss(make="Acme", model="332G", category="compact_track_loader", dealer_id="d1")
+        record_miss(make="Acme", model="332g", category="compact_track_loader", dealer_id="d2")
+        gaps = _rows(db, "registry_gap")
+        self.assertEqual(len(gaps), 2, "different categories must be separate gaps")
+        by_cat = {g["normalized_category"]: g for g in gaps}
+        self.assertEqual(by_cat["skid_steer"]["miss_count_all_time"], 1)
+        self.assertEqual(by_cat["compact_track_loader"]["miss_count_all_time"], 2)
+        self.assertEqual(by_cat["compact_track_loader"]["unique_dealer_count"], 2)
+
+    def test_9_anonymous_misses_count_zero_dealers(self):
+        db = _fresh_db(self)
+        record_miss(make="Acme", model="ANON1")
+        record_miss(make="Acme", model="ANON1")
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(gap["unique_dealer_count"], 0,
+                         "blank dealer_id must not count as a unique dealer")
+        # demand_score gets no +5 dealer term: 2*3 + 2*1 + 0*5 = 8
+        self.assertEqual(gap["demand_score"], 8.0)
+        # one real dealer joins -> count 1, score adds exactly 5 (plus the new miss)
+        record_miss(make="Acme", model="ANON1", dealer_id="d1")
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(gap["unique_dealer_count"], 1)
+        self.assertEqual(gap["demand_score"], 3 * 3 + 3 * 1 + 1 * 5)
+
+    def test_10_stub_and_candidate_matches_never_enter_registry_gap(self):
+        db = _fresh_db(self)
+        # Simulated matches for every non-production tier the lookup can return.
+        for tier in ("coverage_stub", "coverage_only", "production_candidate"):
+            record_lookup(
+                make="Kubota", model=f"STUB-{tier}", category="compact_track_loader",
+                result={"match": True, "match_method": "exact",
+                        "full_record": {"model_slug": f"slug_{tier}",
+                                        "registry_tier": tier}})
+        # Real registry stub lookups through the live pipeline.
+        import json as _json
+        reg = _json.loads(
+            (Path(__file__).parent / "registry" / "active"
+             / "mtm_ctl_registry_v1_32.json").read_text(encoding="utf-8"))
+        stub_hits = 0
+        for rec in reg["records"]:
+            if rec.get("registry_tier") != "coverage_stub":
+                continue
+            r = lookup_machine(rec["manufacturer"], rec["model"],
+                               equipment_type="compact_track_loader")
+            if r.get("match") and (r.get("full_record") or {}).get("registry_tier") == "coverage_stub":
+                stub_hits += 1
+            if stub_hits >= 3:
+                break
+        self.assertGreaterEqual(stub_hits, 1, "no stub record resolved; test inconclusive")
+        self.assertEqual(_rows(db, "registry_gap"), [],
+                         "stub/coverage_only/production_candidate matches must not create gaps")
+        self.assertTrue(all(e["match_tier"] != "miss" for e in _rows(db, "lookup_event")))
+
+    def test_11_invalid_input_logs_event_but_no_gap(self):
+        db = _fresh_db(self)
+        result = lookup_machine()
+        self.assertFalse(result.get("match"))
+        events = _rows(db, "lookup_event")
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["match_tier"], "invalid_input")
+        self.assertEqual(_rows(db, "registry_gap"), [])
+
+    def test_12_gap_upsert_failure_preserves_lookup_event(self):
+        db = _fresh_db(self)
+        original = gap_detector._upsert_gap
+
+        def boom(*args, **kwargs):
+            raise RuntimeError("simulated gap upsert failure")
+
+        gap_detector._upsert_gap = boom
+        try:
+            event_id = record_miss(make="Acme", model="CRASH1", dealer_id="d1")
+        finally:
+            gap_detector._upsert_gap = original
+        self.assertIsNotNone(event_id, "event id must still be returned")
+        events = _rows(db, "lookup_event")
+        self.assertEqual(len(events), 1, "lookup_event must survive gap upsert failure")
+        self.assertEqual(events[0]["match_tier"], "miss")
+        self.assertEqual(_rows(db, "registry_gap"), [])
+
+    def test_13_concurrent_duplicate_misses(self):
+        import threading
+        db = _fresh_db(self)
+        threads = [
+            threading.Thread(target=lambda i=i: [
+                record_miss(make="Acme", model="RACE1", dealer_id=f"d{i}")
+                for _ in range(5)])
+            for i in range(8)
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        events = _rows(db, "lookup_event")
+        self.assertEqual(len(events), 40, "concurrent misses must not drop events")
+        gaps = _rows(db, "registry_gap")
+        self.assertEqual(len(gaps), 1, "atomic upsert must never duplicate a gap row")
+        # One final sequential miss settles the recomputed counts deterministically.
+        record_miss(make="Acme", model="RACE1", dealer_id="d0")
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(gap["miss_count_all_time"], 41)
+        self.assertEqual(gap["unique_dealer_count"], 8)
+        self.assertEqual(gap["priority_tier"], "P0")
+
+    def test_14_sqlite_schema_matches_migration_intent(self):
+        db = _fresh_db(self)
+        record_miss(make="Acme", model="SCHEMA1")  # force schema creation
+        conn = sqlite3.connect(db)
+        try:
+            gap_cols = {r[1] for r in conn.execute("PRAGMA table_info(registry_gap)")}
+            self.assertIn("normalized_category", gap_cols)
+            self.assertIn("miss_count_all_time", gap_cols)
+            self.assertNotIn("miss_count", gap_cols)
+            event_cols = {r[1] for r in conn.execute("PRAGMA table_info(lookup_event)")}
+            self.assertIn("normalized_category", event_cols)
+            # The triple unique constraint must reject duplicates.
+            conn.execute(
+                "INSERT INTO registry_gap (gap_id, normalized_make,"
+                " normalized_model, normalized_category) VALUES ('x','a','b','c')")
+            with self.assertRaises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO registry_gap (gap_id, normalized_make,"
+                    " normalized_model, normalized_category) VALUES ('y','a','b','c')")
+            # ...but a different category is a distinct identity.
+            conn.execute(
+                "INSERT INTO registry_gap (gap_id, normalized_make,"
+                " normalized_model, normalized_category) VALUES ('z','a','b','d')")
+            # unique_dealer_count default is 0 (anonymous-safe), not 1.
+            default = next(r for r in conn.execute("PRAGMA table_info(registry_gap)")
+                           if r[1] == "unique_dealer_count")[4]
+            self.assertEqual(str(default), "0")
+        finally:
+            conn.close()
+
+
 def run_session_metrics():
     print("\n=== Gap Detection session metrics ===")
     import gap_detector as gd
