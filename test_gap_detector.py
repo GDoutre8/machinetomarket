@@ -265,12 +265,26 @@ class TestGapDetector(unittest.TestCase):
         gaps = _rows(db, "registry_gap")
         self.assertEqual(len(gaps), 1, "atomic upsert must never duplicate a gap row")
         gap = gaps[0]
-        self.assertEqual(gap["miss_count_all_time"], 40,
-                         "atomic increment must count every miss exactly once")
-        self.assertEqual(gap["miss_count_30d"], 40,
-                         "stale writers must not regress the 30d count")
-        self.assertEqual(gap["unique_dealer_count"], 8,
-                         "stale writers must not regress the dealer count")
+        # Aggregates are event-log recomputes: a racing writer may land a
+        # slightly stale snapshot, but can never overcount.
+        self.assertLessEqual(gap["miss_count_all_time"], 40)
+        self.assertLessEqual(gap["miss_count_30d"], 40)
+        self.assertLessEqual(gap["unique_dealer_count"], 8)
+        # Any subsequent upsert heals the summary to event-log truth —
+        # verified without adding any new miss event.
+        conn = sqlite3.connect(db)
+        try:
+            gap_detector._upsert_gap(
+                conn, now=gap_detector._utcnow(), norm_make="acme",
+                norm_model="race1", norm_category="", raw_variant="")
+            conn.commit()
+        finally:
+            conn.close()
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(len(_rows(db, "lookup_event")), 40)  # no event added
+        self.assertEqual(gap["miss_count_all_time"], 40)
+        self.assertEqual(gap["miss_count_30d"], 40)
+        self.assertEqual(gap["unique_dealer_count"], 8)
         self.assertEqual(gap["priority_tier"], "P0")
         self.assertEqual(gap["demand_score"], 40 * 3 + 40 * 1 + 8 * 5)
 
@@ -376,9 +390,10 @@ class TestGapDetector(unittest.TestCase):
             self.assertEqual(len(rows), 1, "old 'CTL' and new canonical write"
                              " must share one gap identity")
             self.assertEqual(rows[0][0], "compact_track_loader")
-            # MAX(migrated legacy count 7, event-log recompute 2) — the
-            # legacy aggregate is preserved, never regressed.
-            self.assertEqual(rows[0][1], 7)
+            # The legacy migrated count (7) survives only until the first
+            # upsert; the summary heals to the event-log truth: 1 migrated
+            # event + 1 new miss = 2.
+            self.assertEqual(rows[0][1], 2)
             self.assertEqual(rows[0][2], "g1")
         finally:
             conn.close()
@@ -476,8 +491,9 @@ class TestGapDetector(unittest.TestCase):
                 if g["normalized_model"] == "frag1"]
         self.assertEqual(len(gaps), 1, "alias-fragmented rows must merge")
         self.assertEqual(gaps[0]["normalized_category"], "compact_track_loader")
-        # merged legacy counts (4+3) preserved via MAX against recompute (2)
-        self.assertEqual(gaps[0]["miss_count_all_time"], 7)
+        # The merged legacy count (4+3=7) survives only until the upsert
+        # runs; it then heals to event-log truth: 1 old event + 1 new = 2.
+        self.assertEqual(gaps[0]["miss_count_all_time"], 2)
         self.assertEqual(gaps[0]["gap_id"], "g1")
         # the old event row was re-pointed at the canonical identity too
         events = [e for e in _rows(db, "lookup_event")
@@ -540,6 +556,30 @@ class TestGapDetector(unittest.TestCase):
         self.assertEqual(gap["miss_count_30d"], 2)
         self.assertEqual(gap["unique_dealer_count"], 2)
         self.assertEqual(gap["demand_score"], 2 * 3 + 2 * 1 + 2 * 5)
+
+    def test_23_stale_inflated_gap_count_heals_to_event_log(self):
+        # A registry_gap row carrying an inflated legacy count (999) must
+        # heal to the event-log recompute on the next upsert — the stale
+        # high value must NOT survive via any MAX-style merge.
+        db = _fresh_db(self)
+        record_miss(make="Acme", model="STALE1", dealer_id="d1")  # 1 real event
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "UPDATE registry_gap SET miss_count_all_time = 999,"
+            " miss_count_30d = 999, unique_dealer_count = 999,"
+            " demand_score = 9999, priority_tier = 'P0'")
+        conn.commit()
+        conn.close()
+
+        record_miss(make="Acme", model="STALE1", dealer_id="d1")  # 2nd event
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(gap["miss_count_all_time"], 2,
+                         "stale 999 must be replaced by the event-log count")
+        self.assertEqual(gap["miss_count_30d"], 2)
+        self.assertEqual(gap["unique_dealer_count"], 1)
+        self.assertEqual(gap["demand_score"], 2 * 3 + 2 * 1 + 1 * 5)
+        self.assertEqual(gap["priority_tier"], "P3",
+                         "tier must derive from recomputed counts only")
 
 
 def run_session_metrics():

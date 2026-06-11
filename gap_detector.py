@@ -36,11 +36,11 @@ priority tiers:
 ``lookup_event`` is the append-only source of truth; ``registry_gap`` is a
 derived summary. Every gap upsert recomputes ``miss_count_all_time``,
 ``miss_count_30d``, and ``unique_dealer_count`` from ``lookup_event`` for
-the gap identity and merges them non-regressively on conflict (see
-``_UPSERT_SQL``): stale concurrent writers can never lower a fresher
-aggregate, and a miss whose gap upsert failed is recovered by the next
-successful upsert — ``registry_gap`` may be temporarily stale, never
-permanently undercounted.
+the gap identity and writes them as-is (see ``_UPSERT_SQL``): the summary
+always equals the event-log truth as of the latest upsert. A miss whose gap
+upsert failed is recovered by the next successful upsert, and stale or
+legacy-migrated counts survive only until the first upsert —
+``registry_gap`` may be temporarily stale, never permanently wrong.
 
 Gap identity is ``(normalized_make, normalized_model, normalized_category)``
 — the same make/model missed in two different equipment categories produces
@@ -490,38 +490,17 @@ def _commit_event(conn) -> None:
     conn.commit()
 
 
-# Stale-writer protection window for miss_count_30d (seconds). Within this
-# window of the row's last_seen, concurrent recomputes merge via MAX (a stale
-# writer can never lower a fresher writer's count); outside it, the fresh
-# recompute wins so the rolling 30-day window can decay correctly.
-CONCURRENCY_WINDOW_S = 60
-
-# Non-regressing aggregate expressions used in the ON CONFLICT clause.
 # lookup_event is the append-only source of truth; registry_gap is a derived
-# summary. Every upsert recomputes all three aggregates from lookup_event
-# for the gap identity, then merges:
-#   miss_count_all_time: MAX(existing, recomputed). The recompute makes the
-#       event log authoritative — a miss whose gap upsert failed earlier is
-#       recovered by the next successful upsert (never permanently
-#       undercounted; temporary staleness is acceptable). MAX prevents a
-#       stale concurrent writer from lowering a fresher count, and can never
-#       overcount because every stored value is an exact event-log count
-#       from some moment in time.
-#   miss_count_30d: MAX merge inside the concurrency window, fresh recompute
-#       outside it (documented trade-off: exact rolling recompute inside a
-#       single upsert is not race-safe).
-#   unique_dealer_count: all-time distinct count never legitimately
-#       decreases -> plain MAX merge.
+# summary (a projection of the event log). Every upsert recomputes all three
+# aggregates from lookup_event for the gap identity and writes them as-is —
+# no merging with the stored row, so a stale or legacy-migrated count can
+# never outlive its first upsert. A concurrent writer may briefly land a
+# slightly older recompute; the next upsert heals the summary back to
+# event-log truth. Temporarily stale is acceptable; permanently wrong is not.
 # TODO(production hardening): the per-miss COUNT queries are O(events for
 # the gap identity); fine at current volume (indexed), revisit alongside the
 # queued-writer work if gap identities grow into the millions of events.
-_SQL_ALL = "MAX(registry_gap.miss_count_all_time, :miss_all)"
-_SQL_30D = ("CASE WHEN registry_gap.last_seen >= :recent"
-            " THEN MAX(registry_gap.miss_count_30d, :miss_30d)"
-            " ELSE :miss_30d END")
-_SQL_DLR = "MAX(registry_gap.unique_dealer_count, :dealers)"
-
-_UPSERT_SQL = f"""
+_UPSERT_SQL = """
 INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,
  normalized_category, first_seen, last_seen, miss_count_all_time,
  miss_count_30d, unique_dealer_count, raw_variants, status, demand_score,
@@ -531,31 +510,27 @@ VALUES (:gap_id, :make, :model, :category, :now, :now, :miss_all, :miss_30d,
 ON CONFLICT (normalized_make, normalized_model, normalized_category)
 DO UPDATE SET
  last_seen = :now,
- miss_count_all_time = {_SQL_ALL},
- miss_count_30d = {_SQL_30D},
- unique_dealer_count = {_SQL_DLR},
+ miss_count_all_time = :miss_all,
+ miss_count_30d = :miss_30d,
+ unique_dealer_count = :dealers,
  raw_variants = :variants,
- demand_score = ({_SQL_30D}) * 3.0 + ({_SQL_ALL}) * 1.0 + ({_SQL_DLR}) * 5.0,
- priority_tier = CASE
-     WHEN ({_SQL_30D}) >= 30 OR ({_SQL_DLR}) >= 3 THEN 'P0'
-     WHEN ({_SQL_30D}) >= 10 THEN 'P1'
-     WHEN ({_SQL_30D}) >= 3 THEN 'P2'
-     ELSE 'P3' END
+ demand_score = :score,
+ priority_tier = :tier
 """
 
 
 def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
                 raw_variant: str) -> None:
-    """Atomic, non-regressing upsert keyed on (normalized_make,
-    normalized_model, normalized_category).
+    """Atomic upsert keyed on (normalized_make, normalized_model,
+    normalized_category); aggregates always equal the event-log recompute.
 
     The caller's lookup_event row is already committed, so all three
     aggregates recomputed here from lookup_event (the source of truth)
-    include this event — and any earlier events whose own gap upsert failed.
-    On conflict the aggregates are merged in SQL (see _SQL_* above) so a
-    stale writer can never overwrite a newer/larger value. gap_id,
-    first_seen, status, and research_packet_id are never modified on
-    conflict.
+    include this event — and any earlier events whose own gap upsert failed,
+    and they replace whatever the stored row holds (legacy migrated counts
+    survive only until the first upsert). demand_score and priority_tier
+    are derived from the recomputed counts only. gap_id, first_seen, status,
+    and research_packet_id are never modified on conflict.
     """
     cutoff = _iso(now - timedelta(days=30))
     key = (norm_make, norm_model, norm_category)
@@ -590,12 +565,10 @@ def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
         "gap_id": str(uuid.uuid4()),
         "make": norm_make, "model": norm_model, "category": norm_category,
         "now": _iso(now),
-        "recent": _iso(now - timedelta(seconds=CONCURRENCY_WINDOW_S)),
         "miss_all": miss_all,
         "miss_30d": miss_30d,
         "dealers": unique_dealers,
         "variants": json.dumps(variants),
-        # Insert-path score/tier; the conflict path recomputes them in SQL.
         "score": compute_demand_score(miss_30d, miss_all, unique_dealers),
         "tier": assign_priority_tier(miss_30d, unique_dealers),
     })
