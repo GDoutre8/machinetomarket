@@ -33,8 +33,11 @@ priority tiers:
     P2  3 <= miss_count_30d <= 9
     P3  miss_count_30d < 3
 
-Counts are recomputed from ``lookup_event`` rows on every upsert, so
-``registry_gap`` can never drift from the event log.
+``miss_count_all_time`` advances by an atomic SQL increment (one per miss);
+``miss_count_30d`` and ``unique_dealer_count`` are recomputed from
+``lookup_event`` on every upsert and merged non-regressively on conflict
+(see ``_UPSERT_SQL``), so stale concurrent writers can never lower a
+fresher aggregate.
 
 Gap identity is ``(normalized_make, normalized_model, normalized_category)``
 — the same make/model missed in two different equipment categories produces
@@ -54,6 +57,7 @@ import logging
 import os
 import re
 import sqlite3
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -138,8 +142,16 @@ CREATE INDEX IF NOT EXISTS idx_registry_gap_status
     ON registry_gap (status);
 """
 
-# Paths whose schema has already been applied this process — avoids rerunning
-# DDL on every lookup (Codex audit #4).
+# Current local schema version, stored in PRAGMA user_version. Bump whenever
+# the SQLite schema changes; _init_schema migrates or safely resets old DBs.
+SCHEMA_VERSION = 2
+
+# How many times the lookup_event insert is retried on transient SQLite
+# write contention (database locked) before failing open.
+EVENT_INSERT_RETRIES = 2
+
+# Paths whose schema has already been verified this process — avoids
+# rerunning DDL/migration checks on every lookup (Codex audit #4).
 _initialized_paths: set[str] = set()
 
 
@@ -149,15 +161,95 @@ def configure(db_path: str) -> None:
     _db_path = db_path
 
 
+def _table_columns(conn, table: str) -> set:
+    return {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def _migrate_sqlite(conn) -> None:
+    """Upgrade a pre-patch local DB in place (SQLite mirror of migration 003).
+
+    - lookup_event: add normalized_category (backfilled from raw category).
+    - registry_gap: rebuild with normalized_category (backfilled from the old
+      raw category column), miss_count -> miss_count_all_time if present, and
+      the three-column unique identity.
+    Raises on failure; the caller backs up and recreates the DB.
+    """
+    event_cols = _table_columns(conn, "lookup_event")
+    if event_cols and "normalized_category" not in event_cols:
+        conn.execute("ALTER TABLE lookup_event ADD COLUMN normalized_category TEXT")
+        conn.execute("UPDATE lookup_event SET normalized_category ="
+                     " LOWER(COALESCE(category, ''))")
+        conn.execute("DROP INDEX IF EXISTS idx_lookup_event_norm_key")
+
+    gap_cols = _table_columns(conn, "registry_gap")
+    if gap_cols and "normalized_category" not in gap_cols:
+        count_col = "miss_count_all_time" if "miss_count_all_time" in gap_cols else (
+            "miss_count" if "miss_count" in gap_cols else "1")
+        category_src = "LOWER(COALESCE(category, ''))" if "category" in gap_cols else "''"
+        conn.execute("ALTER TABLE registry_gap RENAME TO registry_gap_old")
+        conn.execute("DROP INDEX IF EXISTS idx_registry_gap_priority")
+        conn.execute("DROP INDEX IF EXISTS idx_registry_gap_status")
+        conn.executescript(_SCHEMA)  # recreate registry_gap with current DDL
+        conn.execute(
+            "INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,"
+            " normalized_category, first_seen, last_seen, miss_count_all_time,"
+            " miss_count_30d, unique_dealer_count, raw_variants, status,"
+            " demand_score, priority_tier, research_packet_id)"
+            f" SELECT gap_id, normalized_make, normalized_model, {category_src},"
+            f" first_seen, last_seen, COALESCE({count_col}, 1),"
+            " COALESCE(miss_count_30d, 1), COALESCE(unique_dealer_count, 0),"
+            " raw_variants, status, demand_score, priority_tier,"
+            " research_packet_id FROM registry_gap_old")
+        conn.execute("DROP TABLE registry_gap_old")
+
+
+def _init_schema(conn) -> None:
+    version = conn.execute("PRAGMA user_version").fetchone()[0]
+    if version < SCHEMA_VERSION:
+        _migrate_sqlite(conn)          # no-op on fresh or already-current DBs
+        conn.executescript(_SCHEMA)    # create anything missing + indexes
+        conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.commit()
+
+
+def _reset_db() -> None:
+    """Back up an unreadable/unmigratable local DB and start fresh."""
+    backup = f"{_db_path}.unmigratable.bak"
+    try:
+        if os.path.exists(backup):
+            os.remove(backup)
+        os.replace(_db_path, backup)
+    except OSError:
+        os.remove(_db_path)
+        backup = "(deleted — backup rename failed)"
+    logger.warning(
+        "gap telemetry DB at %s could not be migrated to schema v%s; "
+        "it was moved to %s and a fresh DB was created. Lookup behavior "
+        "is unaffected.", _db_path, SCHEMA_VERSION, backup)
+
+
 def _connect() -> sqlite3.Connection:
     # TODO(production hardening): synchronous SQLite writes on the lookup
-    # path should move to an async/queued telemetry writer. Deliberately not
-    # redesigned in Session 2 — fail-open + sub-10ms writes are acceptable
-    # for now.
+    # path should move to an async/queued or Postgres-backed telemetry
+    # writer. Deliberately not redesigned in Session 2 — WAL + busy timeout
+    # + fail-open + sub-10ms writes are acceptable for now.
     conn = sqlite3.connect(_db_path, timeout=2.0)
     if _db_path not in _initialized_paths:
-        conn.executescript(_SCHEMA)
+        try:
+            conn.execute("PRAGMA busy_timeout = 2000")
+            _init_schema(conn)
+        except Exception:
+            logger.warning("gap telemetry schema init/migration failed; "
+                           "resetting local DB", exc_info=True)
+            conn.close()
+            _reset_db()
+            conn = sqlite3.connect(_db_path, timeout=2.0)
+            conn.execute("PRAGMA busy_timeout = 2000")
+            _init_schema(conn)
         _initialized_paths.add(_db_path)
+    else:
+        conn.execute("PRAGMA busy_timeout = 2000")
     return conn
 
 
@@ -216,10 +308,41 @@ def normalize_model(model: str, make: str = "") -> tuple[str, str]:
     return norm_make, norm_model
 
 
+# Fallback alias map used only if mtm_registry_lookup is unavailable.
+_CATEGORY_FALLBACK_ALIASES = {
+    "ctl": "compact_track_loader",
+    "compact track loader": "compact_track_loader",
+    "compact_track_loader": "compact_track_loader",
+    "track loader": "compact_track_loader",
+    "ssl": "skid_steer",
+    "skid steer": "skid_steer",
+    "skid_steer": "skid_steer",
+    "skid steer loader": "skid_steer",
+    "skid_steer_loader": "skid_steer",
+}
+
+
 def normalize_category(category: str) -> str:
+    """Resolve category aliases to the canonical MTM equipment_type.
+
+    Reuses the canonical alias logic in mtm_registry_lookup (lazy import —
+    that module imports gap_detector, so a top-level import would be
+    circular). Unrecognized categories fall back to a stable
+    lowercase/underscore form so they still dedup against themselves.
+    """
     if not category:
         return ""
-    return re.sub(r"\s+", "_", category.strip().lower())
+    key = re.sub(r"\s+", " ", category.strip().lower())
+    try:
+        from mtm_registry_lookup import _resolve_eq_type
+        canonical = _resolve_eq_type(key) or _resolve_eq_type(key.replace("_", " "))
+        if canonical:
+            return canonical
+    except Exception:
+        canonical = _CATEGORY_FALLBACK_ALIASES.get(key)
+        if canonical:
+            return canonical
+    return re.sub(r"\s+", "_", key)
 
 
 # ---------------------------------------------------------------------------
@@ -264,16 +387,64 @@ def _insert_lookup_event(conn, *, now, dealer_id, make, model, year, category,
     return event_id
 
 
+# Stale-writer protection window for miss_count_30d (seconds). Within this
+# window of the row's last_seen, concurrent recomputes merge via MAX (a stale
+# writer can never lower a fresher writer's count); outside it, the fresh
+# recompute wins so the rolling 30-day window can decay correctly.
+CONCURRENCY_WINDOW_S = 60
+
+# Non-regressing aggregate expressions used in the ON CONFLICT clause.
+#   miss_count_all_time: pure atomic increment — exact under concurrency
+#       (one increment per miss event), never overwritten by a stale
+#       precomputed total.
+#   miss_count_30d: MAX merge inside the concurrency window, fresh recompute
+#       outside it (documented trade-off: exact rolling recompute inside a
+#       single upsert is not race-safe).
+#   unique_dealer_count: all-time distinct count never legitimately
+#       decreases -> plain MAX merge.
+_SQL_ALL = "registry_gap.miss_count_all_time + 1"
+_SQL_30D = ("CASE WHEN registry_gap.last_seen >= :recent"
+            " THEN MAX(registry_gap.miss_count_30d, :miss_30d)"
+            " ELSE :miss_30d END")
+_SQL_DLR = "MAX(registry_gap.unique_dealer_count, :dealers)"
+
+_UPSERT_SQL = f"""
+INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,
+ normalized_category, first_seen, last_seen, miss_count_all_time,
+ miss_count_30d, unique_dealer_count, raw_variants, status, demand_score,
+ priority_tier, research_packet_id)
+VALUES (:gap_id, :make, :model, :category, :now, :now, 1, :miss_30d,
+ :dealers, :variants, 'open', :score, :tier, NULL)
+ON CONFLICT (normalized_make, normalized_model, normalized_category)
+DO UPDATE SET
+ last_seen = :now,
+ miss_count_all_time = {_SQL_ALL},
+ miss_count_30d = {_SQL_30D},
+ unique_dealer_count = {_SQL_DLR},
+ raw_variants = :variants,
+ demand_score = ({_SQL_30D}) * 3.0 + ({_SQL_ALL}) * 1.0 + ({_SQL_DLR}) * 5.0,
+ priority_tier = CASE
+     WHEN ({_SQL_30D}) >= 30 OR ({_SQL_DLR}) >= 3 THEN 'P0'
+     WHEN ({_SQL_30D}) >= 10 THEN 'P1'
+     WHEN ({_SQL_30D}) >= 3 THEN 'P2'
+     ELSE 'P3' END
+"""
+
+
 def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
                 raw_variant: str) -> None:
-    """Atomic upsert keyed on (normalized_make, normalized_model,
-    normalized_category). Counts are recomputed from lookup_event."""
+    """Atomic, non-regressing upsert keyed on (normalized_make,
+    normalized_model, normalized_category).
+
+    The caller's lookup_event row is already committed, so the recomputed
+    miss_count_30d / unique_dealer_count include this event. On conflict the
+    aggregates are merged in SQL (see _SQL_* above) so a stale writer can
+    never overwrite a newer/larger value, and miss_count_all_time advances
+    by exactly one per recorded miss. gap_id, first_seen, status, and
+    research_packet_id are never modified on conflict.
+    """
     cutoff = _iso(now - timedelta(days=30))
     key = (norm_make, norm_model, norm_category)
-    miss_all = conn.execute(
-        "SELECT COUNT(*) FROM lookup_event WHERE normalized_make=? AND"
-        " normalized_model=? AND normalized_category=? AND match_tier='miss'",
-        key).fetchone()[0]
     miss_30d = conn.execute(
         "SELECT COUNT(*) FROM lookup_event WHERE normalized_make=? AND"
         " normalized_model=? AND normalized_category=? AND match_tier='miss'"
@@ -286,9 +457,6 @@ def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
         " AND match_tier='miss' AND dealer_id != ''",
         key).fetchone()[0]
 
-    score = compute_demand_score(miss_30d, miss_all, unique_dealers)
-    tier = assign_priority_tier(miss_30d, unique_dealers)
-
     row = conn.execute(
         "SELECT raw_variants FROM registry_gap WHERE normalized_make=? AND"
         " normalized_model=? AND normalized_category=?",
@@ -300,26 +468,18 @@ def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
     if raw_variant and raw_variant not in variants and len(variants) < MAX_RAW_VARIANTS:
         variants.append(raw_variant)
 
-    # Atomic upsert: concurrent writers cannot produce duplicate gap rows.
-    # gap_id, first_seen, status, research_packet_id are preserved on conflict.
-    conn.execute(
-        "INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,"
-        " normalized_category, first_seen, last_seen, miss_count_all_time,"
-        " miss_count_30d, unique_dealer_count, raw_variants, status,"
-        " demand_score, priority_tier, research_packet_id)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,'open',?,?,NULL)"
-        " ON CONFLICT (normalized_make, normalized_model, normalized_category)"
-        " DO UPDATE SET last_seen=excluded.last_seen,"
-        " miss_count_all_time=excluded.miss_count_all_time,"
-        " miss_count_30d=excluded.miss_count_30d,"
-        " unique_dealer_count=excluded.unique_dealer_count,"
-        " raw_variants=excluded.raw_variants,"
-        " demand_score=excluded.demand_score,"
-        " priority_tier=excluded.priority_tier",
-        (str(uuid.uuid4()), norm_make, norm_model, norm_category, _iso(now),
-         _iso(now), miss_all, miss_30d, unique_dealers, json.dumps(variants),
-         score, tier),
-    )
+    conn.execute(_UPSERT_SQL, {
+        "gap_id": str(uuid.uuid4()),
+        "make": norm_make, "model": norm_model, "category": norm_category,
+        "now": _iso(now),
+        "recent": _iso(now - timedelta(seconds=CONCURRENCY_WINDOW_S)),
+        "miss_30d": miss_30d,
+        "dealers": unique_dealers,
+        "variants": json.dumps(variants),
+        # Insert-path score/tier; the conflict path recomputes them in SQL.
+        "score": compute_demand_score(miss_30d, 1, unique_dealers),
+        "tier": assign_priority_tier(miss_30d, unique_dealers),
+    })
 
 
 def _classify_result(make: str, model: str, result: Optional[dict]) -> tuple[str, Optional[str], Optional[str]]:
@@ -368,14 +528,25 @@ def record_lookup(
         conn = _connect()
         try:
             # Event insert commits on its own so the lookup_event row is
-            # never lost if the gap upsert fails (Codex audit #2).
-            event_id = _insert_lookup_event(
-                conn, now=now, dealer_id=dealer_id, make=make, model=model,
-                year=year, category=category, norm_make=norm_make,
-                norm_model=norm_model, norm_category=norm_category,
-                matched_record_id=matched_record_id, match_tier=match_tier,
-                resolution_path=resolution_path, session_id=session_id)
-            conn.commit()
+            # never lost if the gap upsert fails (Codex audit #2), and is
+            # retried on transient write contention (Codex P2 #4).
+            for attempt in range(EVENT_INSERT_RETRIES + 1):
+                try:
+                    event_id = _insert_lookup_event(
+                        conn, now=now, dealer_id=dealer_id, make=make,
+                        model=model, year=year, category=category,
+                        norm_make=norm_make, norm_model=norm_model,
+                        norm_category=norm_category,
+                        matched_record_id=matched_record_id,
+                        match_tier=match_tier,
+                        resolution_path=resolution_path,
+                        session_id=session_id)
+                    conn.commit()
+                    break
+                except sqlite3.OperationalError:
+                    if attempt >= EVENT_INSERT_RETRIES:
+                        raise
+                    time.sleep(0.005 * (attempt + 1))
 
             if match_tier == "miss" and norm_model:
                 try:

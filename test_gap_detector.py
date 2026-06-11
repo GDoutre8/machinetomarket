@@ -246,6 +246,8 @@ class TestGapDetector(unittest.TestCase):
         self.assertEqual(_rows(db, "registry_gap"), [])
 
     def test_13_concurrent_duplicate_misses(self):
+        # No trailing sequential miss: the concurrent writes alone must land
+        # exact, non-regressed aggregates.
         import threading
         db = _fresh_db(self)
         threads = [
@@ -262,12 +264,15 @@ class TestGapDetector(unittest.TestCase):
         self.assertEqual(len(events), 40, "concurrent misses must not drop events")
         gaps = _rows(db, "registry_gap")
         self.assertEqual(len(gaps), 1, "atomic upsert must never duplicate a gap row")
-        # One final sequential miss settles the recomputed counts deterministically.
-        record_miss(make="Acme", model="RACE1", dealer_id="d0")
-        gap = _rows(db, "registry_gap")[0]
-        self.assertEqual(gap["miss_count_all_time"], 41)
-        self.assertEqual(gap["unique_dealer_count"], 8)
+        gap = gaps[0]
+        self.assertEqual(gap["miss_count_all_time"], 40,
+                         "atomic increment must count every miss exactly once")
+        self.assertEqual(gap["miss_count_30d"], 40,
+                         "stale writers must not regress the 30d count")
+        self.assertEqual(gap["unique_dealer_count"], 8,
+                         "stale writers must not regress the dealer count")
         self.assertEqual(gap["priority_tier"], "P0")
+        self.assertEqual(gap["demand_score"], 40 * 3 + 40 * 1 + 8 * 5)
 
     def test_14_sqlite_schema_matches_migration_intent(self):
         db = _fresh_db(self)
@@ -296,8 +301,137 @@ class TestGapDetector(unittest.TestCase):
             default = next(r for r in conn.execute("PRAGMA table_info(registry_gap)")
                            if r[1] == "unique_dealer_count")[4]
             self.assertEqual(str(default), "0")
+            # Write hardening: WAL journal + schema version stamp.
+            self.assertEqual(
+                conn.execute("PRAGMA journal_mode").fetchone()[0].lower(), "wal")
+            self.assertEqual(
+                conn.execute("PRAGMA user_version").fetchone()[0],
+                gap_detector.SCHEMA_VERSION)
         finally:
             conn.close()
+
+    # ── Codex P1/P2 second-audit patch tests ─────────────────────────────
+
+    _OLD_V1_SCHEMA = """
+    CREATE TABLE lookup_event (
+        lookup_event_id TEXT PRIMARY KEY, timestamp TEXT NOT NULL,
+        dealer_id TEXT, make TEXT, model TEXT, year INTEGER, category TEXT,
+        normalized_make TEXT, normalized_model TEXT, matched_record_id TEXT,
+        match_tier TEXT, resolution_path TEXT, session_id TEXT);
+    CREATE INDEX idx_lookup_event_norm_key
+        ON lookup_event (normalized_make, normalized_model, match_tier);
+    CREATE TABLE registry_gap (
+        gap_id TEXT PRIMARY KEY, normalized_make TEXT, normalized_model TEXT,
+        category TEXT, first_seen TEXT, last_seen TEXT,
+        miss_count INTEGER DEFAULT 1, miss_count_30d INTEGER DEFAULT 1,
+        unique_dealer_count INTEGER DEFAULT 1, raw_variants TEXT,
+        status TEXT DEFAULT 'open', demand_score REAL, priority_tier TEXT,
+        research_packet_id TEXT,
+        UNIQUE (normalized_make, normalized_model));
+    """
+
+    def test_15_pre_patch_db_upgrades_in_place(self):
+        db = _fresh_db(self)
+        conn = sqlite3.connect(db)
+        conn.executescript(self._OLD_V1_SCHEMA)
+        conn.execute(
+            "INSERT INTO lookup_event (lookup_event_id, timestamp, category,"
+            " normalized_make, normalized_model, match_tier)"
+            " VALUES ('e1','2026-06-01T00:00:00.000000Z','CTL','kubota','oldie1','miss')")
+        conn.execute(
+            "INSERT INTO registry_gap (gap_id, normalized_make,"
+            " normalized_model, category, first_seen, last_seen, miss_count,"
+            " status, priority_tier) VALUES ('g1','kubota','oldie1',"
+            "'compact_track_loader','2026-06-01T00:00:00.000000Z',"
+            "'2026-06-01T00:00:00.000000Z',7,'open','P2')")
+        conn.commit()
+        conn.close()
+
+        # First write through the detector must trigger the in-place upgrade.
+        self.assertIsNotNone(record_miss(make="Kubota", model="OLDIE1",
+                                         category="ctl", dealer_id="d1"))
+        conn = sqlite3.connect(db)
+        try:
+            gap_cols = {r[1] for r in conn.execute("PRAGMA table_info(registry_gap)")}
+            self.assertIn("normalized_category", gap_cols)
+            self.assertIn("miss_count_all_time", gap_cols)
+            self.assertNotIn("miss_count", gap_cols)
+            self.assertNotIn("category", gap_cols)
+            event_cols = {r[1] for r in conn.execute("PRAGMA table_info(lookup_event)")}
+            self.assertIn("normalized_category", event_cols)
+            self.assertEqual(
+                conn.execute("PRAGMA user_version").fetchone()[0],
+                gap_detector.SCHEMA_VERSION)
+            # Old gap row preserved: category backfilled, legacy miss_count
+            # carried into miss_count_all_time and incremented by the new miss.
+            row = conn.execute(
+                "SELECT normalized_category, miss_count_all_time, gap_id"
+                " FROM registry_gap WHERE normalized_model='oldie1'").fetchone()
+            self.assertEqual(row[0], "compact_track_loader")
+            self.assertEqual(row[1], 8)  # 7 migrated + 1 new miss
+            self.assertEqual(row[2], "g1")
+        finally:
+            conn.close()
+        # Triple identity is live: same model, different category = new gap.
+        record_miss(make="Kubota", model="OLDIE1", category="skid steer")
+        self.assertEqual(len(_rows(db, "registry_gap")), 2)
+
+    def test_16_unmigratable_db_is_backed_up_and_recreated(self):
+        db = _fresh_db(self)
+        Path(db).write_bytes(b"this is not a sqlite database at all")
+        event_id = record_miss(make="Acme", model="RESET1", dealer_id="d1")
+        self.assertIsNotNone(event_id, "reset path must still record the event")
+        self.assertTrue(Path(db + ".unmigratable.bak").exists(),
+                        "old DB must be preserved as a backup")
+        events = _rows(db, "lookup_event")
+        self.assertEqual(len(events), 1)
+        self.assertEqual(len(_rows(db, "registry_gap")), 1)
+
+    def test_17_migration_003_exists_and_covers_upgrade(self):
+        path = Path(__file__).parent / "migrations" / "003_gap_detection_schema_upgrade.sql"
+        self.assertTrue(path.exists(), "migration 003 must exist")
+        sql = path.read_text(encoding="utf-8").lower()
+        for needle in ("normalized_category", "miss_count_all_time",
+                       "unique (normalized_make, normalized_model, normalized_category)"):
+            self.assertIn(needle, sql)
+
+    def test_18_category_aliases_collapse(self):
+        from gap_detector import normalize_category
+        for alias in ("ctl", "compact track loader", "compact_track_loader",
+                      "track loader", "CTL", " Compact Track Loader "):
+            self.assertEqual(normalize_category(alias), "compact_track_loader", alias)
+        for alias in ("ssl", "skid steer", "skid_steer", "skid steer loader",
+                      "skid_steer_loader", "SSL"):
+            self.assertEqual(normalize_category(alias), "skid_steer", alias)
+        # End-to-end: alias spellings dedup into one gap.
+        db = _fresh_db(self)
+        for cat in ("ctl", "compact track loader", "compact_track_loader", "track loader"):
+            record_miss(make="Acme", model="ALIAS1", category=cat)
+        gaps = _rows(db, "registry_gap")
+        self.assertEqual(len(gaps), 1)
+        self.assertEqual(gaps[0]["normalized_category"], "compact_track_loader")
+        self.assertEqual(gaps[0]["miss_count_all_time"], 4)
+
+    def test_19_event_insert_retries_on_transient_contention(self):
+        db = _fresh_db(self)
+        original = gap_detector._insert_lookup_event
+        calls = {"n": 0}
+
+        def flaky(*args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise sqlite3.OperationalError("database is locked")
+            return original(*args, **kwargs)
+
+        gap_detector._insert_lookup_event = flaky
+        try:
+            event_id = record_miss(make="Acme", model="LOCK1", dealer_id="d1")
+        finally:
+            gap_detector._insert_lookup_event = original
+        self.assertIsNotNone(event_id, "transient lock must be retried, not dropped")
+        self.assertEqual(calls["n"], 2)
+        self.assertEqual(len(_rows(db, "lookup_event")), 1)
+        self.assertEqual(len(_rows(db, "registry_gap")), 1)
 
 
 def run_session_metrics():
