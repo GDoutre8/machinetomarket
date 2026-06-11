@@ -1248,8 +1248,7 @@ async def build_listing_identify(
 
     # UX message: only shown when spec_preview is empty and web fallback was used
     match_message = (
-        "Model not found in our database — identified via web search. "
-        "Your listing will be generated with available information."
+        "Model identified — generating listing from available information."
         if web_assisted else ""
     )
 

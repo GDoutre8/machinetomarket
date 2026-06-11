@@ -848,8 +848,8 @@
 
     <section class="workspace"><div class="build-shell"><div class="workspace-card">
       <div id="step2" class="hidden">
-        <div id="match-warning" class="match-warning-card hidden"><strong>Weak registry match</strong> - OEM specs shown may not be exact for this model. Verify before publishing.</div>
-        <div id="no-match-notice" class="no-match-notice hidden">Machine not found in registry - listing will be generated without OEM specs. Fill in the details below and we'll build the copy from your inputs.</div>
+        <div id="match-warning" class="match-warning-card hidden"><strong>OEM Family Match</strong> — specs are from the closest verified model. Review highlighted fields before publishing.</div>
+        <div id="no-match-notice" class="no-match-notice hidden">OEM specs not on file for this model — your listing will be built from the details you enter below. All copy and formatting still applies.</div>
         <div class="form-card hidden" id="spec-preview-card"><div class="section-label">OEM Specs <span style="font-size:10px;opacity:.7;font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400;color:var(--dim);">from registry</span></div><div class="spec-preview-grid" id="spec-preview-grid"></div></div>
         <div class="form-card"><div class="step-header-row" style="margin-bottom:14px;"><span class="step-badge">2</span><div><div class="step-title">Features &amp; Options</div><div class="step-sub" id="features-sub">Check all that apply</div></div></div><div class="toggles-grid" id="features-container"></div></div>
         <div class="form-card"><div class="section-label">Hours &amp; Condition</div><div class="field-row" style="grid-template-columns:repeat(3,minmax(0,1fr));"><div class="field"><label for="hours">Hours <span class="req">*</span></label><input type="number" id="hours" name="hours" placeholder="1450" min="0"></div><div class="field"><label for="condition_field" id="condition-pct-label">Track Condition</label><select id="condition_field" name="condition_field"><option value="">-- Select --</option><option value="New">New</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="Worn">Worn</option></select></div><div class="field"><label for="condition_grade">Grade</label><select id="condition_grade" name="condition_grade"><option value="">-- Select --</option><option value="Like New">Like New</option><option value="Well Maintained">Well Maintained</option><option value="Ready to Work">Ready to Work</option><option value="Needs Work">Needs Work</option></select></div><div class="field"><label for="serial_number">Serial Number</label><input type="text" id="serial_number" name="serial_number" placeholder="CAT0259D3XXXXX"></div><div class="field"><label for="stock_number">Stock Number</label><input type="text" id="stock_number" name="stock_number" placeholder="STK-1042"></div><div class="field"><label for="track_percent_remaining">Track % Remaining <span style="font-weight:400;color:var(--dim);font-size:11px;">0–100</span></label><input type="number" id="track_percent_remaining" name="track_percent_remaining" placeholder="85" min="0" max="100"></div></div></div>
@@ -987,7 +987,10 @@
             </button>
           </div>
         </div>
-        <p style="margin-top:18px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);">Built from MTM&rsquo;s OEM-backed equipment registry &middot; 758 verified models across 10 equipment categories</p>
+        <div style="margin-top:18px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);">
+          <div>758 OEM-backed models across 10 categories</div>
+          <div style="margin-top:5px;letter-spacing:.08em;">Skid Steers (276) &middot; Compact Track Loaders (211) &middot; Mini Excavators (77) &middot; Telehandlers (72) &middot; Backhoe Loaders (47) &middot; Wheel Loaders (27) &middot; Scissor Lifts (20) &middot; Excavators (14) &middot; Boom Lifts (8) &middot; Dozers (6)</div>
+        </div>
       </div>
     </section>
 
@@ -1053,7 +1056,7 @@ $119,500</div>
               <span class="mkt-diff-time-sep">vs</span>
               <div class="mkt-diff-time-item">
                 <span class="mkt-diff-time-lbl">Machine to Market</span>
-                <span class="mkt-diff-time-val mkt-diff-time-fast">Under 60 Seconds</span>
+                <span class="mkt-diff-time-val mkt-diff-time-fast">Under 5 Minutes</span>
               </div>
             </div>
             <div class="mkt-diff-cta-wrap">
@@ -1906,7 +1909,7 @@ $119,500</div>
 
     if (!data.spec_found || !data.payload) {
       ucMachine.textContent = data.machine_match || '';
-      ucBody.innerHTML = '<p class="uc-no-match">Model not found \u2014 listing will be generated without OEM spec sheet.</p>';
+      ucBody.innerHTML = '<p class="uc-no-match">OEM spec sheet not available for this model \u2014 listing generated from entered details.</p>';
       return;
     }
 
