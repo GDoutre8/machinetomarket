@@ -39,6 +39,11 @@ try:
 except ImportError:
     _log_lookup = None
 
+try:
+    from gap_detector import record_lookup as _gap_record_lookup
+except ImportError:
+    _gap_record_lookup = None
+
 # ---------------------------------------------------------------------------
 # CANONICAL EQUIPMENT TYPES
 # These are the ONLY valid equipment_type values returned by the system.
@@ -1832,6 +1837,9 @@ def lookup_machine(
     model: str = "",
     query: str = "",
     equipment_type: str = "",
+    *,
+    session_id: str = "",
+    dealer_id: str = "",
 ) -> dict:
     """
     Public lookup entry point.
@@ -1849,6 +1857,19 @@ def lookup_machine(
     """
     result = _lookup_machine_dispatch(manufacturer, model, query, equipment_type)
     _emit_lookup_telemetry(manufacturer, model, query, equipment_type, result)
+    # Gap detection telemetry — fail-open: never alters or blocks the result.
+    if _gap_record_lookup is not None:
+        try:
+            gap_make, gap_model = manufacturer, model
+            if query and not manufacturer and not model:
+                gap_make, gap_model = _parse_query(query, [])
+            _gap_record_lookup(
+                make=gap_make, model=gap_model, year=None,
+                category=equipment_type, result=result,
+                session_id=session_id, dealer_id=dealer_id,
+            )
+        except Exception:
+            pass
     return result
 
 

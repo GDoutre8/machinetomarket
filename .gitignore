@@ -191,3 +191,8 @@ tests/fixtures/
 static/assets/_*.png
 static/assets/_*.jpg
 static/verify_v10_hero.png
+
+# lookup telemetry data stores (local, generated)
+telemetry/gap_telemetry.db
+telemetry/gap_telemetry.db-journal
+telemetry/lookup_events.jsonl
