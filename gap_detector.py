@@ -33,11 +33,14 @@ priority tiers:
     P2  3 <= miss_count_30d <= 9
     P3  miss_count_30d < 3
 
-``miss_count_all_time`` advances by an atomic SQL increment (one per miss);
-``miss_count_30d`` and ``unique_dealer_count`` are recomputed from
-``lookup_event`` on every upsert and merged non-regressively on conflict
-(see ``_UPSERT_SQL``), so stale concurrent writers can never lower a
-fresher aggregate.
+``lookup_event`` is the append-only source of truth; ``registry_gap`` is a
+derived summary. Every gap upsert recomputes ``miss_count_all_time``,
+``miss_count_30d``, and ``unique_dealer_count`` from ``lookup_event`` for
+the gap identity and merges them non-regressively on conflict (see
+``_UPSERT_SQL``): stale concurrent writers can never lower a fresher
+aggregate, and a miss whose gap upsert failed is recovered by the next
+successful upsert — ``registry_gap`` may be temporarily stale, never
+permanently undercounted.
 
 Gap identity is ``(normalized_make, normalized_model, normalized_category)``
 — the same make/model missed in two different equipment categories produces
@@ -144,7 +147,10 @@ CREATE INDEX IF NOT EXISTS idx_registry_gap_status
 
 # Current local schema version, stored in PRAGMA user_version. Bump whenever
 # the SQLite schema changes; _init_schema migrates or safely resets old DBs.
-SCHEMA_VERSION = 2
+#   v2: normalized_category columns + triple unique identity
+#   v3: categories re-normalized through the canonical alias map and
+#       alias-fragmented gap identities merged (mirror of migration 004)
+SCHEMA_VERSION = 3
 
 # How many times the lookup_event insert is retried on transient SQLite
 # write contention (database locked) before failing open.
@@ -166,41 +172,129 @@ def _table_columns(conn, table: str) -> set:
 
 
 def _migrate_sqlite(conn) -> None:
-    """Upgrade a pre-patch local DB in place (SQLite mirror of migration 003).
+    """Upgrade a pre-patch local DB in place (SQLite mirror of migrations
+    003 + 004).
 
-    - lookup_event: add normalized_category (backfilled from raw category).
-    - registry_gap: rebuild with normalized_category (backfilled from the old
-      raw category column), miss_count -> miss_count_all_time if present, and
-      the three-column unique identity.
+    - lookup_event: add normalized_category, backfilled through
+      normalize_category() so old raw spellings ('CTL', 'skid steer', ...)
+      land on the same canonical identity as new writes.
+    - registry_gap: rebuild with canonical normalized_category,
+      miss_count -> miss_count_all_time if present, and the three-column
+      unique identity. Rows whose categories normalize to the same identity
+      are merged (summed/max'd best effort — the next miss heals exact
+      counts from lookup_event, the source of truth).
     Raises on failure; the caller backs up and recreates the DB.
     """
     event_cols = _table_columns(conn, "lookup_event")
     if event_cols and "normalized_category" not in event_cols:
         conn.execute("ALTER TABLE lookup_event ADD COLUMN normalized_category TEXT")
-        conn.execute("UPDATE lookup_event SET normalized_category ="
-                     " LOWER(COALESCE(category, ''))")
+        for (raw,) in conn.execute(
+                "SELECT DISTINCT COALESCE(category, '') FROM lookup_event").fetchall():
+            conn.execute(
+                "UPDATE lookup_event SET normalized_category = ?"
+                " WHERE COALESCE(category, '') = ?",
+                (normalize_category(raw), raw))
         conn.execute("DROP INDEX IF EXISTS idx_lookup_event_norm_key")
 
     gap_cols = _table_columns(conn, "registry_gap")
     if gap_cols and "normalized_category" not in gap_cols:
         count_col = "miss_count_all_time" if "miss_count_all_time" in gap_cols else (
             "miss_count" if "miss_count" in gap_cols else "1")
-        category_src = "LOWER(COALESCE(category, ''))" if "category" in gap_cols else "''"
+        category_src = "COALESCE(category, '')" if "category" in gap_cols else "''"
+        old_rows = conn.execute(
+            "SELECT gap_id, normalized_make, normalized_model,"
+            f" {category_src}, first_seen, last_seen, COALESCE({count_col}, 1),"
+            " COALESCE(miss_count_30d, 1), COALESCE(unique_dealer_count, 0),"
+            " raw_variants, status, demand_score, priority_tier,"
+            " research_packet_id FROM registry_gap").fetchall()
         conn.execute("ALTER TABLE registry_gap RENAME TO registry_gap_old")
         conn.execute("DROP INDEX IF EXISTS idx_registry_gap_priority")
         conn.execute("DROP INDEX IF EXISTS idx_registry_gap_status")
         conn.executescript(_SCHEMA)  # recreate registry_gap with current DDL
-        conn.execute(
-            "INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,"
-            " normalized_category, first_seen, last_seen, miss_count_all_time,"
-            " miss_count_30d, unique_dealer_count, raw_variants, status,"
-            " demand_score, priority_tier, research_packet_id)"
-            f" SELECT gap_id, normalized_make, normalized_model, {category_src},"
-            f" first_seen, last_seen, COALESCE({count_col}, 1),"
-            " COALESCE(miss_count_30d, 1), COALESCE(unique_dealer_count, 0),"
-            " raw_variants, status, demand_score, priority_tier,"
-            " research_packet_id FROM registry_gap_old")
+
+        _insert_merged_gap_rows(conn, _merge_gap_rows(old_rows))
         conn.execute("DROP TABLE registry_gap_old")
+
+    # v2 -> v3: re-normalize categories through the canonical alias map and
+    # merge alias-fragmented identities (mirror of migration 004). Runs for
+    # v2 DBs and as a harmless no-op pass after the v1 rebuild above.
+    if _table_columns(conn, "lookup_event"):
+        _renormalize_categories(conn)
+
+
+def _merge_gap_rows(rows) -> dict:
+    """Merge gap rows onto canonical category identities.
+
+    Each input row: (gap_id, normalized_make, normalized_model, raw_category,
+    first_seen, last_seen, miss_count_all_time, miss_count_30d,
+    unique_dealer_count, raw_variants_json, status, demand_score,
+    priority_tier, research_packet_id). Counts merge best effort (sum/max) —
+    the next miss heals exact values from lookup_event, the source of truth.
+    """
+    merged: dict = {}
+    for (gap_id, n_make, n_model, raw_cat, first_seen, last_seen,
+         m_all, m_30d, dealers, variants_json, status, _score, _tier,
+         packet) in rows:
+        key = (n_make, n_model, normalize_category(raw_cat or ""))
+        try:
+            variants = json.loads(variants_json) if variants_json else []
+        except (TypeError, ValueError):
+            variants = []
+        if key not in merged:
+            merged[key] = [gap_id, first_seen, last_seen, m_all, m_30d,
+                           dealers, variants, status, packet]
+        else:
+            m = merged[key]
+            m[1] = min(m[1], first_seen)
+            m[2] = max(m[2], last_seen)
+            m[3] += m_all
+            m[4] = max(m[4], m_30d)
+            m[5] = max(m[5], dealers)
+            m[6] = (m[6] + [v for v in variants
+                            if v not in m[6]])[:MAX_RAW_VARIANTS]
+            m[8] = m[8] or packet
+    return merged
+
+
+def _insert_merged_gap_rows(conn, merged: dict) -> None:
+    for (n_make, n_model, n_cat), m in merged.items():
+        score = compute_demand_score(m[4], m[3], m[5])
+        tier = assign_priority_tier(m[4], m[5])
+        conn.execute(
+            "INSERT INTO registry_gap (gap_id, normalized_make,"
+            " normalized_model, normalized_category, first_seen, last_seen,"
+            " miss_count_all_time, miss_count_30d, unique_dealer_count,"
+            " raw_variants, status, demand_score, priority_tier,"
+            " research_packet_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (m[0], n_make, n_model, n_cat, m[1], m[2], m[3], m[4], m[5],
+             json.dumps(m[6]), m[7], score, tier, m[8]))
+
+
+def _renormalize_categories(conn) -> None:
+    """Re-point normalized_category values at canonical aliases and merge
+    any gap identities that collapse together (SQLite mirror of 004)."""
+    for (raw,) in conn.execute(
+            "SELECT DISTINCT COALESCE(normalized_category, '')"
+            " FROM lookup_event").fetchall():
+        canon = normalize_category(raw)
+        if canon != raw:
+            conn.execute(
+                "UPDATE lookup_event SET normalized_category = ?"
+                " WHERE COALESCE(normalized_category, '') = ?", (canon, raw))
+
+    if not _table_columns(conn, "registry_gap"):
+        return
+    rows = conn.execute(
+        "SELECT gap_id, normalized_make, normalized_model,"
+        " COALESCE(normalized_category, ''), first_seen, last_seen,"
+        " COALESCE(miss_count_all_time, 1), COALESCE(miss_count_30d, 1),"
+        " COALESCE(unique_dealer_count, 0), raw_variants, status,"
+        " demand_score, priority_tier, research_packet_id"
+        " FROM registry_gap").fetchall()
+    if all(normalize_category(r[3]) == r[3] for r in rows):
+        return  # already canonical — nothing to merge
+    conn.execute("DELETE FROM registry_gap")
+    _insert_merged_gap_rows(conn, _merge_gap_rows(rows))
 
 
 def _init_schema(conn) -> None:
@@ -369,22 +463,31 @@ def assign_priority_tier(miss_count_30d: int, unique_dealer_count: int) -> str:
 # Event + gap writes (internal, exceptions propagate to the public wrappers)
 # ---------------------------------------------------------------------------
 
-def _insert_lookup_event(conn, *, now, dealer_id, make, model, year, category,
-                         norm_make, norm_model, norm_category,
+def _insert_lookup_event(conn, *, event_id, now, dealer_id, make, model, year,
+                         category, norm_make, norm_model, norm_category,
                          matched_record_id, match_tier, resolution_path,
                          session_id) -> str:
-    event_id = str(uuid.uuid4())
+    # OR IGNORE + a caller-stable event_id make retries idempotent: if a
+    # commit reported failure but the row actually persisted, the retry is a
+    # no-op instead of a duplicate (Codex P1 #2).
     conn.execute(
-        "INSERT INTO lookup_event (lookup_event_id, timestamp, dealer_id, make,"
-        " model, year, category, normalized_make, normalized_model,"
-        " normalized_category, matched_record_id, match_tier, resolution_path,"
-        " session_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT OR IGNORE INTO lookup_event (lookup_event_id, timestamp,"
+        " dealer_id, make, model, year, category, normalized_make,"
+        " normalized_model, normalized_category, matched_record_id,"
+        " match_tier, resolution_path, session_id)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (event_id, _iso(now), dealer_id or "", make or "", model or "",
          int(year) if year else None, category or "", norm_make, norm_model,
          norm_category, matched_record_id, match_tier, resolution_path,
          session_id or ""),
     )
     return event_id
+
+
+def _commit_event(conn) -> None:
+    """Commit hook for the event insert (separate function so contention
+    tests can simulate commit-time failures)."""
+    conn.commit()
 
 
 # Stale-writer protection window for miss_count_30d (seconds). Within this
@@ -394,15 +497,25 @@ def _insert_lookup_event(conn, *, now, dealer_id, make, model, year, category,
 CONCURRENCY_WINDOW_S = 60
 
 # Non-regressing aggregate expressions used in the ON CONFLICT clause.
-#   miss_count_all_time: pure atomic increment — exact under concurrency
-#       (one increment per miss event), never overwritten by a stale
-#       precomputed total.
+# lookup_event is the append-only source of truth; registry_gap is a derived
+# summary. Every upsert recomputes all three aggregates from lookup_event
+# for the gap identity, then merges:
+#   miss_count_all_time: MAX(existing, recomputed). The recompute makes the
+#       event log authoritative — a miss whose gap upsert failed earlier is
+#       recovered by the next successful upsert (never permanently
+#       undercounted; temporary staleness is acceptable). MAX prevents a
+#       stale concurrent writer from lowering a fresher count, and can never
+#       overcount because every stored value is an exact event-log count
+#       from some moment in time.
 #   miss_count_30d: MAX merge inside the concurrency window, fresh recompute
 #       outside it (documented trade-off: exact rolling recompute inside a
 #       single upsert is not race-safe).
 #   unique_dealer_count: all-time distinct count never legitimately
 #       decreases -> plain MAX merge.
-_SQL_ALL = "registry_gap.miss_count_all_time + 1"
+# TODO(production hardening): the per-miss COUNT queries are O(events for
+# the gap identity); fine at current volume (indexed), revisit alongside the
+# queued-writer work if gap identities grow into the millions of events.
+_SQL_ALL = "MAX(registry_gap.miss_count_all_time, :miss_all)"
 _SQL_30D = ("CASE WHEN registry_gap.last_seen >= :recent"
             " THEN MAX(registry_gap.miss_count_30d, :miss_30d)"
             " ELSE :miss_30d END")
@@ -413,7 +526,7 @@ INSERT INTO registry_gap (gap_id, normalized_make, normalized_model,
  normalized_category, first_seen, last_seen, miss_count_all_time,
  miss_count_30d, unique_dealer_count, raw_variants, status, demand_score,
  priority_tier, research_packet_id)
-VALUES (:gap_id, :make, :model, :category, :now, :now, 1, :miss_30d,
+VALUES (:gap_id, :make, :model, :category, :now, :now, :miss_all, :miss_30d,
  :dealers, :variants, 'open', :score, :tier, NULL)
 ON CONFLICT (normalized_make, normalized_model, normalized_category)
 DO UPDATE SET
@@ -436,15 +549,20 @@ def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
     """Atomic, non-regressing upsert keyed on (normalized_make,
     normalized_model, normalized_category).
 
-    The caller's lookup_event row is already committed, so the recomputed
-    miss_count_30d / unique_dealer_count include this event. On conflict the
-    aggregates are merged in SQL (see _SQL_* above) so a stale writer can
-    never overwrite a newer/larger value, and miss_count_all_time advances
-    by exactly one per recorded miss. gap_id, first_seen, status, and
-    research_packet_id are never modified on conflict.
+    The caller's lookup_event row is already committed, so all three
+    aggregates recomputed here from lookup_event (the source of truth)
+    include this event — and any earlier events whose own gap upsert failed.
+    On conflict the aggregates are merged in SQL (see _SQL_* above) so a
+    stale writer can never overwrite a newer/larger value. gap_id,
+    first_seen, status, and research_packet_id are never modified on
+    conflict.
     """
     cutoff = _iso(now - timedelta(days=30))
     key = (norm_make, norm_model, norm_category)
+    miss_all = conn.execute(
+        "SELECT COUNT(*) FROM lookup_event WHERE normalized_make=? AND"
+        " normalized_model=? AND normalized_category=? AND match_tier='miss'",
+        key).fetchone()[0]
     miss_30d = conn.execute(
         "SELECT COUNT(*) FROM lookup_event WHERE normalized_make=? AND"
         " normalized_model=? AND normalized_category=? AND match_tier='miss'"
@@ -473,11 +591,12 @@ def _upsert_gap(conn, *, now, norm_make, norm_model, norm_category,
         "make": norm_make, "model": norm_model, "category": norm_category,
         "now": _iso(now),
         "recent": _iso(now - timedelta(seconds=CONCURRENCY_WINDOW_S)),
+        "miss_all": miss_all,
         "miss_30d": miss_30d,
         "dealers": unique_dealers,
         "variants": json.dumps(variants),
         # Insert-path score/tier; the conflict path recomputes them in SQL.
-        "score": compute_demand_score(miss_30d, 1, unique_dealers),
+        "score": compute_demand_score(miss_30d, miss_all, unique_dealers),
         "tier": assign_priority_tier(miss_30d, unique_dealers),
     })
 
@@ -529,21 +648,25 @@ def record_lookup(
         try:
             # Event insert commits on its own so the lookup_event row is
             # never lost if the gap upsert fails (Codex audit #2), and is
-            # retried on transient write contention (Codex P2 #4).
+            # retried on transient write contention (Codex P2 #4). The
+            # event_id is generated once and reused across retries; with
+            # INSERT OR IGNORE the retry is idempotent (Codex P1 #2).
+            event_id = str(uuid.uuid4())
             for attempt in range(EVENT_INSERT_RETRIES + 1):
                 try:
-                    event_id = _insert_lookup_event(
-                        conn, now=now, dealer_id=dealer_id, make=make,
-                        model=model, year=year, category=category,
+                    _insert_lookup_event(
+                        conn, event_id=event_id, now=now, dealer_id=dealer_id,
+                        make=make, model=model, year=year, category=category,
                         norm_make=norm_make, norm_model=norm_model,
                         norm_category=norm_category,
                         matched_record_id=matched_record_id,
                         match_tier=match_tier,
                         resolution_path=resolution_path,
                         session_id=session_id)
-                    conn.commit()
+                    _commit_event(conn)
                     break
                 except sqlite3.OperationalError:
+                    conn.rollback()
                     if attempt >= EVENT_INSERT_RETRIES:
                         raise
                     time.sleep(0.005 * (attempt + 1))

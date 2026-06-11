@@ -334,6 +334,8 @@ class TestGapDetector(unittest.TestCase):
         db = _fresh_db(self)
         conn = sqlite3.connect(db)
         conn.executescript(self._OLD_V1_SCHEMA)
+        # Old rows use the raw alias spelling 'CTL' — backfill must land them
+        # on the canonical identity, not a lowercased 'ctl' (Codex P1 #1).
         conn.execute(
             "INSERT INTO lookup_event (lookup_event_id, timestamp, category,"
             " normalized_make, normalized_model, match_tier)"
@@ -342,14 +344,16 @@ class TestGapDetector(unittest.TestCase):
             "INSERT INTO registry_gap (gap_id, normalized_make,"
             " normalized_model, category, first_seen, last_seen, miss_count,"
             " status, priority_tier) VALUES ('g1','kubota','oldie1',"
-            "'compact_track_loader','2026-06-01T00:00:00.000000Z',"
+            "'CTL','2026-06-01T00:00:00.000000Z',"
             "'2026-06-01T00:00:00.000000Z',7,'open','P2')")
         conn.commit()
         conn.close()
 
-        # First write through the detector must trigger the in-place upgrade.
+        # First write (canonical spelling) must trigger the in-place upgrade
+        # AND merge into the migrated gap, not fragment into a second one.
         self.assertIsNotNone(record_miss(make="Kubota", model="OLDIE1",
-                                         category="ctl", dealer_id="d1"))
+                                         category="compact_track_loader",
+                                         dealer_id="d1"))
         conn = sqlite3.connect(db)
         try:
             gap_cols = {r[1] for r in conn.execute("PRAGMA table_info(registry_gap)")}
@@ -360,16 +364,22 @@ class TestGapDetector(unittest.TestCase):
             event_cols = {r[1] for r in conn.execute("PRAGMA table_info(lookup_event)")}
             self.assertIn("normalized_category", event_cols)
             self.assertEqual(
+                conn.execute("SELECT normalized_category FROM lookup_event"
+                             " WHERE lookup_event_id='e1'").fetchone()[0],
+                "compact_track_loader")
+            self.assertEqual(
                 conn.execute("PRAGMA user_version").fetchone()[0],
                 gap_detector.SCHEMA_VERSION)
-            # Old gap row preserved: category backfilled, legacy miss_count
-            # carried into miss_count_all_time and incremented by the new miss.
-            row = conn.execute(
+            rows = conn.execute(
                 "SELECT normalized_category, miss_count_all_time, gap_id"
-                " FROM registry_gap WHERE normalized_model='oldie1'").fetchone()
-            self.assertEqual(row[0], "compact_track_loader")
-            self.assertEqual(row[1], 8)  # 7 migrated + 1 new miss
-            self.assertEqual(row[2], "g1")
+                " FROM registry_gap WHERE normalized_model='oldie1'").fetchall()
+            self.assertEqual(len(rows), 1, "old 'CTL' and new canonical write"
+                             " must share one gap identity")
+            self.assertEqual(rows[0][0], "compact_track_loader")
+            # MAX(migrated legacy count 7, event-log recompute 2) — the
+            # legacy aggregate is preserved, never regressed.
+            self.assertEqual(rows[0][1], 7)
+            self.assertEqual(rows[0][2], "g1")
         finally:
             conn.close()
         # Triple identity is live: same model, different category = new gap.
@@ -432,6 +442,104 @@ class TestGapDetector(unittest.TestCase):
         self.assertEqual(calls["n"], 2)
         self.assertEqual(len(_rows(db, "lookup_event")), 1)
         self.assertEqual(len(_rows(db, "registry_gap")), 1)
+
+    # ── Codex P1 final-blocker patch tests ───────────────────────────────
+
+    def test_20_migration_merges_alias_fragmented_gap_rows(self):
+        # A patch-2-era DB (schema v2: triple identity, but categories not
+        # canonically normalized) can hold 'ctl' and 'compact_track_loader'
+        # rows for the same machine. The v2->v3 migration must merge them.
+        db = _fresh_db(self)
+        conn = sqlite3.connect(db)
+        # Build the v2 schema via the detector's own DDL, then stamp v2.
+        conn.executescript(gap_detector._SCHEMA)
+        conn.execute("PRAGMA user_version = 2")
+        for gap_id, cat, count in (("g1", "ctl", 4),
+                                   ("g2", "compact_track_loader", 3)):
+            conn.execute(
+                "INSERT INTO registry_gap (gap_id, normalized_make,"
+                " normalized_model, normalized_category, first_seen,"
+                " last_seen, miss_count_all_time, status, priority_tier)"
+                " VALUES (?,?,?,?,?,?,?,?,?)",
+                (gap_id, "acme", "frag1", cat, "2026-06-01T00:00:00.000000Z",
+                 "2026-06-02T00:00:00.000000Z", count, "open", "P2"))
+        conn.execute(
+            "INSERT INTO lookup_event (lookup_event_id, timestamp,"
+            " normalized_make, normalized_model, normalized_category,"
+            " match_tier) VALUES ('e1','2026-06-01T00:00:00.000000Z',"
+            "'acme','frag1','ctl','miss')")
+        conn.commit()
+        conn.close()
+
+        record_miss(make="Acme", model="FRAG1", category="track loader")
+        gaps = [g for g in _rows(db, "registry_gap")
+                if g["normalized_model"] == "frag1"]
+        self.assertEqual(len(gaps), 1, "alias-fragmented rows must merge")
+        self.assertEqual(gaps[0]["normalized_category"], "compact_track_loader")
+        # merged legacy counts (4+3) preserved via MAX against recompute (2)
+        self.assertEqual(gaps[0]["miss_count_all_time"], 7)
+        self.assertEqual(gaps[0]["gap_id"], "g1")
+        # the old event row was re-pointed at the canonical identity too
+        events = [e for e in _rows(db, "lookup_event")
+                  if e["normalized_model"] == "frag1"]
+        self.assertTrue(all(e["normalized_category"] == "compact_track_loader"
+                            for e in events))
+
+    def test_21_commit_failure_retry_is_idempotent(self):
+        # Commit persists the row but reports failure; the retry must not
+        # create a second lookup_event for the same logical lookup.
+        db = _fresh_db(self)
+        original = gap_detector._commit_event
+        calls = {"n": 0}
+
+        def flaky_commit(conn):
+            calls["n"] += 1
+            original(conn)  # the row actually persists
+            if calls["n"] == 1:
+                raise sqlite3.OperationalError("disk I/O error")
+
+        gap_detector._commit_event = flaky_commit
+        try:
+            event_id = record_miss(make="Acme", model="DUPE1", dealer_id="d1")
+        finally:
+            gap_detector._commit_event = original
+        self.assertIsNotNone(event_id)
+        self.assertEqual(calls["n"], 2, "commit should have been retried")
+        events = _rows(db, "lookup_event")
+        self.assertEqual(len(events), 1,
+                         "retry after commit-time failure must be idempotent")
+        self.assertEqual(events[0]["lookup_event_id"], event_id)
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(gap["miss_count_all_time"], 1)
+
+    def test_22_failed_gap_upsert_is_recovered_by_next_miss(self):
+        # Miss 1: event persists, gap upsert fails. Miss 2: aggregates must
+        # recover miss 1 from lookup_event (source of truth) — the gap is
+        # temporarily stale, never permanently undercounted.
+        db = _fresh_db(self)
+        original = gap_detector._upsert_gap
+        calls = {"n": 0}
+
+        def flaky_upsert(*args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise RuntimeError("simulated gap upsert failure")
+            return original(*args, **kwargs)
+
+        gap_detector._upsert_gap = flaky_upsert
+        try:
+            record_miss(make="Acme", model="HEAL1", dealer_id="d1")
+            self.assertEqual(_rows(db, "registry_gap"), [])  # stale: no gap yet
+            self.assertEqual(len(_rows(db, "lookup_event")), 1)  # event preserved
+            record_miss(make="Acme", model="HEAL1", dealer_id="d2")
+        finally:
+            gap_detector._upsert_gap = original
+        gap = _rows(db, "registry_gap")[0]
+        self.assertEqual(gap["miss_count_all_time"], 2,
+                         "first miss must be recovered from lookup_event")
+        self.assertEqual(gap["miss_count_30d"], 2)
+        self.assertEqual(gap["unique_dealer_count"], 2)
+        self.assertEqual(gap["demand_score"], 2 * 3 + 2 * 1 + 2 * 5)
 
 
 def run_session_metrics():
